@@ -29,17 +29,17 @@ app.get('/', (req, res) => {
 app.get('/hello', (req, res) => {
     res.send('Hello from server');
 });
-//test route
+// test route
 app.use('/api/test', testRoute);
 
-//item route
+// item route
 app.use('/api/items', itemRoute);
 
-//user route
+// user route
 app.use('/api/users', userRoute);
 
-//complaint route
-app.use('/api/complaints', complaintRoute);
+// complaint route
+// app.use('/api/complaints', complaintRoute); // enable after defining complaintRoute
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
