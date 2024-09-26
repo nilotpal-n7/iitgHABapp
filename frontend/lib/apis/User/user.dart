@@ -12,7 +12,7 @@ import 'package:frontend/constants/endpoints.dart';
 
 
 
-Future<void> fetchUserDetails() async {
+Future<Map<String, String>?> fetchUserDetails() async {
   final accessToken = await getAccessToken();
 
   final response = await http.get(
@@ -25,19 +25,29 @@ Future<void> fetchUserDetails() async {
 
   if (response.statusCode == 200) {
     final Map<String, dynamic> userData = json.decode(response.body);
-    print("Name: ${userData['displayName']}");
-    print("Email: ${userData['mail']}");
-    final ID = userData['surname'];
-    print("Roll: $ID");
-    final branch  = calculateBranch(ID);
+
+    // Extract user details
+    final String name = userData['displayName'];
+    final String mail = userData['mail'];
+    final String roll = userData['surname'];
+    final String branch = calculateBranch(roll);
+
+    print("Name: $name");
+    print("Email: $mail");
+    print("Roll: $roll");
     print("Branch: $branch");
 
-
+    // Return the data as a map
+    return {
+      'name': name,
+      'email': mail,
+      'roll': roll,
+      'branch': branch,
+    };
 
   } else {
     print("Failed to fetch user details: ${response.statusCode}");
+    return null;
   }
-
-
-
 }
+

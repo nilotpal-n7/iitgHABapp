@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:frontend/apis/authentication/login.dart';
 import 'package:frontend/screens/login_screen.dart';
+import 'package:frontend/screens/main_screen.dart'; // Import the MainScreen
 import 'package:frontend/utilities/startup/startup_items.dart';
 
-
-
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   final bool isLoggedIn = await startupItems();
   runApp(MyApp(isLoggedIn: isLoggedIn));
 }
@@ -24,12 +23,14 @@ class MyApp extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
-          statusBarColor: Colors.black, systemNavigationBarColor: Colors.black),
+        statusBarColor: Colors.black,
+        systemNavigationBarColor: Colors.black,
+      ),
     );
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      navigatorKey: navigatorKey,   // we can add theme later also
-      home: loginScreen(),//rem  to go to ur homepage if the user is signed in ie complaint home screen in our case
+      navigatorKey: navigatorKey,
+      home: loginScreen(),
       builder: EasyLoading.init(),
     );
   }
