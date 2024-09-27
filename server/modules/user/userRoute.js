@@ -1,18 +1,19 @@
 const express = require('express')
+const authenticateJWT = require('../../middleware/authenticateJWT.js')
 
 const { getUserData, createUser, deleteUser, updateUser, getUserComplaints } = require('./userController.js');
 
 const userRouter = express.Router();
 
-userRouter.get('/:outlook', getUserData);
-
 userRouter.post('/', createUser);
 
-userRouter.delete('/:outlook', deleteUser);
+userRouter.get('/:outlook', authenticateJWT, getUserData);
 
-userRouter.put('/:outlook', updateUser);
+userRouter.delete('/:outlook', authenticateJWT, deleteUser);
 
-userRouter.get('/complaints/:outlook', getUserComplaints);
+userRouter.put('/:outlook', authenticateJWT, updateUser);
+
+userRouter.get('/complaints/:outlook', authenticateJWT, getUserComplaints);
 
 module.exports = userRouter;
 
