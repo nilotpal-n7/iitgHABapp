@@ -13,10 +13,11 @@ const getComplaintsOfItemsByHostel = async (req, res) => {
 
 const createItem = async (req, res) => {
     try {
-        const Item = await Item.create(req.body);
-        res.status(201).json(Item);
+        const item = await Item.create(req.body);
+        res.status(201).json(item);
     } catch (err) {
-        res.status(500).json({ message: 'Error creating item' });
+        res.status(500).json({ message: 'Error creating item', error: err });
+        console.log(err);
     }
 };
 

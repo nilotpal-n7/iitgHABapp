@@ -14,6 +14,8 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
+
+app.use(express.urlencoded({extended: true}));
  
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI||"mongodb+srv://simonrema123:EjUpwxJIBMCceCN8@cluster0.upn97.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", { useNewUrlParser: true, useUnifiedTopology: true })
@@ -39,7 +41,7 @@ app.use('/api/items', itemRoute);
 app.use('/api/users', userRoute);
 
 // complaint route
-// app.use('/api/complaints', complaintRoute); // enable after defining complaintRoute
+app.use('/api/complaints', complaintRoute); // enable after defining complaintRoute
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
