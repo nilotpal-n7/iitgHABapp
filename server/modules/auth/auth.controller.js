@@ -1,7 +1,7 @@
 const axios = require("axios");
 const qs = require("querystring");
 const User = require("../user/userModel.js");
-const { getUserFromToken } = require("../user/userModel.js"); // Assuming getUserFromToken is a named export
+const  getUserFromToken  = require("../user/userModel.js"); // Assuming getUserFromToken is a named export
 require("dotenv/config");
 
 const clientid = "ef3696d9-2ab2-423c-a494-fb0a193e0446";
