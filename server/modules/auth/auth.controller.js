@@ -4,9 +4,9 @@ const User = require("../user/userModel.js");
 const { getUserFromToken } = require("../user/userModel.js"); // Assuming getUserFromToken is a named export
 require("dotenv/config");
 
-const clientid = process.env.CLIENT_ID;
-const clientSecret = process.env.CLIENT_VALUE;
-const redirect_uri = process.env.REDIRECT_URI;
+const clientid = "ef3696d9-2ab2-423c-a494-fb0a193e0446";
+const clientSecret = "ef3696d9-2ab2-423c-a494-fb0a193e0446";
+const redirect_uri = "https://iitgcomplaintapp.onrender.com/api/auth/login/redirect/mobile";
 
 // Not used
 const loginHandler = (req, res) => {
@@ -55,7 +55,7 @@ const mobileRedirectHandler = async (req, res, next) => {
         if (!response.data) throw new AppError(500, "Something went wrong");
 
         const AccessToken = response.data.access_token;
-        console.log(AccessToken);
+        console.log("access token ", AccessToken);
         const RefreshToken = response.data.refresh_token;
 
         // Get user information from token
