@@ -67,11 +67,11 @@ const mobileRedirectHandler = async (req, res, next) => {
         const roll = userFromToken.data.surname;
         if (!roll) throw new AppError(401, "Sign in using Institute Account");
 
+        // create an existing user instance with finduserwithemail
 
-        let existingUser = await findUserWithEmail(userFromToken.data.mail);
+
 
         // If the user doesn't exist, create a new user
-        if (!existingUser) {
         
 
             const userData = {
@@ -85,7 +85,7 @@ const mobileRedirectHandler = async (req, res, next) => {
 
             const user = new User(userData);
             existingUser = await user.save();
-        }
+
 
         // Generate JWT for the existing or new user
         const token = existingUser.generateJWT();
