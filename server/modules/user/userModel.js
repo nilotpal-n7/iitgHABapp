@@ -84,8 +84,10 @@ const getUserFromToken = async function (access_token) {
         const response = await axios.get(config.url, {
             headers: config.headers,
         });
+        console.log(response);
 
         return response;
+        
     } catch (error) {
         console.error(error);
         return false;
