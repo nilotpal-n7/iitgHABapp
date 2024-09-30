@@ -1,4 +1,7 @@
 // server/index.js
+//import authRoutes from "./modules/auth/auth.routes.js";
+const authRoutes = require("./modules/auth/auth.routes.js");
+
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
@@ -42,6 +45,9 @@ app.use('/api/users', userRoute);
 
 // complaint route
 app.use('/api/complaints', complaintRoute); // enable after defining complaintRoute
+
+//auth route
+app.use('/api/auth', authRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
