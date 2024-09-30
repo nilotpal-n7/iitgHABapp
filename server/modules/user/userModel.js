@@ -13,16 +13,25 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true
         },
+        degree: {
+            type: String,
+            required: true,
+        },
+        rollNumber: {
+            type: String,
+            required: true,
+        },
+        email: {
+            type: String,
+            required: true
+        },
         year: {
             type: Number
         },
         hostel: {
             type:  String
         },
-        outlookID: {
-            type: String,
-            required: true
-        },
+        
         role: {
             type: String,
             enum: ['student', 'hab', 'welfare_secy', 'gen_secy'], // may add more roles
@@ -38,9 +47,7 @@ const userSchema = new mongoose.Schema(
         rooomNumber: {
             type: String
         },
-        rollNumber: {
-            type: String
-        }
+        
 
     }
 );
@@ -96,7 +103,7 @@ const getUserFromToken = async function (access_token) {
 
 
 const findUserWithEmail = async function (email) {
-    const user = await User.findOne({ mail: email });
+    const user = await User.findOne({ email: email });
      console.log("found user with email", user);
     if (!user) return false;
     return user;
