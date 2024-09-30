@@ -82,7 +82,6 @@ const mobileRedirectHandler = async (req, res, next) => {
             
             };
 
-            if (error) throw new AppError(500, error.message);
 
             const user = new User(userData);
             existingUser = await user.save();
