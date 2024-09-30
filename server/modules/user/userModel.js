@@ -87,8 +87,18 @@ const getUserFromToken = async function (access_token) {
 
         return response;
     } catch (error) {
+        console.error(error);
         return false;
     }
 };
 
-module.exports = getUserFromToken;
+
+const findUserWithEmail = async function (email) {
+    const user = await User.findOne({ email: email });
+     console.log("found user with email", user);
+    if (!user) return false;
+    return user;
+};
+
+module.exports = {
+    getUserFromToken,findUserWithEmail}
