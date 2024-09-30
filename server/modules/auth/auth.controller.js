@@ -5,7 +5,7 @@ const { getUserFromToken } = require("../user/userModel.js"); // Assuming getUse
 require("dotenv/config");
 
 const clientid = "ef3696d9-2ab2-423c-a494-fb0a193e0446";
-const clientSecret = "ef3696d9-2ab2-423c-a494-fb0a193e0446";
+const clientSecret = "KmD8Q~xCY8cR6RNrCJlUJBCzTbWqx3dKdFVTLajR";
 const redirect_uri = "https://iitgcomplaintapp.onrender.com/api/auth/login/redirect/mobile";
 
 // Not used
