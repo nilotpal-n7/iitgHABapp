@@ -1,3 +1,4 @@
+const axios =require("axios");
 const mongoose = require('mongoose');
 const jwt = require("jsonwebtoken")
 const dotenv = require("dotenv")
@@ -69,3 +70,25 @@ userSchema.statics.findByJWT = async function (token) {
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;
+
+
+const getUserFromToken = async function (access_token) {
+    try {
+        var config = {
+            method: "get",
+            url: "https://graph.microsoft.com/v1.0/me",
+            headers: {
+                Authorization: `Bearer ${access_token}`,
+            },
+        };
+        const response = await axios.get(config.url, {
+            headers: config.headers,
+        });
+
+        return response;
+    } catch (error) {
+        return false;
+    }
+};
+
+module.exports = getUserFromToken;
