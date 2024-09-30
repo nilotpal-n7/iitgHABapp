@@ -1,8 +1,8 @@
 const axios = require("axios");
 const qs = require("querystring");
-const appConfig = require("../../config/default.js");
 const User = require("../user/userModel.js");
 const { getUserFromToken } = require("../user/userModel.js"); // Assuming getUserFromToken is a named export
+require("dotenv/config");
 
 const clientid = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_VALUE;
@@ -15,90 +15,91 @@ const loginHandler = (req, res) => {
     );
 };
 
-const getDepartment = async (access_token) => {
-    const config = {
-        method: "get",
-        url: "https://graph.microsoft.com/beta/me/profile",
-        headers: {
-            Authorization: `Bearer ${access_token}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-            Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-            Host: "graph.microsoft.com",
-        },
-    };
-    const response = await axios.get(config.url, {
-        headers: config.headers,
-    });
-    return response.data.positions[0].detail.company.department;
-};
 
 // Function to calculate semester (if needed)
 
 const mobileRedirectHandler = async (req, res, next) => {
-    const { code } = req.query;
+    try {
+        const { code } = req.query;
+        console.log("Authorization Code:", code);
 
-    const data = qs.stringify({
-        client_secret: clientSecret,
-        client_id: clientid,
-        redirect_uri: "https://www.coursehubiitg.in/api/auth/login/redirect/mobile",
-        scope: "user.read",
-        grant_type: "authorization_code",
-        code: code,
-    });
+        if (!code) {
+            throw new AppError(400, "Authorization code is missing");
+        }
 
-    const config = {
-        method: "post",
-        url: `https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token`,
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
+        const data = qs.stringify({
             client_secret: clientSecret,
-        },
-        data: data,
-    };
-    
-    const response = await axios.post(config.url, config.data, {
-        headers: config.headers,
-    });
+            client_id: clientid,
+            redirect_uri: "https://iitgcomplaintapp.onrender.com/api/auth/login/redirect/mobile",
+            scope: "user.read",
+            grant_type: "authorization_code",
+            code: code,
+        });
 
-    if (!response.data) throw new AppError(500, "Something went wrong");
-
-    const AccessToken = response.data.access_token;
-    const RefreshToken = response.data.refresh_token;
-
-    const userFromToken = await getUserFromToken(AccessToken);
-
-    if (!userFromToken || !userFromToken.data) throw new AppError(401, "Access Denied");
-
-    const roll = userFromToken.data.surname;
-    if (!roll) throw new AppError(401, "Sign in using Institute Account");
-
-    let existingUser = await findUserWithEmail(userFromToken.data.mail); // find with email
-
-    if (!existingUser) {
-        const department = await getDepartment(AccessToken);
-
-        const userData = {
-            name: userFromToken.data.displayName,
-            degree: userFromToken.data.jobTitle,
-            rollNumber: userFromToken.data.surname,
-            email: userFromToken.data.mail,
-            // branch: department, // calculate branch
-            department: department,
+        const config = {
+            method: "post",
+            url: `https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token`,
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                client_secret: clientSecret,
+            },
+            data: data,
         };
 
-        const { error } = validateUser(userData);
-        if (error) throw new AppError(500, error.message);
+        // Make the Axios request
+        const response = await axios.post(config.url, config.data, {
+            headers: config.headers,
+        });
 
-        const user = new User(userData);
-        existingUser = await user.save();
+        // Check if the response data exists
+        if (!response.data) throw new AppError(500, "Something went wrong");
+
+        const AccessToken = response.data.access_token;
+        console.log(AccessToken);
+        const RefreshToken = response.data.refresh_token;
+
+        // Get user information from token
+        const userFromToken = await getUserFromToken(AccessToken);
+
+        // Check if user data exists
+        if (!userFromToken || !userFromToken.data) throw new AppError(401, "Access Denied");
+
+        const roll = userFromToken.data.surname;
+        if (!roll) throw new AppError(401, "Sign in using Institute Account");
+
+    
+
+        // If the user doesn't exist, create a new user
+        if (!existingUser) {
+        
+
+            const userData = {
+                name: userFromToken.data.displayName,
+                degree: userFromToken.data.jobTitle,
+                rollNumber: userFromToken.data.surname,
+                email: userFromToken.data.mail,
+            
+            };
+
+            if (error) throw new AppError(500, error.message);
+
+            const user = new User(userData);
+            existingUser = await user.save();
+        }
+
+        // Generate JWT for the existing or new user
+        const token = existingUser.generateJWT();
+
+        // Redirect to the success URL with the token
+        return res.redirect(`${appConfig.mobileURL}://success?token=${token}`);
+
+    } catch (error) {
+        console.error("Error in mobileRedirectHandler:", error); // Log the error to the console
+        // Use next to pass the error to the error handling middleware
+        next(error); // Pass the error to the next middleware for centralized error handling
     }
-
-    const token = existingUser.generateJWT();
-
-    // const encryptedToken = EncryptText(token);
-
-    return res.redirect(`${appConfig.mobileURL}://success?token=${token}`);
 };
+
 
 const logoutHandler = (req, res, next) => {
     // res.clearCookie("token");
