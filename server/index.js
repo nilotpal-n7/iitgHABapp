@@ -8,6 +8,7 @@ const dotenv = require('dotenv');
 const testRoute = require('./modules/test/testRoute');
 const itemRoute = require('./modules/item/itemRoute.js');
 const userRoute = require('./modules/user/userRoute.js');
+const cookieParser = require('cookie-parser');
 const complaintRoute = require('./modules/complaint/complaintRoute.js');
 
 dotenv.config();
@@ -17,6 +18,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
+app.use(cookieParser());
 
 app.use(express.urlencoded({extended: true}));
  
@@ -35,16 +37,16 @@ app.get('/hello', (req, res) => {
     res.send('Hello from server');
 });
 // test route
-app.use('/api/test', testRoute);
+//app.use('/api/test', testRoute);
 
 // item route
-app.use('/api/items', itemRoute);
+//app.use('/api/items', itemRoute);
 
 // user route
 app.use('/api/users', userRoute);
 
 // complaint route
-app.use('/api/complaints', complaintRoute); // enable after defining complaintRoute
+//app.use('/api/complaints', complaintRoute); // enable after defining complaintRoute
 
 //auth route
 app.use('/api/auth', authRoutes);
