@@ -75,7 +75,6 @@ userSchema.statics.findByJWT = async function (token) {
 };
 
 const User = mongoose.model('User', userSchema);
-console.log(User);
 module.exports = User;
 
 
