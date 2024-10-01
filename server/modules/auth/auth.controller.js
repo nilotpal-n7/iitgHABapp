@@ -1,6 +1,6 @@
 const axios = require("axios");
 const qs = require("querystring");
-const  { getUserFromToken,User } = require("../user/userModel.js"); // Assuming getUserFromToken is a named export
+const  { getUserFromToken,User,findUserWithEmail } = require("../user/userModel.js"); // Assuming getUserFromToken is a named export
 require("dotenv/config");
 const appConfig = require('../../config/default.js');
 
@@ -68,7 +68,7 @@ const mobileRedirectHandler = async (req, res, next) => {
         if (!roll) throw new AppError(401, "Sign in using Institute Account");
 
         // create an existing user instance with finduserwithemail
-
+        let existingUser = await findUserWithEmail(userFromToken.data.mail);
 
         // If the user doesn't exist, create a new user
         
