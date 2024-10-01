@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema(
         phoneNumber: {
             type: String
         },
-        rooomNumber: {
+        roomNumber: {
             type: String
         },
         
@@ -75,7 +75,7 @@ userSchema.statics.findByJWT = async function (token) {
 };
 
 const User = mongoose.model('User', userSchema);
-
+console.log(User);
 module.exports = User;
 
 
@@ -91,7 +91,7 @@ const getUserFromToken = async function (access_token) {
         const response = await axios.get(config.url, {
             headers: config.headers,
         });
-        console.log(response);
+        //console.log(response);
 
         return response;
         
@@ -102,12 +102,12 @@ const getUserFromToken = async function (access_token) {
 };
 
 
-const findUserWithEmail = async function (email) {
-    const user = await User.findOne({ email: email });
-     console.log("found user with email", user);
-    if (!user) return false;
-    return user;
-};
+// const findUserWithEmail = async function (email) {
+//     const user = await User.findOne({ email: email });
+//      console.log("found user with email", user);
+//     if (!user) return false;
+//     return user;
+// };
 
 module.exports = {
-    getUserFromToken,findUserWithEmail}
+    getUserFromToken}
