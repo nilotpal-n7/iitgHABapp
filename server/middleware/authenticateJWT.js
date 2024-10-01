@@ -1,15 +1,14 @@
 const User = require("../modules/user/userModel.js");
+const AppError = require('.././utils/appError.js');
 
 const authenticateJWT = async function (req, res, next) {
-    //const token = req.cookies.token;
-    const token = await req.headers?.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({message: "Authentication required"});
-
-    const user = User.findByJWT(token);
-
-    if (!user) return res.status(403).json({message: "Invalid token"});
+    let token = req.cookies.token;
+    if (!token) token = req.headers?.authorization?.split(" ")[1];
+    if (!token) return next(new AppError(403, "Invalid token"));
+    const user = await User.findByJWT(token);
+    if (!user) return next(new AppError(403, "Not Authenticated"));
     req.user = user;
     return next();
-}
+};
 
 module.exports = authenticateJWT;
