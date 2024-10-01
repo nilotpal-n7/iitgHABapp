@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema(
         role: {
             type: String,
             enum: ['student', 'hab', 'welfare_secy', 'gen_secy'], // may add more roles
-            required: true
+            // here it was required true
         },
         complaints: [{
             type: mongoose.Schema.Types.ObjectId,
