@@ -37,10 +37,10 @@ const userSchema = new mongoose.Schema(
             enum: ['student', 'hab', 'welfare_secy', 'gen_secy'], // may add more roles
             // here it was required true
         },
-        complaints: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Complaint'
-        }],
+        // complaints: [{
+        //     type: mongoose.Schema.Types.ObjectId,
+        //     ref: 'Complaint'
+        // }],
         phoneNumber: {
             type: String
         },
