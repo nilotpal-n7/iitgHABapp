@@ -90,6 +90,7 @@ const mobileRedirectHandler = async (req, res, next) => {
 
         // Generate JWT for the existing or new user
         const token = existingUser.generateJWT();
+        console.log(token);
 
         // Redirect to the success URL with the token
         return res.redirect(`${appConfig.mobileURL}://success?token=${token}`);
