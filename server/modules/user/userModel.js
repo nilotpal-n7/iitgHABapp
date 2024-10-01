@@ -75,7 +75,7 @@ userSchema.statics.findByJWT = async function (token) {
 };
 
 const User = mongoose.model('User', userSchema);
-module.exports = User;
+
 
 
 const getUserFromToken = async function (access_token) {
@@ -109,4 +109,4 @@ const getUserFromToken = async function (access_token) {
 // };
 
 module.exports = {
-    getUserFromToken}
+    getUserFromToken,User}

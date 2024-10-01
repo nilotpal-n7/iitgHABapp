@@ -81,11 +81,13 @@ const mobileRedirectHandler = async (req, res, next) => {
                 email: userFromToken.data.mail,
             
             };
+
             console.log(userData);
-            console.log(User);
+            
 
 
             const user = new User(userData);
+            console.log( "user model is",user);
             existingUser = await user.save();
 
 
