@@ -1,19 +1,7 @@
 const User = require('./userModel.js');
 
-const getUserData = async (req, res) => {
-    const { outlook } = req.params;
-
-    try {
-        const user = await User.find({'outlookID': outlook});
-
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        res.status(200).json(user);
-    } catch (err) {
-        res.status(500).json({ message: 'Error fetching user data' });
-    }
+const getUserData = async (req, res,next) => {
+    return res.json(req.user);
 };
 
 const createUser = async (req, res) => {
