@@ -84,9 +84,7 @@ const mobileRedirectHandler = async (req, res, next) => {
 
             console.log(userData);
             
-
-
-            const user = new User(userData);
+            const user = await new User(userData);
             console.log( "user model is",user);
             existingUser = await user.save();
 
