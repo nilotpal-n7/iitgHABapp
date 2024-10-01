@@ -65,7 +65,7 @@ userSchema.statics.findByJWT = async function (token) {
         var user = this;
         var decoded = jwt.verify(token, JWT_SECRET_KEY);
         const id = decoded.user;
-        const fetchedUser = user.findOne({_id: id});
+        const fetchedUser = await user.findOne({_id: id});
         if (!fetchedUser) return false;
         return fetchedUser;
 
