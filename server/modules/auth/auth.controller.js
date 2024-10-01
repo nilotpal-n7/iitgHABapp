@@ -72,7 +72,7 @@ const mobileRedirectHandler = async (req, res, next) => {
 
         // If the user doesn't exist, create a new user
         
-
+        if(!existingUser) {
             const userData = {
                 name: userFromToken.data.displayName,
                 degree: userFromToken.data.jobTitle,
@@ -86,14 +86,16 @@ const mobileRedirectHandler = async (req, res, next) => {
             const user = new User(userData);
             console.log( "user model is",user);
             existingUser = await user.save();
+        }
 
 
         // Generate JWT for the existing or new user
         const token = existingUser.generateJWT();
         console.log(token);
+    
 
         // Redirect to the success URL with the token
-        return res.redirect(`${appConfig.mobileURL}://success?token=${token}`);
+        return res.redirect(`iitgcomplain://success?token=${token}`);
 
     } catch (error) {
         console.error("Error in mobileRedirectHandler:", error); // Log the error to the console
