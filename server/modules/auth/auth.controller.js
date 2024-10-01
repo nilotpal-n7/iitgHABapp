@@ -1,7 +1,6 @@
 const axios = require("axios");
 const qs = require("querystring");
-const User = require('../user/userModel.js');
-const  { getUserFromToken } = require("../user/userModel.js"); // Assuming getUserFromToken is a named export
+const  { getUserFromToken,User } = require("../user/userModel.js"); // Assuming getUserFromToken is a named export
 require("dotenv/config");
 
 const clientid = "ef3696d9-2ab2-423c-a494-fb0a193e0446";
@@ -70,7 +69,6 @@ const mobileRedirectHandler = async (req, res, next) => {
         // create an existing user instance with finduserwithemail
 
 
-
         // If the user doesn't exist, create a new user
         
 
@@ -84,7 +82,7 @@ const mobileRedirectHandler = async (req, res, next) => {
 
             console.log(userData);
             
-            const user = await new User(userData);
+            const user = new User(userData);
             console.log( "user model is",user);
             existingUser = await user.save();
 
