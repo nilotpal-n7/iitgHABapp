@@ -1,4 +1,4 @@
-const User = require("../modules/user/userModel.js");
+const {User} = require("../modules/user/userModel.js");
 const AppError = require('../utils/appError.js');
 
 const authenticateJWT = async function (req, res, next) {
