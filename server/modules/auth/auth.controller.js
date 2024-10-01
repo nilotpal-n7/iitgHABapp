@@ -1,6 +1,6 @@
 const axios = require("axios");
 const qs = require("querystring");
-const User = require("../user/userModel.js");
+const User = require('../user/userModel.js');
 const  { getUserFromToken } = require("../user/userModel.js"); // Assuming getUserFromToken is a named export
 require("dotenv/config");
 
@@ -81,6 +81,8 @@ const mobileRedirectHandler = async (req, res, next) => {
                 email: userFromToken.data.mail,
             
             };
+            console.log(userData);
+            console.log(User);
 
 
             const user = new User(userData);
