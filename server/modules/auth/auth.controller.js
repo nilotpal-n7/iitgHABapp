@@ -18,7 +18,7 @@ const loginHandler = (req, res) => {
 
 // Function to calculate semester (if needed)
 
-const mobileRedirectHandler =  (req, res, next) => {
+const mobileRedirectHandler =  async(req, res, next) => {
     try {
         const { code } = req.query;
         console.log("Authorization Code:", code);
@@ -47,7 +47,7 @@ const mobileRedirectHandler =  (req, res, next) => {
         };
 
         // Make the Axios request
-        const response = await axios.post(config.url, config.data, {
+        const response =  axios.post(config.url, config.data, {
             headers: config.headers,
         });
 
