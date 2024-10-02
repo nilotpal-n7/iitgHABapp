@@ -6,6 +6,8 @@ import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:frontend/screens/profile_screen.dart';
+
 
 import '../../constants/endpoints.dart';
 
@@ -20,56 +22,30 @@ Future<void> authenticate() async {
 
       final result = await FlutterWebAuth.authenticate(
           url: AuthEndpoints.getAccess, callbackUrlScheme: "iitgcomplain");
+      print(result);
 
-    final code = Uri.parse(result).queryParameters['code'];
+    final accessToken = Uri.parse(result).queryParameters['token'];
+    print(accessToken);
 
-    if(code!= null){
-      await exchangeCodeForToken(code);
-    }
+      final prefs = await SharedPreferences.getInstance();
+
+      if (accessToken == null) {
+        throw ('access token not found');
+      }
+      prefs.setString('access_token', accessToken);
     await setHiveStore();
     await fetchUserDetails();
+
+
   } on PlatformException catch (_) {
     rethrow;
   } catch (e) {
+    print('Error in getting code');
     rethrow;
   }
 }
 
-Future<void> exchangeCodeForToken(String authCode) async {
-  final tokenUrl = Uri.parse(tokenlink.Tokenlink);
 
-  try {
-    final response = await http.post(
-      tokenUrl,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: {
-        'client_id': clientid.Clientid,
-        'grant_type': 'authorization_code',
-        'code': authCode,
-        'redirect_uri': redirecturi.Redirecturi,
-        'scope': 'offline_access User.Read',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final tokenData = json.decode(response.body);
-      final accessToken = tokenData['access_token'];
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('access_token', accessToken);
-
-    } else {
-      print('Failed to exchange authorization code for token. Status code: ${response.statusCode}');
-      print('Response body: ${response.body}');
-      throw Exception('Token exchange failed');
-    }
-  } catch (e) {
-    print('Error during token exchange: $e');
-    throw e;
-  }
-}
 
 
 
