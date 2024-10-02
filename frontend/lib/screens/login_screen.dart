@@ -34,8 +34,7 @@ class _loginScreenState extends State<loginScreen> {
                 ),
               ),
             ),
-            Center(
-              // Center the content
+            Center( // Center the content
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -44,8 +43,7 @@ class _loginScreenState extends State<loginScreen> {
                     'assets/fonts/IITG_logo.png',
                     height: 100, // Adjust size as needed
                   ),
-                  const SizedBox(height: 20),
-                  // Add some space
+                  const SizedBox(height: 20), // Add some space
                   const Text(
                     'IITG MAINTENANCE',
                     textAlign: TextAlign.center,
@@ -54,13 +52,11 @@ class _loginScreenState extends State<loginScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 150),
-                  // Add space between text and button
+                  const SizedBox(height: 150), // Add space between text and button
                   Padding(
                     padding: EdgeInsets.all(30),
                     child: Material(
-                      color: Colors.black,
-                      // No background color for the container
+                      color: Colors.black, // No background color for the container
                       child: InkWell(
                         splashColor: Colors.white,
                         onTap: () async {
@@ -73,14 +69,10 @@ class _loginScreenState extends State<loginScreen> {
                               _inprogress = false;
                             });
                             if (!mounted) return;
-                            showSnackBar('Successfully Logged In', context);
-
-                            //Navigation to profile screen after successful login
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ProfileScreen()),
-                            );
+                            setState(() {
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
+                              showSnackBar('Successfully Logged In', context);
+                            });
                           } catch (e) {
                             setState(() {
                               _inprogress = false;
@@ -88,9 +80,8 @@ class _loginScreenState extends State<loginScreen> {
                             showSnackBar('Something Went Wrong', context);
                           }
                         },
-                        child: Padding(
-                            padding: EdgeInsets.all(15),
-                            child: const LoginButton()),
+                        child: Padding(padding:EdgeInsets.all(15),
+                            child:  const LoginButton()),
                       ),
                     ),
                   ),
