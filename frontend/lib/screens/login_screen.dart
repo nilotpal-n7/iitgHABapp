@@ -69,10 +69,8 @@ class _loginScreenState extends State<loginScreen> {
                               _inprogress = false;
                             });
                             if (!mounted) return;
-                            setState(() {
                               Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
                               showSnackBar('Successfully Logged In', context);
-                            });
                           } catch (e) {
                             setState(() {
                               _inprogress = false;
