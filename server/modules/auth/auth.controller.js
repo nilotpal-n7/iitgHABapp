@@ -57,6 +57,7 @@ const mobileRedirectHandler = async (req, res, next) => {
         const AccessToken = response.data.access_token;
         console.log("access token ", AccessToken);
         const RefreshToken = response.data.refresh_token;
+        console.log("refresh token is: ",RefreshToken);
 
         // Get user information from token
         const userFromToken = await getUserFromToken(AccessToken);
@@ -95,7 +96,7 @@ const mobileRedirectHandler = async (req, res, next) => {
     
 
         // Redirect to the success URL with the token
-        return res.redirect(`iitgcomplain://success?token=${token}`);
+        return res.redirect(`iitgcomplain://success?token=${token}&user=${existingUser}`);
 
     } catch (error) {
         console.error("Error in mobileRedirectHandler:", error); // Log the error to the console
