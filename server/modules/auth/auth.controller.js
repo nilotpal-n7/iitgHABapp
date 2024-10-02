@@ -47,7 +47,7 @@ const mobileRedirectHandler =  async(req, res, next) => {
         };
 
         // Make the Axios request
-        const response =  axios.post(config.url, config.data, {
+        const response =  await axios.post(config.url, config.data, {
             headers: config.headers,
         });
 
