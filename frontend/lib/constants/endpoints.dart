@@ -6,7 +6,7 @@ class UserEndpoints {
 
 
 class AuthEndpoints {
-  static const String getAccess = 'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize?client_id=10097bd9-bd33-4181-aced-b041440acade&response_type=code&redirect_uri=https://iitgcomplaintapp.onrender.com/api/auth/login/redirect/mobile&scope=offline_access%20user.read&state=12345&prompt=consent';
+  static const String getAccess = 'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize?client_id=7326b1dd-5e6b-4f88-bd73-938e264c7f27&response_type=code&redirect_uri=https://iitgcomplaintapp.onrender.com/api/auth/login/redirect/mobile&scope=offline_access%20user.read&state=12345&prompt=consent';
 }
 
 class Userendpoints {
@@ -14,7 +14,7 @@ class Userendpoints {
 }
 
 class clientid {
-  static const Clientid = '10097bd9-bd33-4181-aced-b041440acade';
+  static const Clientid = '7326b1dd-5e6b-4f88-bd73-938e264c7f27';
 }
 
 class tokenlink {
