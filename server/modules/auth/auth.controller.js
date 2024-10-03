@@ -4,21 +4,21 @@ const  { getUserFromToken,User,findUserWithEmail } = require("../user/userModel.
 require("dotenv/config");
 const appConfig = require('../../config/default.js');
 
-const clientid = "ef3696d9-2ab2-423c-a494-fb0a193e0446";
-const clientSecret = "KmD8Q~xCY8cR6RNrCJlUJBCzTbWqx3dKdFVTLajR";
+const clientid = "10097bd9-bd33-4181-aced-b041440acade";
+const clientSecret = "w1h8Q~_.YUQPkHuorB4gaOJJcvkkPYc7qi70nc.B";
 const redirect_uri = "https://iitgcomplaintapp.onrender.com/api/auth/login/redirect/mobile";
 
 // Not used
 const loginHandler = (req, res) => {
     res.redirect(
-        `https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize?client_id=${clientid}&response_type=code&redirect_uri=${redirect_uri}&scope=offline_access%20user.read&state=random-state&prompt=consent`
+        `https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize?client_id=${clientid}&response_type=code&redirect_uri=${redirect_uri}&scope=offline_access%20user.read&state=12345&prompt=consent`
     );
 };
 
 
 // Function to calculate semester (if needed)
 
-const mobileRedirectHandler = async (req, res, next) => {
+const mobileRedirectHandler =  async(req, res, next) => {
     try {
         const { code } = req.query;
         console.log("Authorization Code:", code);
@@ -41,13 +41,13 @@ const mobileRedirectHandler = async (req, res, next) => {
             url: `https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token`,
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                client_secret: clientSecret,
+                client_secret: clientSecret,    
             },
             data: data,
         };
 
         // Make the Axios request
-        const response = await axios.post(config.url, config.data, {
+        const response =  await axios.post(config.url, config.data, {
             headers: config.headers,
         });
 
@@ -57,6 +57,7 @@ const mobileRedirectHandler = async (req, res, next) => {
         const AccessToken = response.data.access_token;
         console.log("access token ", AccessToken);
         const RefreshToken = response.data.refresh_token;
+        console.log("refresh token is: ",RefreshToken);
 
         // Get user information from token
         const userFromToken = await getUserFromToken(AccessToken);
@@ -95,7 +96,7 @@ const mobileRedirectHandler = async (req, res, next) => {
     
 
         // Redirect to the success URL with the token
-        return res.redirect(`iitgcomplain://success?token=${token}`);
+        return res.redirect(`iitgcomplain://success?token=${token}&user=${existingUser}`);
 
     } catch (error) {
         console.error("Error in mobileRedirectHandler:", error); // Log the error to the console

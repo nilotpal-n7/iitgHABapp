@@ -11,7 +11,7 @@ const {
 // Not used
 router.get("/login", loginHandler);
 
-router.get("/login/redirect/mobile", catchAsync(mobileRedirectHandler));
+router.get("/login/redirect/mobile", mobileRedirectHandler);
 
 router.get("/logout", logoutHandler);
 
