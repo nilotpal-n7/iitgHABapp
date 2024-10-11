@@ -5,6 +5,7 @@ import 'package:frontend/screens/profile_screen.dart';
 import 'dart:io';
 import 'package:frontend/widgets/Login_screen/login_button.dart';
 import 'package:frontend/widgets/common/snack_bar.dart';
+import 'package:frontend/widgets/common/custom_linear_progress.dart';
 
 class loginScreen extends StatefulWidget {
   const loginScreen({super.key});
@@ -86,7 +87,14 @@ class _loginScreenState extends State<loginScreen> {
                 ],
               ),
             ),
+            Visibility(
+              visible: _inprogress,
+              child: const CustomLinearProgress(
+                text: 'Loading your details,please wait....',
+              ),
+            )
           ],
+
         ),
       ),
     );
