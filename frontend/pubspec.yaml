@@ -51,10 +51,12 @@ dev_dependencies:
   sign_in_button: ^3.2.0
   flutter_svg: ^2.0.10+1
   shared_preferences: ^2.3.2
-  flutter_web_auth: ^0.5.0
+  flutter_web_auth: ^0.6.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   flutter_easyloading: ^3.0.5
+  flutter_appauth: ^7.0.1
+
 
 
 # For information on the generic Dart part of this file, see the
