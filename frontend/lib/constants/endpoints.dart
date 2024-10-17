@@ -4,6 +4,10 @@ class UserEndpoints {
   static const String currentUser = '$baseUrl/users/';
 }
 
+class itemEndpoint {
+  static const  String getitem = '$baseUrl/items/';
+}
+
 class authendpoint {
   static const String Authendpoint = 'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize';
 }
