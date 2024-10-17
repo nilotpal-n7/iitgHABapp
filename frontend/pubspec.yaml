@@ -56,6 +56,9 @@ dev_dependencies:
   hive_flutter: ^1.1.0
   flutter_easyloading: ^3.0.5
   flutter_appauth: ^7.0.1
+  pretty_qr_code: ^3.3.0
+  mobile_scanner: ^6.0.1
+  permission_handler: ^11.3.1
 
 
 
