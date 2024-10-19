@@ -18,7 +18,7 @@ const itemSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['submitted', 'in_progress', 'resolved']
+            enum: ['submitted', 'in_progress', 'resolved']  
         },
         complainUpdate: {
             type: String
