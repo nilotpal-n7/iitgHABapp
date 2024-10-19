@@ -15,6 +15,6 @@ itemRouter.put('/:id', authenticateJWT, updateItem);
 
 itemRouter.get('/', authenticateJWT, getItems);
 
-itemRouter.get('/:id', authenticateJWT, getItem);
+itemRouter.get('/:qr',  getItem);
 
 module.exports = itemRouter;
