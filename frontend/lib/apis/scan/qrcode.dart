@@ -38,7 +38,7 @@ class _QrScanState extends State<QrScan> {
       final response = await http.get(
         url,
         headers: {
-          "Authorization": "Bearer $header", // Include Bearer token
+          //"Authorization": "Bearer $header", // Include Bearer token
           "Content-Type": "application/json",
         },
       );
@@ -63,7 +63,7 @@ class _QrScanState extends State<QrScan> {
       final result = await barcode.rawValue;
       if (result != null) {
         print('Barcode found: $result');
-        // Call the fetch function with the scanned QR code (serial number)
+        // Call the fetch function with the scanned QR code (serial number) imp
         fetchItemBySerialNumber(result);
       } else{
         print('no qr code');

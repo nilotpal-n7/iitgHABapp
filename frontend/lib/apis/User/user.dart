@@ -10,9 +10,6 @@ import 'package:frontend/apis/protected.dart';
 import 'dart:io';
 
 
-
-
-
 Future<Map<String, String>?> fetchUserDetails() async {
   final header = await getAccessToken();
  print(header);
@@ -53,8 +50,7 @@ Future<Map<String, String>?> fetchUserDetails() async {
         'branch': branch,
       };
     }
-
-
+    
   } catch (e) {
     print("error is: $e");
     rethrow;
