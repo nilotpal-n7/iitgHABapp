@@ -25,7 +25,7 @@ Future<Map<String, String>?> fetchUserDetails() async {
         "Content-Type": "application/json",
       },
     );
-    //print('Response headers: ${resp.headers}');
+    print('Response headers: ${resp.headers}');
 
     if (resp.statusCode == 200) {
       final prefs = await SharedPreferences.getInstance();
@@ -52,6 +52,12 @@ Future<Map<String, String>?> fetchUserDetails() async {
         'roll': roll,
         'branch': branch,
       };
+    }else if (resp.statusCode == 401 || resp.statusCode == 403) {
+      print("Unauthorized access: Invalid token or session expired.");
+      throw Exception('Unauthorized: Please log in again.');
+    } else {
+      print("Error occurred: ${resp.statusCode} - ${resp.reasonPhrase}");
+      throw Exception('Failed to fetch user details.');
     }
     
   } catch (e) {
