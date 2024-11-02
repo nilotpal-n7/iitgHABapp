@@ -1,6 +1,7 @@
 const {User} = require('./userModel.js');
 
 const getUserData = async (req, res,next) => {
+    console.log(req);
     return res.json(req.user);
 };
 
@@ -51,8 +52,7 @@ const getUserComplaints = async (req, res) => {
     const { outlook } = req.params;
     console.log(outlook);
     try {
-        const user = await User.find({'email': outlook});
-        console.log("finding")
+        const user = await User.findOne({ 'email': outlook }, 'complaints');
         if (!user) {
             console.log(user);
             return res.status(404).json({ message: 'User not found' });

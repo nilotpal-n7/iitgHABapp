@@ -1,6 +1,6 @@
 const Complaint = require('./complaintModel');
 const Item = require('../item/itemModel');
-const User = require('../user/userModel');
+const {User} = require('../user/userModel');
 
 const submitComplaint = async (req, res) => {
     try {
