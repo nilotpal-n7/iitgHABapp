@@ -1,4 +1,4 @@
-const User = require('./userModel.js');
+const {User} = require('./userModel.js');
 
 const getUserData = async (req, res,next) => {
     return res.json(req.user);
@@ -37,12 +37,13 @@ const updateUser = async (req, res) => {
     const { outlook } = req.params;
 
     try {
-        const updatedUser = await User.findOneAndUpdate({ 'outlookID': outlook }, req.body, { new: true });
+        const updatedUser = await User.findOneAndUpdate({ 'email': outlook }, req.body, { new: true });
         if (!updatedUser) {
             return res.status(404).json({ message: 'User not found' });
         }
         res.status(200).json(updatedUser);
     } catch (err) {
+        console.log(err);
         res.status(500).json({ message: 'Error updating user' });
     }
 };
