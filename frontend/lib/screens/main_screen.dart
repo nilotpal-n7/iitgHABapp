@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart'; // Import the HomeScreen
-import 'profile_screen.dart'; // Import the ProfileScreen
+import 'package:frontend/screens/home_screen.dart'; // Import your HomeScreen
+import 'package:frontend/screens/my_complaints_screen.dart'; // Import your MyComplaintsScreen
+import 'package:frontend/screens/profile_screen.dart'; // Import your ProfileScreen
 
 class MainScreen extends StatefulWidget {
   @override
@@ -8,11 +9,13 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0; // Default to the HomeScreen
+  int _selectedIndex = 0; // Track the currently selected tab
 
-  final List<Widget> _screens = [
-    HomeScreen(),
-    ProfileScreen(),
+  // List of pages for each tab
+  final List<Widget> _pages = [
+    HomeScreen(), // Your Home screen
+     // Your My Complaints screen
+    ProfileScreen(), // Your Profile screen
   ];
 
   void _onItemTapped(int index) {
@@ -24,9 +27,13 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_selectedIndex], // Display the selected screen
+      body: _pages[_selectedIndex], // Show the selected page
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        currentIndex: _selectedIndex, // Highlight the selected tab
+        onTap: _onItemTapped, // Handle tab selection
+        selectedItemColor: Colors.deepPurple, // Color for the selected item
+        unselectedItemColor: Colors.grey, // Color for unselected items
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
@@ -36,9 +43,6 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Profile',
           ),
         ],
-        currentIndex: _selectedIndex, // Current selected index
-        selectedItemColor: Colors.deepPurple,
-        onTap: _onItemTapped, // Handle tap on navigation items
       ),
     );
   }

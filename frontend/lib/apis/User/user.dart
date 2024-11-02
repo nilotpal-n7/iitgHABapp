@@ -4,6 +4,7 @@ import 'package:frontend/database/hive_store.dart';
 import 'package:frontend/apis/authentication/login.dart';
 import 'package:hive/hive.dart';
 import 'package:frontend/widgets/profile_screen/brach_name.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:frontend/constants/endpoints.dart';
 import 'package:frontend/apis/protected.dart';
@@ -27,12 +28,14 @@ Future<Map<String, String>?> fetchUserDetails() async {
     print('Response headers: ${resp.headers}');
 
     if (resp.statusCode == 200) {
+      final prefs = await SharedPreferences.getInstance();
       final Map<String, dynamic> userData = json.decode(resp.body);
 
       // Extract user details
       final String name = userData['name'];
       final String degree = userData['degree'];
       final String mail = userData['email'];
+      prefs.setString('email', mail);
       final String roll = userData['rollNumber'];
       final String branch = calculateBranch(roll);
 

@@ -116,6 +116,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   prefs.setString('room', updatedRoom);
                   prefs.setString('contact', updatedContact);
 
+
                   setState(() {
                     hostel = updatedHostel;
                     room = updatedRoom;

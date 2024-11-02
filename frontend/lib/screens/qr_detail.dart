@@ -81,9 +81,10 @@ class _QrDetailState extends State<QrDetail> {
                   );
 
                   // Navigate to the home page using MaterialPageRoute
-                  Navigator.pushReplacement(
+                  Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(builder: (context) => MainScreen()),
+                        (Route<dynamic> route) => false, // Remove all previous routes
                   );
                 },
                 child: Text('Submit Complaint'),
