@@ -28,8 +28,10 @@ const itemSchema = new mongoose.Schema(
             ref: 'Complaint' 
         }],
         currentAuthority: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User'
+            // type: mongoose.Schema.Types.ObjectId,
+            // ref: 'User'
+            type: String,
+            enum: ['hab', 'secy']
         },
         hostel: {
             type: String
