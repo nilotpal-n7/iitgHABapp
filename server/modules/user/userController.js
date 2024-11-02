@@ -1,6 +1,7 @@
 const {User} = require('./userModel.js');
 
 const getUserData = async (req, res,next) => {
+    console.log(req);
     return res.json(req.user);
 };
 
@@ -51,7 +52,7 @@ const getUserComplaints = async (req, res) => {
     const { outlook } = req.params;
     console.log(outlook);
     try {
-        const user = await User.find({'email': outlook});
+        const user = await User.findOne({'email': outlook});
         console.log("finding")
         if (!user) {
             console.log(user);
@@ -63,7 +64,7 @@ const getUserComplaints = async (req, res) => {
         res.status(500).json({ message: 'Error fetching user complaints' });
         
     }
-};
+};  
 
 module.exports = {
     getUserData,

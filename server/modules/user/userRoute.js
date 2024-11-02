@@ -13,7 +13,7 @@ userRouter.delete('/:outlook', authenticateJWT, deleteUser);
 
 userRouter.put('/:outlook', authenticateJWT, updateUser);
 
-userRouter.get('/complaints/:outlook', authenticateJWT, getUserComplaints);
+userRouter.get('/complaints/:outlook',getUserComplaints);
 
 module.exports = userRouter;
 

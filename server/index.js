@@ -45,8 +45,8 @@ app.use('/api/items', itemRoute);
 // user route
 app.use('/api/users', userRoute);
 
-// complaint route
-//app.use('/api/complaints', complaintRoute); // enable after defining complaintRoute
+//complaint route
+app.use('/api/complaints', complaintRoute); // enable after defining complaintRoute
 
 //auth route
 app.use('/api/auth', authRoutes);
