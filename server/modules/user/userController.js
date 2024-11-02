@@ -52,7 +52,8 @@ const getUserComplaints = async (req, res) => {
     const { outlook } = req.params;
     console.log(outlook);
     try {
-        const user = await User.findOne({'email': outlook});
+        const user = await User.findOne({'email': outlook}).populate('complaints');
+        
         console.log("finding")
         if (!user) {
             console.log(user);
