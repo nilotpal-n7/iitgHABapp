@@ -14,10 +14,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String email = '';
   String roll = '';
   String branch = '';
-
-  TextEditingController hostelController = TextEditingController();
-  TextEditingController roomController = TextEditingController();
-  TextEditingController contactController = TextEditingController();
+  String hostel = '';
+  String room = '';
+  String contact = '';
 
   @override
   void initState() {
@@ -43,9 +42,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> loadProfileData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      hostelController.text = prefs.getString('hostel') ?? '';
-      roomController.text = prefs.getString('room') ?? '';
-      contactController.text = prefs.getString('contact') ?? '';
+      hostel = prefs.getString('hostel') ?? '';
+      room = prefs.getString('room') ?? '';
+      contact = prefs.getString('contact') ?? '';
     });
   }
 
@@ -55,17 +54,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.deepPurple,
         title: Text("Profile"),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => MainScreen()),
-              );
-            },
-            icon: Icon(Icons.check),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -92,11 +80,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       SizedBox(height: 16),
                       _buildProfileItem("Branch", branch),
                       SizedBox(height: 16),
-                      _buildProfileItem("Hostel", hostelController.text),
+                      _buildProfileItem("Hostel", hostel),
                       SizedBox(height: 16),
-                      _buildProfileItem("Room Number", roomController.text),
+                      _buildProfileItem("Room Number", room),
                       SizedBox(height: 16),
-                      _buildProfileItem("Contact", contactController.text),
+                      _buildProfileItem("Contact", contact),
                     ],
                   ),
                 ),
@@ -111,21 +99,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
             context,
             MaterialPageRoute(
               builder: (context) => EditProfileScreen(
-                hostel: hostelController.text,
-                room: roomController.text,
-                contact: contactController.text,
-                onSave: (hostel, room, contact) async {
+                hostel: hostel,
+                room: room,
+                contact: contact,
+                onSave: (updatedHostel, updatedRoom, updatedContact) async {
                   // Save the updated data locally using SharedPreferences
                   final prefs = await SharedPreferences.getInstance();
-                  prefs.setString('hostel', hostel);
-                  prefs.setString('room', room);
-                  prefs.setString('contact', contact);
+                  prefs.setString('hostel', updatedHostel);
+                  prefs.setString('room', updatedRoom);
+                  prefs.setString('contact', updatedContact);
 
 
                   setState(() {
-                    hostelController.text = hostel;
-                    roomController.text = room;
-                    contactController.text = contact;
+                    hostel = updatedHostel;
+                    room = updatedRoom;
+                    contact = updatedContact;
                   });
 
                   Navigator.pop(context);
@@ -147,7 +135,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         SizedBox(height: 4),
-        Text(value, style: TextStyle(fontSize: 16)),
+        Text(value.isNotEmpty ? value : 'Not provided', style: TextStyle(fontSize: 16)),
       ],
     );
   }

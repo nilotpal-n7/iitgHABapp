@@ -11,6 +11,43 @@ const getComplaintsOfItemsByHostel = async (req, res) => {
     
 }; // This function may be used by hab to get the complaints of all items in a hostel or by secy to get all complaints of all items in their hostel
 
+
+const getItemsWithComplaints = async (req, res) => {
+    const { hostel } = req.params;
+
+    try {
+        const itemsWithComplaints = await Item.find({
+          $and: [  
+            {'hostel': hostel},
+            { $or: [{'status': 'submitted'}, {'status': 'in_progress'}]}
+        ]
+    }); // fetches only those items which have a status as in_progress or submitted;
+
+        res.status(200).json(itemsWithComplaints);
+
+    } catch (err) {
+        res.status(500).json({message: 'Error fetching items'});
+    }
+    
+};
+
+const getItemsForHAB = async (req, res) => {
+    const { hostel } = req.params;
+
+    try {
+        const itemsWithHAB = await Item.find({
+            $and: [
+                {'hostel': hostel},
+                {'currentAuthority': 'hab'}
+            ]
+        });
+
+        res.status(200).json(itemsWithHAB);
+    } catch (err) {
+        res.status(500).json({message: 'Error fetching items for HAB'});
+    }
+};
+
 const createItem = async (req, res) => {
     try {
         const item = await Item.create(req.body);
@@ -83,5 +120,7 @@ module.exports = {
     deleteItem,
     updateItem,
     getItems,
-    getItem
+    getItem,
+    getItemsWithComplaints,
+    getItemsForHAB
 };

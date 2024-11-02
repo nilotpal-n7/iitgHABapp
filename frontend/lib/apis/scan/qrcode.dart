@@ -3,7 +3,6 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:frontend/utilities/permissionhandle/handler.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:frontend/screens/home_screen.dart';
 import 'package:frontend/apis/protected.dart';
 import 'package:frontend/screens/new_complaint_screen.dart';
 import 'package:frontend/constants/endpoints.dart';
@@ -40,7 +39,7 @@ class _QrScanState extends State<QrScan> {
       final response = await http.get(
         url,
         headers: {
-          "Authorization": "Bearer $header", // Include Bearer token
+          //"Authorization": "Bearer $header", // Include Bearer token
           "Content-Type": "application/json",
         },
       );
@@ -65,12 +64,12 @@ class _QrScanState extends State<QrScan> {
       final result = await barcode.rawValue;
       if (result != null) {
         print('Barcode found: $result');
-        controller.stop();
+        // Call the fetch function with the scanned QR code (serial number) imp
         await fetchItemBySerialNumber(result);
         Navigator.push(
             context,
             MaterialPageRoute(
-            builder: (context) => HomeScreen(),
+            builder: (context) => NewComplaintScreen(),
     ),
         );
       } else{
@@ -86,14 +85,8 @@ class _QrScanState extends State<QrScan> {
       body: MobileScanner(
         controller: controller,
         onDetect: onBarcodeDetected,
-
         // Call the onBarcodeDetected method on QR scan
       ),
     );
   }
 }
-
-
-
-
-

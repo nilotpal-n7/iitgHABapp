@@ -15,6 +15,10 @@ const complaintSchema = new mongoose.Schema(
         description: {
             type: String,
             required: true
+        },
+        createdOn: {
+            type: Date,
+            default: Date.now
         }
     }
 );
