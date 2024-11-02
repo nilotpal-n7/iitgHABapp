@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/screens/home_screen.dart'; // Import your HomeScreen
-import 'package:frontend/screens/my_complaints_screen.dart'; // Import your MyComplaintsScreen
-import 'package:frontend/screens/profile_screen.dart'; // Import your ProfileScreen
+import 'home_screen.dart'; // Import the HomeScreen
+import 'profile_screen.dart'; // Import the ProfileScreen
 
 class MainScreen extends StatefulWidget {
   @override
@@ -9,13 +8,11 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0; // Track the currently selected tab
+  int _selectedIndex = 0; // Default to the HomeScreen
 
-  // List of pages for each tab
-  final List<Widget> _pages = [
-    HomeScreen(), // Your Home screen
-    MyComplaintsScreen(), // Your My Complaints screen
-    ProfileScreen(), // Your Profile screen
+  final List<Widget> _screens = [
+    HomeScreen(),
+    ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -27,26 +24,21 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex], // Show the selected page
+      body: _screens[_selectedIndex], // Display the selected screen
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex, // Highlight the selected tab
-        onTap: _onItemTapped, // Handle tab selection
-        selectedItemColor: Colors.deepPurple, // Color for the selected item
-        unselectedItemColor: Colors.grey, // Color for unselected items
-        items: [
+        items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'My Complaints',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
           ),
         ],
+        currentIndex: _selectedIndex, // Current selected index
+        selectedItemColor: Colors.deepPurple,
+        onTap: _onItemTapped, // Handle tap on navigation items
       ),
     );
   }

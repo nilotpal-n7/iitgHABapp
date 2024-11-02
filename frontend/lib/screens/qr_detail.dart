@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/home_screen.dart';
 
+import 'main_screen.dart';
+
 class QrDetail extends StatefulWidget {
   final Map<String, dynamic> itemData;
 
@@ -81,7 +83,7 @@ class _QrDetailState extends State<QrDetail> {
                   // Navigate to the home page using MaterialPageRoute
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                    MaterialPageRoute(builder: (context) => MainScreen()),
                   );
                 },
                 child: Text('Submit Complaint'),
