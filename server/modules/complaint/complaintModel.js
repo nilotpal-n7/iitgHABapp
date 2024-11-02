@@ -19,6 +19,11 @@ const complaintSchema = new mongoose.Schema(
         createdOn: {
             type: Date,
             default: Date.now
+        },
+        status: {
+            type: String,
+            enum: ['submitted', 'in_progress', 'resolved'],
+            default: 'submitted'
         }
     }
 );
