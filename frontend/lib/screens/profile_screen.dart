@@ -121,6 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   prefs.setString('room', room);
                   prefs.setString('contact', contact);
 
+
                   setState(() {
                     hostelController.text = hostel;
                     roomController.text = room;

@@ -14,7 +14,7 @@ class _MainScreenState extends State<MainScreen> {
   // List of pages for each tab
   final List<Widget> _pages = [
     HomeScreen(), // Your Home screen
-    MyComplaintsScreen(), // Your My Complaints screen
+    // MyComplaintsScreen(), // Your My Complaints screen
     ProfileScreen(), // Your Profile screen
   ];
 
@@ -37,10 +37,6 @@ class _MainScreenState extends State<MainScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'My Complaints',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
