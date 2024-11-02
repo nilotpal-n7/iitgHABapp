@@ -2,6 +2,23 @@ const Complaint = require('./complaintModel');
 const Item = require('../item/itemModel');
 const {User} = require('../user/userModel');
 
+const getComplaint = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const complaint = await Complaint.findById(id);
+
+        if (!complaint) {
+            console.log("Complaint not found");
+            return;
+        }
+
+        res.status(200).json(complaint);
+    } catch (err) {
+        console.log(err);
+        res.status(501).json({message: "Error finding complaint"});
+    }
+};
+
 const submitComplaint = async (req, res) => {
     try {
         const complaint = await Complaint.create(req.body);
@@ -31,5 +48,6 @@ const updateComplaint = async (req, res) => {
 
 module.exports = {
     submitComplaint,
-    updateComplaint
+    updateComplaint,
+    getComplaint
 };
