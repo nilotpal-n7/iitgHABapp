@@ -25,6 +25,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     loadProfileData(); // Load saved profile data from SharedPreferences
   }
 
+  // This method ensures that data is reloaded whenever the screen reappears
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    loadProfileData(); // Refresh data when navigating back to this screen
+  }
+
   Future<void> fetchUserData() async {
     final userDetails = await fetchUserDetails();
     if (userDetails != null) {

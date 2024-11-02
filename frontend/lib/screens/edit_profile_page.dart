@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/apis/User/user.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import '../apis/protected.dart';
 import 'main_screen.dart';
 
@@ -82,6 +82,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
+        // Save updated data to SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        prefs.setString('hostel', hostelController.text);
+        prefs.setString('room', roomController.text);
+        prefs.setString('contact', contactController.text);
+
         widget.onSave(
           hostelController.text,
           roomController.text,
