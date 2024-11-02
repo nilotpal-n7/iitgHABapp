@@ -4,8 +4,8 @@ import 'package:frontend/utilities/permissionhandle/handler.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:frontend/apis/protected.dart';
-import 'package:frontend/screens/new_complaint_screen.dart';
 import 'package:frontend/constants/endpoints.dart';
+import '../../screens/qr_detail.dart';
 
 class QrScan extends StatefulWidget {
   const QrScan({super.key});
@@ -16,7 +16,6 @@ class QrScan extends StatefulWidget {
 
 class _QrScanState extends State<QrScan> {
   late MobileScannerController controller;
-
 
   @override
   void initState() {
@@ -30,23 +29,23 @@ class _QrScanState extends State<QrScan> {
     controller.dispose();
     super.dispose();
   }
+
   // Fetch the item data based on the scanned QR code and pass it to backend
-  Future<void> fetchItemBySerialNumber(String qrCode) async {
+  Future<Map<String, dynamic>?> fetchItemBySerialNumber(String qrCode) async {
     final header = await getAccessToken(); // Ensure you get the token properly
-    final url = Uri.parse('${itemEndpoint.getitem}${qrCode}');
+    final url = Uri.parse('${itemEndpoint.getitem}$qrCode');
 
     try {
       final response = await http.get(
         url,
         headers: {
-          //"Authorization": "Bearer $header", // Include Bearer token
           "Content-Type": "application/json",
         },
       );
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
-        print(data); // You can now use the fetched data in your Flutter app
+        return data; // Return the fetched data
       } else if (response.statusCode == 404) {
         print('Item not found');
       } else {
@@ -55,6 +54,7 @@ class _QrScanState extends State<QrScan> {
     } catch (e) {
       print('Error: $e');
     }
+    return null; // Return null if the fetch fails
   }
 
   // Handle QR code detection
@@ -64,16 +64,22 @@ class _QrScanState extends State<QrScan> {
       final result = await barcode.rawValue;
       if (result != null) {
         print('Barcode found: $result');
-        // Call the fetch function with the scanned QR code (serial number) imp
-        await fetchItemBySerialNumber(result);
-        Navigator.push(
+        controller.stop();
+        // Call the fetch function with the scanned QR code (serial number)
+        var itemData = await fetchItemBySerialNumber(result);
+
+        if (itemData != null) {
+          Navigator.push(
             context,
             MaterialPageRoute(
-            builder: (context) => NewComplaintScreen(),
-    ),
-        );
-      } else{
-        print('no qr code');
+              builder: (context) => QrDetail(itemData: itemData), // Pass the data here
+            ),
+          );
+        } else {
+          print('Failed to fetch item data.');
+        }
+      } else {
+        print('No QR code');
       }
     }
   }
@@ -84,8 +90,7 @@ class _QrScanState extends State<QrScan> {
       appBar: AppBar(title: Text('QR Scanner')),
       body: MobileScanner(
         controller: controller,
-        onDetect: onBarcodeDetected,
-        // Call the onBarcodeDetected method on QR scan
+        onDetect: onBarcodeDetected, // Call the onBarcodeDetected method on QR scan
       ),
     );
   }
