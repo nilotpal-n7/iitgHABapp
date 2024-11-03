@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:frontend/apis/protected.dart';
 import 'package:intl/intl.dart'; // Import for date formatting
 
 class ComplaintDetailScreen extends StatelessWidget {
@@ -8,6 +9,7 @@ class ComplaintDetailScreen extends StatelessWidget {
   final String description;
   final String status;
   final String createdOn;
+  final Function(String) onDelete; // Callback for deletion
 
   const ComplaintDetailScreen({
     Key? key,
@@ -15,14 +17,20 @@ class ComplaintDetailScreen extends StatelessWidget {
     required this.description,
     required this.status,
     required this.createdOn,
+    required this.onDelete, // Initialize the callback
+
   }) : super(key: key);
 
   // Function to delete the complaint
   Future<void> deleteComplaint(BuildContext context) async {
-    final url = 'http://192.168.195.85:3000/api/users/complaints/$id'; // URL to delete the complaint
-    final response = await http.delete(Uri.parse(url));
+    final header = await getAccessToken();
+    final url = 'http://192.168.195.85:3000/api/complaints/$id';
+    print(id);// URL to delete the complaint
+    final response = await http.delete(Uri.parse(url),
+    headers: {"Authorization": "Bearer $header"});
 
     if (response.statusCode == 200) {
+      onDelete(id); // Call the delete callback to update the HomeScreen
       Navigator.pop(context); // Go back to the previous screen
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Complaint deleted successfully')),
@@ -93,9 +101,10 @@ class ComplaintDetailScreen extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   // Implement your POST request logic here
+
                   // For example, you could call a function to handle submission
                 },
-                child: Text('Submit Request'),
+                child: Text('Submit Request to HAB'),
                 style: ElevatedButton.styleFrom(),
               ),
             ],

@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
-      home: loginScreen(),
+      home: isLoggedIn?MainScreen():loginScreen(),
       builder: EasyLoading.init(),
     );
   }

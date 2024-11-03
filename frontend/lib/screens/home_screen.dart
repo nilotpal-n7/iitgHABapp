@@ -58,7 +58,12 @@ class _HomeScreenState extends State<HomeScreen> {
       print('Error fetching complaints: $e');
     }
   }
-
+  // Function to remove a complaint by ID
+  void removeComplaint(String id) {
+    setState(() {
+      complaints.removeWhere((complaint) => complaint['_id'] == id);
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,6 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             description: complaint['description'] ?? 'No description',
                             status: complaint['status'] ?? 'Unknown',
                             createdOn: complaint['createdOn']?.toString() ?? '',
+                            onDelete: removeComplaint, // Pass the delete callback
                           ),
                         ),
                       );
