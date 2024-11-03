@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return; // Handle the case when email or token is not found
     }
 
-    final url = 'http://192.168.195.85:3000/api/users/complaints/$email';
+    final url = 'http://172.20.10.2:3000/api/users/complaints/$email';
 
     try {
       print('Fetching complaints...');

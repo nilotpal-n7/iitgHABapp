@@ -21,7 +21,11 @@ class _QrScanState extends State<QrScan> {
   void initState() {
     super.initState();
     controller = MobileScannerController();
-    permission().requestCameraPermission();
+
+    // Request permission and start the camera if granted
+    PermissionHandler().requestCameraPermission(() {
+      controller.start();
+    });
   }
 
   @override
@@ -30,9 +34,9 @@ class _QrScanState extends State<QrScan> {
     super.dispose();
   }
 
-  // Fetch the item data based on the scanned QR code and pass it to backend
+
   Future<Map<String, dynamic>?> fetchItemBySerialNumber(String qrCode) async {
-    final header = await getAccessToken(); // Ensure you get the token properly
+    final header = await getAccessToken();
     final url = Uri.parse('${itemEndpoint.getitem}$qrCode');
 
     try {
@@ -40,6 +44,7 @@ class _QrScanState extends State<QrScan> {
         url,
         headers: {
           "Content-Type": "application/json",
+          "Authorization": "Bearer $header", // Pass token if required
         },
       );
 
@@ -54,7 +59,7 @@ class _QrScanState extends State<QrScan> {
     } catch (e) {
       print('Error: $e');
     }
-    return null; // Return null if the fetch fails
+    return null;
   }
 
   // Handle QR code detection
