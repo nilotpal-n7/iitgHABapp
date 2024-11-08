@@ -4,6 +4,8 @@ import 'package:frontend/utilities/permissionhandle/handler.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:frontend/apis/protected.dart';
+import 'package:flutter_vibrate/flutter_vibrate.dart';
+import 'package:frontend/widgets/common/cornerQR.dart';
 import 'package:frontend/constants/endpoints.dart';
 import '../../screens/qr_detail.dart';
 
@@ -65,37 +67,59 @@ class _QrScanState extends State<QrScan> {
   // Handle QR code detection
   void onBarcodeDetected(BarcodeCapture capture) async {
     final List<Barcode> barcodes = capture.barcodes;
+    controller.stop();
     for (final barcode in barcodes) {
-      final result = await barcode.rawValue;
+      final result = barcode.rawValue;
       if (result != null) {
         print('Barcode found: $result');
-        controller.stop();
-        // Call the fetch function with the scanned QR code (serial number)
-        var itemData = await fetchItemBySerialNumber(result);
+        // Stop the scanner after a successful scan, but only after processing this barcode
 
-        if (itemData != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => QrDetail(itemData: itemData), // Pass the data here
-            ),
-          );
-        } else {
-          print('Failed to fetch item data.');
+        // Provide feedback using vibration
+
+        try {
+          // Fetch the item data using the serial number (barcode result)
+          var itemData = await fetchItemBySerialNumber(result);
+          if (itemData != null) {
+            if (await Vibrate.canVibrate) {
+              Vibrate.feedback(FeedbackType.success);
+            }
+            // Navigate to the details page with the fetched item data
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => QrDetail(itemData: itemData), // Pass the item data
+              ),
+            );
+          } else {
+            print('Failed to fetch item data.');
+          }
+        } catch (e) {
+          // Handle any errors that might occur during fetch
+          print('Error fetching item data: $e');
         }
       } else {
-        print('No QR code');
+        print('No QR code found.');
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('QR Scanner')),
-      body: MobileScanner(
-        controller: controller,
-        onDetect: onBarcodeDetected, // Call the onBarcodeDetected method on QR scan
+      body: Stack(
+        children: [ MobileScanner(
+          controller: controller,
+          onDetect: onBarcodeDetected, // Call the onBarcodeDetected method on QR scan
+        ),
+          Center(
+            child: CustomPaint(
+              size: Size(250,250),
+              painter: CornerPainter(),
+            )
+          ),
+      ],
       ),
     );
   }

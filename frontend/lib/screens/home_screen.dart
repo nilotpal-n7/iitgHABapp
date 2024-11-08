@@ -24,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchComplaints(); // Fetch complaints when the page is opened
   }
 
-  void fetchComplaints() async {
+  Future<void> fetchComplaints() async {
     final prefs = await SharedPreferences.getInstance();
     email = prefs.getString('email'); // Retrieve email
     token = prefs.getString('access_token'); // Retrieve JWT token
