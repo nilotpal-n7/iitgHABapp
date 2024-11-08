@@ -18,6 +18,7 @@ class QrScan extends StatefulWidget {
 
 class _QrScanState extends State<QrScan> {
   late MobileScannerController controller;
+  bool _hasScanned = false; // Flag to track if a scan has been processed
 
   @override
   void initState() {
@@ -36,7 +37,6 @@ class _QrScanState extends State<QrScan> {
     super.dispose();
   }
 
-
   Future<Map<String, dynamic>?> fetchItemBySerialNumber(String qrCode) async {
     final header = await getAccessToken();
     final url = Uri.parse('${itemEndpoint.getitem}$qrCode');
@@ -46,13 +46,13 @@ class _QrScanState extends State<QrScan> {
         url,
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer $header", // Pass token if required
+          "Authorization": "Bearer $header",
         },
       );
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
-        return data; // Return the fetched data
+        return data;
       } else if (response.statusCode == 404) {
         print('Item not found');
       } else {
@@ -66,36 +66,32 @@ class _QrScanState extends State<QrScan> {
 
   // Handle QR code detection
   void onBarcodeDetected(BarcodeCapture capture) async {
+    if (_hasScanned) return; // Prevent further processing if already scanned
+    _hasScanned = true; // Set the flag to indicate processing has started
+
     final List<Barcode> barcodes = capture.barcodes;
-    controller.stop();
+
     for (final barcode in barcodes) {
       final result = barcode.rawValue;
       if (result != null) {
         print('Barcode found: $result');
-        // Stop the scanner after a successful scan, but only after processing this barcode
+        controller.stop();
 
-        // Provide feedback using vibration
-
-        try {
-          // Fetch the item data using the serial number (barcode result)
-          var itemData = await fetchItemBySerialNumber(result);
-          if (itemData != null) {
-            if (await Vibrate.canVibrate) {
-              Vibrate.feedback(FeedbackType.success);
-            }
-            // Navigate to the details page with the fetched item data
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => QrDetail(itemData: itemData), // Pass the item data
-              ),
-            );
-          } else {
-            print('Failed to fetch item data.');
+        // Fetch the item data using the serial number (barcode result)
+        var itemData = await fetchItemBySerialNumber(result);
+        if (itemData != null) {
+          if (await Vibrate.canVibrate) {
+            Vibrate.feedback(FeedbackType.success);
           }
-        } catch (e) {
-          // Handle any errors that might occur during fetch
-          print('Error fetching item data: $e');
+          // Navigate to the details page with the fetched item data
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => QrDetail(itemData: itemData),
+            ),
+          );
+        } else {
+          print('Failed to fetch item data.');
         }
       } else {
         print('No QR code found.');
@@ -103,24 +99,26 @@ class _QrScanState extends State<QrScan> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('QR Scanner')),
       body: Stack(
-        children: [ MobileScanner(
-          controller: controller,
-          onDetect: onBarcodeDetected, // Call the onBarcodeDetected method on QR scan
-        ),
+        children: [
+          MobileScanner(
+            controller: controller,
+            onDetect: onBarcodeDetected,
+          ),
           Center(
             child: CustomPaint(
-              size: Size(250,250),
+              size: Size(250, 250),
               painter: CornerPainter(),
-            )
+            ),
           ),
-      ],
+        ],
       ),
     );
   }
 }
+
+
