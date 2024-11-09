@@ -18,7 +18,7 @@ const itemSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['submitted', 'in_progress', 'resolved']  
+            enum: ['unresolved', 'resolved']  
         },
         complainUpdate: {
             type: String
@@ -36,7 +36,10 @@ const itemSchema = new mongoose.Schema(
         hostel: {
             type: String
         }
-        
+        ,
+        comment:{
+            type :String
+        }
     }
 
 );

@@ -19,7 +19,7 @@ const getItemsWithComplaints = async (req, res) => {
         const itemsWithComplaints = await Item.find({
           $and: [  
             {'hostel': hostel},
-            { $or: [{'status': 'submitted'}, {'status': 'in_progress'}]}
+         //   { $or: [{'status': 'submitted'}, {'status': 'in_progress'}]}
         ]
     }); // fetches only those items which have a status as in_progress or submitted;
 
@@ -103,7 +103,7 @@ const getItem = async (req, res) => {
     }
     console.log("qrcode is:", qr);
     try {
-        const item = await Item.findOne({qrCode: qr});
+        const item = await Item.findOne({qrCode: qr}).populate('complaints');
         if (!item) {
             return res.status(404).json({ message: 'Item not found' });
         }
