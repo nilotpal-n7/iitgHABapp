@@ -31,7 +31,8 @@ const itemSchema = new mongoose.Schema(
             // type: mongoose.Schema.Types.ObjectId,
             // ref: 'User'
             type: String,
-            enum: ['hab', 'secy']
+            enum: ['hab', 'secy'],
+            default: 'secy'
         },
         hostel: {
             type: String
