@@ -117,11 +117,38 @@ class _ItemByQrScreenState extends State<ItemByQrScreen> {
     _commentController.clear();
   }
 
-  Future<void> _resolveItem() async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Item marked as resolved"), duration: Duration(seconds: 1)),
-    );
-  }
+    Future<void> updateItem(String itemId) async {
+      final url = Uri.parse('http://your-backend-url.com/items/$itemId');  // Adjust the URL as needed
+
+      // Prepare the data to send
+      final Map<String, dynamic> requestBody = {
+        'status': 'resolved',  // New status
+        'complaints': []       // Clear complaints
+      };
+
+      try {
+        final response = await http.put(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode(requestBody),
+        );
+
+        if (response.statusCode == 200) {
+          print('Item updated successfully: ${response.body}');
+        } else if (response.statusCode == 404) {
+          print('Item not found');
+        } else {
+          print('Failed to update item: ${response.body}');
+        }
+      } catch (e) {
+        print('Error updating item: $e');
+      }
+    }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -193,10 +220,9 @@ class _ItemByQrScreenState extends State<ItemByQrScreen> {
             ),
             SizedBox(height: 8),
             // Resolve Button
-            ElevatedButton(
-              onPressed: _resolveItem,
-              child: Text("Resolved"),
-            ),
+
+            SizedBox(height: 8,),
+
             SizedBox(height: 16),
             Text("Complaints:", style: TextStyle(fontWeight: FontWeight.bold)),
             if (item.complaints.isNotEmpty)

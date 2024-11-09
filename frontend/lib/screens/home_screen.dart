@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/screens/hab_home_screen.dart';
-import 'package:frontend/screens/secy_home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:frontend/screens/ComplaintDetails.dart';
+import 'secy_home_screen.dart';
 import 'package:frontend/apis/scan/qrcode.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -37,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    final url = 'http://192.168.62.85:3000/api/users/complaints/$email';
+    final url = 'https://iitgcomplaintapp.onrender.com/api/users/complaints/$email';
 
     try {
       print('Fetching complaints...');
@@ -106,63 +105,39 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             SizedBox(height: 10),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: () => updateFilter("All"),
-                    child: Text('All'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: filter == "All" ? Colors.deepPurple : Colors.grey,
-                    ),
-                  ),ElevatedButton(
-                    onPressed: () => updateFilter("Submitted"),
-                    child: Text('Submitted'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: filter == "Submitted" ? Colors.deepPurple : Colors.grey,
-                    ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () => updateFilter("All"),
+                  child: Text('All'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: filter == "All" ? Colors.deepPurple : Colors.grey,
                   ),
-                  ElevatedButton(
-                    onPressed: () => updateFilter("In Progress"),
-                    child: Text('In Progress'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: filter == "In Progress" ? Colors.deepPurple : Colors.grey,
-                    ),
+                ),ElevatedButton(
+                  onPressed: () => updateFilter("Submitted"),
+                  child: Text('Submitted'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: filter == "Submitted" ? Colors.deepPurple : Colors.grey,
                   ),
-                  ElevatedButton(
-                    onPressed: () => updateFilter("Resolved"),
-                    child: Text('Resolved'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: filter == "Resolved" ? Colors.deepPurple : Colors.grey,
-                    ),
+                ),
+                ElevatedButton(
+                  onPressed: () => updateFilter("In Progress"),
+                  child: Text('In Progress'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: filter == "In Progress" ? Colors.deepPurple : Colors.grey,
                   ),
-                ],
-              ),
+                ),
+                ElevatedButton(
+                  onPressed: () => updateFilter("Resolved"),
+                  child: Text('Resolved'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: filter == "Resolved" ? Colors.deepPurple : Colors.grey,
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 10),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: (){
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => HabHomeScreen()),  // Navigate to the QR scanner screen
-                  );
-                },
-                child: Text('HAB'),
-              ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: (){
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SecyHomeScreen()),  // Navigate to the QR scanner screen
-                );
-              },
-              child: Text('secy'),
-            ),
-            SizedBox(height: 20),
             Expanded(
               child: filteredComplaints.isEmpty
                   ? Center(
@@ -228,6 +203,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   );
                 },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SecyHomeScreen(), // Navigate to OtherScreen
+                    ),
+                  );
+                },
+                child: Text("Go to Other Page"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                ),
               ),
             ),
           ],
