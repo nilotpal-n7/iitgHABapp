@@ -1,3 +1,4 @@
+const Complaint = require('../complaint/complaintModel');
 const Item = require('./itemModel');
 
 const getComplaintsOfItemsByHostel = async (req, res) => {
@@ -114,6 +115,82 @@ const getItem = async (req, res) => {
     }
 }
 
+const resolveItem = async (req, res) => {
+    const { itemId } = req.params;
+
+    console.log(itemId);
+
+    if (!itemId) {
+        return res.status(400).json({ message: 'Item ID is required'} );
+    }
+
+    try {
+        const item = await Item.findById(itemId);
+
+        if (!item) {
+            return res.status(404).json({ message: 'Item not found'} ); 
+        }
+
+        await Complaint.updateMany(
+            { _id: { $in: item.complaints }},
+            { status: 'resolved' }
+        );
+
+        item.status = 'resolved';
+
+        item.complaints = [];
+
+        await item.save();
+
+        res.status(200).json({
+            message: 'Item resolved successfully',
+            item
+        });
+
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: 'Error occured in resolving item' });
+    }
+};
+
+const inProgressItem = async (req, res) => {
+    const { itemId } = req.params;
+
+    if (!itemId) {
+        return res.status(400).json({ message: 'Item ID is required'} );
+    }
+
+    try {
+        const item = await Item.findById(itemId);
+
+        if (!item) {
+            return res.status(404).json({ message: 'Item not found'} ); 
+        }
+
+        await Complaint.updateMany(
+            { _id: { $in: item.complaints }},
+            { status: 'in_progress' }
+        );
+
+        item.status = 'in_progress';
+
+        item.complaints = [];
+
+        await item.save();
+
+        res.status(200).json({
+            message: 'Item in progress successfully',
+            item
+        });
+
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: 'Error occured in in progress item' });
+    }
+};
+
 module.exports = {
     getComplaintsOfItemsByHostel,
     createItem,
@@ -122,5 +199,7 @@ module.exports = {
     getItems,
     getItem,
     getItemsWithComplaints,
-    getItemsForHAB
+    getItemsForHAB,
+    resolveItem,
+    inProgressItem
 };

@@ -1,7 +1,7 @@
 const express = require('express');
 const authenticateJWT = require('../../middleware/authenticateJWT.js');
 
-const { getComplaintsOfItemsByHostel, createItem, deleteItem, updateItem, getItems, getItem, getItemsWithComplaints, getItemsForHAB } = require('./itemController');
+const { getComplaintsOfItemsByHostel, createItem, deleteItem, updateItem, getItems, getItem, getItemsWithComplaints, getItemsForHAB, resolveItem, inProgressItem } = require('./itemController');
 
 const itemRouter = express.Router();
 
@@ -20,5 +20,9 @@ itemRouter.get('/:qr', getItem);
 itemRouter.get('/hostelcomplaints/:hostel', getItemsWithComplaints);
 
 itemRouter.get('/hab/:hostel', getItemsForHAB);
+
+itemRouter.get('/resolve/:itemId', resolveItem);
+
+itemRouter.get('/inprogress/:itemId', inProgressItem);
 
 module.exports = itemRouter;
