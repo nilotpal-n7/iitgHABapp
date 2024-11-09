@@ -18,7 +18,7 @@ class QrScan extends StatefulWidget {
 
 class _QrScanState extends State<QrScan> {
   late MobileScannerController controller;
-  bool _hasScanned = false; // Flag to track if a scan has been processed
+  bool _hasScanned = false; // Flag to track if a scan has been processed VERY IMP CONCEPT like this happens it scans twice maybe idk
 
   @override
   void initState() {
@@ -83,6 +83,7 @@ class _QrScanState extends State<QrScan> {
           if (await Vibrate.canVibrate) {
             Vibrate.feedback(FeedbackType.success);
           }
+          print(itemData);
           // Navigate to the details page with the fetched item data
           Navigator.pushReplacement(
             context,

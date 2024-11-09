@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/home_screen.dart';
+import 'package:http/http.dart' as http;
+import 'package:frontend/apis/protected.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 import 'main_screen.dart';
 
@@ -16,10 +20,74 @@ class _QrDetailState extends State<QrDetail> {
   final TextEditingController _complaintNameController = TextEditingController();
   final TextEditingController _complaintDescriptionController = TextEditingController();
 
+
+  final _formKey = GlobalKey<FormState>(); // Key for form validation
+  String complaintName = '';
+  String complaintDescription = '';
+  bool _isSubmitting = false; // For loading state
+
+  // Function to submit the complaint to the backend
+  Future<void> submitComplaint() async {
+    setState(() {
+      _isSubmitting = true; // Show loading indicator
+    });
+    print('submitting ');
+    final prefs = await SharedPreferences.getInstance();
+    final token = await getAccessToken(); // Retrieve token here
+    if (token == 'error') {
+      _showSnackbar('Error: Authentication required.');
+      return;
+    }
+    // Replace with your actual backend URL
+    final url = Uri.parse('http://192.168.62.85:3000/api/complaints/');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json",
+          'Authorization': 'Bearer $token',},
+        body: jsonEncode({
+          "title": complaintName,
+          "description": complaintDescription,
+          "date": DateTime.now().toIso8601String(),
+          "status": "submitted",
+          "user" : prefs.getString('userID'),
+          "item" : widget.itemData['_id'] ?? 'N/A',
+        }),
+      );
+      print("submitting complaint");
+      if (response.statusCode == 201) {
+        // Successfully posted complaint
+        Navigator.pop(context, true); // Pop back with a success result
+      } else {
+        // Handle error by showing a message
+        _showSnackbar('Failed to submit the complaint. Please try again.');
+      }
+    } catch (e) {
+      // Handle network or server errors
+      _showSnackbar('Error: Could not connect to the server.');
+    } finally {
+      setState(() {
+        _isSubmitting = false; // Reset loading state
+      });
+    }
+  }
+
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+
+
+
   @override
   Widget build(BuildContext context) {
     // Extracting the relevant data from itemData
     String qrCode = widget.itemData['qrCode'] ?? 'N/A';
+    String itemid = widget.itemData['_id'] ?? 'N/A';
+    print("item id is $itemid");
+
     String name = widget.itemData['name'] ?? 'N/A';
     String location = widget.itemData['location'] ?? 'N/A';
     List<dynamic> complaints = widget.itemData['complaints'] ?? [];
@@ -62,14 +130,15 @@ class _QrDetailState extends State<QrDetail> {
 
               SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   // Handle the complaint submission here
-                  String complaintName = _complaintNameController.text;
-                  String complaintDescription = _complaintDescriptionController.text;
+                complaintName = _complaintNameController.text;
+                complaintDescription = _complaintDescriptionController.text;
 
                   // Add logic to save or send the complaint details
                   print('Complaint Name: $complaintName');
                   print('Complaint Description: $complaintDescription');
+                  await submitComplaint();
 
                   // Clear the fields after submission
                   _complaintNameController.clear();

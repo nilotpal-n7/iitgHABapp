@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/apis/User/user.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:frontend/apis/protected.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../apis/protected.dart';
 import 'main_screen.dart';
@@ -51,6 +52,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         email = userDetails['email'] ?? '';
         roll = userDetails['roll'] ?? '';
         branch = userDetails['branch'] ?? '';
+
       });
     } else {
       print("Failed to load user details.");
@@ -77,16 +79,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           'phoneNumber': contactController.text,
         }),
       );
+      var resp = response.body;
 
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
 
+
       if (response.statusCode == 200) {
         // Save updated data to SharedPreferences
+        final decodedResp = jsonDecode(resp);
+        final userID = decodedResp['_id'];
         final prefs = await SharedPreferences.getInstance();
         prefs.setString('hostel', hostelController.text);
         prefs.setString('room', roomController.text);
         prefs.setString('contact', contactController.text);
+
+        prefs.setString('userID', userID);
 
         widget.onSave(
           hostelController.text,
