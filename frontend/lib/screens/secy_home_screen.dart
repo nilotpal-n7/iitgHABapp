@@ -40,6 +40,12 @@ class _SecyHomeScreenState extends State<SecyHomeScreen> {
     }
   }
 
+  Future<void> forwardComplaintToHAB(String qrCode) async {
+
+    print('Forwarding complaint with QR Code: $qrCode to HAB');
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,13 +61,37 @@ class _SecyHomeScreenState extends State<SecyHomeScreen> {
           final complaint = complaints[index];
           return ListTile(
             title: Text(complaint['qrCode'] ?? 'No QR Code'),
-            subtitle: Text(complaint['description'] ?? 'No description'),
-            trailing: Text(
-              complaint['status'] ?? 'Unknown',
-              style: TextStyle(
-                color: complaint['status'] == 'resolved'
-                    ? Colors.green
-                    : Colors.orange,
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(complaint['description'] ?? 'No description'),
+                SizedBox(height: 5),
+                Text(
+                  'Status: ${complaint['status'] ?? 'Unknown'}',
+                  style: TextStyle(
+                    color: complaint['status'] == 'resolved'
+                        ? Colors.green
+                        : Colors.orange,
+                  ),
+                ),
+              ],
+            ),
+            trailing: Container(
+              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.blueAccent,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: TextButton(
+                onPressed: () {
+                  forwardComplaintToHAB(complaint['qrCode']);
+                },
+                child: Text(
+                  'Forward to HAB',
+                  style: TextStyle(
+                    color: Colors.white, // Text color of the button
+                  ),
+                ),
               ),
             ),
             onTap: () {
