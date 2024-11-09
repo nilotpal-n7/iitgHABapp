@@ -21,6 +21,8 @@ const getComplaint = async (req, res) => {
 
 const submitComplaint = async (req, res) => {
     try {
+        console.log("usadhgiuashd")
+
         const complaint = await Complaint.create(req.body);
         const item = await Item.findById(req.body.item);
         const user = await User.findById(req.body.user);
@@ -30,7 +32,6 @@ const submitComplaint = async (req, res) => {
 
         await item.save();
         await user.save();
-
         res.status(201).json({ message: 'Complaint submitted successfully', complaint });
     } catch (err) {
         res.status(500).json({ message: 'Error submitting complaint', error: err.message });

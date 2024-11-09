@@ -6,7 +6,7 @@ const authenticateJWT = require('../../middleware/authenticateJWT');
 
 const { submitComplaint, updateComplaint, getComplaint, deleteComplaint } = require('./complaintController');
 
-complaintRouter.post('/', submitComplaint);
+complaintRouter.post('/',authenticateJWT, submitComplaint);
 
 complaintRouter.put('/:id', authenticateJWT, updateComplaint);
 
