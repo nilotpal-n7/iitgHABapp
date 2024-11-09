@@ -22,7 +22,7 @@ class _SecyHomeScreenState extends State<SecyHomeScreen> {
 
   Future<void> fetchComplaints() async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.193.47:3000/api/items/hostelcomplaints/Lohit'));
+      final response = await http.get(Uri.parse('https://iitgcomplaintapp.onrender.com/api/items/hostelcomplaints/Lohit'));
 
       if (response.statusCode == 200) {
         setState(() {

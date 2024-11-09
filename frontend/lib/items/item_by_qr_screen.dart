@@ -36,7 +36,7 @@ class _ItemByQrScreenState extends State<ItemByQrScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.193.47:3000/api/items/$qrCode'),
+        Uri.parse('https://iitgcomplaintapp.onrender.com/api/items/$qrCode'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
@@ -89,7 +89,7 @@ class _ItemByQrScreenState extends State<ItemByQrScreen> {
 
     try {
       final response = await http.put(
-        Uri.parse('http://192.168.193.47:3000/api/items/${widget.qrCode}'),
+        Uri.parse('https://iitgcomplaintapp.onrender.com/api/items/${widget.qrCode}'),
         headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
         body: json.encode({'comment': comment}),
       );

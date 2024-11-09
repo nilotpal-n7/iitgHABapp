@@ -19,6 +19,6 @@ itemRouter.get('/:qr', getItem);
 
 itemRouter.get('/hostelcomplaints/:hostel', getItemsWithComplaints);
 
-itemRouter.get('/hab/:hostel', authenticateJWT, getItemsForHAB);
+itemRouter.get('/hab/:hostel', getItemsForHAB);
 
 module.exports = itemRouter;

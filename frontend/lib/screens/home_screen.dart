@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/hab_home_screen.dart';
+import 'package:frontend/screens/secy_home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -104,39 +106,63 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () => updateFilter("All"),
-                  child: Text('All'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: filter == "All" ? Colors.deepPurple : Colors.grey,
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () => updateFilter("All"),
+                    child: Text('All'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: filter == "All" ? Colors.deepPurple : Colors.grey,
+                    ),
+                  ),ElevatedButton(
+                    onPressed: () => updateFilter("Submitted"),
+                    child: Text('Submitted'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: filter == "Submitted" ? Colors.deepPurple : Colors.grey,
+                    ),
                   ),
-                ),ElevatedButton(
-                  onPressed: () => updateFilter("Submitted"),
-                  child: Text('Submitted'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: filter == "Submitted" ? Colors.deepPurple : Colors.grey,
+                  ElevatedButton(
+                    onPressed: () => updateFilter("In Progress"),
+                    child: Text('In Progress'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: filter == "In Progress" ? Colors.deepPurple : Colors.grey,
+                    ),
                   ),
-                ),
-                ElevatedButton(
-                  onPressed: () => updateFilter("In Progress"),
-                  child: Text('In Progress'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: filter == "In Progress" ? Colors.deepPurple : Colors.grey,
+                  ElevatedButton(
+                    onPressed: () => updateFilter("Resolved"),
+                    child: Text('Resolved'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: filter == "Resolved" ? Colors.deepPurple : Colors.grey,
+                    ),
                   ),
-                ),
-                ElevatedButton(
-                  onPressed: () => updateFilter("Resolved"),
-                  child: Text('Resolved'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: filter == "Resolved" ? Colors.deepPurple : Colors.grey,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
             SizedBox(height: 10),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: (){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HabHomeScreen()),  // Navigate to the QR scanner screen
+                  );
+                },
+                child: Text('HAB'),
+              ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: (){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SecyHomeScreen()),  // Navigate to the QR scanner screen
+                );
+              },
+              child: Text('secy'),
+            ),
+            SizedBox(height: 20),
             Expanded(
               child: filteredComplaints.isEmpty
                   ? Center(
