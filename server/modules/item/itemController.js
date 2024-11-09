@@ -38,7 +38,7 @@ const getItemsForHAB = async (req, res) => {
         const itemsWithHAB = await Item.find({
             $and: [
                 {'hostel': hostel},
-               // {'currentAuthority': 'hab'}
+                {'currentAuthority': 'hab'}
             ]
         });
 
