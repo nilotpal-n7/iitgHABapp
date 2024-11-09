@@ -20,7 +20,7 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
     });
 
     // Replace with your actual backend URL
-    final url = Uri.parse('http://192.168.195.85:3000/api/complaints/');
+    final url = Uri.parse('http://192.168.62.85:3000/api/complaints/');
 
     try {
       final response = await http.post(
@@ -33,7 +33,7 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
           "status": "submitted"
         }),
       );
-
+     print("submitting complaint");
       if (response.statusCode == 201) {
         // Successfully posted complaint
         Navigator.pop(context, true); // Pop back with a success result

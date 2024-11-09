@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:frontend/screens/ComplaintDetails.dart';
 import 'package:frontend/apis/scan/qrcode.dart';
-// Import the new screen
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,25 +15,27 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String? email;
   String? token;
-  List<dynamic> complaints = []; // List to hold complaints
+  List<dynamic> complaints = [];
+  List<dynamic> filteredComplaints = [];
+  String filter = "All"; // Track the current filter
 
   @override
   void initState() {
     super.initState();
-    fetchComplaints(); // Fetch complaints when the page is opened
+    fetchComplaints();
   }
 
   Future<void> fetchComplaints() async {
     final prefs = await SharedPreferences.getInstance();
-    email = prefs.getString('email'); // Retrieve email
-    token = prefs.getString('access_token'); // Retrieve JWT token
+    email = prefs.getString('email');
+    token = prefs.getString('access_token');
 
     if (email == null || token == null) {
       print('Email or token is null');
-      return; // Handle the case when email or token is not found
+      return;
     }
 
-    final url = 'http://172.20.10.2:3000/api/users/complaints/$email';
+    final url = 'http://192.168.62.85:3000/api/users/complaints/$email';
 
     try {
       print('Fetching complaints...');
@@ -48,9 +49,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-        complaints = data['complaints'] ?? []; // Extract complaints from the response
-        print('Complaints fetched: $complaints');
-        setState(() {}); // Update the UI
+        complaints = data['complaints'] ?? [];
+        applyFilter(); // Apply filter on fetched complaints
       } else {
         print('Failed to load complaints: ${response.statusCode}');
       }
@@ -58,12 +58,42 @@ class _HomeScreenState extends State<HomeScreen> {
       print('Error fetching complaints: $e');
     }
   }
-  // Function to remove a complaint by ID
+
+  void applyFilter() {
+    setState(() {
+      if (filter == "All") {
+        filteredComplaints = complaints;
+      }else if (filter == "Submitted") {
+        filteredComplaints = complaints
+            .where((complaint) => complaint['status'] == 'submitted')
+            .toList();
+      }
+      else if (filter == "In Progress") {
+        filteredComplaints = complaints
+            .where((complaint) => complaint['status'] == 'In Progress')
+            .toList();
+      } else if (filter == "Resolved") {
+        filteredComplaints = complaints
+            .where((complaint) => complaint['status'] == 'resolved')
+            .toList();
+      }
+    });
+  }
+
+  void updateFilter(String newFilter) {
+    setState(() {
+      filter = newFilter;
+      applyFilter();
+    });
+  }
+
   void removeComplaint(String id) {
     setState(() {
       complaints.removeWhere((complaint) => complaint['_id'] == id);
+      applyFilter();
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,33 +103,64 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            SizedBox(height: 20),
+            SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () => updateFilter("All"),
+                  child: Text('All'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: filter == "All" ? Colors.deepPurple : Colors.grey,
+                  ),
+                ),ElevatedButton(
+                  onPressed: () => updateFilter("Submitted"),
+                  child: Text('Submitted'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: filter == "Submitted" ? Colors.deepPurple : Colors.grey,
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () => updateFilter("In Progress"),
+                  child: Text('In Progress'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: filter == "In Progress" ? Colors.deepPurple : Colors.grey,
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () => updateFilter("Resolved"),
+                  child: Text('Resolved'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: filter == "Resolved" ? Colors.deepPurple : Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 10),
             Expanded(
-              child: complaints.isEmpty
+              child: filteredComplaints.isEmpty
                   ? Center(
-                child: Text(
-                  'No complaints yet. Use the plus button to add a complaint.',
+                      child: Text(
+                  'No complaints matching the selected filter.',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               )
                   : ListView.builder(
-                itemCount: complaints.length,
-                itemBuilder: (context, index) {
-                  final complaint = complaints[index];
-
-                  return GestureDetector(
-                    onTap: () {
-                      // Navigate to the ComplaintDetailScreen when tapped
-                      Navigator.push(
+                     itemCount: filteredComplaints.length,
+                      itemBuilder: (context, index) {
+                       final complaint = filteredComplaints[index];
+                       return GestureDetector(
+                         onTap: () {
+                           Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => ComplaintDetailScreen(
-                            id: complaint['_id'], // Pass the complaint ID
+                            id: complaint['_id'],
                             description: complaint['description'] ?? 'No description',
                             status: complaint['status'] ?? 'Unknown',
                             createdOn: complaint['createdOn']?.toString() ?? '',
-                            onDelete: removeComplaint, // Pass the delete callback
+                            onDelete: removeComplaint,
                           ),
                         ),
                       );
