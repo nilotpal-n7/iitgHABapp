@@ -17,7 +17,7 @@ itemRouter.get('/', authenticateJWT, getItems);
 
 itemRouter.get('/:qr', getItem);
 
-itemRouter.get('/:hostel', authenticateJWT, getItemsWithComplaints);
+itemRouter.get('/hostelcomplaints/:hostel', getItemsWithComplaints);
 
 itemRouter.get('/hab/:hostel', authenticateJWT, getItemsForHAB);
 
