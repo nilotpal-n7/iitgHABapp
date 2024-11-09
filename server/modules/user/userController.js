@@ -1,8 +1,6 @@
 const {User} = require('./userModel.js');
-const {User} = require('./userModel.js');
 
 const getUserData = async (req, res,next) => {
-    console.log(req);
     console.log(req);
     return res.json(req.user);
 };
@@ -94,7 +92,7 @@ const getEmailsOfSecyUsers = async (req, res) => {
         res.status(200).json(emails);
     } catch (err) {
         console.log(err);
-        res.status(500).json({ message: 'Error fetching emails'} ); 
+        res.status(500).json({ message: 'Error fetching emails'}); 
     }
 };
 
