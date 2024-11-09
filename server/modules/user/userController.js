@@ -41,7 +41,7 @@ const updateUser = async (req, res) => {
 
     try {
         const updatedUser = await User.findOneAndUpdate({ 'email': outlook }, req.body, { new: true });
-        const updatedUser = await User.findOneAndUpdate({ 'email': outlook }, req.body, { new: true });
+       // const updatedUser = await User.findOneAndUpdate({ 'email': outlook }, req.body, { new: true });
         if (!updatedUser) {
             return res.status(404).json({ message: 'User not found' });
         }
