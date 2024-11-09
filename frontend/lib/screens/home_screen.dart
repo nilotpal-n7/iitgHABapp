@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/hab_home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:frontend/screens/ComplaintDetails.dart';
 import 'secy_home_screen.dart';
 import 'package:frontend/apis/scan/qrcode.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -105,37 +107,40 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () => updateFilter("All"),
-                  child: Text('All'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: filter == "All" ? Colors.deepPurple : Colors.grey,
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () => updateFilter("All"),
+                    child: Text('All'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: filter == "All" ? Colors.deepPurple : Colors.grey,
+                    ),
+                  ),ElevatedButton(
+                    onPressed: () => updateFilter("Submitted"),
+                    child: Text('Submitted'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: filter == "Submitted" ? Colors.deepPurple : Colors.grey,
+                    ),
                   ),
-                ),ElevatedButton(
-                  onPressed: () => updateFilter("Submitted"),
-                  child: Text('Submitted'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: filter == "Submitted" ? Colors.deepPurple : Colors.grey,
+                  ElevatedButton(
+                    onPressed: () => updateFilter("In Progress"),
+                    child: Text('In Progress'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: filter == "In Progress" ? Colors.deepPurple : Colors.grey,
+                    ),
                   ),
-                ),
-                ElevatedButton(
-                  onPressed: () => updateFilter("In Progress"),
-                  child: Text('In Progress'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: filter == "In Progress" ? Colors.deepPurple : Colors.grey,
+                  ElevatedButton(
+                    onPressed: () => updateFilter("Resolved"),
+                    child: Text('Resolved'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: filter == "Resolved" ? Colors.deepPurple : Colors.grey,
+                    ),
                   ),
-                ),
-                ElevatedButton(
-                  onPressed: () => updateFilter("Resolved"),
-                  child: Text('Resolved'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: filter == "Resolved" ? Colors.deepPurple : Colors.grey,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
             SizedBox(height: 10),
             Expanded(
@@ -205,24 +210,46 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SecyHomeScreen(), // Navigate to OtherScreen
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly, // To space them evenly
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SecyHomeScreen(), // Navigate to SecyHomeScreen
+                        ),
+                      );
+                    },
+                    child: Text("Secy"),
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                     ),
-                  );
-                },
-                child: Text("Go to Other Page"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                  ),
                 ),
-              ),
-            ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HabHomeScreen(), // Navigate to HabHomeScreen
+                        ),
+                      );
+                    },
+                    child: Text("HAB"),
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                    ),
+                  ),
+                ),
+              ],
+            )
+
           ],
         ),
       ),
