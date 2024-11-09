@@ -1,7 +1,15 @@
 const express = require('express')
 const authenticateJWT = require('../../middleware/authenticateJWT.js')
 
-const { getUserData, createUser, deleteUser, updateUser, getUserComplaints } = require('./userController.js');
+const { 
+    getUserData, 
+    createUser, 
+    deleteUser, 
+    updateUser, 
+    getUserComplaints, 
+    getEmailsOfHABUsers, 
+    getEmailsOfSecyUsers 
+} = require('./userController.js');
 
 const userRouter = express.Router();
 
@@ -14,6 +22,10 @@ userRouter.delete('/:outlook', authenticateJWT, deleteUser);
 userRouter.put('/:outlook', authenticateJWT, updateUser);
 
 userRouter.get('/complaints/:outlook',getUserComplaints);
+
+userRouter.get('/habmails', getEmailsOfHABUsers);
+
+userRouter.get('/welfaresecymails', getEmailsOfSecyUsers);
 
 module.exports = userRouter;
 
