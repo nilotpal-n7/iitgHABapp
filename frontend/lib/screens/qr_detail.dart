@@ -39,7 +39,7 @@ class _QrDetailState extends State<QrDetail> {
       return;
     }
     // Replace with your actual backend URL
-    final url = Uri.parse('http://192.168.62.85:3000/api/complaints/');
+    final url = Uri.parse('https://iitgcomplaintapp.onrender.com/api/complaints/');
 
     try {
       final response = await http.post(
@@ -77,9 +77,6 @@ class _QrDetailState extends State<QrDetail> {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
