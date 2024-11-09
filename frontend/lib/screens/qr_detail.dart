@@ -49,8 +49,7 @@ class _QrDetailState extends State<QrDetail> {
         body: jsonEncode({
           "title": complaintName,
           "description": complaintDescription,
-          "date": DateTime.now().toIso8601String(),
-          "status": "submitted",
+          "status": "unresolved",
           "user" : prefs.getString('userID'),
           "item" : widget.itemData['_id'] ?? 'N/A',
         }),
