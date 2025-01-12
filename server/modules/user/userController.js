@@ -97,5 +97,7 @@ module.exports = {
     createUser,
     deleteUser,
     updateUser,
+    getEmailsOfHABUsers,
+    getEmailsOfSecyUsers,
     getUserComplaints
 };
