@@ -15,7 +15,7 @@ const userRouter = express.Router();
 
 userRouter.post('/', createUser);
 
-userRouter.get('/',  getUserData);
+userRouter.get('/', getUserData);
 
 userRouter.delete('/:outlook', authenticateJWT, deleteUser);
 
