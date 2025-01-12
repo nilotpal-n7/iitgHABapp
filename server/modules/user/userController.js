@@ -64,40 +64,40 @@ const getUserComplaints = async (req, res) => {
     }
 }; 
 
-const getEmailsOfHABUsers = async (req, res) => {
-    try {
-        const emails = await User.find({ role: 'hab' }, 'email');
+// const getEmailsOfHABUsers = async (req, res) => {
+//     try {
+//         const emails = await User.find({ role: 'hab' }, 'email');
 
-        if (emails.length === 0) {
-            return res.status(404).json({ message: 'Emails not found'});
-        }
-        res.status(200).json(emails);
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: 'Error fetching emails'} ); 
-    }
-};
+//         if (emails.length === 0) {
+//             return res.status(404).json({ message: 'Emails not found'});
+//         }
+//         res.status(200).json(emails);
+//     } catch (err) {
+//         console.log(err);
+//         res.status(500).json({ message: 'Error fetching emails'} ); 
+//     }
+// };
 
-const getEmailsOfSecyUsers = async (req, res) => {
-    try {
-        const emails = await User.find({ role: 'welfare_secy' }, 'email');
+// const getEmailsOfSecyUsers = async (req, res) => {
+//     try {
+//         const emails = await User.find({ role: 'welfare_secy' }, 'email');
 
-        if (emails.length === 0) {
-            return res.status(404).json({ message: 'Emails not found'});
-        }
-        res.status(200).json(emails);
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: 'Error fetching emails'} ); 
-    }
-};
+//         if (emails.length === 0) {
+//             return res.status(404).json({ message: 'Emails not found'});
+//         }
+//         res.status(200).json(emails);
+//     } catch (err) {
+//         console.log(err);
+//         res.status(500).json({ message: 'Error fetching emails'} ); 
+//     }
+// };
 
 module.exports = {
     getUserData,
     createUser,
     deleteUser,
     updateUser,
-    getEmailsOfHABUsers,
-    getEmailsOfSecyUsers,
+    // getEmailsOfHABUsers,
+    // getEmailsOfSecyUsers,
     getUserComplaints
 };
