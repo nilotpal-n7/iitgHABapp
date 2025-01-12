@@ -3,7 +3,6 @@ const AppError = require('../utils/appError.js');
 
 const authenticateJWT = async function (req, res, next) {
     let token = req.cookies?.token;
-    console.log("the token is ",token);
 
     // Check for token in headers if not in cookies
     if (!token && req.headers?.authorization) {
