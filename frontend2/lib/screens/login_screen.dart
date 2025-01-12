@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend1/apis/authentication/login.dart';
-import 'package:frontend1/home_screen.dart';
+import 'package:frontend1/screens/Home_screen.dart';
 //import 'package:frontend/screens/profile_screen.dart';
 
 import 'dart:io';
@@ -16,7 +16,6 @@ class loginScreen extends StatefulWidget {
 }
 
 class _loginScreenState extends State<loginScreen> {
-  final Cleanimage = const AssetImage('assets/fonts/clean.png');
   final logoiitg = const AssetImage('assets/fonts/IITG_logo.png');
   var _inprogress = false;
 
@@ -29,12 +28,6 @@ class _loginScreenState extends State<loginScreen> {
         child: Stack(
           children: [
             Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: Cleanimage,
-                  fit: BoxFit.cover,
-                ),
-              ),
             ),
             Center(
               // Center the content
@@ -78,9 +71,7 @@ class _loginScreenState extends State<loginScreen> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => HomeScreen(
-                                  // Enter final destination
-                                ),
+                                builder: (context) => HomeScreen(),
                               ),
                             );
                             showSnackBar('Successfully Logged In', context);

@@ -12,7 +12,8 @@ import 'dart:io';
 
 Future<Map<String, String>?> fetchUserDetails() async {
   final header = await getAccessToken();
-  print(header);
+
+  print("token is "+header);
   if (header == 'error') {
     throw ('token not found');
   }
@@ -48,7 +49,7 @@ Future<Map<String, String>?> fetchUserDetails() async {
         'email': mail,
         'roll': roll,
       };
-    }else if (resp.statusCode == 401 || resp.statusCode == 403) {
+    }else if ( resp.statusCode == 401) {
       print("Unauthorized access: Invalid token or session expired.");
       throw Exception('Unauthorized: Please log in again.');
     } else {

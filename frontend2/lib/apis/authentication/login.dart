@@ -19,11 +19,13 @@ Future<void> authenticate() async {
   try {
 
     final result = await FlutterWebAuth.authenticate(
-        url: AuthEndpoints.getAccess, callbackUrlScheme: "messchange");
+        url: AuthEndpoints.getAccess, callbackUrlScheme: "iitgcomplain");
     print(result);
 
     final accessToken = Uri.parse(result).queryParameters['token'];
-    print(accessToken);
+    print( "access token is");
+
+    print( accessToken);
 
     final prefs = await SharedPreferences.getInstance();
 
