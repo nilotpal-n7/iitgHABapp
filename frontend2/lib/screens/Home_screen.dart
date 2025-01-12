@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'apis/users/user.dart';
+import 'package:frontend1/apis/users/user.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,11 +18,13 @@ class _MessChangeHomeState extends State<HomeScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    fetchUserDetails();
+    fetchUserData();
   }
 
   Future<void> fetchUserData() async {
     final userDetails = await fetchUserDetails();
+    print("USer details is");
+    print(userDetails);
     if (userDetails != null) {
       setState(() {
         name = userDetails['name'] ?? '';
