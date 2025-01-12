@@ -42,7 +42,7 @@ class _ItemByQrScreenState extends State<ItemByQrScreen> {
 
       if (response.statusCode == 200) {
         final itemJson = json.decode(response.body);
-        print('Fetched item data: $itemJson'); // Debugging line
+        print('Fetched item data: $itemJson');
         if (itemJson != null) {
           final item = Item.fromJson(itemJson);
           setState(() {
@@ -220,6 +220,7 @@ class _ItemByQrScreenState extends State<ItemByQrScreen> {
             ),
             SizedBox(height: 8),
             // Resolve Button
+            ElevatedButton(onPressed: () {}, child: Text("Resolved")),
 
             SizedBox(height: 8,),
 
