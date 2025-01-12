@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend1/apis/authentication/login.dart';
+import 'package:frontend1/home_screen.dart';
 //import 'package:frontend/screens/profile_screen.dart';
 
 import 'dart:io';
@@ -77,7 +78,7 @@ class _loginScreenState extends State<loginScreen> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => EditProfileScreen(
+                                builder: (context) => HomeScreen(
                                   // Enter final destination
                                 ),
                               ),
