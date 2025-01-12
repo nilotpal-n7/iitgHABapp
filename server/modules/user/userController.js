@@ -1,6 +1,7 @@
 const {User} = require('./userModel.js');
 
 const getUserData = async (req, res,next) => {
+
     console.log(req);
     return res.json(req.user);
 };
@@ -35,11 +36,10 @@ const deleteUser = async (req, res) => {
     }
 };
 const updateUser = async (req, res) => {
+    
     const { outlook } = req.params;
-
     try {
         const updatedUser = await User.findOneAndUpdate({ 'email': outlook }, req.body, { new: true });
-       // const updatedUser = await User.findOneAndUpdate({ 'email': outlook }, req.body, { new: true });
         if (!updatedUser) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -49,20 +49,16 @@ const updateUser = async (req, res) => {
         res.status(500).json({ message: 'Error updating user' });
     }
 };
+
 const getUserComplaints = async (req, res) => {
     const { outlook } = req.params;
-    console.log(outlook);
     try {
-        const user = await User.findOne({'email': outlook}).populate('complaints');
-        
-        console.log("finding")
+        const user = await User.findOne({ 'outlookID': outlook }, 'complaints');
         if (!user) {
-            console.log(user);
             return res.status(404).json({ message: 'User not found' });
         }
         res.status(200).json(user);
     } catch (err) {
-        console.log(err);
         res.status(500).json({ message: 'Error fetching user complaints' });
         
     }
@@ -92,7 +88,7 @@ const getEmailsOfSecyUsers = async (req, res) => {
         res.status(200).json(emails);
     } catch (err) {
         console.log(err);
-        res.status(500).json({ message: 'Error fetching emails'}); 
+        res.status(500).json({ message: 'Error fetching emails'} ); 
     }
 };
 
@@ -101,7 +97,5 @@ module.exports = {
     createUser,
     deleteUser,
     updateUser,
-    getUserComplaints,
-    getEmailsOfHABUsers,
-    getEmailsOfSecyUsers
+    getUserComplaints
 };
