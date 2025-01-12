@@ -3,7 +3,8 @@ const AppError = require('../utils/appError.js');
 
 const authenticateJWT = async function (req, res, next) {
     let token = req.cookies?.token;
-    
+    console.log("the token is ",token);
+
     // Check for token in headers if not in cookies
     if (!token && req.headers?.authorization) {
         const authHeader = req.headers.authorization;
@@ -13,7 +14,6 @@ const authenticateJWT = async function (req, res, next) {
             console.log('Authorization header format is invalid');
         }
     }
-
     // Log the source of the tokenN
     if (token) {
         console.log('Token received from client:', token);
