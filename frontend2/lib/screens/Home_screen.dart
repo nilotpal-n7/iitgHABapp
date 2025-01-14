@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend1/apis/users/user.dart';
+import 'package:frontend1/widgets/mess_change_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -66,6 +67,10 @@ class _MessChangeHomeState extends State<HomeScreen> {
                       _buildProfileItem("Email", email),
                       SizedBox(height: 16),
                       _buildProfileItem("Hostel", hostel),
+                      SizedBox(height: 16),
+                      _buildProfileItem("Allocated Mess", hostel),
+                      const SizedBox(height: 20,),
+                      ChangeMessWidget(),
                     ],
                   ),
                 ),
