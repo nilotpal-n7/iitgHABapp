@@ -51,7 +51,7 @@ const sundayScheduler = () => {
 
 // on wednesday night 0 0 0 * * 4 
 const wednesdayScheduler = () => {
-    schedule.scheduleJob('*/2 * * * *', async () => {
+    schedule.scheduleJob('0 0 0 * * 4', async () => {
 
         try {
             const hostels = await Hostel.find({}).populate({
