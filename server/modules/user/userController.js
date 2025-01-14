@@ -6,6 +6,23 @@ const getUserData = async (req, res,next) => {
     return res.json(req.user);
 };
 
+const getUserByRoll = async (req, res) => {
+    const {roll} = req.params;
+
+    try {
+        const user = await User.findOne({'rollNumber': roll});
+
+        if (!user) {
+            return res.status(400).json({message: "No such roll exists"});
+        }
+
+        return res.status(200).json({message: "User found", user: user});
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({message: "Error occured"});
+    }
+};
+
 const createUser = async (req, res) => {
     try {
         const user = await User.create(req.body);
@@ -99,5 +116,6 @@ module.exports = {
     updateUser,
     // getEmailsOfHABUsers,
     // getEmailsOfSecyUsers,
-    getUserComplaints
+    getUserComplaints,
+    getUserByRoll
 };
