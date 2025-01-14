@@ -1,12 +1,13 @@
 const axios = require("axios");
 const qs = require("querystring");
 const  { getUserFromToken,User,findUserWithEmail } = require("../user/userModel.js"); // Assuming getUserFromToken is a named export
-require("dotenv/config");
+require('dotenv').config();
+
 const appConfig = require('../../config/default.js');
 
-const clientid = "7326b1dd-5e6b-4f88-bd73-938e264c7f27";
-const clientSecret = "w1h8Q~_.YUQPkHuorB4gaOJJcvkkPYc7qi70nc.B";
-const redirect_uri = "https://iitgcomplaintapp.onrender.com/api/auth/login/redirect/mobile";
+const clientid = process.env.CLIENT_ID;
+const clientSecret = process.env.CLIENT_SECRET;
+const redirect_uri = process.env.REDIRECT_URi;
 
 // Not used
 const loginHandler = (req, res) => {
@@ -30,7 +31,7 @@ const mobileRedirectHandler =  async(req, res, next) => {
         const data = qs.stringify({
             client_secret: clientSecret,
             client_id: clientid,
-            redirect_uri: "https://iitgcomplaintapp.onrender.com/api/auth/login/redirect/mobile",
+            redirect_uri: redirect_uri,
             scope: "user.read",
             grant_type: "authorization_code",
             code: code,

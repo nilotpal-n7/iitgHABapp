@@ -12,6 +12,13 @@ const path = require('path')
 
 require('dotenv').config();
 
+// console.log(process.env.CLIENT_ID)
+// console.log(process.env.OUTLOOK_PASS)
+
+const authId = process.env.OUTLOOK_ID;
+const authPass = process.env.OUTLOOK_PASS;
+const name_id = process.env.NAME_ID;
+
 // on saturday night sunday morning 12 am
 const sundayScheduler = () => {
     schedule.scheduleJob('0 0 * * 0', async () => {
@@ -152,13 +159,13 @@ const wednesdayScheduler = () => {
                 port: 587,
                 secure: false,
                 auth: {
-                    user: 'md.hassan@iitg.ac.in',
-                    pass: '' // dot env is not working
+                    user: authId,
+                    pass: authPass
                 }
             });
 
             const mailOptions = {
-                from: '"Ayan" <md.hassan@iitg.ac.in>',
+                from: `"${name_id}" <${authId}>`,
                 to: 's.shangpliang@iitg.ac.in', // send to hab
                 subject: 'Mess Change List',
                 text: 'PFA the mess change list for the upcoming week',

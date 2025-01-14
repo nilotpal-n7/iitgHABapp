@@ -4,8 +4,6 @@ const authRoutes = require("./modules/auth/auth.routes.js");
 
 const express = require('express');
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const testRoute = require('./modules/test/testRoute');
 const itemRoute = require('./modules/item/itemRoute.js');
 const userRoute = require('./modules/user/userRoute.js');
 const cookieParser = require('cookie-parser');
@@ -13,10 +11,14 @@ const complaintRoute = require('./modules/complaint/complaintRoute.js');
 const hostelRoute = require('./modules/hostel/hostelRoute.js');
 const {wednesdayScheduler, sundayScheduler} = require('./modules/hostel/hostelScheduler.js');
 
-dotenv.config();
+require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
+const MONGOdb_uri = process.env.MONGODB_URI;
+
+// console.log(PORT)
+// console.log(MONGOdb_uri)
 
 // Middleware
 app.use(express.json());
@@ -25,7 +27,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({extended: true}));
  
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI||"mongodb+srv://simonrema123:EjUpwxJIBMCceCN8@cluster0.upn97.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(MONGOdb_uri, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
         console.log('MongoDB connected')
 
