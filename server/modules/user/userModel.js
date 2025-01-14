@@ -29,7 +29,34 @@ const userSchema = new mongoose.Schema(
             type: Number
         },
         hostel: {
-            type:  String
+            type:  mongoose.Schema.Types.ObjectId,
+            ref: 'Hostel'
+        },
+
+        curr_subscribed_mess: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Hostel',
+            default: function () {
+                return this.hostel
+            }
+        },
+
+        next_mess: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Hostel',
+            default: function () {
+                return this.hostel
+            }
+        },
+
+        applied_for_mess_changed: {
+            type: Boolean,
+            default: false
+        },
+
+        got_mess_changed: {
+            type: Boolean,
+            default: false
         },
         
         role: {
