@@ -10,6 +10,8 @@ const itemRoute = require('./modules/item/itemRoute.js');
 const userRoute = require('./modules/user/userRoute.js');
 const cookieParser = require('cookie-parser');
 const complaintRoute = require('./modules/complaint/complaintRoute.js');
+const hostelRoute = require('./modules/hostel/hostelRoute.js');
+const {wednesdayScheduler, sundayScheduler} = require('./modules/hostel/hostelScheduler.js');
 
 dotenv.config();
 
@@ -24,7 +26,13 @@ app.use(express.urlencoded({extended: true}));
  
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI||"mongodb+srv://simonrema123:EjUpwxJIBMCceCN8@cluster0.upn97.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('MongoDB connected'))
+    .then(() => {
+        console.log('MongoDB connected')
+
+        wednesdayScheduler()
+
+        sundayScheduler()
+    })
     .catch((err) => console.log(err));
 
 // Basic route
@@ -51,6 +59,10 @@ app.use('/api/complaints', complaintRoute); // enable after defining complaintRo
 //auth route
 app.use('/api/auth', authRoutes);
 
+//hostel route
+app.use('/api/mess', hostelRoute);
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
