@@ -183,6 +183,46 @@ const wednesdayScheduler = () => {
                         filename: 'Manas.xlsx',
                         path: path.join(__dirname, 'output', 'Manas.xlsx')
                     },
+                    {
+                        filename: 'Disang.xlsx',
+                        path: path.join(__dirname, 'output', 'Disang.xlsx')
+                    },
+                    {
+                        filename: 'Brahmaputra.xlsx',
+                        path: path.join(__dirname, 'output', 'Brahmaputra.xlsx')
+                    },
+                    {
+                        filename: 'Kameng.xlsx',
+                        path: path.join(__dirname, 'output', 'Kameng.xlsx')
+                    },
+                    {
+                        filename: 'MSH.xlsx',
+                        path: path.join(__dirname, 'output', 'MSH.xlsx')
+                    },
+                    {
+                        filename: 'Gaurang.xlsx',
+                        path: path.join(__dirname, 'output', 'Gaurang.xlsx')
+                    },
+                    {
+                        filename: 'Dihing.xlsx',
+                        path: path.join(__dirname, 'output', 'Dihing.xlsx')
+                    },
+                    {
+                        filename: 'Dhansiri.xlsx',
+                        path: path.join(__dirname, 'output', 'Dhansiri.xlsx')
+                    },
+                    {
+                        filename: 'Subansiri.xlsx',
+                        path: path.join(__dirname, 'output', 'Subansiri.xlsx')
+                    },
+                    {
+                        filename: 'Siang.xlsx',
+                        path: path.join(__dirname, 'output', 'Siang.xlsx')
+                    },
+                    {
+                        filename: 'Kapili.xlsx',
+                        path: path.join(__dirname, 'output', 'Kapili.xlsx')
+                    },
                 ]
             }
 
