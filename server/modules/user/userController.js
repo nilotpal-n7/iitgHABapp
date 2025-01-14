@@ -1,6 +1,7 @@
 const {User} = require('./userModel.js');
 
 const getUserData = async (req, res,next) => {
+
     console.log(req);
     return res.json(req.user);
 };
@@ -35,11 +36,10 @@ const deleteUser = async (req, res) => {
     }
 };
 const updateUser = async (req, res) => {
+    
     const { outlook } = req.params;
-
     try {
         const updatedUser = await User.findOneAndUpdate({ 'email': outlook }, req.body, { new: true });
-       // const updatedUser = await User.findOneAndUpdate({ 'email': outlook }, req.body, { new: true });
         if (!updatedUser) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -49,59 +49,55 @@ const updateUser = async (req, res) => {
         res.status(500).json({ message: 'Error updating user' });
     }
 };
+
 const getUserComplaints = async (req, res) => {
     const { outlook } = req.params;
-    console.log(outlook);
     try {
-        const user = await User.findOne({'email': outlook}).populate('complaints');
-        
-        console.log("finding")
+        const user = await User.findOne({ 'outlookID': outlook }, 'complaints');
         if (!user) {
-            console.log(user);
             return res.status(404).json({ message: 'User not found' });
         }
         res.status(200).json(user);
     } catch (err) {
-        console.log(err);
         res.status(500).json({ message: 'Error fetching user complaints' });
         
     }
 }; 
 
-const getEmailsOfHABUsers = async (req, res) => {
-    try {
-        const emails = await User.find({ role: 'hab' }, 'email');
+// const getEmailsOfHABUsers = async (req, res) => {
+//     try {
+//         const emails = await User.find({ role: 'hab' }, 'email');
 
-        if (emails.length === 0) {
-            return res.status(404).json({ message: 'Emails not found'});
-        }
-        res.status(200).json(emails);
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: 'Error fetching emails'} ); 
-    }
-};
+//         if (emails.length === 0) {
+//             return res.status(404).json({ message: 'Emails not found'});
+//         }
+//         res.status(200).json(emails);
+//     } catch (err) {
+//         console.log(err);
+//         res.status(500).json({ message: 'Error fetching emails'} ); 
+//     }
+// };
 
-const getEmailsOfSecyUsers = async (req, res) => {
-    try {
-        const emails = await User.find({ role: 'welfare_secy' }, 'email');
+// const getEmailsOfSecyUsers = async (req, res) => {
+//     try {
+//         const emails = await User.find({ role: 'welfare_secy' }, 'email');
 
-        if (emails.length === 0) {
-            return res.status(404).json({ message: 'Emails not found'});
-        }
-        res.status(200).json(emails);
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: 'Error fetching emails'}); 
-    }
-};
+//         if (emails.length === 0) {
+//             return res.status(404).json({ message: 'Emails not found'});
+//         }
+//         res.status(200).json(emails);
+//     } catch (err) {
+//         console.log(err);
+//         res.status(500).json({ message: 'Error fetching emails'} ); 
+//     }
+// };
 
 module.exports = {
     getUserData,
     createUser,
     deleteUser,
     updateUser,
-    getUserComplaints,
-    getEmailsOfHABUsers,
-    getEmailsOfSecyUsers
+    // getEmailsOfHABUsers,
+    // getEmailsOfSecyUsers,
+    getUserComplaints
 };

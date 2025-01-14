@@ -7,8 +7,8 @@ const {
     deleteUser, 
     updateUser, 
     getUserComplaints, 
-    getEmailsOfHABUsers, 
-    getEmailsOfSecyUsers 
+    // getEmailsOfHABUsers, 
+    // getEmailsOfSecyUsers 
 } = require('./userController.js');
 
 const userRouter = express.Router();
@@ -23,9 +23,9 @@ userRouter.put('/:outlook', authenticateJWT, updateUser);
 
 userRouter.get('/complaints/:outlook', getUserComplaints);
 
-userRouter.get('/habmails', getEmailsOfHABUsers);
+// userRouter.get('/habmails', getEmailsOfHABUsers);
 
-userRouter.get('/welfaresecymails', getEmailsOfSecyUsers);
+// userRouter.get('/welfaresecymails', getEmailsOfSecyUsers);
 
 module.exports = userRouter;
 
