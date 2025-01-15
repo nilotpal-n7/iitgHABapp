@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend1/apis/users/user.dart';
 import 'package:frontend1/widgets/mess_change_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,12 +15,23 @@ class _MessChangeHomeState extends State<HomeScreen> {
   String email = '';
   String roll = '';
   String hostel = '';
+  String currMess = '';
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     fetchUserData();
+    getAllocatedHostel();
+  }
+
+
+  void getAllocatedHostel() async {
+    final prefs = await SharedPreferences.getInstance();
+    final allocatehostel = prefs.getString('currMess');
+    setState(() {
+      currMess = allocatehostel ?? ' ';
+    });
   }
 
   Future<void> fetchUserData() async {
@@ -68,7 +80,7 @@ class _MessChangeHomeState extends State<HomeScreen> {
                       SizedBox(height: 16),
                       _buildProfileItem("Hostel", hostel),
                       SizedBox(height: 16),
-                      _buildProfileItem("Allocated Mess", hostel),
+                      _buildProfileItem("Allocated Mess", currMess),
                       const SizedBox(height: 20,),
                       ChangeMessWidget(),
                     ],
