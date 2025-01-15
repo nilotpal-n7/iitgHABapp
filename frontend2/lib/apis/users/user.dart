@@ -37,11 +37,18 @@ Future<Map<String, String>?> fetchUserDetails() async {
       final String mail = userData['email'];
       prefs.setString('email', mail);
       final String roll = userData['rollNumber'];
+      final String CurrSubscribedMess = userData['curr_subscribed_mess'];
+      final bool gotHostel = userData['got_mess_changed'];
+      prefs.setBool('gotMess', gotHostel);
+      prefs.setString('rollNo', roll);
+      prefs.setString('currMess', CurrSubscribedMess);
 
       print("Name: $name");
       print("Degree: $degree");
       print("Email: $mail");
       print("Roll: $roll");
+      print("Curr Mess: $CurrSubscribedMess");
+      print("your mess is $gotHostel");
 
       // Return the data as a map
       return {

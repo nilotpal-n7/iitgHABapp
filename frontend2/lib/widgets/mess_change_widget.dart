@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:frontend1/widgets/common/hostel_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+
 
 class ChangeMessWidget extends StatefulWidget {
   @override
@@ -15,8 +19,57 @@ class _ChangeMessWidgetState extends State<ChangeMessWidget> {
   void initState() {
     super.initState();
     _resetButtonStateIfNewWeek(); // Reset state if it's a new week (Monday)
-    _checkAllowedDays(); // Check if the button should be enabled
+    _checkAllowedDays();
+    displaydata();// Check if the button should be enabled
   }
+ late String Message = 'You can apply for any Hostel';
+
+  void displaydata() async {
+    final prefs = await SharedPreferences.getInstance();
+    final pressedorNot = prefs.getBool('clicked');
+    final currHostel = prefs.getString('Hostel');
+    final gotHostel = prefs.getBool('gotMess');
+    final now = DateTime.now();
+
+    if (now.weekday == DateTime.monday || now.weekday == DateTime.tuesday || now.weekday == DateTime.wednesday)
+    {
+      if(pressedorNot == true)
+        {
+          setState(() {
+            Message = 'You have applied for this $currHostel';
+          });
+        }
+      else{
+        setState(() {
+          Message = 'You can apply for any Hostel';
+        });
+      }
+
+    }
+    else{
+      if(pressedorNot == true)
+        {
+          if(gotHostel == true) {
+            setState(() {
+              Message = 'You have gotten hostel $currHostel';
+            });
+          }
+          else{
+            setState(() {
+              Message = "We are sorry you havent got your mess changed";
+            });
+          }
+        }
+      else{
+        setState(() {
+          Message = 'You can Apply next week';
+        });
+      }
+    }
+
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +83,8 @@ class _ChangeMessWidgetState extends State<ChangeMessWidget> {
               : null, // Disable button if not within allowed days
           child: Text("Change Mess"),
         ),
+        SizedBox(height: 20,),
+        Text(Message),
       ],
     );
   }
@@ -98,8 +153,15 @@ class _ChangeMessWidgetState extends State<ChangeMessWidget> {
                     items: <String>[
                       'Lohit',
                       'Kapili',
+                      'Umiam',
+                      'Gaurang',
                       'Manas',
-                      'Bhramaputra',
+                      'Brahmaputra',
+                      'Dihing',
+                      'MSH',
+                      'Dhansiri',
+                      'Kameng',
+                      'Subansiri',
                       'Siang',
                       'Disang'
                     ].map<DropdownMenuItem<String>>((String value) {
@@ -128,13 +190,12 @@ class _ChangeMessWidgetState extends State<ChangeMessWidget> {
                     });
                     await prefs.setString('Hostel', _selectedMess!);
                     await prefs.setBool('clicked', true);
+                    final rollNo = await prefs.getString('rollNo');
 
                     // Save the current date as the last press date
                     await prefs.setString('lastResetDate', DateTime.now().toIso8601String());
-                    final resp = http.get()
-
-
-
+                    fetchHostelData(_selectedMess!, rollNo!);
+                    displaydata();
                     // Show Snackbar
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -142,7 +203,6 @@ class _ChangeMessWidgetState extends State<ChangeMessWidget> {
                         Text('Applied for mess change in $_selectedMess'),
                       ),
                     );
-
                     // Update button state after applying
                     _checkAllowedDays();
 
