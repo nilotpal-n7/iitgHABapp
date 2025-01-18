@@ -18,6 +18,7 @@ require('dotenv').config();
 const authId = process.env.OUTLOOK_ID;
 const authPass = process.env.OUTLOOK_PASS;
 const name_id = process.env.NAME_ID;
+const sendId = process.env.OUTLOOK_SENDER_ID
 
 // on saturday night sunday morning 12 am
 const sundayScheduler = () => {
@@ -39,6 +40,9 @@ const sundayScheduler = () => {
 
                     user.curr_subscribed_mess = user.next_mess;
                     user.next_mess = user.hostel;
+                    user.mess_change_button_pressed = false;
+
+                    user.applied_hostel_string = "";
 
                     await user.save();
                 }
@@ -167,7 +171,7 @@ const wednesdayScheduler = () => {
 
             const mailOptions = {
                 from: `"${name_id}" <${authId}>`,
-                to: 's.shangpliang@iitg.ac.in', // send to hab
+                to: `${sendId}`, // send to hab
                 subject: 'Mess Change List',
                 text: 'PFA the mess change list for the upcoming week',
                 attachments: [

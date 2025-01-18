@@ -58,6 +58,18 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
+
+        mess_change_button_pressed: {
+            type: Boolean,
+            default: false
+        },
+
+        applied_hostel_string: {
+            type: String,
+            default: function () {
+                return ""
+            }
+        },
         
         role: {
             type: String,
