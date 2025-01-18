@@ -43,6 +43,7 @@ dependencies:
   flutter_web_auth: ^0.6.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  marquee: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -69,6 +70,7 @@ flutter:
 
   assets:
     - assets/fonts/
+    - assets/images/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
