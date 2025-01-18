@@ -49,6 +49,16 @@ const userSchema = new mongoose.Schema(
             }
         },
 
+        mess_change_button_pressed: {
+            type: Boolean,
+            default: false
+        },
+
+        applied_hostel_string: {
+            type: String,
+            default: ""
+        },
+
         applied_for_mess_changed: {
             type: Boolean,
             default: false

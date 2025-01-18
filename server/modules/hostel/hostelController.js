@@ -43,6 +43,10 @@ const applyMessChange = async (req, res) => {
 
         const user = await User.findOne({'rollNumber': roll_number});
 
+        user.applied_hostel_string = hostel_name;
+
+        user.mess_change_button_pressed = true;
+
         if (hostel != user.hostel && hostel.curr_cap < 150 && !user.applied_for_mess_changed) {
 
             //const user_permanent_hostel = await Hostel.findById(user.hostel);
@@ -73,6 +77,9 @@ const applyMessChange = async (req, res) => {
         else {
             // capacity reached
 
+            await user.save();
+
+            await hostel.save();
             return res.status(200).json({message: "Sorry the cap has reached or you have already applied or you cannot apply for same hostel", status_code: 1});
         }
     } catch (err) {
