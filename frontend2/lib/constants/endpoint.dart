@@ -1,4 +1,4 @@
-const String baseUrl = "https://iitgcomplaintapp.onrender.com/api";
+const String baseUrl = "https://hab.codingclubiitg.in/api";
 
 class UserEndpoints {
   static const String currentUser = '$baseUrl/users/';
