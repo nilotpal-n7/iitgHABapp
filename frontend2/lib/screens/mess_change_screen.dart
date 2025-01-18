@@ -49,15 +49,11 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
     super.initState();
     fetchUserData();
     getAllocatedHostel();
-     // Reset state if it's a new week (Monday)
+    // Reset state if it's a new week (Monday)
     _checkAllowedDays();
   }
 
-
-
-
   late String Message = 'You can apply for any Hostel';
-
 
   // Check if the button should be enabled
   Future<void> _checkAllowedDays() async {
@@ -69,9 +65,9 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
     // Update the state based on the condition
 
     setState(() {
-      correctDay = (now.weekday >= DateTime.monday &&
-          now.weekday <= DateTime.wednesday );
-      isSubmitted = clicked ;
+      correctDay =
+          (now.weekday >= DateTime.monday && now.weekday <= DateTime.wednesday);
+      isSubmitted = clicked;
       gotMess = gotMess1;
     });
     print("isSubmitted is: $isSubmitted");
@@ -105,7 +101,6 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
       context: context,
       builder: (context) => ConfirmationDialog(
         onConfirm: () {
-
           Navigator.pop(context);
         },
       ),
@@ -149,11 +144,13 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
             children: [
               const Text(
                 "Current Mess",
-                style: TextStyle(fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
+                style:
+                    TextStyle(fontFamily: 'OpenSans_regular',fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
               ),
               Text(
                 calculateHostel(currMess),
                 style: const TextStyle(
+                  fontFamily: 'OpenSans_bold',
                   fontSize: 24,
                   fontWeight: FontWeight.w400,
                   color: Color.fromRGBO(57, 77, 198, 1),
@@ -162,27 +159,31 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
               const SizedBox(height: 16),
               const Text(
                 "Name",
-                style: TextStyle(fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
+                style:
+                    TextStyle(fontFamily: 'OpenSans_regular',fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
               ),
               Text(
                 name.isNotEmpty ? name : 'Not provided',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+                style:
+                    const TextStyle(fontFamily: 'OpenSans_regular',fontSize: 18, fontWeight: FontWeight.w400),
               ),
               const SizedBox(height: 24),
               const Text(
                 "Roll Number",
-                style: TextStyle(fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
+                style:
+                    TextStyle(fontFamily: 'OpenSans_regular',fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
               ),
               Text(
                 roll.isNotEmpty ? roll : 'Not provided',
-                style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w400),
+                style:
+                    const TextStyle(fontSize: 19, fontWeight: FontWeight.w400),
               ),
               const SizedBox(height: 24),
               if (!isSubmitted && correctDay) ...[
                 const SizedBox(height: 8),
                 const Text(
                   "Change mess to:",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                  style: TextStyle(fontFamily: 'OpenSans_regular',fontSize: 16, fontWeight: FontWeight.w400),
                 ),
                 const SizedBox(height: 8),
                 CustomDropdown<String>(
@@ -198,7 +199,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                 const SizedBox(height: 24),
                 const Text(
                   "Reason for changing",
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
+                  style: TextStyle(fontFamily: 'OpenSans_regular',fontSize: 15, fontWeight: FontWeight.w400),
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -216,50 +217,164 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-              ] else if(!correctDay && isSubmitted && !gotMess) ...[
-                Container(
-                  child: const Text(
-                    "Sorry! Apply again Next Week",
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.green,
+              ] else if (!correctDay && isSubmitted && !gotMess) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16.0,
+                      horizontal: 12.0,
+                    ),
+                    child: const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Center(
+                            child: Text(
+                              "Sorry!",
+                              style: TextStyle(
+                                fontFamily: 'OpenSans_reqular',
+                                fontSize: 20,
+                                color: Color.fromRGBO(0, 0, 0, 1),
+                              ),
+                            ),
+                          ),
+                          const Center(
+                            child: Text(
+                              "Apply again Next Week",
+                              style: TextStyle(
+                                fontFamily: 'OpenSans_bold',
+                                fontSize: 16,
+                                color: Color.fromRGBO(57, 77, 197, 1),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
-              ] else if(!correctDay && isSubmitted && gotMess) ...[
-                Container(
-                  child:  Text(
-                    "Your Alloted Mess for Next Week is $applyMess",
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.green,
+              ] else if (!correctDay && isSubmitted && gotMess) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16.0,
+                      horizontal: 12.0,
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Center(
+                            child: Text(
+                              "Your Allotted Mess for Next Week is:",
+                              style: TextStyle(
+                                fontFamily: 'OpenSans_regular',
+                                fontSize: 20,
+                                color: Color.fromRGBO(0, 0, 0, 1),
+                              ),
+                            ),
+                          ),
+                          Center(
+                            child: Text(
+                              "$applyMess",
+                              style: const TextStyle(
+                                fontFamily: 'OpenSans_bold',
+                                fontSize: 16,
+                                color: Color.fromRGBO(57, 77, 197, 1),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
-              ] else if(correctDay && isSubmitted ) ...[
-                Container(
-                  child:  Text(
-                    "You have Applied for the mess $selectedHostel",
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.green,
+              ] else if (correctDay && isSubmitted) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16.0,
+                      horizontal: 12.0,
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Center(
+                            child: Text(
+                              "You have applied for the mess: ",
+                              style: TextStyle(
+                                fontFamily: 'OpenSans_regular',
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
+                          Center(
+                            child: Text(
+                              "$selectedHostel",
+                              style: const TextStyle(
+                                fontFamily: 'OpenSans_regular',
+                                fontSize: 16,
+                                color: Color.fromRGBO(57, 77, 197, 1),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 24,),
               ] else ...[
-                Container(
-                  child: const Text(
-                    "You can Apply Next week",
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.green,
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16.0,
+                      horizontal: 12.0,
+                    ),
+                    child: const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Center(
+                            child: Text(
+                              "You can apply next week.",
+                              style: TextStyle(
+                                fontFamily: 'OpenSans_bold',
+                                fontSize: 16,
+                                color: Color.fromRGBO(57, 77, 198, 1),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -270,10 +385,10 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                     onPressed: selectedHostel == null
                         ? null
                         : () async {
-                      // Save the current date as the last press date
-                      fetchHostelData(selectedHostel!, roll);
-                      _showConfirmationDialog();
-                    },
+                            // Save the current date as the last press date
+                            fetchHostelData(selectedHostel!, roll);
+                            _showConfirmationDialog();
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: selectedHostel == null
                           ? Colors.grey
@@ -288,14 +403,14 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                     ),
                     child: const Text(
                       "Confirm Your Choice",
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(fontFamily: 'OpenSans_bold',color: Colors.white),
                     ),
                   ),
                 ),
-              ],
-            ),
+            ],
           ),
         ),
-      );
+      ),
+    );
   }
 }
