@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend1/apis/users/user.dart';
 import 'package:frontend1/widgets/confirmation_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'profile_screen.dart';
+import 'package:animated_custom_dropdown/custom_dropdown.dart';
 
 class MessChangeScreen extends StatefulWidget {
   const MessChangeScreen({super.key});
@@ -15,10 +15,10 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
   String name = '';
   String email = '';
   String roll = '';
-  String hostel = '';
   String currMess = '';
   String? selectedHostel;
-  bool isSubmitted = false; // Track if submission is done
+  bool isSubmitted = false;
+
   final List<String> hostels = [
     'Lohit',
     'Kapili',
@@ -35,9 +35,11 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
     'Disang',
   ];
 
+  final SingleSelectController<String> hostelController =
+  SingleSelectController<String>(null);
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     fetchUserData();
     getAllocatedHostel();
@@ -45,16 +47,14 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
 
   void getAllocatedHostel() async {
     final prefs = await SharedPreferences.getInstance();
-    final allocatehostel = prefs.getString('currMess');
+    final allocateHostel = prefs.getString('currMess');
     setState(() {
-      currMess = allocatehostel ?? ' ';
+      currMess = allocateHostel ?? 'Not Assigned';
     });
   }
 
   Future<void> fetchUserData() async {
     final userDetails = await fetchUserDetails();
-    print("USer details is");
-    print(userDetails);
     if (userDetails != null) {
       setState(() {
         name = userDetails['name'] ?? '';
@@ -106,14 +106,11 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
             children: [
               const Text(
                 "Current Mess",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color.fromRGBO(0, 0, 0, 1),
-                ),
+                style: TextStyle(fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
               ),
-              const Text(
-                "Brahmaputra",
-                style: TextStyle(
+              Text(
+                currMess,
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w400,
                   color: Color.fromRGBO(57, 77, 198, 1),
@@ -122,79 +119,43 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
               const SizedBox(height: 16),
               const Text(
                 "Name",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color.fromRGBO(0, 0, 0, 1),
-                ),
+                style: TextStyle(fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
               ),
               Text(
                 name.isNotEmpty ? name : 'Not provided',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
               ),
               const SizedBox(height: 24),
               const Text(
                 "Roll Number",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color.fromRGBO(0, 0, 0, 1),
-                ),
+                style: TextStyle(fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
               ),
               Text(
                 roll.isNotEmpty ? roll : 'Not provided',
-                style: TextStyle(fontSize: 19, fontWeight: FontWeight.w400),
+                style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w400),
               ),
               const SizedBox(height: 24),
               if (!isSubmitted) ...[
                 const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
-                    children: [
-                      const Text(
-                        "Change mess to:",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          value: selectedHostel,
-                          onChanged: (value) {
-                            setState(() {
-                              selectedHostel = value;
-                            });
-                          },
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                          isExpanded: true,
-                          items: hostels
-                              .map(
-                                (hostel) => DropdownMenuItem<String>(
-                              value: hostel,
-                              child: Text(hostel),
-                            ),
-                          )
-                              .toList(),
-                        ),
-                      ),
-                    ],
-                  ),
+                const Text(
+                  "Change mess to:",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                ),
+                const SizedBox(height: 8),
+                CustomDropdown<String>(
+                  controller: hostelController,
+                  items: hostels,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedHostel = value;
+                    });
+                  },
+                  hintText: "Change Mess to: ${selectedHostel ?? ''}",
                 ),
                 const SizedBox(height: 24),
                 const Text(
                   "Reason for changing",
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w400,
-                  ),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -204,14 +165,14 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                   ),
                   child: TextField(
                     maxLines: 5,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: "Write your reason here",
-                      contentPadding: const EdgeInsets.all(16.0),
+                      contentPadding: EdgeInsets.all(16.0),
                       border: InputBorder.none,
                     ),
                   ),
                 ),
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
               ] else ...[
                 Text(
                   "Applied for mess change in: $selectedHostel",
