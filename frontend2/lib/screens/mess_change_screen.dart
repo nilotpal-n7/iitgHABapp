@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:frontend1/apis/users/user.dart';
-import 'package:frontend1/screens/confirmation_screen.dart';
 import 'package:frontend1/widgets/confirmation_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'profile_screen.dart';
@@ -141,7 +140,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                 ),
               ),
               Text(
-                roll.isNotEmpty ? name : 'Not provided',
+                roll.isNotEmpty ? roll : 'Not provided',
                 style: TextStyle(fontSize: 19, fontWeight: FontWeight.w400),
               ),
               const SizedBox(height: 24),
