@@ -46,11 +46,7 @@ Future<void> authenticate() async {
 
 Future<void> logoutHandler(context) async {
   final prefs = await SharedPreferences.getInstance();
-  final box = await Hive.openBox('coursehub-data');
-
-  prefs.clear();
-  box.clear();
-
+  await prefs.clear();
   Navigator.of(context).pushAndRemoveUntil(
     MaterialPageRoute(
       builder: (context) => const loginScreen(),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:frontend1/apis/authentication/login.dart';
 import 'package:frontend1/apis/users/user.dart';
+import 'package:frontend1/widgets/common/hostel_details.dart';
+import 'package:frontend1/widgets/common/hostel_name.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -18,11 +21,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     fetchUserData();
     getAllocatedHostel();
-
   }
 
   void getAllocatedHostel() async {
@@ -35,8 +36,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> fetchUserData() async {
     final userDetails = await fetchUserDetails();
-    print("USer details is");
-    print(userDetails);
     if (userDetails != null) {
       setState(() {
         name = userDetails['name'] ?? '';
@@ -47,6 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       print("Failed to load user details.");
     }
   }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +63,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         title: const Text(
           "Profile",
-          style: TextStyle(fontFamily: 'OpenSans_bold',fontWeight: FontWeight.w400, fontSize: 24),
+          style: TextStyle(
+            fontFamily: 'OpenSans_bold',
+            fontWeight: FontWeight.w400,
+            fontSize: 24,
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -153,12 +157,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               Text(
-                currMess.isNotEmpty ? currMess : 'Not provided',
+                calculateHostel(currMess),
                 style: const TextStyle(
                   fontFamily: 'OpenSans_regular',
                   fontSize: 24,
                   fontWeight: FontWeight.w400,
                   color: Color.fromRGBO(57, 77, 198, 1),
+                ),
+              ),
+              const SizedBox(height: 32),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () => logoutHandler(context),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                    backgroundColor: const Color.fromRGBO(57, 77, 198, 1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    "Sign Out",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontFamily: 'OpenSans_bold',
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
             ],

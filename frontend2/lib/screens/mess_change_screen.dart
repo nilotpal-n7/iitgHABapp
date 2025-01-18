@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:frontend1/apis/users/user.dart';
 import 'package:frontend1/widgets/common/hostel_details.dart';
+import 'package:frontend1/widgets/common/hostel_name.dart';
 import 'package:frontend1/widgets/confirmation_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:frontend1/widgets/common/hostel_details.dart';
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 
 class MessChangeScreen extends StatefulWidget {
@@ -150,7 +152,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                 style: TextStyle(fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
               ),
               Text(
-                currMess,
+                calculateHostel(currMess),
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w400,
