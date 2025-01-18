@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:frontend1/apis/authentication/login.dart';
-import 'package:frontend1/screens/Home_screen.dart';
+import 'package:frontend1/screens/home_screen.dart';
 import 'package:frontend1/screens/login_screen.dart';
 
 
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
-      home: isLoggedIn ? HomeScreen() : loginScreen(),
+      home: isLoggedIn ? homeScreen() : loginScreen(),
       builder: EasyLoading.init(),
     );
   }
