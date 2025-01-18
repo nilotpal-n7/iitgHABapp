@@ -1,9 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:frontend1/apis/users/user.dart';
 import 'package:frontend1/screens/mess_change_screen.dart';
 import 'package:frontend1/screens/profile_screen.dart';
+import 'package:marquee/marquee.dart';
 
-class homeScreen extends StatelessWidget {
+class homeScreen extends StatefulWidget {
   const homeScreen({super.key});
+
+  @override
+  State<homeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<homeScreen> {
+  String name = '';
+  bool shouldScroll = false;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData();
+  }
+
+  Future<void> fetchUserData() async {
+    final userDetails = await fetchUserDetails();
+    print("User details are:");
+    print(userDetails);
+    if (userDetails != null) {
+      setState(() {
+        // Extract only the first name
+        name = (userDetails['name'] ?? '').split(' ').first;
+      });
+      checkIfTextFits();
+    } else {
+      print("Failed to load user details.");
+    }
+  }
+
+  void checkIfTextFits() {
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: "Hello, ${name.isNotEmpty ? name : 'User'} 🖐️",
+        style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+      ),
+      maxLines: 1,
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    final availableWidth = MediaQuery.of(context).size.width - 32; // Padding
+
+    setState(() {
+      shouldScroll = textPainter.size.width > availableWidth;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +62,7 @@ class homeScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         leading: Padding(
           padding: const EdgeInsets.only(left: 15.0),
-          child: Image(image: AssetImage("assets/images/Handlogo.png")),
+          child: const Image(image: AssetImage("assets/images/Handlogo.png")),
         ),
         title: const Text(
           "HAB\nIIT Guwahati",
@@ -42,11 +90,31 @@ class homeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-            const Text(
-              "Hello, User 🖐️",
-              style: TextStyle(
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
+            SizedBox(
+              height: 50,
+              child: shouldScroll
+                  ? Marquee(
+                text: "Hello, ${name.isNotEmpty ? name : 'User'} 🖐️",
+                style: const TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                ),
+                scrollAxis: Axis.horizontal,
+                blankSpace: 20.0,
+                velocity: 30.0,
+                pauseAfterRound: const Duration(seconds: 2),
+                startPadding: 10.0,
+                accelerationDuration: const Duration(seconds: 1),
+                accelerationCurve: Curves.linear,
+                decelerationDuration: const Duration(milliseconds: 500),
+                decelerationCurve: Curves.easeOut,
+              )
+                  : Text(
+                "Hello, ${name.isNotEmpty ? name : 'User'} 🖐️",
+                style: const TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(height: 24),
