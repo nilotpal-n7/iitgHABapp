@@ -58,6 +58,11 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
+
+        mess_change_button_pressed: {
+            type: Boolean,
+            default: false
+        },
         
         role: {
             type: String,
