@@ -23,7 +23,6 @@ class _ChangeMessWidgetState extends State<ChangeMessWidget> {
     displaydata();// Check if the button should be enabled
   }
  late String Message = 'You can apply for any Hostel';
-
   void displaydata() async {
     final prefs = await SharedPreferences.getInstance();
     final pressedorNot = prefs.getBool('clicked');

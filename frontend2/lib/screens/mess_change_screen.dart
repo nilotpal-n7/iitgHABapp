@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend1/apis/users/user.dart';
-import 'package:frontend1/screens/confirmation_screen.dart';
+import 'package:frontend1/widgets/common/hostel_details.dart';
 import 'package:frontend1/widgets/confirmation_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'profile_screen.dart';
@@ -42,11 +42,102 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
     super.initState();
     fetchUserData();
     getAllocatedHostel();
+    _resetButtonStateIfNewWeek(); // Reset state if it's a new week (Monday)
+    _checkAllowedDays();
+    displaydata();
+  }
+  late String Message = 'You can apply for any Hostel';
+  void displaydata() async {
+    final prefs = await SharedPreferences.getInstance();
+    final pressedorNot = prefs.getBool('clicked');
+    final currHostel = prefs.getString('Hostel');
+    final gotHostel = prefs.getBool('gotMess');
+    final now = DateTime.now();
+
+    if (now.weekday == DateTime.monday || now.weekday == DateTime.tuesday || now.weekday == DateTime.wednesday)
+    {
+      if(pressedorNot == true)
+      {
+        setState(() {
+          Message = 'You have applied for this $currHostel';
+        });
+      }
+      else{
+        setState(() {
+          Message = 'You can apply for any Hostel';
+        });
+      }
+
+    }
+    else{
+      if(pressedorNot == true)
+      {
+        if(gotHostel == true) {
+          setState(() {
+            Message = 'You have gotten hostel $currHostel';
+          });
+        }
+        else{
+          setState(() {
+            Message = "We are sorry you havent got your mess changed";
+          });
+        }
+      }
+      else{
+        setState(() {
+          Message = 'You can Apply next week';
+        });
+      }
+    }
+
+  }
+
+  // Reset button state if it's a new week (Monday)
+  Future<void> _resetButtonStateIfNewWeek() async {
+    final now = DateTime.now();
+    final prefs = await SharedPreferences.getInstance();
+    final lastResetDateString = prefs.getString('lastResetDate');
+
+    if (lastResetDateString != null) {
+      final lastResetDate = DateTime.parse(lastResetDateString);
+
+      // Check if today is Monday and it's a new week compared to the last reset date
+      if ((now.weekday == DateTime.monday || now.weekday == DateTime.tuesday || now.weekday == DateTime.wednesday) && now.isAfter(_getStartOfNextWeek(lastResetDate))) {
+        setState(() {
+          isSubmitted = false;
+        });
+      }
+    } else  {
+      setState(() {
+        isSubmitted = false;
+      });
+      // Initialize the reset date if it doesn't exist
+    }
+  }
+
+  // Get the start of the next week (Monday) after a given date
+  DateTime _getStartOfNextWeek(DateTime date) {
+    final daysToNextMonday = (DateTime.monday - date.weekday + 7) % 7;
+    return date.add(Duration(days: daysToNextMonday));
+  }
+
+  // Check if the button should be enabled
+  Future<void> _checkAllowedDays() async {
+    final now = DateTime.now();
+    final prefs = await SharedPreferences.getInstance();
+    final clicked = prefs.getBool('clicked') ?? false;
+
+    // Update the state based on the condition
+    setState(() {
+      isSubmitted = now.weekday >= DateTime.monday &&
+          now.weekday <= DateTime.wednesday &&
+          !clicked;
+    });
   }
 
   void getAllocatedHostel() async {
     final prefs = await SharedPreferences.getInstance();
-    final allocatehostel = prefs.getString('currMess');
+    final allocatehostel = prefs.getString('Hostel');
     setState(() {
       currMess = allocatehostel ?? ' ';
     });
@@ -214,12 +305,14 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                 ),
               const SizedBox(height: 24),
               ] else ...[
-                Text(
-                  "Applied for mess change in: $selectedHostel",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.green,
+                Container(
+                  child: Text(
+                    "Applied for mess change in: $selectedHostel",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.green,
+                    ),
                   ),
                 ),
               ],
@@ -228,10 +321,17 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                   child: ElevatedButton(
                     onPressed: selectedHostel == null
                         ? null
-                        : () {
+                        : () async {
+                      final prefs = await SharedPreferences.getInstance();
                       setState(() {
                         isSubmitted = true;
                       });
+                      await prefs.setString('Hostel', selectedHostel!);
+                      await prefs.setBool('clicked', true);
+                      // Save the current date as the last press date
+                      await prefs.setString('lastResetDate', DateTime.now().toIso8601String());
+                      fetchHostelData(selectedHostel!, roll);
+                      displaydata();
                       _showConfirmationDialog();
                     },
                     style: ElevatedButton.styleFrom(
