@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend1/apis/users/user.dart';
+import 'package:frontend1/widgets/common/hostel_details.dart';
 import 'package:frontend1/widgets/confirmation_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
@@ -43,13 +44,101 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
     super.initState();
     fetchUserData();
     getAllocatedHostel();
+    _resetButtonStateIfNewWeek(); // Reset state if it's a new week (Monday)
+    _checkAllowedDays();
+    displaydata();
+  }
+
+  late String Message = 'You can apply for any Hostel';
+  void displaydata() async {
+    final prefs = await SharedPreferences.getInstance();
+    final pressedorNot = prefs.getBool('clicked');
+    final currHostel = prefs.getString('Hostel');
+    final gotHostel = prefs.getBool('gotMess');
+    final now = DateTime.now();
+
+    if (now.weekday == DateTime.monday ||
+        now.weekday == DateTime.tuesday ||
+        now.weekday == DateTime.wednesday) {
+      if (pressedorNot == true) {
+        setState(() {
+          Message = 'You have applied for this $currHostel';
+        });
+      } else {
+        setState(() {
+          Message = 'You can apply for any Hostel';
+        });
+      }
+    } else {
+      if (pressedorNot == true) {
+        if (gotHostel == true) {
+          setState(() {
+            Message = 'You have gotten hostel $currHostel';
+          });
+        } else {
+          setState(() {
+            Message = "We are sorry you havent got your mess changed";
+          });
+        }
+      } else {
+        setState(() {
+          Message = 'You can Apply next week';
+        });
+      }
+    }
+  }
+
+  // Reset button state if it's a new week (Monday)
+  Future<void> _resetButtonStateIfNewWeek() async {
+    final now = DateTime.now();
+    final prefs = await SharedPreferences.getInstance();
+    final lastResetDateString = prefs.getString('lastResetDate');
+
+    if (lastResetDateString != null) {
+      final lastResetDate = DateTime.parse(lastResetDateString);
+
+      // Check if today is Monday and it's a new week compared to the last reset date
+      if ((now.weekday == DateTime.monday ||
+              now.weekday == DateTime.tuesday ||
+              now.weekday == DateTime.wednesday) &&
+          now.isAfter(_getStartOfNextWeek(lastResetDate))) {
+        setState(() {
+          isSubmitted = false;
+        });
+      }
+    } else {
+      setState(() {
+        isSubmitted = false;
+      });
+      // Initialize the reset date if it doesn't exist
+    }
+  }
+
+  // Get the start of the next week (Monday) after a given date
+  DateTime _getStartOfNextWeek(DateTime date) {
+    final daysToNextMonday = (DateTime.monday - date.weekday + 7) % 7;
+    return date.add(Duration(days: daysToNextMonday));
+  }
+
+  // Check if the button should be enabled
+  Future<void> _checkAllowedDays() async {
+    final now = DateTime.now();
+    final prefs = await SharedPreferences.getInstance();
+    final clicked = prefs.getBool('clicked') ?? false;
+
+    // Update the state based on the condition
+    setState(() {
+      isSubmitted = now.weekday >= DateTime.monday &&
+          now.weekday <= DateTime.wednesday &&
+          !clicked;
+    });
   }
 
   void getAllocatedHostel() async {
     final prefs = await SharedPreferences.getInstance();
-    final allocateHostel = prefs.getString('currMess');
+    final allocatehostel = prefs.getString('Hostel');
     setState(() {
-      currMess = allocateHostel ?? 'Not Assigned';
+      currMess = allocatehostel ?? 'Not Assigned';
     });
   }
 
@@ -103,7 +192,10 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
         ),
         title: const Text(
           "Change Mess",
-          style: TextStyle(fontFamily: 'OpenSans_bold',fontWeight: FontWeight.w400, fontSize: 24),
+          style: TextStyle(
+              fontFamily: 'OpenSans_bold',
+              fontWeight: FontWeight.w400,
+              fontSize: 24),
         ),
       ),
       body: RefreshIndicator(
@@ -119,7 +211,8 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                   "Current Mess",
                   style: TextStyle(
                       fontFamily: 'OpenSans_regular',
-                      fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
+                      fontSize: 16,
+                      color: Color.fromRGBO(0, 0, 0, 1)),
                 ),
                 Text(
                   currMess,
@@ -135,33 +228,40 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                   "Name",
                   style: TextStyle(
                       fontFamily: 'OpenSans_regular',
-                      fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
+                      fontSize: 16,
+                      color: Color.fromRGBO(0, 0, 0, 1)),
                 ),
                 Text(
                   name.isNotEmpty ? name : 'Not provided',
                   style: const TextStyle(
                       fontFamily: 'OpenSans_regular',
-                      fontSize: 18, fontWeight: FontWeight.w400),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w400),
                 ),
                 const SizedBox(height: 24),
                 const Text(
                   "Roll Number",
                   style: TextStyle(
                       fontFamily: 'OpenSans_regular',
-                      fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
+                      fontSize: 16,
+                      color: Color.fromRGBO(0, 0, 0, 1)),
                 ),
                 Text(
                   roll.isNotEmpty ? roll : 'Not provided',
                   style: const TextStyle(
                       fontFamily: 'OpenSans_regular',
-                      fontSize: 19, fontWeight: FontWeight.w400),
+                      fontSize: 19,
+                      fontWeight: FontWeight.w400),
                 ),
                 const SizedBox(height: 24),
                 if (!isSubmitted) ...[
                   const SizedBox(height: 8),
                   const Text(
                     "Change mess to:",
-                    style: TextStyle(fontFamily: 'OpenSans_regular',fontSize: 16, fontWeight: FontWeight.w400),
+                    style: TextStyle(
+                        fontFamily: 'OpenSans_regular',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400),
                   ),
                   const SizedBox(height: 8),
                   CustomDropdown<String>(
@@ -177,7 +277,10 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                   const SizedBox(height: 24),
                   const Text(
                     "Reason for changing",
-                    style: TextStyle(fontFamily: 'OpenSans_regular',fontSize: 15, fontWeight: FontWeight.w400),
+                    style: TextStyle(
+                        fontFamily: 'OpenSans_regular',
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400),
                   ),
                   const SizedBox(height: 8),
                   Container(
@@ -206,12 +309,15 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       padding: const EdgeInsets.symmetric(
-                        vertical: 16.0, horizontal: 12.0,
+                        vertical: 16.0,
+                        horizontal: 12.0,
                       ), // Padding inside the container
                       child: Center(
                         child: Column(
-                          mainAxisSize: MainAxisSize.min, // Ensures the column takes up minimal space
-                          crossAxisAlignment: CrossAxisAlignment.start, // Aligns text to the start
+                          mainAxisSize: MainAxisSize
+                              .min, // Ensures the column takes up minimal space
+                          crossAxisAlignment: CrossAxisAlignment
+                              .start, // Aligns text to the start
                           children: [
                             Center(
                               child: const Text(
@@ -227,11 +333,10 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                               child: Text(
                                 "$selectedHostel",
                                 style: const TextStyle(
-                                  fontFamily: 'OpenSans_bold',
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w400,
-                                  color: Color.fromRGBO(57, 77, 198, 1)
-                                ),
+                                    fontFamily: 'OpenSans_bold',
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w400,
+                                    color: Color.fromRGBO(57, 77, 198, 1)),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -266,8 +371,9 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                       ),
                       child: const Text(
                         "Confirm Your Choice",
-                        style:
-                            TextStyle(fontFamily: 'OpenSans_regular',color: Color.fromRGBO(255, 255, 255, 1)),
+                        style: TextStyle(
+                            fontFamily: 'OpenSans_regular',
+                            color: Color.fromRGBO(255, 255, 255, 1)),
                       ),
                     ),
                   ),
