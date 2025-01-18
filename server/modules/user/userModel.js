@@ -63,6 +63,13 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
+
+        applied_hostel_string: {
+            type: String,
+            default: function () {
+                return ""
+            }
+        },
         
         role: {
             type: String,

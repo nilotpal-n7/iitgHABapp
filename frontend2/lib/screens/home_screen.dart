@@ -1,223 +1,110 @@
-import 'package:flutter/material.dart';
-import 'package:frontend1/apis/users/user.dart';
-import 'package:frontend1/screens/mess_change_screen.dart';
-import 'package:frontend1/screens/profile_screen.dart';
-import 'package:marquee/marquee.dart';
+// import 'package:flutter/material.dart';
+// import 'package:frontend1/apis/users/user.dart';
+// import 'package:frontend1/widgets/mess_change_widget.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 
-class homeScreen extends StatefulWidget {
-  const homeScreen({super.key});
+// class HomeScreen extends StatefulWidget {
+//   const HomeScreen({super.key});
 
-  @override
-  State<homeScreen> createState() => _HomeScreenState();
-}
+//   @override
+//   State<HomeScreen> createState() => _MessChangeHomeState();
+// }
 
-class _HomeScreenState extends State<homeScreen> {
-  String name = '';
-  bool shouldScroll = false;
+// class _MessChangeHomeState extends State<HomeScreen> {
+//   String name = '';
+//   String email = '';
+//   String roll = '';
+//   String hostel = '';
+//   String currMess = '';
 
-  @override
-  void initState() {
-    super.initState();
-    fetchUserData();
-  }
+//   @override
+//   void initState() {
+//     // TODO: implement initState
+//     super.initState();
+//     fetchUserData();
+//     getAllocatedHostel();
+//   }
 
-  Future<void> fetchUserData() async {
-    final userDetails = await fetchUserDetails();
-    print("User details are:");
-    print(userDetails);
-    if (userDetails != null) {
-      setState(() {
-        // Extract only the first name
-        name = (userDetails['name'] ?? '').split(' ').first;
-      });
-      checkIfTextFits();
-    } else {
-      print("Failed to load user details.");
-    }
-  }
 
-  void checkIfTextFits() {
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: "Hello, ${name.isNotEmpty ? name : 'User'} 🖐️",
-        style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-      ),
-      maxLines: 1,
-      textDirection: TextDirection.ltr,
-    )..layout();
+//   void getAllocatedHostel() async {
+//     final prefs = await SharedPreferences.getInstance();
+//     final allocatehostel = prefs.getString('currMess');
+//     setState(() {
+//       currMess = allocatehostel ?? ' ';
+//     });
+//   }
 
-    final availableWidth = MediaQuery.of(context).size.width - 32; // Padding
+//   Future<void> fetchUserData() async {
+//     final userDetails = await fetchUserDetails();
+//     print("USer details is");
+//     print(userDetails);
+//     if (userDetails != null) {
+//       setState(() {
+//         name = userDetails['name'] ?? '';
+//         email = userDetails['email'] ?? '';
+//         roll = userDetails['roll'] ?? '';
+//       });
+//     } else {
+//       print("Failed to load user details.");
+//     }
+//   }
 
-    setState(() {
-      shouldScroll = textPainter.size.width > availableWidth;
-    });
-  }
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         backgroundColor: Colors.deepOrange,
+//         title: Text("Mess"),
+//       ),
+//       body: SingleChildScrollView(
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Container(
+//               width: double.infinity,
+//               child: Card(
+//                 elevation: 5,
+//                 shape: RoundedRectangleBorder(
+//                   borderRadius: BorderRadius.circular(15),
+//                 ),
+//                 child: Padding(
+//                   padding: const EdgeInsets.all(16.0),
+//                   child: Column(
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       _buildProfileItem("Name", name),
+//                       SizedBox(height: 16),
+//                       _buildProfileItem("Roll Number", roll),
+//                       SizedBox(height: 16),
+//                       _buildProfileItem("Email", email),
+//                       SizedBox(height: 16),
+//                       _buildProfileItem("Hostel", hostel),
+//                       SizedBox(height: 16),
+//                       _buildProfileItem("Allocated Mess", currMess),
+//                       const SizedBox(height: 20,),
+//                       ChangeMessWidget(),
+//                     ],
+//                   ),
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[200],
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 15.0),
-          child: const Image(image: AssetImage("assets/images/Handlogo.png")),
-        ),
-        title: const Text(
-          "HAB\nIIT Guwahati",
-          style: TextStyle(color: Colors.black, fontSize: 16),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfileScreen()),
-              );
-            },
-            icon: const Icon(Icons.person_outlined, color: Colors.black),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.search_outlined, color: Colors.black),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 50,
-              child: shouldScroll
-                  ? Marquee(
-                text: "Hello, ${name.isNotEmpty ? name : 'User'} 🖐️",
-                style: const TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                ),
-                scrollAxis: Axis.horizontal,
-                blankSpace: 20.0,
-                velocity: 30.0,
-                pauseAfterRound: const Duration(seconds: 2),
-                startPadding: 10.0,
-                accelerationDuration: const Duration(seconds: 1),
-                accelerationCurve: Curves.linear,
-                decelerationDuration: const Duration(milliseconds: 500),
-                decelerationCurve: Curves.easeOut,
-              )
-                  : Text(
-                "Hello, ${name.isNotEmpty ? name : 'User'} 🖐️",
-                style: const TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Flexible(
-                  child: GestureDetector(
-                    onTap: () {
-                      // Navigate to the next page
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => MessChangeScreen()),
-                      );
-                    },
-                    child: const FeatureCard(
-                      title: "Change Mess",
-                      color: Color.fromRGBO(192, 200, 245, 1),
-                      circleColor: Color.fromRGBO(168, 177, 230, 1),
-                      icon: Icons.arrow_outward,
-                      iconAlignment: Alignment.bottomRight,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                const Flexible(
-                  child: FeatureCard(
-                    title: "More features\ncoming soon",
-                    color: Color.fromRGBO(206, 192, 129, 1),
-                    isCentered: true,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class FeatureCard extends StatelessWidget {
-  final String title;
-  final Color color;
-  final Color? circleColor;
-  final IconData? icon;
-  final AlignmentGeometry iconAlignment;
-  final bool isCentered;
-
-  const FeatureCard({
-    super.key,
-    required this.title,
-    required this.color,
-    this.circleColor,
-    this.icon,
-    this.iconAlignment = Alignment.bottomCenter,
-    this.isCentered = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 175,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(32),
-        ),
-        child: Stack(
-          children: [
-            if (isCentered)
-              Center(
-                child: Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              )
-            else
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            if (icon != null)
-              Align(
-                alignment: iconAlignment,
-                child: CircleAvatar(
-                  radius: 16,
-                  backgroundColor: circleColor ?? Colors.white,
-                  child: Icon(icon, color: Colors.black, size: 16),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+//   // Helper function to build each label and value pair
+//   Widget _buildProfileItem(String label, String value) {
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         Text(label,
+//             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+//         SizedBox(height: 4),
+//         Text(value.isNotEmpty ? value : 'Not provided',
+//             style: TextStyle(fontSize: 16)),
+//       ],
+//     );
+//   }
+// }
