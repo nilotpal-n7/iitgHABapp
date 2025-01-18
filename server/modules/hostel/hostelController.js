@@ -45,6 +45,8 @@ const applyMessChange = async (req, res) => {
 
         user.mess_change_button_pressed = true;
 
+        user.applied_hostel_string = hostel_name;
+
         if (hostel != user.hostel && hostel.curr_cap < 150 && !user.applied_for_mess_changed) {
 
             //const user_permanent_hostel = await Hostel.findById(user.hostel);

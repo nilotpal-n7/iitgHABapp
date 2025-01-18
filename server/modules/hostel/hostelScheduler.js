@@ -42,6 +42,8 @@ const sundayScheduler = () => {
                     user.next_mess = user.hostel;
                     user.mess_change_button_pressed = false;
 
+                    user.applied_hostel_string = "";
+
                     await user.save();
                 }
             })
