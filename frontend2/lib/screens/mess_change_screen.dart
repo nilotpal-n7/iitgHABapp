@@ -289,11 +289,11 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
+                ),
               ],
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }
