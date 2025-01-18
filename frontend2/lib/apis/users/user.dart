@@ -38,8 +38,12 @@ Future<Map<String, String>?> fetchUserDetails() async {
       prefs.setString('email', mail);
       final String roll = userData['rollNumber'];
       final String CurrSubscribedMess = userData['curr_subscribed_mess'];
+      final String appliedMess = userData['applied_hostel_string'];
       final bool gotHostel = userData['got_mess_changed'];
+      final bool buttonPressed = userData['mess_change_button_pressed'];
       prefs.setBool('gotMess', gotHostel);
+      prefs.setBool('buttonpressed', buttonPressed);
+      prefs.setString('appliedMess', appliedMess);
       prefs.setString('rollNo', roll);
       prefs.setString('currMess', CurrSubscribedMess);
 

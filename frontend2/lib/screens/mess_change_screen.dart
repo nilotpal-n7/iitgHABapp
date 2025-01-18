@@ -17,8 +17,11 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
   String email = '';
   String roll = '';
   String currMess = '';
+  String applyMess = '';
   String? selectedHostel;
   bool isSubmitted = false;
+  bool correctDay = false;
+  bool gotMess = false;
 
   final List<String> hostels = [
     'Lohit',
@@ -44,101 +47,41 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
     super.initState();
     fetchUserData();
     getAllocatedHostel();
-    _resetButtonStateIfNewWeek(); // Reset state if it's a new week (Monday)
+     // Reset state if it's a new week (Monday)
     _checkAllowedDays();
-    displaydata();
   }
+
+
+
 
   late String Message = 'You can apply for any Hostel';
-  void displaydata() async {
-    final prefs = await SharedPreferences.getInstance();
-    final pressedorNot = prefs.getBool('clicked');
-    final currHostel = prefs.getString('Hostel');
-    final gotHostel = prefs.getBool('gotMess');
-    final now = DateTime.now();
 
-    if (now.weekday == DateTime.monday ||
-        now.weekday == DateTime.tuesday ||
-        now.weekday == DateTime.wednesday) {
-      if (pressedorNot == true) {
-        setState(() {
-          Message = 'You have applied for this $currHostel';
-        });
-      } else {
-        setState(() {
-          Message = 'You can apply for any Hostel';
-        });
-      }
-    } else {
-      if (pressedorNot == true) {
-        if (gotHostel == true) {
-          setState(() {
-            Message = 'You have gotten hostel $currHostel';
-          });
-        } else {
-          setState(() {
-            Message = "We are sorry you havent got your mess changed";
-          });
-        }
-      } else {
-        setState(() {
-          Message = 'You can Apply next week';
-        });
-      }
-    }
-  }
-
-  // Reset button state if it's a new week (Monday)
-  Future<void> _resetButtonStateIfNewWeek() async {
-    final now = DateTime.now();
-    final prefs = await SharedPreferences.getInstance();
-    final lastResetDateString = prefs.getString('lastResetDate');
-
-    if (lastResetDateString != null) {
-      final lastResetDate = DateTime.parse(lastResetDateString);
-
-      // Check if today is Monday and it's a new week compared to the last reset date
-      if ((now.weekday == DateTime.monday ||
-              now.weekday == DateTime.tuesday ||
-              now.weekday == DateTime.wednesday) &&
-          now.isAfter(_getStartOfNextWeek(lastResetDate))) {
-        setState(() {
-          isSubmitted = false;
-        });
-      }
-    } else {
-      setState(() {
-        isSubmitted = false;
-      });
-      // Initialize the reset date if it doesn't exist
-    }
-  }
-
-  // Get the start of the next week (Monday) after a given date
-  DateTime _getStartOfNextWeek(DateTime date) {
-    final daysToNextMonday = (DateTime.monday - date.weekday + 7) % 7;
-    return date.add(Duration(days: daysToNextMonday));
-  }
 
   // Check if the button should be enabled
   Future<void> _checkAllowedDays() async {
     final now = DateTime.now();
     final prefs = await SharedPreferences.getInstance();
-    final clicked = prefs.getBool('clicked') ?? false;
-
+    final clicked = prefs.getBool('buttonpressed') ?? false;
+    final gotMess1 = prefs.getBool('gotMess') ?? false;
+    print("you pressed : $clicked");
     // Update the state based on the condition
+
     setState(() {
-      isSubmitted = now.weekday >= DateTime.monday &&
-          now.weekday <= DateTime.wednesday &&
-          !clicked;
+      correctDay = (now.weekday >= DateTime.monday &&
+          now.weekday <= DateTime.wednesday );
+      isSubmitted = clicked ;
+      gotMess = gotMess1;
     });
+    print("isSubmitted is: $isSubmitted");
   }
 
   void getAllocatedHostel() async {
     final prefs = await SharedPreferences.getInstance();
-    final allocatehostel = prefs.getString('Hostel');
+    final currentMess = prefs.getString('currMess');
+    final appliedMess = prefs.getString('appliedMess');
     setState(() {
-      currMess = allocatehostel ?? 'Not Assigned';
+      currMess = currentMess ?? 'Not Assigned';
+      applyMess = appliedMess ?? '';
     });
   }
 
@@ -160,9 +103,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
       context: context,
       builder: (context) => ConfirmationDialog(
         onConfirm: () {
-          setState(() {
-            isSubmitted = true;
-          });
+
           Navigator.pop(context);
         },
       ),
@@ -198,183 +139,154 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
               fontSize: 24),
         ),
       ),
-      body: RefreshIndicator(
-        onRefresh: _onRefresh,
-        child: SingleChildScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Current Mess",
-                  style: TextStyle(
-                      fontFamily: 'OpenSans_regular',
-                      fontSize: 16,
-                      color: Color.fromRGBO(0, 0, 0, 1)),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Current Mess",
+                style: TextStyle(fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
+              ),
+              Text(
+                currMess,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w400,
+                  color: Color.fromRGBO(57, 77, 198, 1),
                 ),
-                Text(
-                  currMess,
-                  style: const TextStyle(
-                    fontFamily: 'OpenSans_bold',
-                    fontSize: 24,
-                    fontWeight: FontWeight.w400,
-                    color: Color.fromRGBO(57, 77, 198, 1),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                "Name",
+                style: TextStyle(fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
+              ),
+              Text(
+                name.isNotEmpty ? name : 'Not provided',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                "Roll Number",
+                style: TextStyle(fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
+              ),
+              Text(
+                roll.isNotEmpty ? roll : 'Not provided',
+                style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w400),
+              ),
+              const SizedBox(height: 24),
+              if (!isSubmitted && correctDay) ...[
+                const SizedBox(height: 8),
+                const Text(
+                  "Change mess to:",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                ),
+                const SizedBox(height: 8),
+                CustomDropdown<String>(
+                  controller: hostelController,
+                  items: hostels,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedHostel = value;
+                    });
+                  },
+                  hintText: "Change Mess to: ${selectedHostel ?? ''}",
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  "Reason for changing",
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const TextField(
+                    maxLines: 5,
+                    decoration: const InputDecoration(
+                      hintText: "Write your reason here",
+                      contentPadding: EdgeInsets.all(16.0),
+                      border: InputBorder.none,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                const Text(
-                  "Name",
-                  style: TextStyle(
-                      fontFamily: 'OpenSans_regular',
-                      fontSize: 16,
-                      color: Color.fromRGBO(0, 0, 0, 1)),
-                ),
-                Text(
-                  name.isNotEmpty ? name : 'Not provided',
-                  style: const TextStyle(
-                      fontFamily: 'OpenSans_regular',
+                const SizedBox(height: 24),
+              ] else if(!correctDay && isSubmitted && !gotMess) ...[
+                Container(
+                  child: const Text(
+                    "Sorry! Apply again Next Week",
+                    style: const TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w400),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  "Roll Number",
-                  style: TextStyle(
-                      fontFamily: 'OpenSans_regular',
-                      fontSize: 16,
-                      color: Color.fromRGBO(0, 0, 0, 1)),
-                ),
-                Text(
-                  roll.isNotEmpty ? roll : 'Not provided',
-                  style: const TextStyle(
-                      fontFamily: 'OpenSans_regular',
-                      fontSize: 19,
-                      fontWeight: FontWeight.w400),
-                ),
-                const SizedBox(height: 24),
-                if (!isSubmitted) ...[
-                  const SizedBox(height: 8),
-                  const Text(
-                    "Change mess to:",
-                    style: TextStyle(
-                        fontFamily: 'OpenSans_regular',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400),
+                      fontWeight: FontWeight.w400,
+                      color: Colors.green,
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  CustomDropdown<String>(
-                    controller: hostelController,
-                    items: hostels,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedHostel = value;
-                      });
+                ),
+                const SizedBox(height: 24),
+              ] else if(!correctDay && isSubmitted && gotMess) ...[
+                Container(
+                  child:  Text(
+                    "Your Alloted Mess for Next Week is $applyMess",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.green,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ] else if(correctDay && isSubmitted ) ...[
+                Container(
+                  child:  Text(
+                    "You have Applied for the mess $selectedHostel",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.green,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24,),
+              ] else ...[
+                Container(
+                  child: const Text(
+                    "You can Apply Next week",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.green,
+                    ),
+                  ),
+                ),
+              ],
+              if (!isSubmitted)
+                Center(
+                  child: ElevatedButton(
+                    onPressed: selectedHostel == null
+                        ? null
+                        : () async {
+                      // Save the current date as the last press date
+                      fetchHostelData(selectedHostel!, roll);
+                      _showConfirmationDialog();
                     },
-                    hintText: "Change Mess to: ${selectedHostel ?? ''}",
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    "Reason for changing",
-                    style: TextStyle(
-                        fontFamily: 'OpenSans_regular',
-                        fontSize: 15,
-                        fontWeight: FontWeight.w400),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: TextField(
-                      maxLines: 5,
-                      decoration: const InputDecoration(
-                        hintText: "Write your reason here",
-                        contentPadding: EdgeInsets.all(16.0),
-                        border: InputBorder.none,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: selectedHostel == null
+                          ? Colors.grey
+                          : const Color.fromRGBO(57, 77, 198, 1),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 40,
+                        vertical: 16,
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ] else ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 8.0,
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
+                      shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 16.0,
-                        horizontal: 12.0,
-                      ), // Padding inside the container
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize
-                              .min, // Ensures the column takes up minimal space
-                          crossAxisAlignment: CrossAxisAlignment
-                              .start, // Aligns text to the start
-                          children: [
-                            Center(
-                              child: const Text(
-                                "Applied for mess change in:",
-                                style: TextStyle(
-                                  fontFamily: 'OpenSans_regular',
-                                  fontSize: 16,
-                                  color: Color.fromRGBO(0, 0, 0, 1),
-                                ),
-                              ),
-                            ),
-                            Center(
-                              child: Text(
-                                "$selectedHostel",
-                                style: const TextStyle(
-                                    fontFamily: 'OpenSans_bold',
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w400,
-                                    color: Color.fromRGBO(57, 77, 198, 1)),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                          ],
-                        ),
-                      ),
                     ),
-                  )
-                ],
-                if (!isSubmitted)
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: selectedHostel == null
-                          ? null
-                          : () {
-                              setState(() {
-                                isSubmitted = true;
-                              });
-                              _showConfirmationDialog();
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: selectedHostel == null
-                            ? Colors.grey
-                            : const Color.fromRGBO(57, 77, 198, 1),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 40,
-                          vertical: 16,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: const Text(
-                        "Confirm Your Choice",
-                        style: TextStyle(
-                            fontFamily: 'OpenSans_regular',
-                            color: Color.fromRGBO(255, 255, 255, 1)),
-                      ),
+                    child: const Text(
+                      "Confirm Your Choice",
+                      style: TextStyle(color: Colors.white),
                     ),
                   ),
               ],

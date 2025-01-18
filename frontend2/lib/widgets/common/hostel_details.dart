@@ -27,3 +27,6 @@ Future<Map<String, dynamic>> fetchHostelData(String hostelName, String rollNumbe
     throw Exception('Error occurred: $e');
   }
 }
+
+
+
