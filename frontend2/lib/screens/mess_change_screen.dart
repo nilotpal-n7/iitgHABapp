@@ -36,7 +36,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
   ];
 
   final SingleSelectController<String> hostelController =
-  SingleSelectController<String>(null);
+      SingleSelectController<String>(null);
 
   @override
   void initState() {
@@ -80,6 +80,14 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
     );
   }
 
+  // Refresh function for pull-to-refresh
+  Future<void> _onRefresh() async {
+    await fetchUserData(); // Refresh data when pulled
+    setState(() {
+      // Optionally, update state here if needed after refresh
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,124 +103,176 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
         ),
         title: const Text(
           "Change Mess",
-          style: TextStyle(fontWeight: FontWeight.w400, fontSize: 24),
+          style: TextStyle(fontFamily: 'OpenSans_bold',fontWeight: FontWeight.w400, fontSize: 24),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Current Mess",
-                style: TextStyle(fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
-              ),
-              Text(
-                currMess,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w400,
-                  color: Color.fromRGBO(57, 77, 198, 1),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                "Name",
-                style: TextStyle(fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
-              ),
-              Text(
-                name.isNotEmpty ? name : 'Not provided',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                "Roll Number",
-                style: TextStyle(fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
-              ),
-              Text(
-                roll.isNotEmpty ? roll : 'Not provided',
-                style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w400),
-              ),
-              const SizedBox(height: 24),
-              if (!isSubmitted) ...[
-                const SizedBox(height: 8),
+      body: RefreshIndicator(
+        onRefresh: _onRefresh,
+        child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 const Text(
-                  "Change mess to:",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                  "Current Mess",
+                  style: TextStyle(
+                      fontFamily: 'OpenSans_regular',
+                      fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
                 ),
-                const SizedBox(height: 8),
-                CustomDropdown<String>(
-                  controller: hostelController,
-                  items: hostels,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedHostel = value;
-                    });
-                  },
-                  hintText: "Change Mess to: ${selectedHostel ?? ''}",
+                Text(
+                  currMess,
+                  style: const TextStyle(
+                    fontFamily: 'OpenSans_bold',
+                    fontSize: 24,
+                    fontWeight: FontWeight.w400,
+                    color: Color.fromRGBO(57, 77, 198, 1),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  "Name",
+                  style: TextStyle(
+                      fontFamily: 'OpenSans_regular',
+                      fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
+                ),
+                Text(
+                  name.isNotEmpty ? name : 'Not provided',
+                  style: const TextStyle(
+                      fontFamily: 'OpenSans_regular',
+                      fontSize: 18, fontWeight: FontWeight.w400),
                 ),
                 const SizedBox(height: 24),
                 const Text(
-                  "Reason for changing",
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
+                  "Roll Number",
+                  style: TextStyle(
+                      fontFamily: 'OpenSans_regular',
+                      fontSize: 16, color: Color.fromRGBO(0, 0, 0, 1)),
                 ),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                Text(
+                  roll.isNotEmpty ? roll : 'Not provided',
+                  style: const TextStyle(
+                      fontFamily: 'OpenSans_regular',
+                      fontSize: 19, fontWeight: FontWeight.w400),
+                ),
+                const SizedBox(height: 24),
+                if (!isSubmitted) ...[
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Change mess to:",
+                    style: TextStyle(fontFamily: 'OpenSans_regular',fontSize: 16, fontWeight: FontWeight.w400),
                   ),
-                  child: TextField(
-                    maxLines: 5,
-                    decoration: const InputDecoration(
-                      hintText: "Write your reason here",
-                      contentPadding: EdgeInsets.all(16.0),
-                      border: InputBorder.none,
+                  const SizedBox(height: 8),
+                  CustomDropdown<String>(
+                    controller: hostelController,
+                    items: hostels,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedHostel = value;
+                      });
+                    },
+                    hintText: "Change Mess to: ${selectedHostel ?? ''}",
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    "Reason for changing",
+                    style: TextStyle(fontFamily: 'OpenSans_regular',fontSize: 15, fontWeight: FontWeight.w400),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: TextField(
+                      maxLines: 5,
+                      decoration: const InputDecoration(
+                        hintText: "Write your reason here",
+                        contentPadding: EdgeInsets.all(16.0),
+                        border: InputBorder.none,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
-              ] else ...[
-                Text(
-                  "Applied for mess change in: $selectedHostel",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.green,
-                  ),
-                ),
-              ],
-              if (!isSubmitted)
-                Center(
-                  child: ElevatedButton(
-                    onPressed: selectedHostel == null
-                        ? null
-                        : () {
-                      setState(() {
-                        isSubmitted = true;
-                      });
-                      _showConfirmationDialog();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: selectedHostel == null
-                          ? Colors.grey
-                          : const Color.fromRGBO(57, 77, 198, 1),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 40,
-                        vertical: 16,
-                      ),
-                      shape: RoundedRectangleBorder(
+                  const SizedBox(height: 24),
+                ] else ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                       ),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 12.0,
+                      ), // Padding inside the container
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min, // Ensures the column takes up minimal space
+                          crossAxisAlignment: CrossAxisAlignment.start, // Aligns text to the start
+                          children: [
+                            Center(
+                              child: const Text(
+                                "Applied for mess change in:",
+                                style: TextStyle(
+                                  fontFamily: 'OpenSans_regular',
+                                  fontSize: 16,
+                                  color: Color.fromRGBO(0, 0, 0, 1),
+                                ),
+                              ),
+                            ),
+                            Center(
+                              child: Text(
+                                "$selectedHostel",
+                                style: const TextStyle(
+                                  fontFamily: 'OpenSans_bold',
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color.fromRGBO(57, 77, 198, 1)
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                        ),
+                      ),
                     ),
-                    child: const Text(
-                      "Confirm Your Choice",
-                      style: TextStyle(color: Colors.white),
+                  )
+                ],
+                if (!isSubmitted)
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: selectedHostel == null
+                          ? null
+                          : () {
+                              setState(() {
+                                isSubmitted = true;
+                              });
+                              _showConfirmationDialog();
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: selectedHostel == null
+                            ? Colors.grey
+                            : const Color.fromRGBO(57, 77, 198, 1),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 40,
+                          vertical: 16,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        "Confirm Your Choice",
+                        style:
+                            TextStyle(fontFamily: 'OpenSans_regular',color: Color.fromRGBO(255, 255, 255, 1)),
+                      ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

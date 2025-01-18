@@ -63,7 +63,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         title: const Text(
           "Profile",
-          style: TextStyle(fontWeight: FontWeight.w400, fontSize: 24),
+          style: TextStyle(fontFamily: 'OpenSans_bold',fontWeight: FontWeight.w400, fontSize: 24),
         ),
       ),
       body: SingleChildScrollView(
@@ -75,6 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const Text(
                 "Name:",
                 style: TextStyle(
+                  fontFamily: 'OpenSans_regular',
                   fontSize: 16,
                   color: Color.fromRGBO(0, 0, 0, 1),
                 ),
@@ -82,6 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Text(
                 name.isNotEmpty ? name : 'Not provided',
                 style: const TextStyle(
+                  fontFamily: 'OpenSans_bold',
                   fontSize: 24,
                   fontWeight: FontWeight.w400,
                   color: Color.fromRGBO(57, 77, 198, 1),
@@ -91,6 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const Text(
                 "Roll number:",
                 style: TextStyle(
+                  fontFamily: 'OpenSans_regular',
                   fontSize: 16,
                   color: Color.fromRGBO(0, 0, 0, 1),
                 ),
@@ -98,6 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Text(
                 roll.isNotEmpty ? roll : 'Not provided',
                 style: const TextStyle(
+                  fontFamily: 'OpenSans_regular',
                   fontSize: 24,
                   fontWeight: FontWeight.w400,
                   color: Color.fromRGBO(57, 77, 198, 1),
@@ -107,14 +111,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const Text(
                 "Email:",
                 style: TextStyle(
+                  fontFamily: 'OpenSans_regular',
                   fontSize: 16,
                   color: Color.fromRGBO(0, 0, 0, 1),
                 ),
               ),
-              const SizedBox(height: 16),
               Text(
                 email.isNotEmpty ? email : 'Not provided',
                 style: const TextStyle(
+                  fontFamily: 'OpenSans_regular',
                   fontSize: 24,
                   fontWeight: FontWeight.w400,
                   color: Color.fromRGBO(57, 77, 198, 1),
@@ -124,14 +129,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const Text(
                 "Hostel:",
                 style: TextStyle(
+                  fontFamily: 'OpenSans_regular',
                   fontSize: 16,
                   color: Color.fromRGBO(0, 0, 0, 1),
                 ),
               ),
-              const SizedBox(height: 16),
               Text(
                 hostel.isNotEmpty ? hostel : 'Not provided',
                 style: const TextStyle(
+                  fontFamily: 'OpenSans_regular',
                   fontSize: 24,
                   fontWeight: FontWeight.w400,
                   color: Color.fromRGBO(57, 77, 198, 1),
@@ -141,14 +147,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const Text(
                 "Allocated Mess:",
                 style: TextStyle(
+                  fontFamily: 'OpenSans_regular',
                   fontSize: 16,
                   color: Color.fromRGBO(0, 0, 0, 1),
                 ),
               ),
-              const SizedBox(height: 16),
               Text(
                 currMess.isNotEmpty ? currMess : 'Not provided',
                 style: const TextStyle(
+                  fontFamily: 'OpenSans_regular',
                   fontSize: 24,
                   fontWeight: FontWeight.w400,
                   color: Color.fromRGBO(57, 77, 198, 1),

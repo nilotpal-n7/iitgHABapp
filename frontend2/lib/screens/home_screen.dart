@@ -66,7 +66,7 @@ class _HomeScreenState extends State<homeScreen> {
         ),
         title: const Text(
           "HAB\nIIT Guwahati",
-          style: TextStyle(color: Colors.black, fontSize: 16),
+          style: TextStyle(fontFamily: 'OpenSans-Bold',color: Colors.black, fontSize: 16),
         ),
         actions: [
           IconButton(
@@ -91,13 +91,13 @@ class _HomeScreenState extends State<homeScreen> {
           children: [
             const SizedBox(height: 16),
             SizedBox(
-              height: 50,
+              height: 80,
               child: shouldScroll
                   ? Marquee(
                 text: "Hello, ${name.isNotEmpty ? name : 'User'} 🖐️",
                 style: const TextStyle(
+                  fontFamily: 'OpenSans_regular',
                   fontSize: 40,
-                  fontWeight: FontWeight.bold,
                 ),
                 scrollAxis: Axis.horizontal,
                 blankSpace: 20.0,
@@ -109,11 +109,36 @@ class _HomeScreenState extends State<homeScreen> {
                 decelerationDuration: const Duration(milliseconds: 500),
                 decelerationCurve: Curves.easeOut,
               )
-                  : Text(
-                "Hello, ${name.isNotEmpty ? name : 'User'} 🖐️",
-                style: const TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
+                  : RichText(
+                text: TextSpan(
+                  children: [
+                    const TextSpan(
+                      text: "Hello, ",
+                      style: TextStyle(
+                        fontFamily: 'OpenSans_regular',
+                        fontSize: 40,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.black,
+                      ),
+                    ),
+                    TextSpan(
+                      text: name.isNotEmpty ? name : 'User',
+                      style: const TextStyle(
+                        fontFamily: 'OpenSans_bold',
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const TextSpan(
+                      text: " 🖐️",
+                      style: TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -193,6 +218,7 @@ class FeatureCard extends StatelessWidget {
                   title,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
+                    fontFamily: 'OpenSans_regular',
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -202,6 +228,7 @@ class FeatureCard extends StatelessWidget {
               Text(
                 title,
                 style: const TextStyle(
+                  fontFamily: 'OpenSans_regular',
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
