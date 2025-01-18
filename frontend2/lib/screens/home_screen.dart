@@ -4,14 +4,14 @@ import 'package:frontend1/screens/mess_change_screen.dart';
 import 'package:frontend1/screens/profile_screen.dart';
 import 'package:marquee/marquee.dart';
 
-class homeScreen extends StatefulWidget {
-  const homeScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<homeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<homeScreen> {
+class _HomeScreenState extends State<HomeScreen> {
   String name = '';
   bool shouldScroll = false;
 
