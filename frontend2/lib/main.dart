@@ -61,8 +61,8 @@ class _MyAppState extends State<MyApp> {
         barrierDismissible: false, // Prevent dismissal by tapping outside
         builder: (BuildContext context) {
           return const AlertDialog(
-            title:  Text("No Internet Connection"),
-            content:  Text("Please check your internet connection."),
+            title: Text("No Internet Connection"),
+            content: Text("Please check your internet connection."),
           );
         },
       );

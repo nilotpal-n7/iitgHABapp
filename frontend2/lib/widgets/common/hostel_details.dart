@@ -1,12 +1,13 @@
 import 'package:http/http.dart' as http;
 import 'package:frontend1/apis/protected.dart';
+import 'package:frontend1/constants/endpoint.dart';
 import 'dart:convert';
 
 // Function to fetch hostel data
 Future<Map<String, dynamic>> fetchHostelData(String hostelName, String rollNumber ) async {
   final jwtToken = await getAccessToken(); // Retrieve the JWT token
   final String url =
-      'https://iitgcomplaintapp.onrender.com/api/mess/hostel/$hostelName/user/$rollNumber';
+      '$baseUrl/mess/hostel/$hostelName/user/$rollNumber';
 
   try {
     final response = await http.get(
