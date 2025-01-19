@@ -70,6 +70,8 @@ const applyMessChange = async (req, res) => {
 
             await hostel.save();
 
+            await user_curr_subscribed_mess.save();
+
             //await user_permanent_hostel.save();
 
             return res.status(200).json({message: "Mess change request proceeded", status_code: 0});
