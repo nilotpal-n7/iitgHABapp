@@ -64,6 +64,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
     print("you pressed : $clicked");
     // Update the state based on the condition
 
+
     setState(() {
       correctDay =
           (now.weekday >= DateTime.monday && now.weekday <= DateTime.wednesday);
@@ -79,6 +80,9 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
     final appliedMess = prefs.getString('appliedMess');
     setState(() {
       currMess = currentMess ?? 'Not Assigned';
+      applyMess = appliedMess ?? '';
+      currMess = currentMess ?? 'Not Assigned';
+      selectedHostel = appliedMess ?? '';
       applyMess = appliedMess ?? '';
     });
   }
@@ -109,10 +113,10 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
 
   // Refresh function for pull-to-refresh
   Future<void> _onRefresh() async {
-    await fetchUserData(); // Refresh data when pulled
-    setState(() {
-      // Optionally, update state here if needed after refresh
-    });
+    await fetchUserData();
+    getAllocatedHostel();
+    // Reset state if it's a new week (Monday)
+    _checkAllowedDays();// Refresh data when pulled
   }
 
   @override
@@ -402,8 +406,11 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                       onPressed: selectedHostel == null
                           ? null
                           : () async {
-                              // Save the current date as the last press date
-                              fetchHostelData(selectedHostel!, roll);
+                        setState(() {
+                          isSubmitted = true;
+                        });
+                        // Save the current date as the last press date
+                             await fetchHostelData(selectedHostel!, roll);
                               _showConfirmationDialog();
                             },
                       style: ElevatedButton.styleFrom(
