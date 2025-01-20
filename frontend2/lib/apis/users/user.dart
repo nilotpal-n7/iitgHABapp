@@ -37,14 +37,16 @@ Future<Map<String, String>?> fetchUserDetails() async {
       final String mail = userData['email'];
       prefs.setString('email', mail);
       final String roll = userData['rollNumber'];
-      final String CurrSubscribedMess = userData['curr_subscribed_mess'];
+      final String CurrSubscribedMess = userData['curr_subscribed_mess'] ?? "Not provided";
       final String appliedMess = userData['applied_hostel_string'];
+      final hostel = userData['hostel'];
       final bool gotHostel = userData['got_mess_changed'];
       final bool buttonPressed = userData['mess_change_button_pressed'];
       prefs.setBool('gotMess', gotHostel);
       prefs.setBool('buttonpressed', buttonPressed);
       prefs.setString('appliedMess', appliedMess);
       prefs.setString('rollNo', roll);
+      prefs.setString('hostel', hostel);
       prefs.setString('currMess', CurrSubscribedMess);
 
       print("Name: $name");
