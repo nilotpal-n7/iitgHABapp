@@ -23,7 +23,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
   String hostel = '';
   String currMess = '';
   String applyMess = '';
-  String? newSelectedHostelfromList;
+  String? newSelectedHostelfromList = '';
   String? selectedHostel;
   bool isSubmitted = false;
   bool correctDay = false;
