@@ -27,10 +27,10 @@ const sundayScheduler = () => {
                 path: 'users.user'
             });
 
-            console.log(`Found ${hostels.length} hostels.`);
+            //console.log(`Found ${hostels.length} hostels.`);
 
             for (const hostel of hostels) {
-                console.log(`Hostel ${hostel.hostel_name}.`);
+                //console.log(`Hostel ${hostel.hostel_name}.`);
 
                 for (const userWithTimeStamp of hostel.users) {
                     const user = userWithTimeStamp.user;
@@ -80,10 +80,10 @@ const wednesdayScheduler = () => {
                 ],
             });
 
-            console.log(`Found ${hostels.length} hostels.`);
+           // console.log(`Found ${hostels.length} hostels.`);
 
             for (const hostel of hostels) {
-                console.log(`Hostel ${hostel.hostel_name}.`);
+                //console.log(`Hostel ${hostel.hostel_name}.`);
                 
                 hostel.curr_cap = 0;
 
@@ -216,7 +216,7 @@ const wednesdayScheduler = () => {
 
             const info = await transporter.sendMail(mailOptions);
 
-            console.log('Email sent:', info.messageId);
+            //console.log('Email sent:', info.messageId);
         } catch (err) {
             console.log(err);
         }
