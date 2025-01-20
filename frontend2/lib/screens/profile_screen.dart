@@ -84,20 +84,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             fontSize: 24,
           ),
         ),
-        bottom: _isloading
-            ? PreferredSize(
-             preferredSize: const Size.fromHeight(4.0),
-             child: LinearProgressIndicator(
-            backgroundColor: Colors.grey[300],
-            color: const Color.fromRGBO(57, 77, 198, 1),
-            minHeight: 4.0,
-          ),
-        )
-            : null,
       ),
       body: _isloading
-          ? Center(
-        child: const CustomLinearProgress(
+          ? const Center(
+        child: CustomLinearProgress(
           text: 'Loading your details, please wait...',
         ),
       )
@@ -119,7 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 32),
               Center(
                 child: ElevatedButton(
-                  onPressed: () => logoutHandler(context),
+                  onPressed: () => _showSignOutDialog(context),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24, vertical: 12),
@@ -167,6 +157,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  void _showSignOutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Sign Out"),
+          content: const Text("Are you sure you want to sign out?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text("No"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                logoutHandler(context); // Call the logout handler
+              },
+              child: const Text("Yes"),
+            ),
+          ],
+        );
+      },
     );
   }
 }
