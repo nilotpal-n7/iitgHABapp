@@ -7,4 +7,4 @@ const settings = {
 	
 };
 
-export default settings;
+module.exports = settings;

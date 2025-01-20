@@ -1,6 +1,11 @@
 require('dotenv').config()
 
-export const port = process.env.PORT || 3000;
-export const mongoURI = process.env.MONGODB_URI;
-export const mobileURL = process.env.MOBILE_URL;
-export const jwtSecret = process.env.JWT_SECRET;
+module.exports = {
+    port: process.env.PORT || 3000,
+    mongoURI: process.env.MONGODB_URI,
+    mobileURL: process.env.MOBILE_URL,
+    // don't know about  clientURL so omitting this also
+    jwtSecret: process.env.JWT_SECRET,
+    // aeskey unknown here so omitting
+    // adminjwtsecret unknown so omitting
+};
