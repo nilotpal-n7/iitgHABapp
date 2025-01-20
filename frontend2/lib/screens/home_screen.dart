@@ -69,19 +69,22 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(fontFamily: 'OpenSans-Bold',color: Colors.black, fontSize: 16),
         ),
         actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfileScreen()),
-              );
-            },
-            icon: const Icon(Icons.person_outlined, color: Colors.black),
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfileScreen()),
+                );
+              },
+              icon: const Icon(Icons.person_outlined, color: Colors.black),
+            ),
           ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.search_outlined, color: Colors.black),
-          ),
+          // IconButton(
+          //   onPressed: () {},
+          //   icon: const Icon(Icons.search_outlined, color: Colors.black),
+          // ),
         ],
       ),
       body: Padding(
