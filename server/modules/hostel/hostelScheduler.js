@@ -27,10 +27,10 @@ const sundayScheduler = () => {
                 path: 'users.user'
             });
 
-            console.log(`Found ${hostels.length} hostels.`);
+            //console.log(`Found ${hostels.length} hostels.`);
 
-            hostels.forEach(async (hostel) => {
-                console.log(`Hostel ${hostel.hostel_name}.`);
+            for (const hostel of hostels) {
+                //console.log(`Hostel ${hostel.hostel_name}.`);
 
                 for (const userWithTimeStamp of hostel.users) {
                     const user = userWithTimeStamp.user;
@@ -44,7 +44,7 @@ const sundayScheduler = () => {
 
                     await user.save();
                 }
-            })
+            }
         } catch (err) {
             console.log(err);
         }
@@ -80,18 +80,16 @@ const wednesdayScheduler = () => {
                 ],
             });
 
-            console.log(`Found ${hostels.length} hostels.`);
+           // console.log(`Found ${hostels.length} hostels.`);
 
-            hostels.forEach(async (hostel) => {
-                console.log(`Hostel ${hostel.hostel_name}.`);
+            for (const hostel of hostels) {
+                //console.log(`Hostel ${hostel.hostel_name}.`);
                 
                 hostel.curr_cap = 0;
 
                 await hostel.save();
 
                 const userData = [];
-
-                //const updatedUsers = [];
 
                 for (const userWithTimeStamp of hostel.users) {
                     const user = userWithTimeStamp.user;
@@ -125,18 +123,6 @@ const wednesdayScheduler = () => {
                         Roll: user.rollNumber,
                         Hostel: user.hostel.hostel_name,
                     });
-
-                    // if (user.applied_for_mess_changed) {
-                    //     user.applied_for_mess_changed = false;
-                    //     user.got_mess_changed = true;
-                    //     updatedUsers.push(user);
-                    // } 
-                    // else {
-                    //     // revert him back
-                    //     user.got_mess_changed = false;
-                    //     user.curr_subscribed_mess = user.hostel;
-                    //     updatedUsers.push(user);
-                    // }
                 }
 
                 // Generate the files
@@ -153,7 +139,7 @@ const wednesdayScheduler = () => {
                 // for (const user of updatedUsers) {
                 //     await user.save();
                 // }
-            });
+            }
 
             // send it to hab
 
@@ -230,7 +216,7 @@ const wednesdayScheduler = () => {
 
             const info = await transporter.sendMail(mailOptions);
 
-            console.log('Email sent:', info.messageId);
+            //console.log('Email sent:', info.messageId);
         } catch (err) {
             console.log(err);
         }

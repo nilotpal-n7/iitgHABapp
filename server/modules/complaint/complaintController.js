@@ -21,7 +21,7 @@ const getComplaint = async (req, res) => {
 
 const submitComplaint = async (req, res) => {
     try {
-        console.log("usadhgiuashd")
+        //console.log("usadhgiuashd")
 
         const complaint = await Complaint.create(req.body);
         const item = await Item.findById(req.body.item);

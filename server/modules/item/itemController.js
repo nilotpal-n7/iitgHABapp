@@ -102,14 +102,14 @@ const getItem = async (req, res) => {
     if (!qr) {
         return res.status(400).json({ message: 'QR code is required' });
     }
-    console.log("qrcode is:", qr);
+    //console.log("qrcode is:", qr);
     try {
         const item = await Item.findOne({qrCode: qr}).populate('complaints');
         if (!item) {
             return res.status(404).json({ message: 'Item not found' });
         }
         res.status(200).json(item);
-        console.log("item is:", item);
+        //console.log("item is:", item);
     } catch (err) {
         res.status(500).json({ message: 'Error fetching item' });
     }
@@ -118,7 +118,7 @@ const getItem = async (req, res) => {
 const resolveItem = async (req, res) => {
     const { itemId } = req.params;
 
-    console.log(itemId);
+    //console.log(itemId);
 
     if (!itemId) {
         return res.status(400).json({ message: 'Item ID is required'} );
