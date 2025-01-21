@@ -2,7 +2,7 @@ const {User} = require('./userModel.js');
 
 const getUserData = async (req, res,next) => {
 
-    console.log(req);
+    //console.log(req);
     return res.json(req.user);
 };
 

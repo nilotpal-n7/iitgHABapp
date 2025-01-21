@@ -38,8 +38,8 @@ const applyMessChange = async (req, res) => {
     try {
         const hostel = await Hostel.findOne({'hostel_name': hostel_name});
 
-        console.log(hostel);
-        console.log(hostel.curr_cap);
+        // console.log(hostel);
+        // console.log(hostel.curr_cap);
 
         const user = await User.findOne({'rollNumber': roll_number});
 
@@ -69,6 +69,8 @@ const applyMessChange = async (req, res) => {
             await user.save();
 
             await hostel.save();
+
+            await user_curr_subscribed_mess.save();
 
             //await user_permanent_hostel.save();
 

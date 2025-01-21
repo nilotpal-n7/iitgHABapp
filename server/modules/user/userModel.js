@@ -1,11 +1,9 @@
 const axios =require("axios");
 const mongoose = require('mongoose');
 const jwt = require("jsonwebtoken")
-const dotenv = require("dotenv")
+require('dotenv').config();
 
-dotenv.config()
-
-const JWT_SECRET_KEY = process.env.JWT_SECRET || "40814aa2964e4ca60ad6a0f019be83019bd54730ee3f5020b02aed8fcff1f354";
+const JWT_SECRET_KEY = process.env.JWT_SECRET;
 
 const userSchema = new mongoose.Schema(
     {
@@ -140,10 +138,11 @@ const getUserFromToken = async function (access_token) {
 
 const findUserWithEmail = async function (email) {
     const user = await User.findOne({ email: email });
-     console.log("found user with email", user);
+    // console.log("found user with email", user);
     if (!user) return false;
     return user;
 };
 
 module.exports = {
-    getUserFromToken,User,findUserWithEmail}
+    getUserFromToken,User,findUserWithEmail
+}

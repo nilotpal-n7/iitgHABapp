@@ -34,13 +34,13 @@ class _loginScreenState extends State<loginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   Image.asset(
-                    'assets/fonts/IITG_logo.png',
+                    'assets/images/Handlogo.png',
                     height: 100, // Adjust size as needed
                   ),
                   const SizedBox(height: 20),
                   // Add some space
                   const Text(
-                    'IITG MAINTENANCE',
+                    'IITG HAB',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 50,
