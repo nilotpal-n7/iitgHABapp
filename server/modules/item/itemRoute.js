@@ -15,14 +15,14 @@ itemRouter.put('/:id', authenticateJWT, updateItem);
 
 itemRouter.get('/', authenticateJWT, getItems);
 
-itemRouter.get('/:qr', getItem);
+// itemRouter.get('/:qr', getItem);
 
-itemRouter.get('/hostelcomplaints/:hostel', getItemsWithComplaints);
+// itemRouter.get('/hostelcomplaints/:hostel', getItemsWithComplaints);
 
-itemRouter.get('/hab/:hostel', getItemsForHAB);
+// itemRouter.get('/hab/:hostel', getItemsForHAB);
 
-itemRouter.get('/resolve/:itemId', resolveItem);
+// itemRouter.get('/resolve/:itemId', resolveItem);
 
-itemRouter.get('/inprogress/:itemId', inProgressItem);
+// itemRouter.get('/inprogress/:itemId', inProgressItem);
 
 module.exports = itemRouter;
