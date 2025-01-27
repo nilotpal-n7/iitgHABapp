@@ -5,27 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9f22e541-6f34-44ad-b768-3e17d6476ce7" name="Changes" comment="itembyqr screen changes">
-      <change beforePath="$PROJECT_DIR$/.idea/iitgComplaintApp.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/iitgComplaintApp.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/other.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/ios/Flutter/Debug.xcconfig" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/ios/Flutter/Debug.xcconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/ios/Flutter/Release.xcconfig" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/ios/Flutter/Release.xcconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/macos/Flutter/Flutter-Debug.xcconfig" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/macos/Flutter/Flutter-Debug.xcconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/macos/Flutter/Flutter-Release.xcconfig" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/macos/Flutter/Flutter-Release.xcconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/ios/Flutter/Debug.xcconfig" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/ios/Flutter/Debug.xcconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/ios/Flutter/Release.xcconfig" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/ios/Flutter/Release.xcconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/ios/Runner.xcodeproj/project.pbxproj" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/ios/Runner.xcodeproj/project.pbxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/ios/Runner.xcworkspace/contents.xcworkspacedata" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/ios/Runner.xcworkspace/contents.xcworkspacedata" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/ios/Runner/Info.plist" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/ios/Runner/Info.plist" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/lib/apis/users/user.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/apis/users/user.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/macos/Flutter/Flutter-Debug.xcconfig" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/macos/Flutter/Flutter-Debug.xcconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/macos/Flutter/Flutter-Release.xcconfig" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/macos/Flutter/Flutter-Release.xcconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/test/widget_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/test/widget_test.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
