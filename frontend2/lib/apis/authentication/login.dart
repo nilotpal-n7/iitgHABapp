@@ -1,29 +1,24 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hive/hive.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
-import 'package:http/http.dart' as http;
-
-import 'package:frontend1/constants/endpoint.dart';
-import 'package:frontend1/apis/users/user.dart';
-import '../../screens/login_screen.dart';
 import 'package:frontend1/apis/protected.dart';
+import 'package:frontend1/apis/users/user.dart';
+import 'package:frontend1/constants/endpoint.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
+import '../../screens/login_screen.dart';
 
 Future<void> authenticate() async {
   try {
-
     final result = await FlutterWebAuth.authenticate(
         url: AuthEndpoints.getAccess, callbackUrlScheme: "iitgcomplain");
     print(result);
 
     final accessToken = Uri.parse(result).queryParameters['token'];
-    print( "access token is");
+    print("access token is");
 
-    print( accessToken);
+    print(accessToken);
 
     final prefs = await SharedPreferences.getInstance();
 
@@ -32,8 +27,6 @@ Future<void> authenticate() async {
     }
     prefs.setString('access_token', accessToken);
     await fetchUserDetails();
-
-
   } on PlatformException catch (_) {
     rethrow;
   } catch (e) {
@@ -49,8 +42,25 @@ Future<void> logoutHandler(context) async {
     MaterialPageRoute(
       builder: (context) => const loginScreen(),
     ),
-        (route) => false,
+    (route) => false,
   );
+}
+
+Future<void> signInWithApple() async {
+  try {
+    final credential = await SignInWithApple.getAppleIDCredential(
+      scopes: [
+        AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName,
+      ],
+    );
+
+    print('User ID: ${credential.userIdentifier}');
+    print('Email: ${credential.email}');
+    print('Full Name: ${credential.givenName} ${credential.familyName}');
+  } catch (e) {
+    print('Error during Apple Sign-In: $e');
+  }
 }
 
 Future<bool> isLoggedIn() async {
