@@ -58,6 +58,20 @@
         </array>
       </dict>
     </array>
+    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>com.apple.developer.applesignin</string>
+        </array>
+      </dict>
+    </array>
+    <key>UIBackgroundModes</key>
+    <array>
+      <string>fetch</string>
+    </array>
+
 
 </dict>
 </plist>
