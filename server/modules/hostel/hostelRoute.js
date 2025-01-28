@@ -9,9 +9,9 @@ const {
 
 const hostelRouter = express.Router();
 
-hostelRouter.post('/', createHostel);
+// hostelRouter.post('/', createHostel);
 
-hostelRouter.get('/:hostel_name', getHostel);
+// hostelRouter.get('/:hostel_name', getHostel);
 
 hostelRouter.get('/hostel/:hostel_name/user/:roll_number', authenticateJWT, applyMessChange);
 
