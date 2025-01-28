@@ -23,7 +23,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
   String hostel = '';
   String currMess = '';
   String applyMess = '';
-  String? newSelectedHostelfromList = '';
+  String? newSelectedHostelfromList;
   String? selectedHostel;
   bool isSubmitted = false;
   bool correctDay = false;
@@ -469,7 +469,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                       if (!isSubmitted && correctDay)
                         Center(
                           child: ElevatedButton(
-                            onPressed: newSelectedHostelfromList == null
+                            onPressed: newSelectedHostelfromList == null || calculateHostel(hostel) != hostels
                                 ? null // Disable the button if no hostel is selected
                                 : () async {
                                     setState(() {
@@ -482,7 +482,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                                     _showConfirmationDialog();
                                   },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: newSelectedHostelfromList == null
+                              backgroundColor: newSelectedHostelfromList == null || calculateHostel(hostel) != hostels
                                   ? Colors
                                       .grey // Grey out the button if disabled
                                   : const Color.fromRGBO(57, 77, 198,
