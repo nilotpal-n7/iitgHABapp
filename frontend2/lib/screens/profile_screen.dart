@@ -32,7 +32,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {
       _isloading = true;
     });
-    await fetchUserData();
     await getAllocatedHostel();
     setState(() {
       _isloading = false;
@@ -41,29 +40,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> getAllocatedHostel() async {
     final prefs = await SharedPreferences.getInstance();
-    final allocatehostel = prefs.getString('currMess');
+    final hostel1 = prefs.getString('hostel');
+    final email1 = prefs.getString('email');
+    final name1 = prefs.getString('name');
+    final roll1 = prefs.getString('rollNo');
     setState(() {
-      currMess = allocatehostel ?? 'Not allocated';
+      hostel = hostel1 ?? 'Not provided';
+      name = name1 ?? 'Name not provided';
+      roll = roll1 ?? 'Not provided';
+      email = email1 ?? 'Not provided';
     });
   }
 
-  Future<void> fetchUserData() async {
-    try {
-      final userDetails = await fetchUserDetails();
-      if (userDetails != null) {
-        setState(() {
-          name = userDetails['name'] ?? 'Not provided';
-          email = userDetails['email'] ?? 'Not provided';
-          roll = userDetails['roll'] ?? 'Not provided';
-          hostel = userDetails['hostel'] ?? 'Not provided';
-        });
-      } else {
-        showSnackBar('Unable to fetch user details.', context);
-      }
-    } catch (e) {
-      showSnackBar('Error: $e', context);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       body: _isloading
           ? const Center(
-        child: CustomLinearProgress(
+            child: CustomLinearProgress(
           text: 'Loading your details, please wait...',
         ),
       )
@@ -103,9 +91,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 16),
               _buildField("Email", email),
               const SizedBox(height: 16),
-              _buildField("Hostel", hostel),
-              const SizedBox(height: 16),
-              _buildField("Allocated Mess", calculateHostel(currMess)),
+              _buildField("Hostel", calculateHostel(hostel)),
+              //const SizedBox(height: 16),
+              //_buildField("Allocated Mess", calculateHostel(currMess)),
               const SizedBox(height: 32),
               Center(
                 child: ElevatedButton(

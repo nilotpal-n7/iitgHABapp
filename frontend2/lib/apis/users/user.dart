@@ -32,14 +32,14 @@ Future<Map<String, String>?> fetchUserDetails() async {
       final Map<String, dynamic> userData = json.decode(resp.body);
 
       // Extract user details
-      final String name = userData['name'];
-      final String degree = userData['degree'];
-      final String mail = userData['email'];
+      final String name = userData['name'] ?? "User";
+      final String degree = userData['degree'] ?? "Not Provided";
+      final String mail = userData['email'] ;
       prefs.setString('email', mail);
-      final String roll = userData['rollNumber'];
+      final String roll = userData['rollNumber'] ?? "Not provided";
       final String CurrSubscribedMess = userData['curr_subscribed_mess'] ?? "Not provided";
-      final String appliedMess = userData['applied_hostel_string'];
-      final hostel = userData['hostel'];
+      final String appliedMess = userData['applied_hostel_string'] ?? "Not provided";
+      final hostel = userData['hostel'] ?? "Not provided";
       final bool gotHostel = userData['got_mess_changed'];
       final bool buttonPressed = userData['mess_change_button_pressed'];
       prefs.setBool('gotMess', gotHostel);
@@ -48,6 +48,8 @@ Future<Map<String, String>?> fetchUserDetails() async {
       prefs.setString('rollNo', roll);
       prefs.setString('hostel', hostel);
       prefs.setString('currMess', CurrSubscribedMess);
+      prefs.setString('name', name);
+
 
       print("Name: $name");
       print("Degree: $degree");
