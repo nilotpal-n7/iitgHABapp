@@ -1,12 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:frontend1/apis/authentication/login.dart';
 import 'package:frontend1/screens/login_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:frontend1/widgets/common/custom_linear_progress.dart';
 import 'package:frontend1/screens/qr_scanner.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GoogleSignInDialog extends StatefulWidget {
   const GoogleSignInDialog({super.key});
@@ -34,7 +34,8 @@ class _GoogleSignInDialogState extends State<GoogleSignInDialog> {
     });
 
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ["profile", "email"]);
+      final GoogleSignIn googleSignIn =
+          GoogleSignIn(scopes: ["profile", "email"]);
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {
@@ -42,7 +43,8 @@ class _GoogleSignInDialogState extends State<GoogleSignInDialog> {
         return;
       }
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
       if (googleAuth.accessToken == null || googleAuth.idToken == null) {
         print('Google authentication failed: Missing tokens.');
@@ -55,7 +57,7 @@ class _GoogleSignInDialogState extends State<GoogleSignInDialog> {
       );
 
       final UserCredential userCredential =
-      await FirebaseAuth.instance.signInWithCredential(credential);
+          await FirebaseAuth.instance.signInWithCredential(credential);
 
       print('Signed in as: ${userCredential.user?.displayName}');
       final prefs = await SharedPreferences.getInstance();
@@ -94,7 +96,8 @@ class _GoogleSignInDialogState extends State<GoogleSignInDialog> {
               children: [
                 ElevatedButton(
                   onPressed: () async {
-                    Navigator.of(context).pop(); //A bug here because of it i guess linear progress bar doesnt show
+                    Navigator.of(context)
+                        .pop(); //A bug here because of it i guess linear progress bar doesnt show
                     await signInWithGoogle();
                   },
                   child: Row(
@@ -109,6 +112,13 @@ class _GoogleSignInDialogState extends State<GoogleSignInDialog> {
                     ],
                   ),
                 ),
+                ElevatedButton(
+                    onPressed: () async {
+                      await signInWithApple();
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => QrScanner()));
+                    },
+                    child: Text("Apple sign in"))
               ],
             ),
           ),
@@ -132,7 +142,7 @@ class _GoogleSignInDialogState extends State<GoogleSignInDialog> {
   }
 }
 
-Future<void> signOut(context) async{
+Future<void> signOut(context) async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.clear();
   FirebaseAuth.instance.signOut();
@@ -141,8 +151,6 @@ Future<void> signOut(context) async{
     MaterialPageRoute(
       builder: (context) => const loginScreen(),
     ),
-        (route) => false,
+    (route) => false,
   );
 }
-
-
