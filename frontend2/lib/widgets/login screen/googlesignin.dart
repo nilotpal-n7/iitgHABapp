@@ -94,7 +94,7 @@ class _GoogleSignInDialogState extends State<GoogleSignInDialog> {
               children: [
                 ElevatedButton(
                   onPressed: () async {
-                    Navigator.of(context).pop(); // Close dialog before signing in
+                    Navigator.of(context).pop(); //A bug here because of it i guess linear progress bar doesnt show
                     await signInWithGoogle();
                   },
                   child: Row(
