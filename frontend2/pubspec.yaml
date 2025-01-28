@@ -49,9 +49,13 @@ dependencies:
   flutter_svg: ^2.0.17
   animated_custom_dropdown: 3.1.1
   connectivity_plus: ^6.1.2
+
+  sign_in_with_apple: ^6.1.4
+
   permission_handler: ^11.3.1
   mobile_scanner: ^6.0.4
   flutter_vibrate: ^1.3.0
+
 
 dev_dependencies:
   flutter_test:
