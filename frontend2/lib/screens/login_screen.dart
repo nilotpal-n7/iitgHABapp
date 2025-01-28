@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:frontend1/apis/authentication/login.dart';
 import 'package:frontend1/screens/home_screen.dart';
 import 'dart:io';
+import 'package:frontend1/widgets/login screen/googlesignin.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:frontend1/widgets/login screen/login_button.dart';
 import 'package:frontend1/widgets/common/snack_bar.dart';
 import 'package:frontend1/widgets/common/custom_linear_progress.dart';
@@ -14,7 +16,6 @@ class loginScreen extends StatefulWidget {
 }
 
 class _loginScreenState extends State<loginScreen> {
-  final logoiitg = const AssetImage('assets/fonts/IITG_logo.png');
   var _inprogress = false;
 
   @override
@@ -86,6 +87,7 @@ class _loginScreenState extends State<loginScreen> {
                       ),
                     ),
                   ),
+                  GoogleSignInDialog(),
                 ],
               ),
             ),
@@ -101,3 +103,6 @@ class _loginScreenState extends State<loginScreen> {
     );
   }
 }
+
+
+
