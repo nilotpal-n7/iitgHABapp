@@ -7,10 +7,10 @@ const getUserData = async (req, res,next) => {
 };
 
 const getUserByRoll = async (req, res) => {
-    const {roll} = req.params;
+    const {qr} = req.params;
 
     try {
-        const user = await User.findOne({'rollNumber': roll});
+        const user = await User.findOne({'rollNumber': qr});
 
         if (!user) {
             return res.status(400).json({message: "No such roll exists"});
