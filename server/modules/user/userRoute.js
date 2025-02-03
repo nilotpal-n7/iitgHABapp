@@ -5,7 +5,6 @@ const {
     getUserData, 
     createUser, 
     deleteUser, 
-    getUserByRoll,
     updateUser, 
     getUserComplaints, 
     // getEmailsOfHABUsers, 
