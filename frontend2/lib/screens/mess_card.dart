@@ -30,7 +30,7 @@ class _messcardState extends State<messcard> {
   @override
   Widget build(BuildContext context) {
     //here we are using roll Number as a QRcode for getting details in frontend
-    String url = "https://hab.codingclubiitg.in/api/users/roll/$rollNumber";
+    String url = rollNumber;
 
     return Scaffold(
       appBar: AppBar(title: Text("QR Code")),
