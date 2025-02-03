@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend1/apis/users/user.dart';
+import 'package:frontend1/screens/mess_card.dart';
 import 'package:frontend1/widgets/common/name_trimmer.dart';
 import 'package:frontend1/screens/mess_change_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -62,9 +63,9 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 15.0),
-          child: const Image(image: AssetImage("assets/images/Handlogo.png")),
+        leading: const Padding(
+          padding:  EdgeInsets.only(left: 15.0),
+          child:  Image(image: AssetImage("assets/images/Handlogo.png")),
         ),
         title: const Text(
           "HAB\nIIT Guwahati",
@@ -170,8 +171,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                const Flexible(
-                  child: FeatureCard(
+                 Flexible(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => messcard(),
+                        ),
+                      );
+                    },
+                  child: const FeatureCard(
                     title: "Mess Card",
                     color: Color.fromRGBO(192, 200, 245, 1),
                     circleColor: Color.fromRGBO(168, 177, 230, 1),
@@ -179,6 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     iconAlignment: Alignment.bottomRight,
                   ),
                 ),
+                 ),
               ],
             ),
             const SizedBox(height: 16),

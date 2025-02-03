@@ -5,6 +5,7 @@ const {
     getUserData, 
     createUser, 
     deleteUser, 
+    getUserByRoll,
     updateUser, 
     getUserComplaints, 
     // getEmailsOfHABUsers, 
@@ -23,6 +24,8 @@ userRouter.get('/', authenticateJWT, getUserData);
 userRouter.delete('/:outlook', authenticateJWT, deleteUser);
 
 userRouter.put('/:outlook', authenticateJWT, updateUser);
+
+userRouter.get('/roll/:qr', authenticateJWT , getUserByRoll );
 
 // userRouter.get('/complaints/:outlook', getUserComplaints);
 

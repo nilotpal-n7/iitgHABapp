@@ -8,6 +8,8 @@ import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:frontend1/widgets/common/cornerQR.dart';
 import 'package:frontend1/constants/endpoint.dart';
 
+import '../../screens/QrDetail.dart';
+
 
 class QrScan extends StatefulWidget {
   const QrScan({super.key});
@@ -37,9 +39,9 @@ class _QrScanState extends State<QrScan> {
     super.dispose();
   }
 
-  Future<Map<String, dynamic>?> fetchItemBySerialNumber(String qrCode) async {
+  Future<Map<String, dynamic>?> fetchItemBySerialNumber(String qrCodeLink) async {
     final header = await getAccessToken();
-    final url = Uri.parse('${itemEndpoint.getitem}$qrCode');
+    final url = Uri.parse(qrCodeLink);
 
     try {
       final response = await http.get(
@@ -69,35 +71,40 @@ class _QrScanState extends State<QrScan> {
     if (_hasScanned) return; // Prevent further processing if already scanned
     _hasScanned = true; // Set the flag to indicate processing has started
 
-    final List<Barcode> barcodes = capture.barcodes;
+    try {
+      final List<Barcode> barcodes = capture.barcodes;
+      for (final barcode in barcodes) {
+        final result = barcode.rawValue;
+        if (result != null) {
+          print('Barcode found: $result');
+          controller.stop();
 
-    for (final barcode in barcodes) {
-      final result = barcode.rawValue;
-      if (result != null) {
-        print('Barcode found: $result');
-        controller.stop();
-
-        // Fetch the item data using the serial number (barcode result)
-        var itemData = await fetchItemBySerialNumber(result);
-        if (itemData != null) {
-          if (await Vibrate.canVibrate) {
-            Vibrate.feedback(FeedbackType.success);
+          // Fetch the item data using the serial number (barcode result)
+          var itemData = await fetchItemBySerialNumber(result);
+          if (itemData != null) {
+            if (await Vibrate.canVibrate) {
+              Vibrate.feedback(FeedbackType.success);
+            }
+            print(itemData);
+            // Navigate to the details page with the fetched item data
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => QrDetail(itemData: itemData),
+              ),
+            );
+          } else {
+            print('Failed to fetch item data.');
           }
-          print(itemData);
-          // Navigate to the details page with the fetched item data
-          // Navigator.pushReplacement(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (context) => QrDetail(itemData: itemData),
-          //   ),
-          // );
         } else {
-          print('Failed to fetch item data.');
+          print('No QR code found.');
         }
-      } else {
-        print('No QR code found.');
       }
+    } catch (e, stackTrace) {
+      print('Error: $e');
+      print(stackTrace);
     }
+
   }
 
   @override
