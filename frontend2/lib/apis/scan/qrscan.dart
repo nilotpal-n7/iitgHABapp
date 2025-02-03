@@ -39,9 +39,9 @@ class _QrScanState extends State<QrScan> {
     super.dispose();
   }
 
-  Future<Map<String, dynamic>?> fetchItemBySerialNumber(String qrCodeLink) async {
+  Future<Map<String, dynamic>?> fetchItemBySerialNumber(String qrCode) async {
     final header = await getAccessToken();
-    final url = Uri.parse(qrCodeLink);
+    final url = Uri.parse("https://iitgcomplaintapp.onrender.com/api/users/roll/$qrCode");
 
     try {
       final response = await http.get(
