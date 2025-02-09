@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema(
         rollNumber: {
             type: String,
             required: true,
+            unique: true
         },
         email: {
             type: String,
