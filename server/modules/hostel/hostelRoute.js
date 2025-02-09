@@ -13,6 +13,6 @@ const hostelRouter = express.Router();
 
 // hostelRouter.get('/:hostel_name', getHostel);
 
-hostelRouter.get('/hostel/:hostel_name/user/:roll_number', authenticateJWT, applyMessChange);
+hostelRouter.post('/change', authenticateJWT, applyMessChange);
 
 module.exports = hostelRouter;

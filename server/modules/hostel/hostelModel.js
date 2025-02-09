@@ -12,9 +12,13 @@ const userTimeStampSchema = new mongoose.Schema(
             ref: 'User',
             required: true
         }, 
-        timestamp: {
-            type: Date,
-            default: Date.now
+        // timestamp: {
+        //     type: Date,
+        //     default: Date.now
+        // },
+        reason_for_change: {
+            type: String,
+            default: ""
         }
     }
 );

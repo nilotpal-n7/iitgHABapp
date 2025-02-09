@@ -33,7 +33,15 @@ const getHostel = async (req, res) => {
 };
 
 const applyMessChange = async (req, res) => {
-    const {hostel_name, roll_number} = req.params;
+    const {hostel_name, roll_number, reason} = req.body;
+
+    const today = new Date();
+
+    const dayOfMonth = today.getDate();
+
+    if (dayOfMonth < 24 || dayOfMonth > 27) {
+        return res.status(403).json({message: "Mess change requests only allowed between 24th and 27th of a month"});
+    }
 
     try {
         const hostel = await Hostel.findOne({'hostel_name': hostel_name});
@@ -63,7 +71,7 @@ const applyMessChange = async (req, res) => {
 
             user_curr_subscribed_mess.users.pull({user: user._id});
 
-            hostel.users.push({user: user._id});
+            hostel.users.push({user: user._id, reason_for_change: reason});
            // user_permanent_hostel.users.pull({user: user._id});
 
             await user.save();
@@ -81,7 +89,7 @@ const applyMessChange = async (req, res) => {
 
             await user.save();
 
-            await hostel.save();
+            // await hostel.save();
             return res.status(200).json({message: "Sorry the cap has reached or you have already applied or you cannot apply for same hostel", status_code: 1});
         }
     } catch (err) {

@@ -19,42 +19,55 @@ const authId = process.env.OUTLOOK_ID;
 const authPass = process.env.OUTLOOK_PASS;
 const name_id = process.env.NAME_ID;
 
-// on saturday night sunday morning 12 am
+// on 28th eod of every month 59 23 28 * *
+// on saturday night sunday morning 12 am 0 0 * * 0
 const sundayScheduler = () => {
-    schedule.scheduleJob('0 0 * * 0', async () => {
-        try {
-            const hostels = await Hostel.find({}).populate({
-                path: 'users.user'
-            });
+    schedule.scheduleJob('59 23 * * *', async () => {
+        
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
 
-            //console.log(`Found ${hostels.length} hostels.`);
+        // Run only if today is the last day of the month
+        if (tomorrow.getDate() === 1) {
+            try {
+                const hostels = await Hostel.find({}).populate({
+                    path: 'users.user'
+                });
 
-            for (const hostel of hostels) {
-                //console.log(`Hostel ${hostel.hostel_name}.`);
+                //console.log(`Found ${hostels.length} hostels.`);
 
-                for (const userWithTimeStamp of hostel.users) {
-                    const user = userWithTimeStamp.user;
+                for (const hostel of hostels) {
+                    //console.log(`Hostel ${hostel.hostel_name}.`);
 
-                    if (!user) continue;
+                    for (const userWithTimeStamp of hostel.users) {
+                        const user = userWithTimeStamp.user;
 
-                    user.curr_subscribed_mess = user.next_mess;
-                    user.next_mess = user.hostel;
-                    user.applied_hostel_string = "";
-                    user.mess_change_button_pressed = false;
+                        if (!user) continue;
 
-                    await user.save();
+                        user.curr_subscribed_mess = user.next_mess;
+                        user.next_mess = user.hostel;
+                        user.applied_hostel_string = "";
+                        user.mess_change_button_pressed = false;
+                        userWithTimeStamp.reason_for_change = "";
+
+                        await userWithTimeStamp.save();
+
+                        await user.save();
+                    }
                 }
+            } catch (err) {
+                console.log(err);
             }
-        } catch (err) {
-            console.log(err);
         }
     })
 }
 
-// on wednesday night 0 0 0 * * 4 
+// on 27th eod of every month 59 23 27 * *
+// on wednesday night 0 0 * * 4 
 // every 2 minutes */2 * * * *
 const wednesdayScheduler = () => {
-    schedule.scheduleJob('0 0 0 * * 4', async () => {
+    schedule.scheduleJob('59 23 27 * *', async () => {
 
         try {
             const hostels = await Hostel.find({}).populate({
@@ -101,7 +114,7 @@ const wednesdayScheduler = () => {
                         user.got_mess_changed = true;
                     } else {
                         user.got_mess_changed = false;
-                        if (user.hostel != user.curr_subscribed_mess) {
+                        if (!user.hostel.equals(user.curr_subscribed_mess)) {
                             user.hostel.users.push({user: user._id});
                             user.curr_subscribed_mess.users.pull({user: user._id});
                         }
@@ -122,6 +135,7 @@ const wednesdayScheduler = () => {
                         Name: user.name,
                         Roll: user.rollNumber,
                         Hostel: user.hostel.hostel_name,
+                        Reason: userWithTimeStamp.reason_for_change
                     });
                 }
 
