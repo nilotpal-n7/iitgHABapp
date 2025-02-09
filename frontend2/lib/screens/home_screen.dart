@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontend1/apis/users/user.dart';
+import 'package:frontend1/screens/mess_card.dart';
+import 'package:frontend1/widgets/common/name_trimmer.dart';
 import 'package:frontend1/screens/mess_change_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend1/screens/profile_screen.dart';
 import 'package:marquee/marquee.dart';
 
@@ -22,13 +25,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> fetchUserData() async {
-    final userDetails = await fetchUserDetails();
+    final prefs = await SharedPreferences.getInstance();
+    final name1 = prefs.getString('name');
     print("User details are:");
-    print(userDetails);
-    if (userDetails != null) {
+    print(name1);
+    if (name1 != null) {
       setState(() {
-        // Extract only the first name
-        name = (userDetails['name'] ?? '').split(' ').first;
+        name = (capitalizeWords(name1) ?? '').split(' ').first;
       });
       checkIfTextFits();
     } else {
@@ -60,13 +63,17 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 15.0),
-          child: const Image(image: AssetImage("assets/images/Handlogo.png")),
+        leading: const Padding(
+          padding:  EdgeInsets.only(left: 15.0),
+          child:  Image(image: AssetImage("assets/images/Handlogo.png")),
         ),
         title: const Text(
           "HAB\nIIT Guwahati",
-          style: TextStyle(fontFamily: 'OpenSans-Bold',color: Colors.black, fontSize: 16),
+          style: TextStyle(
+            fontFamily: 'OpenSans-Bold',
+            color: Colors.black,
+            fontSize: 16,
+          ),
         ),
         actions: [
           Padding(
@@ -81,10 +88,6 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: const Icon(Icons.person_outlined, color: Colors.black),
             ),
           ),
-          // IconButton(
-          //   onPressed: () {},
-          //   icon: const Icon(Icons.search_outlined, color: Colors.black),
-          // ),
         ],
       ),
       body: Padding(
@@ -151,11 +154,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 Flexible(
                   child: GestureDetector(
                     onTap: () {
-                      // Navigate to the next page
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => MessChangeScreen()),
+                          builder: (context) => MessChangeScreen(),
+                        ),
                       );
                     },
                     child: const FeatureCard(
@@ -168,7 +171,31 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                const Flexible(
+                 Flexible(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => messcard(),
+                        ),
+                      );
+                    },
+                  child: const FeatureCard(
+                    title: "Mess Card",
+                    color: Color.fromRGBO(192, 200, 245, 1),
+                    circleColor: Color.fromRGBO(168, 177, 230, 1),
+                    icon: Icons.arrow_outward,
+                    iconAlignment: Alignment.bottomRight,
+                  ),
+                ),
+                 ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Row(
+              children:  [
+                Flexible(
                   child: FeatureCard(
                     title: "More features\ncoming soon",
                     color: Color.fromRGBO(206, 192, 129, 1),

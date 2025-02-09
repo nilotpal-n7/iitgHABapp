@@ -145,8 +145,8 @@ class _HomeScreenState extends State<HomeScreen> {
             SizedBox(height: 10),
             Expanded(
               child: filteredComplaints.isEmpty
-                  ? Center(
-                      child: Text(
+                  ? const Center(
+                      child:Text(
                   'No complaints matching the selected filter.',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),

@@ -23,10 +23,10 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
   String hostel = '';
   String currMess = '';
   String applyMess = '';
-  String? newSelectedHostelfromList = '';
+  String? newSelectedHostelfromList;
   String? selectedHostel;
   bool isSubmitted = false;
-  bool correctDay = false;
+  bool correctDate = false;
   bool gotMess = false;
   bool _isloading = false;
 
@@ -71,8 +71,8 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
     // Update the state based on the condition
 
     setState(() {
-      correctDay =
-          (now.weekday >= DateTime.monday && now.weekday <= DateTime.wednesday);
+      correctDate =
+          (now.day >= 25 && now.day <= 28);
       isSubmitted = clicked;
       gotMess = gotMess1;
     });
@@ -105,12 +105,12 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
         name = userDetails['name'] ?? '';
         email = userDetails['email'] ?? '';
         roll = userDetails['roll'] ?? '';
-        _isloading = false; // Hide the loading indicator
+        _isloading = false; // Hide the loading indicator imp
       });
     } else {
       print("Failed to load user details.");
       setState(() {
-        _isloading = false; // Hide the loading indicator if data fetching fails
+        _isloading = false; // Hide the loading indicator if data fetching fails need to keep track of stuff
       });
       showSnackBar('Something Went Wrong', context);
     }
@@ -131,7 +131,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
   Future<void> _onRefresh() async {
     await fetchUserData();
     getAllocatedHostel();
-    // Reset state if it's a new week (Monday)
+    // Reset state if it's a new date (i.e 25)
     _checkAllowedDays(); // Refresh data when pulled
   }
 
@@ -250,7 +250,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      if (!isSubmitted && correctDay) ...[
+                      if (!isSubmitted && correctDate) ...[
                         const SizedBox(height: 8),
                         const Text(
                           "Change mess to:",
@@ -302,7 +302,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                      ] else if (!correctDay && isSubmitted && !gotMess) ...[
+                      ] else if (!correctDate && isSubmitted && !gotMess) ...[
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Container(
@@ -331,7 +331,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                                   ),
                                   Center(
                                     child: Text(
-                                      "Apply again Next Week",
+                                      "Apply again Next month",
                                       style: TextStyle(
                                         fontFamily: 'OpenSans_bold',
                                         fontSize: 16,
@@ -345,7 +345,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                             ),
                           ),
                         ),
-                      ] else if (!correctDay && isSubmitted && gotMess) ...[
+                      ] else if (!correctDate && isSubmitted && gotMess) ...[
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Container(
@@ -364,7 +364,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                                 children: [
                                   const Center(
                                     child: Text(
-                                      "Your Allotted Mess for Next Week is:",
+                                      "Your Allotted Mess for Next month is:",
                                       style: TextStyle(
                                         fontFamily: 'OpenSans_regular',
                                         fontSize: 16,
@@ -389,7 +389,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                             ),
                           ),
                         ),
-                      ] else if (correctDay && isSubmitted) ...[
+                      ] else if (correctDate && isSubmitted) ...[
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Container(
@@ -451,7 +451,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                                 children: [
                                   Center(
                                     child: Text(
-                                      "You can apply next week.",
+                                      "You can apply next month.",
                                       style: TextStyle(
                                         fontFamily: 'OpenSans_bold',
                                         fontSize: 16,
@@ -466,10 +466,10 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                           ),
                         ),
                       ],
-                      if (!isSubmitted && correctDay)
+                      if (!isSubmitted && correctDate)
                         Center(
                           child: ElevatedButton(
-                            onPressed: newSelectedHostelfromList == null
+                            onPressed: newSelectedHostelfromList == null || calculateHostel(hostel) != hostels
                                 ? null // Disable the button if no hostel is selected
                                 : () async {
                                     setState(() {
@@ -482,7 +482,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                                     _showConfirmationDialog();
                                   },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: newSelectedHostelfromList == null
+                              backgroundColor: newSelectedHostelfromList == null || calculateHostel(hostel) != hostels
                                   ? Colors
                                       .grey // Grey out the button if disabled
                                   : const Color.fromRGBO(57, 77, 198,
