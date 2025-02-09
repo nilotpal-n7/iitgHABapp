@@ -27,7 +27,8 @@ const hostelSchema = new mongoose.Schema(
     {
         hostel_name: {
             type: String,
-            required: true
+            required: true,
+            unique: true
         },
         
         users: {

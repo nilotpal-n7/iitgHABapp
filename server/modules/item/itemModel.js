@@ -4,7 +4,8 @@ const itemSchema = new mongoose.Schema(
     {
         qrCode: {
             type: String,
-            required: true
+            required: true,
+            unique: true
         },
         name: {
             type: String,

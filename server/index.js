@@ -9,6 +9,7 @@ const userRoute = require('./modules/user/userRoute.js');
 const cookieParser = require('cookie-parser');
 const complaintRoute = require('./modules/complaint/complaintRoute.js');
 const hostelRoute = require('./modules/hostel/hostelRoute.js');
+const qrRoute = require('./modules/qr/qrRoute.js')
 const {wednesdayScheduler, sundayScheduler} = require('./modules/hostel/hostelScheduler.js');
 
 require('dotenv').config();
@@ -63,6 +64,9 @@ app.use('/api/auth', authRoutes);
 
 //hostel route
 app.use('/api/mess', hostelRoute);
+
+//qr route
+app.use('/api/qr', qrRoute);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
