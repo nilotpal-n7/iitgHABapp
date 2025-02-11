@@ -14,6 +14,10 @@ const qrSchema = new mongoose.Schema(
             type: Boolean,
             required: true,
             default: false
+        },
+        scanned_at: {
+            type: Date,
+            default: null
         }
     }
 );
