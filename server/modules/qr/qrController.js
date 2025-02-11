@@ -24,6 +24,7 @@ const checkScanned = async (req, res) => {
         }
 
         qr.is_scanned = true;
+        qr.scanned_at = new Date();
 
         await qr.save();
 
