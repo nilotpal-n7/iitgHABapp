@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:frontend1/screen1/qrdetails_gala.dart';
+import 'package:frontend1/widgets/common/snack_bar.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:frontend1/utilities/permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:frontend1/apis/protected.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:frontend1/widgets/common/cornerQR.dart';
 import 'package:frontend1/constants/endpoint.dart';
 
-import '../../screens/QrDetail.dart';
+import '../../screen1/QrDetail.dart';
 
-
+final dio = Dio();
 class QrScan extends StatefulWidget {
   const QrScan({super.key});
 
@@ -40,36 +43,39 @@ class _QrScanState extends State<QrScan> {
   }
 
   Future<Map<String, dynamic>?> fetchItemBySerialNumber(String qrCode) async {
-    final header = await getAccessToken();
-    final url = Uri.parse("https://iitgcomplaintapp.onrender.com/api/users/roll/$qrCode");
+    //final header = await getAccessToken();
+    final url = "https://hab.codingclubiitg.in/api/qr/check";
 
     try {
-      final response = await http.get(
+      final response = await dio.put(
         url,
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $header",
-        },
+        data: jsonEncode({'qr_string': qrCode}), // Correctly using data
+        options: Options(
+          headers: {
+            "Content-Type": "application/json",
+          },
+        ),
       );
 
       if (response.statusCode == 200) {
-        var data = jsonDecode(response.body);
-        return data;
+        return response.data; // No need to decode manually earlier in http we have to print that
       } else if (response.statusCode == 404) {
-        print('Item not found');
+        showSnackBar('QR has been used once',context);
       } else {
-        print('Failed to load item. Status code: ${response.statusCode}');
+        showSnackBar('Failed to load item. Status code: ${response.statusCode}',context);
       }
     } catch (e) {
-      print('Error: $e');
+      showSnackBar('Error: $e',context);
     }
+
     return null;
   }
+
 
   // Handle QR code detection
   void onBarcodeDetected(BarcodeCapture capture) async {
     if (_hasScanned) return; // Prevent further processing if already scanned
-    _hasScanned = true; // Set the flag to indicate processing has started
+    _hasScanned = true; // Setting the flag to indicate processing has started
 
     try {
       final List<Barcode> barcodes = capture.barcodes;
@@ -85,12 +91,12 @@ class _QrScanState extends State<QrScan> {
             if (await Vibrate.canVibrate) {
               Vibrate.feedback(FeedbackType.success);
             }
-            print(itemData);
+            print("user details are $itemData");
             // Navigate to the details page with the fetched item data
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => QrDetail(itemData: itemData),
+                builder: (context) => DataScreen(itemData: itemData),// IMP: earlier we were passing data to QrDetail but now for some time we ll pass it to qrdetails_gaala
               ),
             );
           } else {
@@ -128,5 +134,3 @@ class _QrScanState extends State<QrScan> {
     );
   }
 }
-
-

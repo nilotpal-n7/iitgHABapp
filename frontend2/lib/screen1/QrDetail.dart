@@ -39,11 +39,16 @@ class _QrDetailState extends State<QrDetail> {
   @override
   Widget build(BuildContext context) {
     // Extracting the relevant data from itemData
+    print("widget.itemData Type: ${widget.itemData.runtimeType}");
+    print("widget.itemData Content: ${jsonEncode(widget.itemData)}");
 
-    String name = widget.itemData['name'] ?? 'N/A';
-    String rollNumber = widget.itemData['rollNumber'] ?? 'Not Available';
-    String currMess = widget.itemData['rollNumber'] ?? 'Not Available';
-    String hostel = widget.itemData['hostel'] ?? 'N/A';
+
+    final user = widget.itemData['user'] as Map<String, dynamic>? ?? {};
+
+    String name = user['name'] ?? 'N/A';
+    String rollNumber = user['rollNumber'] ?? 'Not Available';
+    String currMess = user['curr_subscribed_mess'] ?? 'Not Available';
+    String hostel = user['hostel'] ?? 'N/A';
 
     return Scaffold(
       appBar: AppBar(title: Text('QR Details')),
@@ -57,27 +62,10 @@ class _QrDetailState extends State<QrDetail> {
               SizedBox(height: 8),
               Text('Name: $name', style: TextStyle(fontSize: 20)),
               SizedBox(height: 8),
-              Text('Location: $rollNumber', style: TextStyle(fontSize: 16)),
+              Text('rollNumber: $rollNumber', style: TextStyle(fontSize: 16)),
               SizedBox(height: 8),
               Text('Hostel: ${calculateHostel(hostel)}', style: TextStyle(fontSize: 16)),
               Divider(height: 30),
-              TextField(
-                controller: _complaintNameController,
-                decoration: InputDecoration(
-                  labelText: 'Complaint Name',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(height: 12),
-              TextField(
-                controller: _complaintDescriptionController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: 'Complaint Description',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-
             ],
           ),
         ),

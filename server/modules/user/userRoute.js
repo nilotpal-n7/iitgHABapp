@@ -24,7 +24,7 @@ userRouter.delete('/:outlook', authenticateJWT, deleteUser);
 
 userRouter.put('/:outlook', authenticateJWT, updateUser);
 
-userRouter.get('/roll/:qr', getUserByRoll );
+userRouter.get('/roll/:qr', getUserByRoll );//removed authenticateJWT from here
 
 // userRouter.get('/complaints/:outlook', getUserComplaints);
 
