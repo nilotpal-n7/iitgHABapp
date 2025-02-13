@@ -69,7 +69,7 @@ class WelcomePage extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => QrScan(),
+              builder: (context) => const QrScan(),
             ),
           );
         },
