@@ -112,7 +112,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
       setState(() {
         _isloading = false; // Hide the loading indicator if data fetching fails need to keep track of stuff
       });
-      showSnackBar('Something Went Wrong', context);
+      showSnackBar('Something Went Wrong',Colors.black, context);
     }
   }
 
