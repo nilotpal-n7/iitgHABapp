@@ -73,12 +73,12 @@ class _loginScreenState extends State<loginScreen> {
                                 builder: (context) => HomeScreen(),
                               ),
                             );
-                            showSnackBar('Successfully Logged In', context);
+                            showSnackBar('Successfully Logged In',Colors.black, context);
                           } catch (e) {
                             setState(() {
                               _inprogress = false;
                             });
-                            showSnackBar('Something Went Wrong', context);
+                            showSnackBar('Something Went Wrong',Colors.black, context);
                           }
                         },
                         child: Padding(
