@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_web_auth/flutter_web_auth.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:frontend1/apis/protected.dart';
 import 'package:frontend1/apis/users/user.dart';
 import 'package:frontend1/constants/endpoint.dart';
@@ -11,7 +11,7 @@ import '../../screens/login_screen.dart';
 
 Future<void> authenticate() async {
   try {
-    final result = await FlutterWebAuth.authenticate(
+    final result = await FlutterWebAuth2.authenticate(
         url: AuthEndpoints.getAccess, callbackUrlScheme: "iitgcomplain");
     print(result);
 
