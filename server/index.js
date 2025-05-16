@@ -8,10 +8,11 @@ const itemRoute = require('./modules/item/itemRoute.js');
 const userRoute = require('./modules/user/userRoute.js');
 const cookieParser = require('cookie-parser');
 const complaintRoute = require('./modules/complaint/complaintRoute.js');
+const feedbackRoute = require('./modules/feedback/feedbackRoute.js');
 const hostelRoute = require('./modules/hostel/hostelRoute.js');
 const qrRoute = require('./modules/qr/qrRoute.js')
 const {wednesdayScheduler, sundayScheduler} = require('./modules/hostel/hostelScheduler.js');
-
+const {feedbackScheduler} = require('./modules/feedback/feedbackScheduler.js');
 require('dotenv').config();
 
 const app = express();
@@ -35,6 +36,8 @@ mongoose.connect(MONGOdb_uri, { useNewUrlParser: true, useUnifiedTopology: true 
         wednesdayScheduler()
 
         sundayScheduler()
+
+        feedbackScheduler()
     })
     .catch((err) => console.log(err));
 
@@ -58,6 +61,9 @@ app.use('/api/users', userRoute);
 
 //complaint route
 app.use('/api/complaints', complaintRoute); // enable after defining complaintRoute
+
+//complaint route
+app.use('/api/feedback', feedbackRoute); // enable after defining complaintRoute
 
 //auth route
 app.use('/api/auth', authRoutes);

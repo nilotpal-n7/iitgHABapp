@@ -9,7 +9,7 @@ const {
 
 const hostelRouter = express.Router();
 
-// hostelRouter.post('/', createHostel);
+ hostelRouter.post('/', createHostel);
 
 // hostelRouter.get('/:hostel_name', getHostel);
 
