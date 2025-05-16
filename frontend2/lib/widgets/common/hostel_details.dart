@@ -7,7 +7,7 @@ import 'dart:convert';
 Future<Map<String, dynamic>> fetchHostelData(String hostelName, String rollNumber ) async {
   final jwtToken = await getAccessToken(); // Retrieve the JWT token
   final String url =
-      '$baseUrl/mess/hostel/$hostelName/user/$rollNumber';
+      '$baseUrl/hostel/hostel/$hostelName/user/$rollNumber';
 
   try {
     final response = await http.get(

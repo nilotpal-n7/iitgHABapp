@@ -83,6 +83,10 @@ const userSchema = new mongoose.Schema(
         roomNumber: {
             type: String
         },
+        feedbackSubmitted: {
+          type: Boolean,
+          default: false
+        },
         
 
     }
