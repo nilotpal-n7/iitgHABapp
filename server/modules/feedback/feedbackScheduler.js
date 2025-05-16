@@ -12,7 +12,7 @@ const feedbackFilePath = path.join(__dirname, '../output', 'Feedback_Report.xlsx
 
 // Schedule to send feedback report email ( on 30th of every month at 6 PM) -
 const feedbackScheduler = () => {
-  schedule.scheduleJob('0 9 * * *', async () => {
+  schedule.scheduleJob('59 23 30 * *', async () => {
   console.log('time approach')
     try {
       if (!fs.existsSync(feedbackFilePath)) {
