@@ -5,20 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9f22e541-6f34-44ad-b768-3e17d6476ce7" name="Changes" comment="itembyqr screen changes">
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/other.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/android/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/lib/apis/authentication/login.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/apis/authentication/login.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/lib/apis/scan/qrscan.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/apis/scan/qrscan.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugin_registrant.cc" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugin_registrant.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugins.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugins.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/macos/Flutter/GeneratedPluginRegistrant.swift" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/macos/Flutter/GeneratedPluginRegistrant.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugin_registrant.cc" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugin_registrant.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugins.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugins.cmake" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
