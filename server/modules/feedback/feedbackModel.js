@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const ratingOptions = ['very poor', 'poor', 'average', 'good', 'very good'];
+const ratingOptions = ['Very Poor', 'Poor', 'Average', 'Good', 'Very Good'];
 
 const feedbackSchema = new mongoose.Schema({
   user: {
