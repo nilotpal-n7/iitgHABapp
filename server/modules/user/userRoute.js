@@ -15,7 +15,7 @@ const {
 const userRouter = express.Router();
 
 // userRouter.post('/', createUser);
-
+//
 // userRouter.get('/roll/:roll', getUserByRoll);
 
 userRouter.get('/', authenticateJWT, getUserData);
