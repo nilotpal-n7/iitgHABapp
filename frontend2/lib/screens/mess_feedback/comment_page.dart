@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../apis/protected.dart';
+import '../../constants/themes.dart';
 import '../../providers/feedback_provider.dart';
 
 class CommentPage extends StatefulWidget {
@@ -16,19 +17,6 @@ class CommentPage extends StatefulWidget {
 
 class _CommentPageState extends State<CommentPage> {
   final TextEditingController commentController = TextEditingController();
-  // String? name;
-  // String? roll;
-
-  // Future<void> getUserInfoFromPrefs() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //
-  //   setState(() {
-  //     name = prefs.getString('name');
-  //     roll = prefs.getString('rollNumber');
-  //     print('name: $name');
-  //     print('roll: $roll');
-  //   });
-  // }
 
   Future<void> submitFeedback(BuildContext context) async {
     final provider = Provider.of<FeedbackProvider>(context, listen: false);
@@ -36,13 +24,6 @@ class _CommentPageState extends State<CommentPage> {
     final name = prefs.getString('name');
     final roll = prefs.getString('rollNumber');
     final token = await getAccessToken();
-    print("access token-$token");
-    print('name: $name');
-    print('roll: $roll');
-    print('breakfast: ${provider.breakfast}');
-    print('lunch: ${provider.lunch}');
-    print('dinner: ${provider.dinner}');
-    print('comment: ${provider.comment}');
 
     if (token == 'error') {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -82,44 +63,85 @@ class _CommentPageState extends State<CommentPage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final provider = Provider.of<FeedbackProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text("Mess Feedback"), leading: BackButton()),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      appBar: AppBar(leading: BackButton()),
+      body: SafeArea(
         child: Column(
           children: [
-            LinearProgressIndicator(value: 1, color: Colors.deepPurple),
-            SizedBox(height: 16),
-            Text("Step 2 / 2", style: TextStyle(color: Colors.deepPurple)),
-            SizedBox(height: 8),
-            Text(
-                "Add additional comments that would help improve the mess service"),
-            SizedBox(height: 10),
-            TextField(
-              controller: commentController,
-              maxLines: 5,
-              maxLength: 100,
-              decoration: InputDecoration(
-                hintText: "Write in less than 100 words",
-                border: OutlineInputBorder(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Mess Feedback",
+                      style: TextStyle(
+                        fontFamily: 'OpenSans_Bold',
+                        color: Themes.feedbackColor,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 32),
+                    Text("Step 2 / 2",
+                        style: TextStyle(color: Colors.deepPurple)),
+                    SizedBox(height: 16),
+                    LinearProgressIndicator(value: 1, color: Colors.deepPurple),
+                    SizedBox(height: 11),
+                    Text(
+                      "Add additional comments that would help improve the mess service",
+                      style: TextStyle(
+                        fontFamily: 'OpenSans-Regular',
+                        fontWeight: FontWeight.w500,
+                        fontSize: 20,
+                        color: Color.fromRGBO(46, 47, 49, 1),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: commentController,
+                      maxLines: 5,
+                      maxLength: 100,
+                      decoration: InputDecoration(
+                        hintText: "Write in less than 100 words",
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: provider.setComment,
+                    ),
+                  ],
+                ),
               ),
-              onChanged: provider.setComment,
             ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => submitFeedback(context),
-              child: Text("Submit"),
-              style:
-                  ElevatedButton.styleFrom(backgroundColor: Colors.deepPurple),
-            )
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 16.0, horizontal: 10),
+              child: GestureDetector(
+                onTap: () => submitFeedback(context),
+                child: Container(
+                  width: 358,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    color: Color.fromRGBO(76, 78, 219, 1),
+                    borderRadius: BorderRadius.circular(9999),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Submit',
+                      style: TextStyle(
+                        fontFamily: 'OpenSans-Regular',
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

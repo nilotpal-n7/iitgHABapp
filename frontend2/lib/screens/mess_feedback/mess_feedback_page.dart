@@ -38,7 +38,9 @@ class MessFeedbackPage extends StatelessWidget {
     final provider = Provider.of<FeedbackProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(leading: BackButton()),
+      appBar: AppBar(
+        leading: BackButton(),
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0),
         child: Column(
@@ -84,36 +86,38 @@ class MessFeedbackPage extends StatelessWidget {
                 ],
               ),
             ),
-            GestureDetector(
-              onTap: provider.isComplete()
-                  ? () => Navigator.push(
-                      context, MaterialPageRoute(builder: (_) => CommentPage()))
-                  : null,
-              child: Container(
-                width: 358,
-                height: 54,
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-                decoration: BoxDecoration(
-                  color: Color.fromRGBO(76, 78, 219, 1),
+            Center(
+              child: GestureDetector(
+                onTap: provider.isComplete()
+                    ? () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => CommentPage()))
+                    : null,
+                child: Container(
+                  width: 358,
+                  height: 54,
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: Color.fromRGBO(76, 78, 219, 1),
 
-                  borderRadius: BorderRadius.circular(9999), // pill shape
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(width: 12),
-                    Text(
-                      'Next',
-                      style: TextStyle(
-                        fontFamily: 'OpenSans-Regular',
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
+                    borderRadius: BorderRadius.circular(9999), // pill shape
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(width: 12),
+                      Text(
+                        'Next',
+                        style: TextStyle(
+                          fontFamily: 'OpenSans-Regular',
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
