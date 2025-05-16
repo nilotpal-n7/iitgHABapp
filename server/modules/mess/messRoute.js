@@ -20,10 +20,10 @@ messRouter.post("/create", createMess);
 messRouter.post("/menu/create", createMenu);
 messRouter.post("/menu/item/create", createMenuItem);
 messRouter.delete("/menu/item/delete/:menuItemId", deleteMenuItem);
-messRouter.get("/get", authenticateJWT, getUserMessInfo);
-messRouter.get("/all", authenticateJWT, getAllMessInfo);
-messRouter.get("/menu/:messId", authenticateJWT, getMessMenuByDay);
-messRouter.get("/menu/item/:menuItemId", authenticateJWT, getMessMenuItemById);
+messRouter.post("/get", authenticateJWT, getUserMessInfo);
+messRouter.post("/all", authenticateJWT, getAllMessInfo);
+messRouter.post("/menu/:messId", authenticateJWT, getMessMenuByDay);
+messRouter.post("/menu/item/:menuItemId", authenticateJWT, getMessMenuItemById);
 messRouter.post(
   "/menu/item/like/:menuItemId",
   authenticateJWT,
