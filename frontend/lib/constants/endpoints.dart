@@ -37,5 +37,5 @@ class redirecturi {
 }
 
 class clientSecretid {
-  static const Clientscret = 'w1h8Q~_.YUQPkHuorB4gaOJJcvkkPYc7qi70nc.B';
+  static const Clientscret = '1Ru8Q~nnw4-sgctkjcUouTgENs2XxT6SvjawWaDl';
 }
