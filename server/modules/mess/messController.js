@@ -3,7 +3,7 @@ const { Menu } = require("./menuModel");
 const { MenuItem } = require("./menuItemModel");
 const { User } = require("../user/userModel");
 const { Hostel } = require("../hostel/hostelModel");
-const { ScanLogs } = require("./scanLogsModel");
+const { ScanLogs } = require("./ScanLogsModel.js");
 
 const {
   getCurrentDate,
