@@ -5,6 +5,7 @@ import 'package:frontend1/apis/authentication/login.dart';
 import 'package:frontend1/screens/Home_screen.dart';
 import 'package:frontend1/screens/login_screen.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:frontend1/screens/profile_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,7 +82,8 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
-      home: widget.isLoggedIn ? HomeScreen() : loginScreen(),
+     home: widget.isLoggedIn ? HomeScreen() : loginScreen(),
+      //home:  ProfileScreen(),
       builder: EasyLoading.init(),
     );
   }
