@@ -18,7 +18,7 @@ Future<void> authenticate() async {
     final accessToken = Uri.parse(result).queryParameters['token'];
     print("access token is");
 
-    print(accessToken);
+    debugPrint(accessToken);
 
     final prefs = await SharedPreferences.getInstance();
 

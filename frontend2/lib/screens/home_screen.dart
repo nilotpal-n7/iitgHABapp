@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend1/screens/profile_screen.dart';
+import 'mess_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend1/widgets/common/name_trimmer.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -30,6 +31,11 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
+
+
+  final List<Widget> _pages = [
+    MessScreen(),
+  ];
 
   void _onNavTap(int index) {
     setState(() {
@@ -74,8 +80,8 @@ class _HomeScreenState extends State<HomeScreen> {
     Widget sectionBody(int section) {
       if (expandedSection != section) return const SizedBox.shrink();
       // Only show "Coming soon" for all sections
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 18.0),
+      return const Padding(
+        padding:  EdgeInsets.symmetric(vertical: 18.0),
         child: Center(
           child: Text(
             "Coming soon",
@@ -221,8 +227,8 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Header Row: "In Mess Today" and "Go to Mess"
-        Row(
-          children: const [
+        const Row(
+          children:  [
             Text(
               "In Mess Today",
               style: TextStyle(
@@ -253,10 +259,10 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Top row: "Breakfast", "In 2 hrs", time
-                Row(
+                const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                     Text(
                       "Breakfast ",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
@@ -271,8 +277,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontSize: 16,
                       ),
                     ),
-                    const Spacer(),
-                    const Text(
+                     Spacer(),
+                     Text(
                       "7:00 AM - 9:45 PM",
                       style: TextStyle(
                         color: Colors.black54,
