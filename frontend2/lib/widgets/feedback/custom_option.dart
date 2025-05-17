@@ -28,7 +28,8 @@ Widget customOption({
             isSelected ? Icons.check_circle : Icons.circle_outlined,
             color: isSelected ? Color(0xFF4C4BD9) : Colors.grey,
           ),
-         const SizedBox(width: 12),
+
+          SizedBox(width: 12),
           Text(
             text,
             style: TextStyle(
