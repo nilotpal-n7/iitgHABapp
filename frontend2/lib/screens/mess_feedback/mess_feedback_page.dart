@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontend1/constants/themes.dart';
-// import 'package:provider/provider.dart';
-//
-// import '../../providers/feedback_provider.dart';
+
+import 'package:provider/provider.dart';
+
+import '../../providers/feedback_provider.dart';
 import '../../widgets/feedback/custom_option.dart';
 import 'comment_page.dart';
 
@@ -19,8 +20,9 @@ class MessFeedbackPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(meal, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        const SizedBox(
+
+        Text(meal, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        SizedBox(
           height: 8,
         ),
         ...options.map((option) => customOption(
@@ -28,14 +30,16 @@ class MessFeedbackPage extends StatelessWidget {
               groupValue: selected,
               value: option,
               onChanged: onChanged,
-            ),),
+            )),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    //final provider = Provider.of<FeedbackProvider>(context);
+
+    final provider = Provider.of<FeedbackProvider>(context);
+
 
     return Scaffold(
       appBar: AppBar(
@@ -46,52 +50,53 @@ class MessFeedbackPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-           const  Text(
+            Text(
               "Mess Feedback",
               style: TextStyle(
                   fontFamily: 'OpenSans_Bold',
-                  //color: Themes.feedbackColor,
+                  color: Themes.feedbackColor,
                   fontSize: 32,
                   fontWeight: FontWeight.w700),
             ),
-            const SizedBox(
+            SizedBox(
               height: 32,
             ),
-            const Text("Step 1 / 2", style: TextStyle(color: Colors.deepPurple)),
-           const  SizedBox(
+            Text("Step 1 / 2", style: TextStyle(color: Colors.deepPurple)),
+            SizedBox(
               height: 11,
             ),
-            const LinearProgressIndicator(value: 0.5, color: Colors.deepPurple),
-            const SizedBox(height: 16),
-            const SizedBox(height: 8),
+            LinearProgressIndicator(value: 0.5, color: Colors.deepPurple),
+            SizedBox(height: 16),
+            SizedBox(height: 8),
             Expanded(
               child: ListView(
                 children: [
-                  const Text(
+                  Text(
                     "How satisfied are you with the respective meals?",
                     style: TextStyle(
                         fontFamily: 'OpenSans-Regular',
                         fontWeight: FontWeight.w500,
                         fontSize: 20),
                   ),
-                  const SizedBox(
+
+                  SizedBox(
                     height: 24,
                   ),
-                //   mealBlock("Breakfast", provider.breakfast,
-                //       (val) => provider.setMealFeedback('breakfast', val)),
-                //   mealBlock("Lunch", provider.lunch,
-                //       (val) => provider.setMealFeedback('lunch', val)),
-                //   mealBlock("Dinner", provider.dinner,
-                //       (val) => provider.setMealFeedback('dinner', val)),
-                 ],
-            )
+                  mealBlock("Breakfast", provider.breakfast,
+                      (val) => provider.setMealFeedback('breakfast', val)),
+                  mealBlock("Lunch", provider.lunch,
+                      (val) => provider.setMealFeedback('lunch', val)),
+                  mealBlock("Dinner", provider.dinner,
+                      (val) => provider.setMealFeedback('dinner', val)),
+                ],
+              ),
             ),
             Center(
               child: GestureDetector(
-                // onTap: //provider.isComplete()
-                //     ? () => Navigator.push(context,
-                //         MaterialPageRoute(builder: (_) => CommentPage()))
-                //     : null,
+                onTap: provider.isComplete()
+                    ? () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => CommentPage()))
+                    : null,
                 child: Container(
                   width: 358,
                   height: 54,
@@ -103,7 +108,7 @@ class MessFeedbackPage extends StatelessWidget {
 
                     borderRadius: BorderRadius.circular(9999), // pill shape
                   ),
-                  child: const  Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SizedBox(width: 12),

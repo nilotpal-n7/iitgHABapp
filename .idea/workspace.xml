@@ -5,20 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9f22e541-6f34-44ad-b768-3e17d6476ce7" name="Changes" comment="itembyqr screen changes">
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/other.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/android/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/lib/apis/authentication/login.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/apis/authentication/login.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/lib/apis/scan/qrscan.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/apis/scan/qrscan.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugin_registrant.cc" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugin_registrant.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugins.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugins.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/macos/Flutter/GeneratedPluginRegistrant.swift" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/macos/Flutter/GeneratedPluginRegistrant.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugin_registrant.cc" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugin_registrant.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugins.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugins.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend2/lib/screens/mess_feedback/comment_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/screens/mess_feedback/comment_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend2/lib/screens/mess_feedback/mess_feedback_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/screens/mess_feedback/mess_feedback_page.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,6 +16,13 @@
   </component>
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Dart File" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -60,13 +56,15 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "dart.analysis.tool.window.visible": "false",
     "git-widget-placeholder": "mess__feedback",
     "io.flutter.reload.alreadyRun": "true",
-    "last_opened_file_path": "/Users/yatikajena/Desktop/dd/iitgHABapp/server",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/impfolder/hab/iitgHABapp",
     "settings.editor.selected.configurable": "AndroidSdkUpdater",
     "show.migrate.to.gradle.popup": "false"
   }

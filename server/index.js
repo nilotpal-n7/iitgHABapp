@@ -2,21 +2,36 @@
 //import authRoutes from "./modules/auth/auth.routes.js";
 const authRoutes = require("./modules/auth/auth.routes.js");
 
-const express = require('express');
-const mongoose = require('mongoose');
-const itemRoute = require('./modules/item/itemRoute.js');
-const userRoute = require('./modules/user/userRoute.js');
-const cookieParser = require('cookie-parser');
-const complaintRoute = require('./modules/complaint/complaintRoute.js');
-const hostelRoute = require('./modules/hostel/hostelRoute.js');
-const qrRoute = require('./modules/qr/qrRoute.js')
-const {wednesdayScheduler, sundayScheduler} = require('./modules/hostel/hostelScheduler.js');
-
-require('dotenv').config();
+const express = require("express");
+const mongoose = require("mongoose");
+const itemRoute = require("./modules/item/itemRoute.js");
+const userRoute = require("./modules/user/userRoute.js");
+const cookieParser = require("cookie-parser");
+const complaintRoute = require("./modules/complaint/complaintRoute.js");
+const feedbackRoute = require("./modules/feedback/feedbackRoute.js");
+const hostelRoute = require("./modules/hostel/hostelRoute.js");
+const qrRoute = require("./modules/qr/qrRoute.js");
+const messRoute = require("./modules/mess/messRoute.js");
+const {
+  wednesdayScheduler,
+  sundayScheduler,
+} = require("./modules/hostel/hostelScheduler.js");
+const {
+  feedbackScheduler,
+} = require("./modules/feedback/feedbackScheduler.js");
+require("dotenv").config();
 
 const app = express();
-const PORT = process.env.PORT;
 const MONGOdb_uri = process.env.MONGODB_URI;
+const PORT = process.env.PORT || 3000;
+// Middleware for CORS
+// app.use(
+//   cors({
+//     origin: "http://localhost:3000",
+//     methods: ["GET", "POST", "PUT", "DELETE"],
+//     credentials: true,
+//   })
+// );
 
 // console.log(PORT)
 // console.log(MONGOdb_uri)
@@ -25,50 +40,58 @@ const MONGOdb_uri = process.env.MONGODB_URI;
 app.use(express.json());
 app.use(cookieParser());
 
-app.use(express.urlencoded({extended: true}));
- 
+app.use(express.urlencoded({ extended: true }));
+
 // MongoDB connection
-mongoose.connect(MONGOdb_uri, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => {
-        console.log('MongoDB connected')
+mongoose
+  .connect(MONGOdb_uri, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    console.log("MongoDB connected");
 
-        wednesdayScheduler()
+    wednesdayScheduler();
 
-        sundayScheduler()
-    })
-    .catch((err) => console.log(err));
+    sundayScheduler();
+
+    feedbackScheduler();
+  })
+  .catch((err) => console.log(err));
 
 // Basic route
-app.get('/', (req, res) => {
-    res.send('Backend is running');
+app.get("/", (req, res) => {
+  res.send("Backend is running");
 });
 
 // hello route
-app.get('/hello', (req, res) => {
-    res.send('Hello from server');
+app.get("/hello", (req, res) => {
+  res.send("Hello from server");
 });
 // test route
 //app.use('/api/test', testRoute);
 
 // item route
-app.use('/api/items', itemRoute);
+app.use("/api/items", itemRoute);
 
 // user route
-app.use('/api/users', userRoute);
+app.use("/api/users", userRoute);
 
 //complaint route
-app.use('/api/complaints', complaintRoute); // enable after defining complaintRoute
+app.use("/api/complaints", complaintRoute);
+
+//complaint route
+app.use("/api/feedback", feedbackRoute);
 
 //auth route
-app.use('/api/auth', authRoutes);
+app.use("/api/auth", authRoutes);
 
 //hostel route
-app.use('/api/mess', hostelRoute);
+app.use("/api/hostel", hostelRoute);
 
 //qr route
-app.use('/api/qr', qrRoute);
+app.use("/api/qr", qrRoute);
+
+//mess route
+app.use("/api/mess", messRoute);
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
-

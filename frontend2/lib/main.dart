@@ -1,16 +1,25 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:frontend1/apis/authentication/login.dart';
+import 'package:frontend1/providers/feedback_provider.dart';
 import 'package:frontend1/screens/Home_screen.dart';
 import 'package:frontend1/screens/login_screen.dart';
+
+import 'package:frontend1/screens/mess_feedback/mess_feedback_page.dart';
+import 'package:provider/provider.dart';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:frontend1/screens/profile_screen.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final bool asLoggedIn = await isLoggedIn();
-  runApp(MyApp(isLoggedIn: asLoggedIn));
+
+  runApp(ChangeNotifierProvider(
+      create: (_) => FeedbackProvider(), child: MyApp(isLoggedIn: asLoggedIn)));
 }
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -35,8 +44,9 @@ class _MyAppState extends State<MyApp> {
     _connectivity = Connectivity();
 
     // Use `.map()` to transform the stream into a stream of ConnectivityResult
-    _connectivityStream = _connectivity.onConnectivityChanged
-        .map((List<ConnectivityResult> results) => results.isNotEmpty ? results[0] : ConnectivityResult.none);
+    _connectivityStream = _connectivity.onConnectivityChanged.map(
+        (List<ConnectivityResult> results) =>
+            results.isNotEmpty ? results[0] : ConnectivityResult.none);
 
     _connectivityStream.listen((ConnectivityResult result) {
       _handleConnectivityChange(result);
@@ -82,9 +92,17 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
-     home: widget.isLoggedIn ? HomeScreen() : loginScreen(),
+
+      home: widget.isLoggedIn ? HomeScreen() : loginScreen(),
+
       //home:  ProfileScreen(),
       builder: EasyLoading.init(),
+      initialRoute: '/home',
+      routes: {
+        '/home': (context) => const HomeScreen(),
+        '/mess': (context) => MessFeedbackPage(),
+        '/complaints': (context) => const HomeScreen(),
+      },
     );
   }
 

@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
+
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:frontend1/screens/profile_screen.dart';
+import 'package:frontend1/widgets/common/name_trimmer.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../widgets/common/bottom_nav_bar.dart';
+
 import 'package:frontend1/screens/profile_screen.dart';
 import 'mess_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend1/widgets/common/name_trimmer.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,14 +42,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
-  final List<Widget> _pages = [
-    MessScreen(),
-  ];
 
-  void _onNavTap(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  void _handleNavTap(BuildContext context, int index) {
+    switch (index) {
+      case 0:
+        Navigator.pushNamed(context, '/home');
+        break;
+      case 1:
+        Navigator.pushNamed(context, '/mess');
+        break;
+      case 2:
+        Navigator.pushNamed(context, '/complaints');
+        break;
+    }
+
+
   }
 
   Widget buildComplaintsCard() {
@@ -219,9 +235,11 @@ class _HomeScreenState extends State<HomeScreen> {
     const green = Color(0xFF1DB954);
 
     Widget heart() => const Padding(
-      padding: EdgeInsets.only(left: 6.0),
-      child: Icon(Icons.favorite, color: Colors.red, size: 16),
-    );
+
+          padding: EdgeInsets.only(left: 6.0),
+          child: Icon(Icons.favorite, color: Colors.red, size: 16),
+        );
+
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,7 +320,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 const Text("Choley", style: TextStyle(fontSize: 15)),
                 Row(
                   children: [
-                    const Text("Aloo Pumpkin Chickpeas", style: TextStyle(fontSize: 15)),
+
+                    const Text("Aloo Pumpkin Chickpeas",
+                        style: TextStyle(fontSize: 15)),
+
                     heart(),
                   ],
                 ),
@@ -336,11 +357,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Text("Bhature", style: TextStyle(fontSize: 15)),
+
+                                const Text("Bhature",
+                                    style: TextStyle(fontSize: 15)),
                                 heart(),
                               ],
                             ),
-                            const Text("Peas Pulao", style: TextStyle(fontSize: 15)),
+                            const Text("Peas Pulao",
+                                style: TextStyle(fontSize: 15)),
+
                           ],
                         ),
                       ),
@@ -364,14 +389,18 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            const Text("Imli Chutney", style: TextStyle(fontSize: 15)),
+
+                            const Text("Imli Chutney",
+                                style: TextStyle(fontSize: 15)),
                             Row(
                               children: [
-                                const Text("Sweet Lassi", style: TextStyle(fontSize: 15)),
+                                const Text("Sweet Lassi",
+                                    style: TextStyle(fontSize: 15)),
                                 heart(),
                               ],
                             ),
-                            const Text("Fruit Custard", style: TextStyle(fontSize: 15)),
+                            const Text("Fruit Custard",
+                                style: TextStyle(fontSize: 15)),
                           ],
                         ),
                       ),
@@ -473,30 +502,36 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white,
-        elevation: 12,
-        selectedItemColor: usernameBlue,
-        unselectedItemColor: Colors.black54,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-        type: BottomNavigationBarType.fixed,
+
+      bottomNavigationBar: BottomNavBar(
         currentIndex: _selectedIndex,
-        onTap: _onNavTap,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant_menu_rounded),
-            label: "Mess",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.report_gmailerrorred_rounded),
-            label: "Complaints",
-          ),
-        ],
+        onTap: (index) => _handleNavTap(context, index),
       ),
+      // bottomNavigationBar: BottomNavigationBar(
+      //   backgroundColor: Colors.white,
+      //   elevation: 12,
+      //   selectedItemColor: usernameBlue,
+      //   unselectedItemColor: Colors.black54,
+      //   selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+      //   type: BottomNavigationBarType.fixed,
+      //   currentIndex: _selectedIndex,
+      //   onTap: _onNavTap,
+      //   items: const [
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.home_rounded),
+      //       label: "Home",
+      //     ),
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.restaurant_menu_rounded),
+      //       label: "Mess",
+      //     ),
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.report_gmailerrorred_rounded),
+      //       label: "Complaints",
+      //     ),
+      //   ],
+      // ),
+
     );
   }
 }
