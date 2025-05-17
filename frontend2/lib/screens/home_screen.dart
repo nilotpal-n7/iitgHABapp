@@ -80,8 +80,8 @@ class _HomeScreenState extends State<HomeScreen> {
     Widget sectionBody(int section) {
       if (expandedSection != section) return const SizedBox.shrink();
       // Only show "Coming soon" for all sections
-      return const Padding(
-        padding:  EdgeInsets.symmetric(vertical: 18.0),
+      return const  Padding(
+        padding: EdgeInsets.symmetric(vertical: 18.0),
         child: Center(
           child: Text(
             "Coming soon",
