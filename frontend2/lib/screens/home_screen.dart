@@ -1,8 +1,14 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:frontend1/constants/endpoint.dart';
 import 'package:frontend1/screens/profile_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend1/widgets/common/name_trimmer.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:http/http.dart' as http;
+import 'package:frontend1/models/mess_menu_model.dart';
+import 'package:frontend1/widgets/mess_widgets/messmenu.dart';
+import 'package:frontend1/widgets/complaint_dropdown.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,13 +18,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String name = '';
-  int expandedSection = 1; // 1: complaints, 2: mess, 3: alerts
   int _selectedIndex = 0;
+ bool feedbackform=true;
+  String? messId;
+  String? token;
 
   @override
   void initState() {
     super.initState();
     fetchUserData();
+    fetchMessIdAndToken();
   }
 
   Future<void> fetchUserData() async {
@@ -31,102 +40,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> fetchMessIdAndToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      messId = '6826dfda8493bb0870b10cbf';
+      token = prefs.getString('access_token');
+    });
+  }
+
   void _onNavTap(int index) {
     setState(() {
       _selectedIndex = index;
     });
-  }
-
-  Widget buildComplaintsCard() {
-    const usernameBlue = Color(0xFF3754DB);
-
-    Widget sectionHeader(String title, int section, {Widget? trailing}) {
-      return InkWell(
-        borderRadius: BorderRadius.circular(8),
-        onTap: () {
-          setState(() {
-            expandedSection = expandedSection == section ? 0 : section;
-          });
-        },
-        child: Row(
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                color: section == 1 ? usernameBlue : Colors.black87,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
-            ),
-            if (trailing != null) ...[const SizedBox(width: 6), trailing],
-            const Spacer(),
-            Icon(
-              expandedSection == section
-                  ? Icons.keyboard_arrow_up_rounded
-                  : Icons.keyboard_arrow_down_rounded,
-              color: Colors.black38,
-            ),
-          ],
-        ),
-      );
-    }
-
-    Widget sectionBody(int section) {
-      if (expandedSection != section) return const SizedBox.shrink();
-      // Only show "Coming soon" for all sections
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 18.0),
-        child: Center(
-          child: Text(
-            "Coming soon",
-            style: TextStyle(
-              color: Colors.black54,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 0.5,
-      child: Padding(
-        padding: const EdgeInsets.all(18.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            sectionHeader("Complaints", 1),
-            sectionBody(1),
-            if (expandedSection != 1) const Divider(),
-            sectionHeader("Mess", 2),
-            sectionBody(2),
-            if (expandedSection != 2) const Divider(),
-            sectionHeader(
-              "Alerts",
-              3,
-              trailing: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Color(0xFFE9EAFB),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  "2",
-                  style: TextStyle(
-                    color: usernameBlue,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-            ),
-            sectionBody(3),
-          ],
-        ),
-      ),
-    );
   }
 
   Widget buildQuickActions() {
@@ -135,7 +60,6 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.symmetric(vertical: 18.0),
       child: Row(
         children: [
-          // New Complaint Button
           Expanded(
             child: InkWell(
               borderRadius: BorderRadius.circular(18),
@@ -169,8 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          const SizedBox(width: 18),
-          // Mess QR Button
+          const SizedBox(width: 16),
           Expanded(
             child: InkWell(
               borderRadius: BorderRadius.circular(18),
@@ -185,14 +108,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SvgPicture.asset(
-                      'assets/icon/qrcode.svg',
+                      'assets/icon/qrscan.svg',
                       width: 32,
                       height: 32,
                       color: const Color(0xFF3754DB),
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      "Mess QR",
+                      "Scan Mess QR",
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.w500,
@@ -209,177 +132,156 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildMessTodayCard() {
-    const green = Color(0xFF1DB954);
+  String getTodayDay() {
+    final now = DateTime.now();
+    const days = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
+    ];
+    return days[now.weekday - 1];
+  }
 
-    Widget heart() => const Padding(
-      padding: EdgeInsets.only(left: 6.0),
-      child: Icon(Icons.favorite, color: Colors.red, size: 16),
+  DateTime _parseTime(String timeStr) {
+    final now = DateTime.now();
+    final parts = timeStr.split(':');
+    return DateTime(
+      now.year,
+      now.month,
+      now.day,
+      int.parse(parts[0]),
+      int.parse(parts[1]),
     );
+  }
 
+  String _formatDuration(Duration d) {
+    if (d.inSeconds <= 0) return "Ended";
+    final h = d.inHours;
+    final m = d.inMinutes.remainder(60);
+    if (h > 0) {
+      return "${h}h ${m}m";
+    } else {
+      return "${m}m";
+    }
+  }
+
+  Future<List<MenuModel>> fetchTodayMenu() async {
+    if (messId == null || token == null) {
+      await fetchMessIdAndToken();
+      if (messId == null || token == null) {
+        throw Exception('Mess ID or token not available');
+      }
+    }
+    final url = Uri.parse('$baseUrl/mess/menu/$messId');
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'day': getTodayDay()}),
+    );
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((json) => MenuModel.fromJson(json)).toList();
+    } else {
+      print(response.body);
+      throw Exception('Failed to load menu');
+    }
+  }
+
+  Widget buildMessTodayCard() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header Row: "In Mess Today" and "Go to Mess"
-        Row(
-          children: const [
-            Text(
-              "In Mess Today",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: const [
+              Text(
+                "In Mess Today",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
-            ),
-            Spacer(),
-            Text(
-              "Go to Mess",
-              style: TextStyle(
-                color: Color(0xFF3754DB),
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
+              Text(
+                "Go to Mess",
+                style: TextStyle(
+                  color: Color(0xFF3754DB),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        const SizedBox(height: 12),
-        Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          elevation: 0.5,
-          child: Padding(
-            padding: const EdgeInsets.all(18.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top row: "Breakfast", "In 2 hrs", time
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Breakfast ",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    Text(
-                      "In 2 hrs",
-                      style: TextStyle(
-                        color: green,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const Spacer(),
-                    const Text(
-                      "7:00 AM - 9:45 PM",
-                      style: TextStyle(
-                        color: Colors.black54,
-                        fontWeight: FontWeight.normal,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
+        const SizedBox(height: 8),
+        FutureBuilder<List<MenuModel>>(
+          future: fetchTodayMenu(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(24)),
+                  side: BorderSide(color: Color(0xC5C5D1), width: 1),
                 ),
-                const SizedBox(height: 14),
-                // DISH Section
-                const Text(
-                  "DISH",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    letterSpacing: 0.5,
+                elevation: 0.5,
+                child: Padding(
+                  padding: EdgeInsets.all(18.0),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              );
+            } else if (snapshot.hasError) {
+              return Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  side: BorderSide(color: Color(0xC5C5D1), width: 1),
+                ),
+                elevation: 0.5,
+                child: Padding(
+                  padding: const EdgeInsets.all(18.0),
+                  child: Text(
+                    'Error loading menu: ${snapshot.error}',
+                    style: const TextStyle(color: Colors.red),
                   ),
                 ),
-                const SizedBox(height: 4),
-                const Text("Choley", style: TextStyle(fontSize: 15)),
-                Row(
-                  children: [
-                    const Text("Aloo Pumpkin Chickpeas", style: TextStyle(fontSize: 15)),
-                    heart(),
-                  ],
+              );
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                Row(
-                  children: [
-                    const Text("Dal Triveni", style: TextStyle(fontSize: 15)),
-                    heart(),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                // Horizontal Divider
-                const Divider(thickness: 1, height: 24),
-                // BREADS & RICE and OTHERS
-                IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // BREADS & RICE
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              "BREADS & RICE",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Text("Bhature", style: TextStyle(fontSize: 15)),
-                                heart(),
-                              ],
-                            ),
-                            const Text("Peas Pulao", style: TextStyle(fontSize: 15)),
-                          ],
-                        ),
-                      ),
-                      // Vertical Divider
-                      VerticalDivider(
-                        thickness: 1,
-                        width: 32,
-                        color: Colors.grey.shade300,
-                      ),
-                      // OTHERS
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              "OTHERS",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text("Imli Chutney", style: TextStyle(fontSize: 15)),
-                            Row(
-                              children: [
-                                const Text("Sweet Lassi", style: TextStyle(fontSize: 15)),
-                                heart(),
-                              ],
-                            ),
-                            const Text("Fruit Custard", style: TextStyle(fontSize: 15)),
-                          ],
-                        ),
-                      ),
-                    ],
+                elevation: 0.5,
+                child: const Padding(
+                  padding: EdgeInsets.all(18.0),
+                  child: Text(
+                    'No menu available today.',
+                    style: TextStyle(fontSize: 15, color: Colors.black54),
                   ),
                 ),
-              ],
-            ),
-          ),
+              );
+            }
+
+            return MessMenuCard(
+              menus: snapshot.data!,
+              now: DateTime.now(),
+              parseTime: _parseTime,
+              formatDuration: _formatDuration,
+            );
+          },
         ),
       ],
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -393,7 +295,6 @@ class _HomeScreenState extends State<HomeScreen> {
         leading: Padding(
           padding: const EdgeInsets.only(left: 15.0),
           child: InkWell(
-            //borderRadius: BorderRadius.circular(30),
             onTap: () {
               Navigator.push(
                 context,
@@ -420,11 +321,11 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0,),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 8),
+              const SizedBox(height: 13.5),
               RichText(
                 text: TextSpan(
                   children: [
@@ -449,20 +350,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
               const Text(
                 "No notifications need your attention",
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.black54,
+                  color: Colors.black87,
                 ),
               ),
-              const SizedBox(height: 18),
-              buildComplaintsCard(),
+              const SizedBox(height: 24),
+              ComplaintsCard(feedbackform: feedbackform,),
               buildQuickActions(),
               buildMessTodayCard(),
-              const SizedBox(height: 22),
               const SizedBox(height: 32),
+
             ],
           ),
         ),
@@ -476,17 +377,29 @@ class _HomeScreenState extends State<HomeScreen> {
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: _onNavTap,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
+            icon: SvgPicture.asset(
+              "assets/icon/complaints.svg",
+              width: 28,
+              height: 28,
+            ),
             label: "Home",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant_menu_rounded),
+            icon: SvgPicture.asset(
+              "assets/icon/messicon.svg",
+              width: 28,
+              height: 28,
+            ),
             label: "Mess",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.report_gmailerrorred_rounded),
+            icon: SvgPicture.asset(
+              "assets/icon/navcomplaint.svg",
+              width: 28,
+              height: 28,
+            ),
             label: "Complaints",
           ),
         ],
