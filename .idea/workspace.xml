@@ -5,20 +5,38 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9f22e541-6f34-44ad-b768-3e17d6476ce7" name="Changes" comment="itembyqr screen changes">
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/other.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/deviceManager.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend2/lib/models/mess_menu_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend2/lib/widgets/mess_widgets/messmenu.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/modules/feedback/feedbackController.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/modules/feedback/feedbackModel.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/modules/feedback/feedbackRoute.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/modules/feedback/feedbackScheduler.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/modules/mess/ScanLogsModel.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/modules/mess/menuItemModel.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/modules/mess/menuModel.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/modules/mess/messController.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/modules/mess/messModel.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/modules/mess/messRoute.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/modules/output/Feedback_Report.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/utils/date.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/other.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/android/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/lib/apis/authentication/login.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/apis/authentication/login.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/lib/apis/scan/qrscan.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/apis/scan/qrscan.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugin_registrant.cc" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugin_registrant.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugins.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugins.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/macos/Flutter/GeneratedPluginRegistrant.swift" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/macos/Flutter/GeneratedPluginRegistrant.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugin_registrant.cc" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugin_registrant.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugins.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugins.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/constants/endpoints.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/constants/endpoints.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend2/android/settings.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/android/settings.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend2/lib/constants/endpoint.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/constants/endpoint.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend2/lib/screens/home_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/screens/home_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend2/lib/screens/login_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/screens/login_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend2/lib/widgets/common/hostel_details.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/widgets/common/hostel_details.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/middleware/authenticateJWT.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/middleware/authenticateJWT.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/modules/auth/auth.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/auth/auth.controller.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/modules/hostel/hostelController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/hostel/hostelController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/modules/hostel/hostelModel.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/hostel/hostelModel.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/modules/hostel/hostelRoute.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/hostel/hostelRoute.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/modules/hostel/hostelScheduler.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/hostel/hostelScheduler.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/modules/user/userModel.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/user/userModel.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/modules/user/userRoute.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/user/userRoute.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,13 +78,15 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "mess__feedback",
+    "git-widget-placeholder": "Merging HomePage",
     "io.flutter.reload.alreadyRun": "true",
-    "last_opened_file_path": "/Users/yatikajena/Desktop/dd/iitgHABapp/server",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/ayush/Documents/iitgHABapp/frontend2",
     "settings.editor.selected.configurable": "AndroidSdkUpdater",
     "show.migrate.to.gradle.popup": "false"
   }
