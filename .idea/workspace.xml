@@ -6,8 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="9f22e541-6f34-44ad-b768-3e17d6476ce7" name="Changes" comment="itembyqr screen changes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/modules/feedback/feedbackScheduler.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/feedback/feedbackScheduler.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/modules/user/userRoute.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/user/userRoute.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/modules/mess/messController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/mess/messController.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,7 +53,7 @@
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "mess__feedback2",
+    "git-widget-placeholder": "master",
     "io.flutter.reload.alreadyRun": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/impfolder/hab/iitgHABapp",
