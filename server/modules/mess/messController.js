@@ -86,7 +86,6 @@ const deleteMenuItem = async (req, res) => {
     if (!deletedMenuItem) {
       return res.status(404).json({ message: "Menu item not found" });
     }
-
     const menu = await Menu.findById(deletedMenuItem.menuId);
     if (!menu) {
       return res.status(404).json({ message: "Menu not found" });
@@ -155,7 +154,6 @@ const getMessMenuByDay = async (req, res) => {
     for (let i = 0; i < menu.length; i++) {
       const menuObj = menu[i].toObject();
       const menuItems = menuObj.items;
-
       const menuItemDetails = await MenuItem.find({ _id: { $in: menuItems } });
 
       const updatedMenuItems = menuItemDetails.map((item) => {
