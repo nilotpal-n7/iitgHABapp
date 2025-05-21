@@ -40,7 +40,7 @@ Future<void> logoutHandler(context) async {
   await prefs.clear();
   Navigator.of(context).pushAndRemoveUntil(
     MaterialPageRoute(
-      builder: (context) => const loginScreen(),
+      builder: (context) => const LoginScreen(),
     ),
     (route) => false,
   );

@@ -6,10 +6,7 @@ class LoginButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-
-      child: Row(
+    return  Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SvgPicture.asset('assets/fonts/microsoft.svg', height: 30),
@@ -19,11 +16,10 @@ class LoginButton extends StatelessWidget {
           const Text(
             'Sign in with Microsoft',
             style: TextStyle(
-              color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18,
+              color: Colors.white, fontWeight: FontWeight.w500, fontSize: 14,fontFamily: 'GeneralSans'
             ),
           ),
         ],
-      ),
     );
   }
 }

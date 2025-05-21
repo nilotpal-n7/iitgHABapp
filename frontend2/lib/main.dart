@@ -5,9 +5,11 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:frontend1/apis/authentication/login.dart';
 import 'package:frontend1/providers/feedback_provider.dart';
 import 'package:frontend1/screens/Home_screen.dart';
+import 'package:frontend1/screens/MainNavigationScreen.dart';
 import 'package:frontend1/screens/login_screen.dart';
 
 import 'package:frontend1/screens/mess_feedback/mess_feedback_page.dart';
+import 'package:frontend1/screens/mess_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -85,7 +87,7 @@ class _MyAppState extends State<MyApp> {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
-        statusBarColor: Colors.black,
+        statusBarColor: Colors.white,
         systemNavigationBarColor: Colors.black,
       ),
     );
@@ -93,14 +95,13 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
 
-      home: widget.isLoggedIn ? HomeScreen() : loginScreen(),
+      home: widget.isLoggedIn ? MainNavigationScreen() : LoginScreen(),
 
       //home:  ProfileScreen(),
       builder: EasyLoading.init(),
-      initialRoute: '/home',
       routes: {
-        '/home': (context) => const HomeScreen(),
-        '/mess': (context) => MessFeedbackPage(),
+        '/home': (context) => const MainNavigationScreen(),
+        '/mess': (context) => const MessScreen(),
         '/complaints': (context) => const HomeScreen(),
       },
     );

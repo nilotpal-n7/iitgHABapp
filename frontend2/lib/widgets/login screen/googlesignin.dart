@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:frontend1/apis/authentication/login.dart';
 import 'package:frontend1/screen1/home_screen1.dart';
+import 'package:frontend1/widgets/common/snack_bar.dart';
 import 'package:frontend1/screens/login_screen.dart';
 import 'package:frontend1/screen1/qr_scanner.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -18,6 +19,7 @@ class GoogleSignInDialog extends StatefulWidget {
 
 class _GoogleSignInDialogState extends State<GoogleSignInDialog> {
   bool _loading = false;
+  bool _inprogress = false;
 
   @override
   void initState() {
@@ -85,60 +87,42 @@ class _GoogleSignInDialogState extends State<GoogleSignInDialog> {
     }
   }
 
-  void showSignInDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Center(child: Text('Login')),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ElevatedButton(
-                  onPressed: () async {
-                    Navigator.of(context)
-                        .pop(); //A bug here because of it i guess linear progress bar doesnt show
-                    await signInWithGoogle();
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SvgPicture.asset(
-                        'assets/images/google.svg',
-                        height: 24.0,
-                      ),
-                      const SizedBox(width: 10),
-                      const Text('Sign in with Google'),
-                    ],
-                  ),
-                ),
-                ElevatedButton(
-                    onPressed: () async {
-                      await signInWithApple();
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => homescreen1()));
-                    },
-                    child: Text("Apple sign in"))
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Center(
-          child: ElevatedButton(
-            onPressed: () => showSignInDialog(context),
-            child: const Text('Sign in'),
-          ),
-        ),
-      ],
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_loading)
+            const CircularProgressIndicator()
+          else
+            SizedBox(
+              width: 400,
+              height: 48,
+              child: OutlinedButton.icon(
+                onPressed: signInWithGoogle,
+                icon: SvgPicture.asset(
+                  'assets/images/google.svg',
+                  height: 20,
+                ),
+                label: const Text(
+                  "Sign in with Google",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF4F46E5), // Indigo-like blue
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.blue,
+                  side: const BorderSide(color: Color(0xFF4F46E5), width: 2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -150,7 +134,7 @@ Future<void> signOut(context) async {
   await GoogleSignIn().signOut();
   Navigator.of(context).pushAndRemoveUntil(
     MaterialPageRoute(
-      builder: (context) => const loginScreen(),
+      builder: (context) => const LoginScreen(),
     ),
     (route) => false,
   );

@@ -88,6 +88,7 @@ flutter:
     - assets/fonts/
     - assets/images/
     - assets/icon/
+    - assets/images/features/
 
   fonts:
     - family: OpenSans_bold
@@ -96,6 +97,9 @@ flutter:
     - family: OpenSans_regular
       fonts:
         - asset: assets/fonts/OpenSans-Regular.ttf
+    - family: GeneralSans
+      fonts:
+        - asset: assets/fonts/GeneralSans-Variable.ttf
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
