@@ -123,7 +123,7 @@ class _QrScanState extends State<QrScanMess> {
           ),
           Center(
             child: CustomPaint(
-              size: Size(250, 250),
+              size: const Size(250, 250),
               painter: CornerPainter(),
             ),
           ),

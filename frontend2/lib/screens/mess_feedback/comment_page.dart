@@ -73,87 +73,90 @@ class _CommentPageState extends State<CommentPage> {
 
 
     return Scaffold(
-      appBar: AppBar(leading: BackButton()),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Mess Feedback",
-                      style: TextStyle(
-                        fontFamily: 'OpenSans_Bold',
-                        color: Themes.feedbackColor,
+      appBar: AppBar(leading: BackButton(),backgroundColor: Colors.white,),
+      body: Container(
+        color: Colors.white,
+        child: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Mess Feedback",
+                        style: TextStyle(
+                          fontFamily: 'OpenSans_Bold',
+                          color: Themes.feedbackColor,
 
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 32),
-                    Text("Step 2 / 2",
-                        style: TextStyle(color: Colors.deepPurple)),
-                    SizedBox(height: 16),
-                    LinearProgressIndicator(value: 1, color: Colors.deepPurple),
-                    SizedBox(height: 11),
-                    Text(
-                      "Add additional comments that would help improve the mess service",
-                      style: TextStyle(
-                        fontFamily: 'OpenSans-Regular',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 20,
-                        color: Color.fromRGBO(46, 47, 49, 1),
+                      SizedBox(height: 32),
+                      Text("Step 2 / 2",
+                          style: TextStyle(color: Colors.deepPurple)),
+                      SizedBox(height: 16),
+                      LinearProgressIndicator(value: 1, color: Colors.deepPurple),
+                      SizedBox(height: 11),
+                      Text(
+                        "Add additional comments that would help improve the mess service",
+                        style: TextStyle(
+                          fontFamily: 'OpenSans-Regular',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 20,
+                          color: Color.fromRGBO(46, 47, 49, 1),
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 10),
-                    TextField(
-                      controller: commentController,
-                      maxLines: 5,
-                      maxLength: 100,
+                      SizedBox(height: 10),
+                      TextField(
+                        controller: commentController,
+                        maxLines: 5,
+                        maxLength: 100,
 
-                      decoration: InputDecoration(
-                        hintText: "Write in less than 100 words",
-                        border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          hintText: "Write in less than 100 words",
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: provider.setComment,
                       ),
-                      onChanged: provider.setComment,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 16.0, horizontal: 10),
-              child: GestureDetector(
-
-                onTap: () => submitFeedback(context),
-
-                child: Container(
-                  width: 358,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    color: Color.fromRGBO(76, 78, 219, 1),
-                    borderRadius: BorderRadius.circular(9999),
-                  ),
-
-                  child: Center(
-                    child: Text(
-                      'Submit',
-                      style: TextStyle(
-                        fontFamily: 'OpenSans-Regular',
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    ],
                   ),
                 ),
               ),
-            ),
-          ],
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16.0, horizontal: 10),
+                child: GestureDetector(
+
+                  onTap: () => submitFeedback(context),
+
+                  child: Container(
+                    width: 358,
+                    height: 54,
+                    decoration: BoxDecoration(
+                      color: Color.fromRGBO(76, 78, 219, 1),
+                      borderRadius: BorderRadius.circular(9999),
+                    ),
+
+                    child: Center(
+                      child: Text(
+                        'Submit',
+                        style: TextStyle(
+                          fontFamily: 'OpenSans-Regular',
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

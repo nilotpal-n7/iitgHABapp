@@ -7,11 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../widgets/common/bottom_nav_bar.dart';
 
-import 'package:frontend1/screens/profile_screen.dart';
-import 'mess_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:frontend1/widgets/common/name_trimmer.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -42,22 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
+  //not needed anymore
 
-  void _handleNavTap(BuildContext context, int index) {
-    switch (index) {
-      case 0:
-        Navigator.pushNamed(context, '/home');
-        break;
-      case 1:
-        Navigator.pushNamed(context, '/mess');
-        break;
-      case 2:
-        Navigator.pushNamed(context, '/complaints');
-        break;
-    }
-
-
-  }
 
   Widget buildComplaintsCard() {
     const usernameBlue = Color(0xFF3754DB);
@@ -503,10 +484,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
 
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) => _handleNavTap(context, index),
-      ),
+
+      //no bottomNavBar needed anymore
       // bottomNavigationBar: BottomNavigationBar(
       //   backgroundColor: Colors.white,
       //   elevation: 12,
