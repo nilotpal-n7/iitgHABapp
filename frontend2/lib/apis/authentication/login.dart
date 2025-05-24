@@ -18,7 +18,7 @@ Future<void> authenticate() async {
     final accessToken = Uri.parse(result).queryParameters['token'];
     print("access token is");
 
-    print(accessToken);
+    debugPrint(accessToken);
 
     final prefs = await SharedPreferences.getInstance();
 
@@ -40,7 +40,7 @@ Future<void> logoutHandler(context) async {
   await prefs.clear();
   Navigator.of(context).pushAndRemoveUntil(
     MaterialPageRoute(
-      builder: (context) => const loginScreen(),
+      builder: (context) => const LoginScreen(),
     ),
     (route) => false,
   );
