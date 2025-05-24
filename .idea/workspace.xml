@@ -6,8 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="9f22e541-6f34-44ad-b768-3e17d6476ce7" name="Changes" comment="itembyqr screen changes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/modules/feedback/feedbackScheduler.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/feedback/feedbackScheduler.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/modules/user/userRoute.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/user/userRoute.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend2/lib/screens/mess_feedback/comment_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/screens/mess_feedback/comment_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend2/lib/screens/mess_feedback/mess_feedback_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/screens/mess_feedback/mess_feedback_page.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,6 +16,13 @@
   </component>
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Dart File" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -54,7 +61,7 @@
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "mess__feedback2",
+    "git-widget-placeholder": "mess__feedback",
     "io.flutter.reload.alreadyRun": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/impfolder/hab/iitgHABapp",
