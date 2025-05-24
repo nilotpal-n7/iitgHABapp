@@ -125,10 +125,22 @@ const getUserMessInfo = async (req, res) => {
 const getAllMessInfo = async (req, res) => {
   try {
     const messes = await Mess.find();
+
     if (!messes || messes.length === 0) {
       return res.status(404).json({ message: "No mess found" });
     }
-    return res.status(200).json(messes);
+
+    const messesWithHostelName = await Promise.all(
+      messes.map(async (mess) => {
+        const messObj = mess.toObject();
+        const hostel = await Hostel.findById(messObj.hostelId);
+        messObj.hostelName = hostel ? hostel.hostel_name : "Unknown";
+        console.log(messObj.hostelName);
+        return messObj;
+      })
+    );
+
+    return res.status(200).json(messesWithHostelName);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
