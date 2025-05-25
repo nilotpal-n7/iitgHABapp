@@ -28,7 +28,7 @@ Future<Map<String, String>?> fetchUserDetails() async {
 
       // Extract user details
       final String name = userData['name'] ?? "User";
-      final String userId = userData['userId'] ?? "";
+      final String userId = userData['_id'] ?? "";
       final String degree = userData['degree'] ?? "Not Provided";
       final String mail = userData['email'];
       prefs.setString('email', mail);
