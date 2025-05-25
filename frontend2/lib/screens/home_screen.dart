@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:frontend1/constants/endpoint.dart';
 import 'package:frontend1/screens/profile_screen.dart';
+import 'package:frontend1/screens/qr_scanner.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend1/widgets/common/name_trimmer.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -99,7 +100,13 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             child: InkWell(
               borderRadius: BorderRadius.circular(18),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const QrScan()),
+                );
+
+              },
               child: Container(
                 height: 90,
                 decoration: BoxDecoration(
