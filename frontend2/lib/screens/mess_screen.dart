@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:frontend1/apis/scan/qrscan.dart';
+import 'package:frontend1/widgets/common/popmenubutton.dart';
 import 'package:frontend1/screens/mess_feedback/mess_feedback_page.dart';
 
 class MessApp extends StatefulWidget {
@@ -243,16 +244,19 @@ class _MenuSectionState extends State<_MenuSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
+        Row(
           children: [
-            Text("What’s in Menu",
+            const Text("What’s in Menu",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Spacer(),
-            Text(
-              "Brahmaputra",
-              style: TextStyle(color: Color(0xFF3754DB)),
-            ),
-            Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF3754DB)),
+            const Spacer(),
+
+            HostelDrop(onChanged: (value){
+              print("$value");
+            }),
+            // Text(
+            //   "Brahmaputra",
+            //   style: TextStyle(color: Color(0xFF3754DB)),
+            // ),
           ],
         ),
         const SizedBox(height: 16),

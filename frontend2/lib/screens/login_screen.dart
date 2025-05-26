@@ -77,43 +77,47 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                   ),
                   SizedBox(height: 10,),
-                  Material(
-                    color: Color(0xFF4C4EDB),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: InkWell(
-                      // borderRadius: BorderRadius.circular(10), //dk if it works or not
-                      splashColor: Colors.white,
-                      onTap: () async {
-                        try {
-                          setState(() {
-                            _inprogress = true;
-                          });
-                          await authenticate();
-                          setState(() {
-                            _inprogress = false;
-                          });
-                          if (!mounted) return;
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const MainNavigationScreen(),
-                            ),
-                          );
-                          showSnackBar('Successfully Logged In', Colors.black,
-                              context);
-                        } catch (e) {
-                          setState(() {
-                            _inprogress = false;
-                          });
-                          showSnackBar(
-                              'Something Went Wrong', Colors.black, context);
-                        }
-                      },
-                      child: const Padding(
-                          padding: EdgeInsets.all(15), child: LoginButton()),
+                  Container(
+                    height: 48,
+                    width: double.infinity,
+                    child: Material(
+                      color: Color(0xFF4C4EDB),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: InkWell(
+                        // borderRadius: BorderRadius.circular(10), //dk if it works or not
+                        splashColor: Colors.white,
+                        onTap: () async {
+                          try {
+                            setState(() {
+                              _inprogress = true;
+                            });
+                            await authenticate();
+                            setState(() {
+                              _inprogress = false;
+                            });
+                            if (!mounted) return;
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const MainNavigationScreen(),
+                              ),
+                            );
+                            showSnackBar('Successfully Logged In', Colors.black,
+                                context);
+                          } catch (e) {
+                            setState(() {
+                              _inprogress = false;
+                            });
+                            showSnackBar(
+                                'Something Went Wrong', Colors.black, context);
+                          }
+                        },
+                        child: const Padding(
+                            padding: EdgeInsets.all(15), child: LoginButton()),
+                      ),
                     ),
                   ),
                    const SizedBox(height: 14,),
