@@ -29,6 +29,6 @@ messRouter.post(
   authenticateJWT,
   toggleLikeMenuItem
 );
-messRouter.post("/scan", authenticateJWT, ScanMess);
+messRouter.post("/scan/:messId",authenticateJWT, ScanMess);
 
 module.exports = messRouter;
