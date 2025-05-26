@@ -20,6 +20,8 @@ class MenuItemModel {
 }
 
 class MenuModel {
+  final String messID;
+  final String day;
   final String id;
   final String type;
   final String startTime;
@@ -27,6 +29,8 @@ class MenuModel {
   final List<MenuItemModel> items;
 
   MenuModel({
+    required this.messID,
+    required this.day,
     required this.id,
     required this.type,
     required this.startTime,
@@ -35,6 +39,8 @@ class MenuModel {
   });
 
   factory MenuModel.fromJson(Map<String, dynamic> json) => MenuModel(
+    messID: json['messId'],
+    day: json['day'],
     id: json['_id'],
     type: json['type'],
     startTime: json['startTime'],

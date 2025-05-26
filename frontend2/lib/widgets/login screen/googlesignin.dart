@@ -97,7 +97,7 @@ class _GoogleSignInDialogState extends State<GoogleSignInDialog> {
             const CircularProgressIndicator()
           else
             SizedBox(
-              width: 400,
+              width: double.infinity,
               height: 48,
               child: OutlinedButton.icon(
                 onPressed: signInWithGoogle,
