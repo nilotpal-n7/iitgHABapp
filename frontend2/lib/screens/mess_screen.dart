@@ -7,6 +7,7 @@ import 'package:frontend1/widgets/common/popmenubutton.dart';
 import 'package:frontend1/screens/mess_feedback/mess_feedback_page.dart';
 import 'package:frontend1/widgets/mess_widgets/MessMenuBuilder.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../apis/mess/mess_menu.dart';
 import '../models/mess_menu_model.dart';
@@ -111,7 +112,7 @@ class _MessScreenState extends State<MessScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SvgPicture.asset(
-                      'assets/icon/qrcode.svg',
+                      'assets/icon/qrscan.svg',
                       width: 32,
                       height: 32,
                       color: const Color(0xFF3754DB),
@@ -240,12 +241,6 @@ class _MenuSectionState extends State<_MenuSection> {
         const SizedBox(height: 16),
         _MenuCard(),
         const SizedBox(height: 10),
-        const Center(
-          child: Text(
-            "Tap on a food item to mark as favourite",
-            style: TextStyle(fontSize: 12, color: Colors.black54),
-          ),
-        ),
       ],
     );
   }
@@ -283,15 +278,34 @@ class _DayChip extends StatelessWidget {
 }
 
 class _MenuCard extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        MenuFutureBuilder(messId: MessID, day: selectedDay),
+        Consumer<MessInfoProvider>(
+          builder: (context, messProvider, child) {
+            // Get user's mess ID from SharedPreferences or provider
+            return FutureBuilder<String?>(
+              future: _getUserMessId(),
+              builder: (context, snapshot) {
+                return MenuFutureBuilder(
+                  messId: MessID,
+                  day: selectedDay,
+                  userMessId: snapshot.data,
+                );
+              },
+            );
+          },
+        ),
       ],
     );
+  }
+
+  Future<String?> _getUserMessId() async {
+    final prefs = await SharedPreferences.getInstance();
+   String messId = prefs.getString('curr_subscribed_mess') ?? '6826dfda8493bb0870b10cbf';
+    return messId;
   }
 }
 

@@ -1,4 +1,5 @@
 const String baseUrl = "https://iitghabapp.onrender.com/api";
+//const String baseUrl = "http://172.30.240.234:8000/api";
 
 class UserEndpoints {
   static const String currentUser = '$baseUrl/users/';
@@ -55,5 +56,5 @@ class messFeedback {
 }
 
 class messInfo {
-  static const getMessInfo = "http://172.20.10.2:8000/api/mess/all";
+  static const getMessInfo = "$baseUrl/mess/all";
 }
