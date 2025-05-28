@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend1/apis/mess/mess_menu.dart';
-
 import 'package:frontend1/constants/endpoint.dart';
 import 'package:frontend1/screens/profile_screen.dart';
 import 'package:frontend1/screens/qr_scanner.dart';
@@ -13,7 +12,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:frontend1/models/mess_menu_model.dart';
 import 'package:frontend1/widgets/mess_widgets/messmenu.dart';
-import 'package:frontend1/widgets/complaint_dropdown.dart';
+import 'package:provider/provider.dart';
+
+import '../utilities/startupitem.dart';
+import '../widgets/complaint_dropdown.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,8 +26,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String name = '';
   int _selectedIndex = 0;
- bool feedbackform=true;
-  String messId = '6826dfda8493bb0870b10cbf';//instead of this use curr_subscribed_mess hostel name and pass it in hostelmap,access the messid from there and call the api below
+  bool feedbackform = true;
+  String currSubscribedMess = '';
   String? token;
 
   @override
@@ -34,7 +36,6 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchUserData();
     fetchMessIdAndToken();
   }
-
 
   Future<void> fetchUserData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -46,11 +47,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
   Future<void> fetchMessIdAndToken() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      messId = '6826dfda8493bb0870b10cbf';
+      currSubscribedMess = prefs.getString('curr_subscribed_mess') ?? '';
       token = prefs.getString('access_token');
     });
   }
@@ -59,6 +59,21 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  // Add the missing getTodayDay method
+  String getTodayDay() {
+    final now = DateTime.now();
+    const days = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
+    ];
+    return days[now.weekday - 1];
   }
 
   Widget buildQuickActions() {
@@ -116,7 +131,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   context,
                   MaterialPageRoute(builder: (context) => const QrScan()),
                 );
-
               },
               child: Container(
                 height: 90,
@@ -152,31 +166,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  String getTodayDay() {
-    final now = DateTime.now();
-    const days = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday'
-    ];
-    return days[now.weekday - 1];
-  }
-
-
-
-
-
-  //remove this and use from api/mess/mess_menu
-
   Widget buildMessTodayCard() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-       const Padding(
+        const Padding(
           padding: EdgeInsets.symmetric(horizontal: 2),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -200,9 +194,34 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-
         const SizedBox(height: 8),
-        MenuFutureBuilder(messId: messId, day: getTodayDay()), // use this
+        Consumer<MessInfoProvider>(
+          builder: (context, messProvider, child) {
+            // Fixed null safety issues
+            if (messProvider.isLoading) {
+              return const Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(24)),
+                  side: BorderSide(color: Color(0xC5C5D1), width: 1),
+                ),
+                elevation: 0.5,
+                child: Padding(
+                  padding: EdgeInsets.all(18.0),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              );
+            }
+
+            final hostelData = messProvider.hostelMap[currSubscribedMess];
+            final messId = hostelData?.messid ?? '6826dfda8493bb0870b10cbf';
+
+            return MenuFutureBuilder(
+              messId: messId,
+              day: getTodayDay(),
+            );
+          },
+        ),
       ],
     );
   }
@@ -245,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0,),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -283,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              ComplaintsCard(feedbackform: feedbackform,),
+              ComplaintsCard(feedbackform: feedbackform),
               buildQuickActions(),
               buildMessTodayCard(),
               const SizedBox(height: 32),

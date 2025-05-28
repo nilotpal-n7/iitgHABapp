@@ -48,8 +48,8 @@ class MessMenuCard extends StatelessWidget {
     // If no future/ongoing meal, show last meal as ended
     currentMenu ??= menus.last;
     if (statusText == "") {
-      statusText = "Ended";
-      statusColor = Colors.red;
+      statusText = "is over";
+      statusColor = Colors.grey;
     }
 
     final dishSection = currentMenu.items

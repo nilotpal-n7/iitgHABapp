@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/widgets/mess_widgets/messmenu.dart';
+import 'package:frontend1/widgets/mess_widgets/interactive_mess_menu.dart';
 
 import '../../apis/mess/mess_menu.dart';
 import '../../models/mess_menu_model.dart';
 
 
+// Update your MenuFutureBuilder
 class MenuFutureBuilder extends StatelessWidget {
   final String messId;
   final String day;
+  final String? userMessId; // Add this parameter
 
   const MenuFutureBuilder({
     super.key,
     required this.messId,
     required this.day,
+    this.userMessId,
   });
-
 
   DateTime _parseTime(String timeStr) {
     final now = DateTime.now();
@@ -27,7 +29,6 @@ class MenuFutureBuilder extends StatelessWidget {
       int.parse(parts[1]),
     );
   }
-
 
   String _formatDuration(Duration d) {
     if (d.inSeconds <= 0) return "Ended";
@@ -90,13 +91,16 @@ class MenuFutureBuilder extends StatelessWidget {
           );
         }
 
-        return MessMenuCard(
+        return InteractiveMessMenuCard(
           menus: snapshot.data!,
           now: DateTime.now(),
           parseTime: _parseTime,
           formatDuration: _formatDuration,
+          currentMessId: messId,
+          userMessId: userMessId,
         );
       },
     );
   }
 }
+
