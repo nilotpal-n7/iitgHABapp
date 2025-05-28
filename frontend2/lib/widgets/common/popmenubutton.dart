@@ -39,7 +39,7 @@ class _HostelDropState extends State<HostelDrop> {
       position: RelativeRect.fromLTRB(
         offset.dx,
         offset.dy + renderBox.size.height,
-        offset.dx + renderBox.size.width,
+        offset.dx + 100,
         offset.dy,
       ),
       items: [

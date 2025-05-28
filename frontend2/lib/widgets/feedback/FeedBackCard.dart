@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/screens/mess_feedback/mess_feedback_page.dart';
-
+import '../../screens/mess_feedback/mess_feedback_page.dart';
 
 class FeedbackCard extends StatefulWidget {
   @override
@@ -25,8 +24,8 @@ class _FeedbackCardState extends State<FeedbackCard> {
           const Text("You can help the mess team serve better meals.",
               style: TextStyle(color: Colors.black54)),
           const SizedBox(height: 8),
-          const Row(
-            children:  [
+          Row(
+            children: const [
               Icon(Icons.access_time, color: Colors.red, size: 18),
               SizedBox(width: 4),
               Text('Form closes in 2 Days',

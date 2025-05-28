@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:frontend1/apis/scan/qrscan.dart';
+import 'package:frontend1/apis/scan/qrscan_old.dart';
+import 'package:frontend1/screens/qr_scanner.dart';
+import 'package:frontend1/widgets/common/DateTimeParser.dart';
 import 'package:frontend1/widgets/common/popmenubutton.dart';
 import 'package:frontend1/screens/mess_feedback/mess_feedback_page.dart';
+import 'package:frontend1/widgets/mess_widgets/MessMenuBuilder.dart';
+import 'package:provider/provider.dart';
+
+import '../apis/mess/mess_menu.dart';
+import '../models/mess_menu_model.dart';
+import '../utilities/ComingSoon.dart';
+import '../utilities/startupitem.dart';
+import '../widgets/feedback/FeedBackCard.dart';
+import '../widgets/mess_widgets/messmenu.dart';
 
 class MessApp extends StatefulWidget {
   const MessApp({super.key});
@@ -25,6 +36,8 @@ class MessScreen extends StatefulWidget {
   State<MessScreen> createState() => _MessScreenState();
 }
 
+
+
 class _MessScreenState extends State<MessScreen> {
   Widget xbuildQuickActions() {
     const usernameBlue = Color(0xFF3754DB);
@@ -36,7 +49,14 @@ class _MessScreenState extends State<MessScreen> {
           Expanded(
             child: InkWell(
               borderRadius: BorderRadius.circular(18),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ComingSoonScreen(),
+                  ),
+                );
+              },
               child: Container(
                 height: 90,
                 decoration: BoxDecoration(
@@ -75,7 +95,7 @@ class _MessScreenState extends State<MessScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => QrScan(),
+                      builder: (context) => const QrScan(),
                     ),
                   );
                 });
@@ -140,7 +160,7 @@ class _MessScreenState extends State<MessScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                _FeedbackCard(),
+                FeedbackCard(),
                 const SizedBox(height: 20),
                 xbuildQuickActions(),
                 const SizedBox(height: 16),
@@ -157,69 +177,7 @@ class _MessScreenState extends State<MessScreen> {
   }
 }
 
-class _FeedbackCard extends StatefulWidget {
-  @override
-  State<_FeedbackCard> createState() => _FeedbackCardState();
-}
 
-class _FeedbackCardState extends State<_FeedbackCard> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('How did the mess do this month?',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          const Text("You can help the mess team serve better meals.",
-              style: TextStyle(color: Colors.black54)),
-          const SizedBox(height: 8),
-          Row(
-            children: const [
-              Icon(Icons.access_time, color: Colors.red, size: 18),
-              SizedBox(width: 4),
-              Text('Form closes in 2 Days',
-                  style: TextStyle(color: Colors.red)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF3754DB),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24)),
-              ),
-              onPressed: () {
-                setState(() {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MessFeedbackPage(),
-                    ),
-                  );
-
-                });
-              },
-              child: const Text(
-                'Give feedback',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 
 class _MenuSection extends StatefulWidget {
@@ -227,17 +185,22 @@ class _MenuSection extends StatefulWidget {
   State<_MenuSection> createState() => _MenuSectionState();
 }
 
-class _MenuSectionState extends State<_MenuSection> {
-  String selectedDay = 'Monday';
+late String MessID = '';//default this value to curr_susbcribed_mess MessID
+String selectedDay = 'Monday';//also default this to todayday
 
-  //Rem we have to get this data from backend
-  final Map<String, List<String>> menuData = {
-    'Monday': ['Choley', 'Aloo Pumpkin Chickpeas', 'Dal Triveni'],
-    'Tuesday': ['Rajma', 'Paneer Butter Masala', 'Mix Veg'],
-    'Wednesday': ['Kadhi', 'Veg Kofta', 'Methi Aloo'],
-    'Thursday': ['Sambhar', 'Aloo Beans', 'Lauki'],
-    'Friday': ['Palak Paneer', 'Chana Masala', 'Veg Pulao'],
-  };
+class _MenuSectionState extends State<_MenuSection> {
+
+
+  final List<String> daysOnly = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+
 
   @override
   Widget build(BuildContext context) {
@@ -249,14 +212,11 @@ class _MenuSectionState extends State<_MenuSection> {
             const Text("What’s in Menu",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const Spacer(),
-
             HostelDrop(onChanged: (value){
-              print("$value");
+              final hostelMap = Provider.of<MessInfoProvider>(context,listen: false).hostelMap;
+              MessID = hostelMap[value]?.messid ?? 'Not Found';
+              print("Mess ID for $value : $MessID");
             }),
-            // Text(
-            //   "Brahmaputra",
-            //   style: TextStyle(color: Color(0xFF3754DB)),
-            // ),
           ],
         ),
         const SizedBox(height: 16),
@@ -264,7 +224,7 @@ class _MenuSectionState extends State<_MenuSection> {
           height: 40,
           child: ListView(
             scrollDirection: Axis.horizontal,
-            children: menuData.keys.map((day) {
+            children: daysOnly.map((day) {
               return _DayChip(
                 label: day,
                 selected: selectedDay == day,
@@ -278,7 +238,7 @@ class _MenuSectionState extends State<_MenuSection> {
           ),
         ),
         const SizedBox(height: 16),
-        _MenuCard(foodItems: menuData[selectedDay]!),
+        _MenuCard(),
         const SizedBox(height: 10),
         const Center(
           child: Text(
@@ -323,138 +283,17 @@ class _DayChip extends StatelessWidget {
 }
 
 class _MenuCard extends StatelessWidget {
-  final List<String> foodItems;
-
-  const _MenuCard({required this.foodItems});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: const [
-              Text('Breakfast ', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('In 2 hrs', style: TextStyle(color: Colors.green)),
-              Spacer(),
-              Text('7:00 AM - 9:45 AM',
-                  style: TextStyle(fontSize: 12, color: Colors.black54)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          const _SectionHeader(title: 'DISH'),
-          PillButtonList(items: foodItems),
-          const SizedBox(height: 12),
-          const Divider(),
-          Row(
-            children: const [
-              Expanded(child: _SectionHeader(title: 'BREADS & RICE')),
-              Expanded(child: _SectionHeader(title: 'OTHERS')),
-            ],
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Expanded(child: PillButtonList(items: ['Bhature', 'Peas Pulao'])),
-              Expanded(
-                  child: PillButtonList(items: [
-                'Imli Chutney',
-                'Sweet Lassi',
-                'Fruit Custard'
-              ])),
-            ],
-          ),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        MenuFutureBuilder(messId: MessID, day: selectedDay),
+      ],
     );
   }
 }
-
-class _SectionHeader extends StatelessWidget {
-  final String title;
-
-  const _SectionHeader({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Text(title.toUpperCase(),
-          style: const TextStyle(fontSize: 12, color: Colors.black54)),
-    );
-  }
-}
-
-
-
-class PillButtonList extends StatefulWidget {
-  final List<String> items;
-
-  const PillButtonList({super.key, required this.items});
-
-  @override
-  State<PillButtonList> createState() => _PillButtonListState();
-}
-
-class _PillButtonListState extends State<PillButtonList> {
-  final Set<String> _favorites = {};
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: widget.items.map((item) {
-        final isFav = _favorites.contains(item);
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              if (isFav) {
-                _favorites.remove(item);
-              } else {
-                _favorites.add(item);
-              }
-            });
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(50),
-              border: Border.all(color: Colors.grey[300]!),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isFav ? Icons.favorite : Icons.favorite_border,
-                  size: 16,
-                  color: isFav ? Colors.red : Colors.black,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  item,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: isFav ? Colors.red : Colors.black,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-}
-
 
 
 class _MessInfo extends StatelessWidget {
@@ -484,7 +323,7 @@ class _MessInfo extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: [
-                    Text("3.8",
+                    Text("3.8", // take this from backend
                         style: TextStyle(
                             fontSize: 24,
                             color: Color(0xFF3754DB),
@@ -497,7 +336,7 @@ class _MessInfo extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: [
-                    Text("10",
+                    Text("10",// take this from backend
                         style: TextStyle(
                             fontSize: 24,
                             color: Color(0xFF3754DB),

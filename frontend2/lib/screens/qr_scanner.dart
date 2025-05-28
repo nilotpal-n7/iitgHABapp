@@ -8,7 +8,7 @@ import 'package:dio/dio.dart';
 import 'package:vibration/vibration.dart';
 import 'package:frontend1/widgets/common/cornerQR.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'scan_status.dart';
+
 import 'package:frontend1/constants/endpoint.dart';
 
 final dio = Dio();
@@ -184,25 +184,27 @@ class _QrScanState extends State<QrScan> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Ready to Eat?',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
-                            fontSize: 24,
-                            fontWeight: FontWeight.w600,
+                    Center(
+                      child: Row(
+                        children: [
+                          Text(
+                            'Ready to Eat?',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.7),
+                              fontSize: 24,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        const Text(
-                          ' Scan',
-                          style: TextStyle(
-                            color: Color(0xFF4C4EDB),
-                            fontSize: 24,
-                            fontWeight: FontWeight.w600,
+                          const Text(
+                            ' Scan',
+                            style: TextStyle(
+                              color: Color(0xFF4C4EDB),
+                              fontSize: 24,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     const Text(
                       'to Enter',

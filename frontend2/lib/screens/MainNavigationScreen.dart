@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend1/utilities/ComingSoon.dart';
 import 'home_screen.dart';
 import 'mess_screen.dart';
 //import 'complaints_screen.dart';  //for future
@@ -18,7 +19,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   final List<Widget> _screens = const [
     HomeScreen(),
     MessScreen(),
-    HomeScreen(), // for now only
+    ComingSoonScreen(), // for now only
   ];
 
   void _handleNavTap(int index) {
@@ -34,7 +35,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       bottomNavigationBar: BottomNavBar(
         currentIndex: _selectedIndex,
         onTap: _handleNavTap,
-
       ),
     );
   }

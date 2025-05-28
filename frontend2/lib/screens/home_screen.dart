@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:frontend1/apis/mess/mess_menu.dart';
 
 import 'package:frontend1/constants/endpoint.dart';
 import 'package:frontend1/screens/profile_screen.dart';
 import 'package:frontend1/screens/qr_scanner.dart';
+import 'package:frontend1/utilities/ComingSoon.dart';
+import 'package:frontend1/widgets/mess_widgets/MessMenuBuilder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend1/widgets/common/name_trimmer.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -22,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String name = '';
   int _selectedIndex = 0;
  bool feedbackform=true;
-  String? messId;
+  String messId = '6826dfda8493bb0870b10cbf';//instead of this use curr_subscribed_mess hostel name and pass it in hostelmap,access the messid from there and call the api below
   String? token;
 
   @override
@@ -67,7 +70,14 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             child: InkWell(
               borderRadius: BorderRadius.circular(18),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ComingSoonScreen(),
+                  ),
+                );
+              },
               child: Container(
                 height: 90,
                 decoration: BoxDecoration(
@@ -157,67 +167,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
-  DateTime _parseTime(String timeStr) {
-    final now = DateTime.now();
-    final parts = timeStr.split(':');
-    return DateTime(
-      now.year,
-      now.month,
-      now.day,
-      int.parse(parts[0]),
-      int.parse(parts[1]),
-    );
-  }
 
-
-  String _formatDuration(Duration d) {
-    if (d.inSeconds <= 0) return "Ended";
-    final h = d.inHours;
-    final m = d.inMinutes.remainder(60);
-    if (h > 0) {
-      return "${h}h ${m}m";
-    } else {
-      return "${m}m";
-    }
-  }
 
 
   //remove this and use from api/mess/mess_menu
-  Future<List<MenuModel>> fetchTodayMenu() async {
-    if (messId == null || token == null) {
-      await fetchMessIdAndToken();
-      if (messId == null || token == null) {
-        throw Exception('Mess ID or token not available');
-      }
-    }
-    final url = Uri.parse('$baseUrl/mess/menu/$messId');
-    final response = await http.post(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({'day': getTodayDay()}),
-    );
-    if (response.statusCode == 200) {
-      final List data = jsonDecode(response.body);
-      return data.map((json) => MenuModel.fromJson(json)).toList();
-    } else {
-      print(response.body);
-      throw Exception('Failed to load menu');
-    }
-  }
 
   Widget buildMessTodayCard() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
        const Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
+          padding: EdgeInsets.symmetric(horizontal: 2),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
-            children: const [
+            children: [
               Text(
                 "In Mess Today",
                 style: TextStyle(
@@ -238,64 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
 
         const SizedBox(height: 8),
-        FutureBuilder<List<MenuModel>>(
-          future: fetchTodayMenu(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Card(
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(24)),
-                  side: BorderSide(color: Color(0xC5C5D1), width: 1),
-
-                ),
-                elevation: 0.5,
-                child: Padding(
-                  padding: EdgeInsets.all(18.0),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-              );
-            } else if (snapshot.hasError) {
-              return Card(
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  side: BorderSide(color: Color(0xC5C5D1), width: 1),
-                ),
-                elevation: 0.5,
-                child: Padding(
-                  padding: const EdgeInsets.all(18.0),
-                  child: Text(
-                    'Error loading menu: ${snapshot.error}',
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
-
-              );
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 0.5,
-                child: const Padding(
-                  padding: EdgeInsets.all(18.0),
-                  child: Text(
-                    'No menu available today.',
-                    style: TextStyle(fontSize: 15, color: Colors.black54),
-                  ),
-                ),
-              );
-            }
-
-            return MessMenuCard(
-              menus: snapshot.data!,
-              now: DateTime.now(),
-              parseTime: _parseTime,
-              formatDuration: _formatDuration,
-            );
-          },
-        ),
+        MenuFutureBuilder(messId: messId, day: getTodayDay()), // use this
       ],
     );
   }
