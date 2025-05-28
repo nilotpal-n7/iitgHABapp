@@ -10,6 +10,7 @@ import 'package:frontend1/screens/login_screen.dart';
 
 import 'package:frontend1/screens/mess_feedback/mess_feedback_page.dart';
 import 'package:frontend1/screens/mess_screen.dart';
+import 'package:frontend1/utilities/startupitem.dart';
 import 'package:provider/provider.dart';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -20,9 +21,18 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final bool asLoggedIn = await isLoggedIn();
 
-  runApp(ChangeNotifierProvider(
-      create: (_) => FeedbackProvider(), child: MyApp(isLoggedIn: asLoggedIn)));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => MessInfoProvider()),
+        ChangeNotifierProvider(create: (_) => FeedbackProvider()),
+      ],
+      child: MyApp(isLoggedIn: asLoggedIn),
+    ),
+  );
 }
+
+
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -43,6 +53,10 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // This ensures it runs after the first frame
+      context.read<MessInfoProvider>().fetchMessID();
+    });
     _connectivity = Connectivity();
 
     // Use `.map()` to transform the stream into a stream of ConnectivityResult

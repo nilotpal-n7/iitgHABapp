@@ -133,7 +133,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                    const SizedBox(height: 12,),
                    GoogleSignInDialog(), //GOOGLE sign in implementation
-
                 ],
               ),
             ),
@@ -302,7 +301,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
 
                     //  to handle overflow when testing on different devices
-                    Expanded(
+                     Expanded(
                       flex: 1,
                       child: SingleChildScrollView(
                         child: Column(
@@ -328,7 +327,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                       ),
                     ),
-
                     // Next Button - In SafeArea to avoid bottom system UI(IMP)
                     SafeArea(
                       child: Container(

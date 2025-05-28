@@ -53,3 +53,7 @@ class messFeedback {
   static const feedbackSubmit =
       "http://192.168.29.195:8000/api/feedback/submit";
 }
+
+class messInfo {
+  static const getMessInfo = "http://172.20.10.2:8000/api/mess/all";
+}

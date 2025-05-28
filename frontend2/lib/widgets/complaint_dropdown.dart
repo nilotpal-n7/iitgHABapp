@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../screens/mess_feedback/mess_feedback_page.dart';
+
 class ComplaintsCard extends StatefulWidget {
   const ComplaintsCard({super.key, this.feedbackform = false, this.daysLeft = 2});
   final bool feedbackform;
@@ -105,7 +107,14 @@ class _ComplaintsCardState extends State<ComplaintsCard> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Handle feedback button press
+                      setState(() {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MessFeedbackPage(),
+                          ),
+                        );
+                      });
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF5C60F5),
