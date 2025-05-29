@@ -30,12 +30,17 @@ class _MessAppState extends State<MessApp> {
   }
 }
 
+
+
 class MessScreen extends StatefulWidget {
   const MessScreen({super.key});
 
   @override
   State<MessScreen> createState() => _MessScreenState();
 }
+
+String currSubscribedMess = '';
+
 
 
 
@@ -136,6 +141,20 @@ class _MessScreenState extends State<MessScreen> {
     );
   }
 
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCurrSubscrMess();
+  }
+
+  Future<void> fetchCurrSubscrMess() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      currSubscribedMess = prefs.getString('curr_subscribed_mess') ?? '';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context)
@@ -186,7 +205,8 @@ class _MenuSection extends StatefulWidget {
   State<_MenuSection> createState() => _MenuSectionState();
 }
 
-late String MessID = '';//default this value to curr_susbcribed_mess MessID
+ String copyMessID = '';
+
 String selectedDay = 'Monday';//also default this to todayday
 
 class _MenuSectionState extends State<_MenuSection> {
@@ -202,6 +222,7 @@ class _MenuSectionState extends State<_MenuSection> {
     'Sunday',
   ];
 
+  String messidcopy = '';
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +236,8 @@ class _MenuSectionState extends State<_MenuSection> {
             const Spacer(),
             HostelDrop(onChanged: (value){
               final hostelMap = Provider.of<MessInfoProvider>(context,listen: false).hostelMap;
-              MessID = hostelMap[value]?.messid ?? 'Not Found';
+               final MessID = hostelMap[value]?.messid ?? '6826dfda8493bb0870b10cbf';
+                copyMessID =MessID;
               print("Mess ID for $value : $MessID");
             }),
           ],
@@ -280,6 +302,7 @@ class _DayChip extends StatelessWidget {
 class _MenuCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -290,7 +313,7 @@ class _MenuCard extends StatelessWidget {
               future: _getUserMessId(),
               builder: (context, snapshot) {
                 return MenuFutureBuilder(
-                  messId: MessID,
+                  messId: copyMessID,
                   day: selectedDay,
                   userMessId: snapshot.data,
                 );
@@ -310,9 +333,15 @@ class _MenuCard extends StatelessWidget {
 }
 
 
+
 class _MessInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final messInfoProvider = Provider.of<MessInfoProvider>(context, listen: false);
+    final hostelMap = messInfoProvider.hostelMap;
+    final catererName = hostelMap[currSubscribedMess]?.messname ?? 'Not found';
+    final rating = hostelMap[currSubscribedMess]?.rating.toStringAsFixed(1) ?? 'N/A';
+    final rank = hostelMap[currSubscribedMess]?.ranking.toString() ?? 'N/A';
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -323,47 +352,60 @@ class _MessInfo extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Mess Info",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            "Mess Info",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 12),
-          const Text("Caterer Name",
-              style: TextStyle(fontSize: 12, color: Colors.black54)),
+          const Text(
+            "Caterer Name",
+            style: TextStyle(fontSize: 12, color: Colors.black54),
+          ),
           const SizedBox(height: 4),
-          const Text("Ideal Caterers",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+          Text(
+            catererName,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
           const Divider(height: 32),
           Row(
-            children: const [
+            children: [
               Expanded(
                 child: Column(
                   children: [
-                    Text("3.8", // take this from backend
-                        style: TextStyle(
-                            fontSize: 24,
-                            color: Color(0xFF3754DB),
-                            fontWeight: FontWeight.bold)),
-                    SizedBox(height: 4),
-                    Text("Rating", style: TextStyle(fontSize: 12)),
+                    Text(
+                      rating,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        color: Color(0xFF3754DB),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text("Rating", style: TextStyle(fontSize: 12)),
                   ],
                 ),
               ),
               Expanded(
                 child: Column(
                   children: [
-                    Text("10",// take this from backend
-                        style: TextStyle(
-                            fontSize: 24,
-                            color: Color(0xFF3754DB),
-                            fontWeight: FontWeight.bold)),
-                    SizedBox(height: 4),
-                    Text("Rank", style: TextStyle(fontSize: 12)),
+                    Text(
+                      rank,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        color: Color(0xFF3754DB),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text("Rank", style: TextStyle(fontSize: 12)),
                   ],
                 ),
               ),
             ],
-          )
+          ),
         ],
       ),
     );
   }
 }
+
