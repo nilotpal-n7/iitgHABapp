@@ -52,7 +52,7 @@ class clientSecretid {
 
 class messFeedback {
   static const feedbackSubmit =
-      "http://192.168.29.195:8000/api/feedback/submit";
+      "$baseUrl/feedback/submit";
 }
 
 class messInfo {
