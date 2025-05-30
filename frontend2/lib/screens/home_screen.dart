@@ -47,6 +47,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  String getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return "Good morning, ";
+    } else if (hour < 18) {
+      return "Good afternoon, ";
+    } else {
+      return "Good evening, ";
+    }
+  }
+
+
   Future<void> fetchMessIdAndToken() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -272,9 +284,9 @@ class _HomeScreenState extends State<HomeScreen> {
               RichText(
                 text: TextSpan(
                   children: [
-                    const TextSpan(
-                      text: "Good morning, ",
-                      style: TextStyle(
+                    TextSpan(
+                      text: getGreeting(),
+                      style: const TextStyle(
                         fontFamily: 'OpenSans_regular',
                         fontSize: 24,
                         fontWeight: FontWeight.w600,
@@ -293,6 +305,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
+
               const SizedBox(height: 8),
               const Text(
                 "No notifications need your attention",
