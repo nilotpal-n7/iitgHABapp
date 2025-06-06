@@ -229,7 +229,7 @@
         <entry key="flutter_svg">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_svg-2.0.17/lib" />
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_svg-2.1.0/lib" />
             </list>
           </value>
         </entry>
@@ -394,6 +394,13 @@
             </list>
           </value>
         </entry>
+        <entry key="nested">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/nested-1.0.0/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="nm">
           <value>
             <list>
@@ -517,6 +524,13 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/plugin_platform_interface-2.1.8/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="provider">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/provider-6.1.5/lib" />
             </list>
           </value>
         </entry>
@@ -841,7 +855,7 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_easyloading-3.0.5/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_lints-4.0.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_spinkit-5.2.1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_svg-2.0.17/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_svg-2.1.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_web_auth_2-4.1.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_web_auth_2_platform_interface-4.1.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/google_identity_services_web-0.3.3/lib" />
@@ -863,6 +877,7 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/material_color_utilities-0.11.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/meta-1.16.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/mobile_scanner-6.0.5/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/nested-1.0.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/nm-0.5.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path-1.9.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_parsing-1.1.0/lib" />
@@ -881,6 +896,7 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/petitparser-6.0.2/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/platform-3.1.6/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/plugin_platform_interface-2.1.8/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/provider-6.1.5/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/qr-3.0.2/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/qr_flutter-4.1.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/shared_preferences-2.4.0/lib" />
