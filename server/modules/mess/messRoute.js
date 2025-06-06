@@ -21,7 +21,7 @@ messRouter.post("/menu/create", createMenu);
 messRouter.post("/menu/item/create", createMenuItem);
 messRouter.delete("/menu/item/delete/:menuItemId", deleteMenuItem);
 messRouter.post("/get", authenticateJWT, getUserMessInfo);
-messRouter.post("/all", authenticateJWT, getAllMessInfo);
+messRouter.post("/all", getAllMessInfo);
 messRouter.post("/menu/:messId", authenticateJWT, getMessMenuByDay);
 messRouter.post("/menu/item/:menuItemId", authenticateJWT, getMessMenuItemById);
 messRouter.post(
@@ -29,6 +29,6 @@ messRouter.post(
   authenticateJWT,
   toggleLikeMenuItem
 );
-messRouter.post("/scan", authenticateJWT, ScanMess);
+messRouter.post("/scan/:messId",authenticateJWT, ScanMess);
 
 module.exports = messRouter;

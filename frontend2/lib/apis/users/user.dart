@@ -28,13 +28,16 @@ Future<Map<String, String>?> fetchUserDetails() async {
 
       // Extract user details
       final String name = userData['name'] ?? "User";
+      final String userId = userData['_id'] ?? "";
       final String degree = userData['degree'] ?? "Not Provided";
-      final String mail = userData['email'] ;
+      final String mail = userData['email'];
       prefs.setString('email', mail);
 
       final String roll = userData['rollNumber'] ?? "Not provided";
-      final String CurrSubscribedMess = userData['curr_subscribed_mess'] ?? "Not provided";
-      final String appliedMess = userData['applied_hostel_string'] ?? "Not provided";
+      final String CurrSubscribedMess =
+          userData['curr_subscribed_mess'] ?? "Not provided";
+      final String appliedMess =
+          userData['applied_hostel_string'] ?? "Not provided";
       final hostel = userData['hostel'] ?? "Not provided";
 
       final bool gotHostel = userData['got_mess_changed'];
@@ -47,7 +50,7 @@ Future<Map<String, String>?> fetchUserDetails() async {
       prefs.setString('hostel', hostel);
       prefs.setString('currMess', CurrSubscribedMess);
       prefs.setString('name', name);
-
+      prefs.setString('userId', userId);
 
       print("Name: $name");
       print("Degree: $degree");

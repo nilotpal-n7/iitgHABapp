@@ -8,14 +8,14 @@ import 'package:vibration/vibration.dart';
 
 final dio = Dio();
 
-class QrScan extends StatefulWidget {
-  const QrScan({super.key});
+class QrScanOld extends StatefulWidget {
+  const QrScanOld({super.key});
 
   @override
-  State<QrScan> createState() => _QrScanState();
+  State<QrScanOld> createState() => _QrScanOldState();
 }
 
-class _QrScanState extends State<QrScan> {
+class _QrScanOldState extends State<QrScanOld> {
   late MobileScannerController controller;
   bool _hasScanned = false;
   Map<String, dynamic>? displayData;

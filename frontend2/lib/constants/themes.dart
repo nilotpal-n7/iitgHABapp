@@ -88,6 +88,7 @@ class Themes {
       fontSize: 14.0,
     ),
   );
+  static const feedbackColor = Color.fromRGBO(46, 47, 49, 1);
 }
 
 List<Color> colors = const [

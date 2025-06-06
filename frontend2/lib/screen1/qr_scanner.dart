@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend1/widgets/login screen/googlesignin.dart';
-import 'package:frontend1/apis/scan/qrscan.dart';
+import 'package:frontend1/apis/scan/qrscan_gala.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
@@ -69,7 +69,7 @@ class WelcomePage extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const QrScan(),
+              builder: (context) => const QrScangala(),
             ),
           );
         },
