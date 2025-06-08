@@ -19,6 +19,10 @@ const {
 const {
   feedbackScheduler,
 } = require("./modules/feedback/feedbackScheduler.js");
+
+const {
+  feedbackResetScheduler,
+} = require("./modules/feedback/feedbackScheduler.js");
 require("dotenv").config();
 
 const app = express();
@@ -53,6 +57,7 @@ mongoose
     sundayScheduler();
 
     feedbackScheduler();
+    feedbackResetScheduler();
   })
   .catch((err) => console.log(err));
 
