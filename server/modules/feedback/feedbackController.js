@@ -127,45 +127,46 @@ const removeFeedback = async (req, res) => {
 
 
 //just for testing no use in frontend
-const removeAllFeedbacks = async (req, res) => {
-  try {
-    // update users
-    await User.updateMany({}, { $set: { feedbackSubmitted: false } });
 
-    // update the sheet and reset it
-    if (fs.existsSync(feedbackFilePath)) {
-      const workbook = xlsx.utils.book_new();
-      const emptySheet = xlsx.utils.json_to_sheet([]);
-      xlsx.utils.book_append_sheet(workbook, emptySheet, 'Feedback');
-      xlsx.writeFile(workbook, feedbackFilePath);
-    }
-
-    res.status(200).send("All feedbacks removed successfully");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error removing all feedbacks");
-  }
-};
-
+//const removeAllFeedbacks = async (req, res) => {
+//  try {
+//    // update users
+//    await User.updateMany({}, { $set: { feedbackSubmitted: false } });
+//
+//    // update the sheet and reset it
+//    if (fs.existsSync(feedbackFilePath)) {
+//      const workbook = xlsx.utils.book_new();
+//      const emptySheet = xlsx.utils.json_to_sheet([]);
+//      xlsx.utils.book_append_sheet(workbook, emptySheet, 'Feedback');
+//      xlsx.writeFile(workbook, feedbackFilePath);
+//    }
+//
+//    res.status(200).send("All feedbacks removed successfully");
+//  } catch (err) {
+//    console.error(err);
+//    res.status(500).send("Error removing all feedbacks");
+//  }
+//};
+//
 
 
 
 
 // Sends the saved Excel in system (for testing)
-const downloadFeedbackSheet = (req, res) => {
-  if (!fs.existsSync(feedbackFilePath)) {
-    return res.status(404).send("No feedback report found");
-  }
- console.log("Looking for file at:", feedbackFilePath);
-
-  res.download(feedbackFilePath, 'Feedback_Report.xlsx', (err) => {
-    if (err) {
-      console.error("Download error:", err);
-      res.status(500).send("Could not download feedback report");
-    }
-  });
-};
-
+//const downloadFeedbackSheet = (req, res) => {
+//  if (!fs.existsSync(feedbackFilePath)) {
+//    return res.status(404).send("No feedback report found");
+//  }
+// console.log("Looking for file at:", feedbackFilePath);
+//
+//  res.download(feedbackFilePath, 'Feedback_Report.xlsx', (err) => {
+//    if (err) {
+//      console.error("Download error:", err);
+//      res.status(500).send("Could not download feedback report");
+//    }
+//  });
+//};
+//
 
 
 
