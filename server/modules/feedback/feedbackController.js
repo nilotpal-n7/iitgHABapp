@@ -126,13 +126,13 @@ const removeFeedback = async (req, res) => {
   }}
 
 
-
+//just for testing no use in frontend
 const removeAllFeedbacks = async (req, res) => {
   try {
     // update users
     await User.updateMany({}, { $set: { feedbackSubmitted: false } });
 
-    // 2. Delete all feedback from the Excel file
+    // update the sheet and reset it
     if (fs.existsSync(feedbackFilePath)) {
       const workbook = xlsx.utils.book_new();
       const emptySheet = xlsx.utils.json_to_sheet([]);
@@ -172,7 +172,7 @@ const downloadFeedbackSheet = (req, res) => {
 module.exports = {
   submitFeedback,
   removeFeedback,
-  downloadFeedbackSheet,
+ // downloadFeedbackSheet,
 //removeAllFeedbacks
 };
 

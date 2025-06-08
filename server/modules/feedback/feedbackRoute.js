@@ -10,8 +10,8 @@ feedbackRouter.post('/submit',  submitFeedback);
 feedbackRouter.post('/remove', removeFeedback);
 
 // GET Excel file of all feedback for testing
-feedbackRouter.get('/download', downloadFeedbackSheet);
+//feedbackRouter.get('/download', downloadFeedbackSheet);
 
-feedbackRouter.delete('/removeAll', removeAllFeedbacks);
+//feedbackRouter.delete('/removeAll', removeAllFeedbacks);
 
 module.exports = feedbackRouter;

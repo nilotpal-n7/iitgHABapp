@@ -54,13 +54,13 @@ const feedbackScheduler = () => {
 };
 
 const feedbackResetScheduler = () => {
-  // 10th of every month at 1:36 PM (check if you want this exact time)
+  // 10th of every month at 12 PM better as no clash of the multiple requests at single time
   schedule.scheduleJob('48 13 8 * *', async () => {
     try {
-      // 1. Reset all users' feedbackSubmitted flag
+      // Reset all users feedback bool in User
       await User.updateMany({}, { $set: { feedbackSubmitted: false } });
 
-      // 2. Overwrite the Excel file with an empty workbook instead of deleting it
+      // reset the sheet and initialize new sheet
       if (fs.existsSync(feedbackFilePath)) {
         const workbook = xlsx.utils.book_new();
         const emptySheet = xlsx.utils.json_to_sheet([]);
