@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9f22e541-6f34-44ad-b768-3e17d6476ce7" name="Changes" comment="itembyqr screen changes">
-      <change beforePath="$PROJECT_DIR$/server/modules/feedback/feedbackController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/feedback/feedbackController.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/modules/feedback/feedbackRoute.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/feedback/feedbackRoute.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/modules/feedback/feedbackScheduler.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/feedback/feedbackScheduler.js" afterDir="false" />
-    </list>
+    <list default="true" id="9f22e541-6f34-44ad-b768-3e17d6476ce7" name="Changes" comment="itembyqr screen changes" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
