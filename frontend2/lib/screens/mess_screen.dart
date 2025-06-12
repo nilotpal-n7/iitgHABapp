@@ -14,6 +14,7 @@ import '../models/mess_menu_model.dart';
 import '../utilities/ComingSoon.dart';
 import '../utilities/startupitem.dart';
 import '../widgets/feedback/FeedBackCard.dart';
+import '../widgets/mess_widgets/horizontal_menu_builder.dart';
 import '../widgets/mess_widgets/messmenu.dart';
 
 class MessApp extends StatefulWidget {
@@ -302,17 +303,15 @@ class _DayChip extends StatelessWidget {
 class _MenuCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Consumer<MessInfoProvider>(
           builder: (context, messProvider, child) {
-            // Get user's mess ID from SharedPreferences or provider
             return FutureBuilder<String?>(
               future: _getUserMessId(),
               builder: (context, snapshot) {
-                return MenuFutureBuilder(
+                return HorizontalMenuBuilder( // Changed from MenuFutureBuilder
                   messId: copyMessID,
                   day: selectedDay,
                   userMessId: snapshot.data,
@@ -327,7 +326,7 @@ class _MenuCard extends StatelessWidget {
 
   Future<String?> _getUserMessId() async {
     final prefs = await SharedPreferences.getInstance();
-   String messId = prefs.getString('curr_subscribed_mess') ?? '6826dfda8493bb0870b10cbf';
+    String messId = prefs.getString('curr_subscribed_mess') ?? '6826dfda8493bb0870b10cbf';
     return messId;
   }
 }
