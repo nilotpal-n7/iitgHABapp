@@ -27,7 +27,6 @@ const hostelSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-
   users: {
     type: [userTimeStampSchema],
     default: [],
