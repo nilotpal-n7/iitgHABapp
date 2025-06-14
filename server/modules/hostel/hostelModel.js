@@ -42,6 +42,10 @@ const hostelSchema = new mongoose.Schema({
     default: 0,
     required: true,
   },
+  password: {
+    type: String,
+    required: true,
+  },
 });
 
 const Hostel = mongoose.model("Hostel", hostelSchema);
