@@ -1,5 +1,5 @@
 const express = require('express');
-const authenticateJWT = require('../../middleware/authenticateJWT.js');
+const {authenticateJWT} = require('../../middleware/authenticateJWT.js');
 
 const { getComplaintsOfItemsByHostel, createItem, deleteItem, updateItem, getItems, getItem, getItemsWithComplaints, getItemsForHAB, resolveItem, inProgressItem } = require('./itemController');
 
