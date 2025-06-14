@@ -1,5 +1,5 @@
 const express = require('express');
-const authenticateJWT = require('../../middleware/authenticateJWT.js');
+const {authenticateJWT} = require('../../middleware/authenticateJWT.js');
 
 const {
     createQR,
@@ -13,4 +13,3 @@ qrRouter.put('/check', checkScanned);
 qrRouter.post('/', createQR);
 
 module.exports = qrRouter;
-

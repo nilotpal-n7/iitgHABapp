@@ -3,15 +3,34 @@ const { Hostel } = require ('./hostelModel.js')
 
 const createHostel = async (req, res) => {
     try {
-        const hostel = await Hostel.create(req.body)
+        const hostel = await Hostel.create(req.body);
 
-        res.status(201).json({
-            hostel,
-            message: "Hostel created successfully"
-        })
+        return res.status(201).json({message: "Hostel created successfully", hostel});
     } catch (err) {
-        res.status(500).json({ message: 'Error creating hostel', error: err });
         console.log(err);
+        return res.status(500).json({message: "Error occured"});
+    }
+};
+
+const loginHostel = async (req, res) => {
+    const {hostel_name, password} = req.body;
+
+    try {
+        const hostel = await Hostel.findOne({hostel_name});
+        if (!hostel) return res.status(400).json({message: "No such hostel"});
+
+        const verify = await hostel.verifyPassword(password);
+        if (!verify) return res.status(401).json({message: "Incorrect password"});
+
+        const token = hostel.generateJWT();
+        return res.status(201).json({
+          message: 'Logged in successfully',
+          token,
+          hostel
+        });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({message: "Error occured"});
     }
 };
 
@@ -25,7 +44,18 @@ const getHostel = async (req, res) => {
             return res.status(400).json({message: "No such hostel"});
         }
 
-        return res.status(200).json({message: "Hostel found", hostel: hostel});
+        return res.status(200).json({message: "Hostel found", hostel});
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({message: "Error occured"});
+    }
+};
+
+const getAllHostels = async (req, res) => {
+    try {
+        const hostels = await Hostel.find();
+
+        return res.status(200).json(hostels);
     } catch (err) {
         console.log(err);
         return res.status(500).json({message: "Error occured"});
@@ -100,6 +130,8 @@ const applyMessChange = async (req, res) => {
 
 module.exports = {
     createHostel,
+    loginHostel,
     getHostel,
+    getAllHostels,
     applyMessChange
 }
