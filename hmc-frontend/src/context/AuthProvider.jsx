@@ -1,6 +1,7 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 const AuthContext = createContext();
 
@@ -27,10 +28,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = (reason = null) => {
     localStorage.removeItem("token");
     setUser(null);
     setToken("");
+
+    if (!reason) {
+      alert(`${reason}. Please log in again.`);
+    }
+
     navigate("/login");
   };
 
@@ -42,12 +48,33 @@ export const AuthProvider = ({ children }) => {
       });
       setUser(res.data.hostel);
     } catch (err) {
-      logout(); // Invalid token, log out user
+      console.log(err);
+      logout("Invalid Session");
     }
   };
 
   useEffect(() => {
-    getData().finally(() => setLoading(false));
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    // Token expiry
+    const decoded = jwtDecode(token);
+    const expire = decoded.exp * 1000 - Date.now();
+    if (expire < 0) {
+      logout("Session has expired");
+      return;
+    }
+
+    // Auto-logout on expiry
+    const timeout = setTimeout(() => {
+      logout("Session has expired");
+    }, expire);
+
+    getData().finally(() => setLoading(false)); // Refresh data
+
+    return () => clearTimeout(timeout); // Cleanup
   }, [token]);
 
   return (
