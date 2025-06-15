@@ -5,6 +5,7 @@ import '../../apis/mess/menu_like.dart';
 import '../../apis/mess/mess_menu.dart';
 import '../../models/mess_menu_model.dart';
 import '../../constants/endpoint.dart';
+import '../common/AutoHeightPageView.dart';
 
 // API class for like/unlike functionality
 
@@ -133,29 +134,11 @@ class HorizontalMenuBuilder extends StatelessWidget {
                 }).toList(),
               ),
             ),
-            // Dynamic height based on content
-            IntrinsicHeight(
-              child: SizedBox(
-                height: 400, // Base height, will adjust based on content
-                child: PageView.builder(
-                  itemCount: sortedMenus.length,
-                  controller: PageController(viewportFraction: 0.95),
-                  itemBuilder: (context, index) {
-                    final menu = sortedMenus[index];
-
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 12.0),
-                      child: IndividualMealCard(
-                        menu: menu,
-                        currentMessId: messId,
-                        userMessId: userMessId,
-                        parseTime: _parseTime,
-                        formatDuration: _formatDuration,
-                      ),
-                    );
-                  },
-                ),
-              ),
+            // MenuPager here we r using the concept of premeasuring the size of IndividualMealCard widget and accordingly changing the ui by smooth scrolling downwards
+            MenuPager(
+              sortedMenus: sortedMenus,
+              messId: messId,
+              userMessId: userMessId!,
             ),
           ],
         );
