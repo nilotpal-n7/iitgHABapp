@@ -1,5 +1,8 @@
 const express = require("express");
-const {authenticateJWT, authenticateAdminJWT} = require("../../middleware/authenticateJWT.js");
+const {
+  authenticateJWT,
+  authenticateAdminJWT,
+} = require("../../middleware/authenticateJWT.js");
 
 const {
   createHostel,
@@ -15,9 +18,9 @@ hostelRouter.post("/", createHostel);
 
 hostelRouter.post("/login", authenticateAdminJWT, loginHostel);
 
-// hostelRouter.get('/:hostel_name', getHostel);
+hostelRouter.get("/get", authenticateAdminJWT, getHostel);
 
-hostelRouter.get('/all', getAllHostels);
+hostelRouter.get("/all", getAllHostels);
 
 hostelRouter.post("/change", authenticateJWT, applyMessChange);
 

@@ -1,7 +1,7 @@
-import { Routes, Route , Navigate} from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { LoginPage } from "./pages/LoginPage";
 import { Dashboard } from "./pages/Dashboard.jsx"; // Create this page
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import ProtectedRoute from "./components/ProtectedRoute";
 function App() {
   return (
     <div className="h-screen w-screen flex justify-center items-center bg-gray-200">

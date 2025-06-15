@@ -1,45 +1,27 @@
-import { useEffect, useState, useRef, useContext } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import { AuthContext } from "../context/authProvider";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export function LoginPage() {
+  const { login } = useAuth();
   const [password, setPassword] = useState("");
   const [hostels, setHostels] = useState([]);
   const [selectedHostel, setSelectedHostel] = useState("");
-  const { setUser } = useContext(AuthContext);
-  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchHostels() {
       try {
-        await axios.get("http://localhost:800/api/hostel/all", {
-          withCredentials: true,
-        }).then((res) => setHostels(res.data));
+        await axios
+          .get("http://localhost:800/api/hostel/all", {
+            withCredentials: true,
+          })
+          .then((res) => setHostels(res.data));
       } catch (error) {
         console.error("Error fetching hostels:", error);
       }
     }
     fetchHostels();
   }, []);
-
-  const handleLogin = async () => {
-    try {
-      const res = await axios.post(
-        "http://localhost:800/api/hostel/login",
-        {
-          hostel_name: selectedHostel,
-          password,
-        },
-        { withCredentials: true }
-      );
-
-      setUser(res.data.hostel); // Save hostel in context
-      navigate("/dashboard"); // Navigate to protected route
-    } catch (error) {
-      alert(error.response?.data?.message || "Login failed");
-    }
-  };
 
   return (
     <div className="flex flex-col items-center justify-evenly bg-white rounded-2xl p-8 gap-4 h-1/2 w-1/3">
@@ -73,7 +55,7 @@ export function LoginPage() {
             : "bg-gray-300 text-gray-500 font-bold w-1/2 py-2 px-4 rounded"
         }
         disabled={!selectedHostel || !password}
-        onClick={handleLogin}
+        onClick={() => login(selectedHostel, password)}
       >
         Login
       </button>
