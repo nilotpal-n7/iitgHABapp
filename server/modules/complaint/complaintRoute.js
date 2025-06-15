@@ -2,7 +2,7 @@ const express = require('express');
 
 const complaintRouter = express.Router();
 
-const authenticateJWT = require('../../middleware/authenticateJWT');
+const { authenticateJWT } = require('../../middleware/authenticateJWT');
 
 const { submitComplaint, updateComplaint, getComplaint, deleteComplaint } = require('./complaintController');
 
