@@ -7,5 +7,5 @@ module.exports = {
     // don't know about  clientURL so omitting this also
     jwtSecret: process.env.JWT_SECRET,
     // aeskey unknown here so omitting
-    // adminjwtsecret unknown so omitting
+    adminjwtsecret: process.env.ADMIN_JWT_SECRET,
 };

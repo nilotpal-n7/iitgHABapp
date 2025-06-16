@@ -1,5 +1,5 @@
 const express = require('express')
-const authenticateJWT = require('../../middleware/authenticateJWT.js')
+const {authenticateJWT} = require('../../middleware/authenticateJWT.js')
 
 const { 
     getUserData, 
@@ -33,4 +33,3 @@ userRouter.get('/roll/:qr', getUserByRoll );//removed authenticateJWT from here
 // userRouter.get('/welfaresecymails', getEmailsOfSecyUsers);
 
 module.exports = userRouter;
-

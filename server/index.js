@@ -42,6 +42,12 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // your frontend port
+    credentials: true, // allow cookies
+  })
+);
 app.use(cookieParser());
 app.use(
   cors({
