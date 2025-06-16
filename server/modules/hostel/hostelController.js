@@ -98,8 +98,23 @@ const applyMessChange = async (req, res) => {
     }
 };  
 
+const getAllHostelNameAndCaterer = async (req, res) => {
+    try {
+        const hostelData = await Hostel.find({},{ hostel_name: 1, messId: 1 })
+            .populate({
+                path: 'messId',
+                select: 'name -_id'
+            });
+
+        res.status(200).json(hostelData);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 module.exports = {
     createHostel,
     getHostel,
-    applyMessChange
+    applyMessChange,
+    getAllHostelNameAndCaterer
 }
