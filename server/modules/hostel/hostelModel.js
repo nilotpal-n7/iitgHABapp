@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 
 dotenv.config();
+// Added comment 32
 
 const userTimeStampSchema = new mongoose.Schema({
   user: {
@@ -27,11 +28,9 @@ const hostelSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-
   users: {
     type: [userTimeStampSchema],
     default: [],
-    required: true,
   },
   messId: {
     type: mongoose.Schema.Types.ObjectId,
