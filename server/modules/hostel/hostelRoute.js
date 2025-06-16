@@ -5,6 +5,7 @@ const {
   createHostel,
   getHostel,
   applyMessChange,
+  getAllHostelNameAndCaterer
 } = require("./hostelController.js");
 
 const hostelRouter = express.Router();
@@ -15,4 +16,6 @@ hostelRouter.post("/", createHostel);
 
 hostelRouter.post("/change", authenticateJWT, applyMessChange);
 
+//Route to get only hostel and caterer information
+hostelRouter.get("/gethnc",getAllHostelNameAndCaterer)
 module.exports = hostelRouter;
