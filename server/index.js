@@ -1,7 +1,7 @@
 // server/index.js
 //import authRoutes from "./modules/auth/auth.routes.js";
 const authRoutes = require("./modules/auth/auth.routes.js");
-
+const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
 const itemRoute = require("./modules/item/itemRoute.js");
@@ -43,7 +43,12 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
-
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true
+  })
+);
 app.use(express.urlencoded({ extended: true }));
 
 // MongoDB connection
