@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import MessItem from "./components/MessItem";
+import MessItem from "./MessItem";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
@@ -20,6 +20,9 @@ export default function MessPage() {
 
   return (
     <div>
+      <div className="text-xl font-medium">
+        Welcome to the Office Caterer Page
+      </div>
       <h1>Mess List</h1>
       <ul>
         {messes.map((mess) => (
