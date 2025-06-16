@@ -24,8 +24,7 @@ const createMess = async (req, res) => {
       return res.status(404).json({ message: "Hostel not found" });
     }
     await newMess.save();
-    hostel.messId = newMess._id;
-    await hostel.save();
+    await Hostel.findByIdAndUpdate(hostelId, { messId: newMess._id });
     return res.status(201).json(newMess);
   } catch (error) {
     console.error(error);
@@ -134,12 +133,28 @@ const getAllMessInfo = async (req, res) => {
         const messObj = mess.toObject();
         const hostel = await Hostel.findById(messObj.hostelId);
         messObj.hostelName = hostel ? hostel.hostel_name : "Unknown";
-        console.log(messObj.hostelName);
         return messObj;
       })
     );
 
     return res.status(200).json(messesWithHostelName);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const getMessInfo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const mess = await Mess.findById(id);
+    if (!mess) {
+      return res.status(404).json({ message: "Mess not found" });
+    }
+    const messObj = mess.toObject();
+    const hostel = await Hostel.findById(messObj.hostelId);
+    messObj.hostelName = hostel ? hostel.hostel_name : "Not Assigned";
+    return res.status(200).json(messObj);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
@@ -310,51 +325,49 @@ const toggleLikeMenuItem = async (req, res) => {
 
 const ScanMess = async (req, res) => {
   try {
-    console.log("happending")
-    
+    console.log("happending");
+
     const messId = req.params.messId;
     const { qr_string, userId } = req.body;
-    console.log(userId)
+    console.log(userId);
     // Find mess and user
     const messInfo = await Mess.findById(messId);
     const user = await User.findById(userId);
-    
+
     if (!user) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         message: "User not found",
-        success: false 
-      });
-    }
-    
-    if (!messInfo) {
-      return res.status(404).json({ 
-        message: "Mess not found",
-        success: false 
-      });
-    }
-    
-    
-    console.log(messInfo.hostelId,  user.curr_subscribed_mess)
-    // Check if user is subscribed to this mess
-    if (toString(messInfo.hostelId) !== toString(user.curr_subscribed_mess)) {
-      return res.status(400).json({ 
-        message: "User is not subscribed to this mess",
-        success: false 
+        success: false,
       });
     }
 
-    
+    if (!messInfo) {
+      return res.status(404).json({
+        message: "Mess not found",
+        success: false,
+      });
+    }
+
+    console.log(messInfo.hostelId, user.curr_subscribed_mess);
+    // Check if user is subscribed to this mess
+    if (toString(messInfo.hostelId) !== toString(user.curr_subscribed_mess)) {
+      return res.status(400).json({
+        message: "User is not subscribed to this mess",
+        success: false,
+      });
+    }
+
     const currentDate = getCurrentDate();
     const currentTime = getCurrentTime();
     const currentDay = getCurrentDay();
-    
+
     // Find existing scan log for today
-    let scanLog = await ScanLogs.findOne({ 
-      userId: userId, 
-      messId: messId, 
-      date: currentDate 
+    let scanLog = await ScanLogs.findOne({
+      userId: userId,
+      messId: messId,
+      date: currentDate,
     });
-    
+
     // If no scan log exists for today, create one
     if (!scanLog) {
       scanLog = new ScanLogs({
@@ -363,34 +376,38 @@ const ScanMess = async (req, res) => {
         date: currentDate,
         breakfast: false,
         lunch: false,
-        dinner: false
+        dinner: false,
       });
     }
-    
+
     // Check meal timings and availability
     const breakfast = await Menu.findOne({
       messId: messId,
       day: currentDay,
       type: "Breakfast",
     });
-    
+
     const lunch = await Menu.findOne({
       messId: messId,
       day: currentDay,
       type: "Lunch",
     });
-    
+
     const dinner = await Menu.findOne({
       messId: messId,
       day: currentDay,
       type: "Dinner",
     });
-    
+
     let mealType = null;
     let alreadyScanned = false;
-    
+
     // Check breakfast timing
-    if (breakfast && currentTime >= breakfast.startTime && currentTime <= breakfast.endTime) {
+    if (
+      breakfast &&
+      currentTime >= breakfast.startTime &&
+      currentTime <= breakfast.endTime
+    ) {
       if (!scanLog.breakfast) {
         scanLog.breakfast = true;
         mealType = "Breakfast";
@@ -400,7 +417,7 @@ const ScanMess = async (req, res) => {
       }
     }
     // Check lunch timing
-    else if (lunch && currentTime >= lunch.startTime ) {
+    else if (lunch && currentTime >= lunch.startTime) {
       if (!scanLog.lunch) {
         scanLog.lunch = true;
         mealType = "Lunch";
@@ -410,7 +427,11 @@ const ScanMess = async (req, res) => {
       }
     }
     // Check dinner timing
-    else if (dinner && currentTime >= dinner.startTime && currentTime <= dinner.endTime) {
+    else if (
+      dinner &&
+      currentTime >= dinner.startTime &&
+      currentTime <= dinner.endTime
+    ) {
       if (!scanLog.dinner) {
         scanLog.dinner = true;
         mealType = "Dinner";
@@ -419,33 +440,33 @@ const ScanMess = async (req, res) => {
         mealType = "Dinner";
       }
     }
-    
+
     // If already scanned for current meal
     if (alreadyScanned) {
-      return res.status(200).json({ 
+      return res.status(200).json({
         message: `Already scanned for ${mealType.toLowerCase()}`,
         success: false,
         mealType: mealType,
         time: formatTime(currentTime),
-        date: formatDate(currentDate)
+        date: formatDate(currentDate),
       });
     }
-    
+
     // If no meal is available at current time
     if (!mealType) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: "No meals available at this time",
         success: false,
         time: formatTime(currentTime),
-        date: formatDate(currentDate)
+        date: formatDate(currentDate),
       });
     }
-    
+
     // Save the scan log
     await scanLog.save();
-    
+
     // Return success response with user details
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: "Scan successful",
       success: true,
       mealType: mealType,
@@ -455,40 +476,51 @@ const ScanMess = async (req, res) => {
         name: user.name,
         rollNumber: user.rollNumber,
         // Hardcoded image for now as requested
-        photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+        photo:
+          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
         hostel: user.hostel,
         year: user.year,
-        degree: user.degree
-      }
+        degree: user.degree,
+      },
     });
-    
   } catch (error) {
     console.error("Error in ScanMess:", error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       message: "Internal server error",
       success: false,
-      error: error.message 
+      error: error.message,
     });
   }
 };
 
 const formatTime = (time) => {
-  const [hours, minutes] = time.split(':');
+  const [hours, minutes] = time.split(":");
   const hour = parseInt(hours);
-  const period = hour >= 12 ? 'PM' : 'AM';
-  const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+  const period = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
   return `${displayHour}:${minutes} ${period}`;
 };
 
 const formatDate = (date) => {
   const dateObj = new Date(date);
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
   ];
-  return `${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+  return `${dateObj.getDate()} ${
+    months[dateObj.getMonth()]
+  } ${dateObj.getFullYear()}`;
 };
-
 
 module.exports = {
   createMess,
@@ -497,6 +529,7 @@ module.exports = {
   deleteMenuItem,
   getUserMessInfo,
   getAllMessInfo,
+  getMessInfo,
   getMessMenuByDay,
   getMessMenuItemById,
   toggleLikeMenuItem,

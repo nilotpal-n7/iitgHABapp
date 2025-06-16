@@ -1,63 +1,34 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import MessItem from "./components/MessItem";
-import CreateMess from "./components/CreateMess";
+import axios from "axios";
+import { Link } from "react-router-dom";
 
-export default function MessList() {
+export default function MessPage() {
   const [messes, setMesses] = useState([]);
-  const [error, setError] = useState(null);
-  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     const fetchMesses = async () => {
       try {
-        const res = await axios.post(
-          "http://localhost:8000/api/mess/all",
-        );
+        const res = await axios.post("http://localhost:8000/api/mess/all");
         setMesses(res.data);
-      } catch (err) {
-        if (err.response?.status === 404) {
-          console.log("No messes found.");
-          setMesses([]);
-        } else {
-          console.error("Error fetching messes:", err);
-          setError("Failed to fetch mess list.");
-        }
+      } catch (error) {
+        console.error("Error fetching messes:", error);
       }
     };
-
     fetchMesses();
   }, []);
-
-  const handleCreateMess = (newMess) => {
-    const newId = messes.length + 1;
-    const Mess = {
-      id: newId,
-      name: newMess.name,
-      caterer: newMess.caterer,
-      hostel: { name: newMess.hostel },
-    };
-    const updatedMesses = messes.concat(Mess);
-    setMesses(updatedMesses);
-    setShowForm(false);
-  };
 
   return (
     <div>
       <h1>Mess List</h1>
-      {error && <p>{error}</p>}
-
       <ul>
         {messes.map((mess) => (
-          <MessItem key={mess._id || mess.id} mess={mess} />
+          <MessItem key={mess._id} mess={mess} />
         ))}
       </ul>
-
-      <button onClick={() => setShowForm(!showForm)}>
-        {showForm ? "Cancel" : "Create New"}
-      </button>
-
-      {showForm && <CreateMess onSubmit={handleCreateMess} />}
+      <Link to="/create-mess">
+        <button>Create New Mess</button>
+      </Link>
     </div>
   );
 }
