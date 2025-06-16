@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 
 export default function CreateMess() {
   const [caterer, setCaterer] = useState("");
-  const [hostelId, setHostelId] = useState("");
-  const [hostels, setHostels] = useState("");
+  const [hostelId, setHostelId] = useState([]);
+  const [hostels, setHostels] = useState([]);
   
   const navigate = useNavigate();
 
