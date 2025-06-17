@@ -559,6 +559,17 @@ const formatDate = (date) => {
   } ${dateObj.getFullYear()}`;
 };
 
+const getUnassignedMess = async (req, res) => {
+  try {
+    const unassignedMesses = await Mess.find({ hostelId: null });
+    res.status(200).json(unassignedMesses);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
 module.exports = {
   createMess,
   createMenu,
@@ -572,4 +583,5 @@ module.exports = {
   getMessMenuItemById,
   toggleLikeMenuItem,
   ScanMess,
+  getUnassignedMess
 };
