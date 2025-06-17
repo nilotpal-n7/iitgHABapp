@@ -24,7 +24,8 @@ export default function AllHostelList() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/hostel/gethnc`);
+        console.log(server);
+        const response = await fetch(server+'/api/hostel/gethnc');
         const data = await response.json();
 
         setHostelList(data);

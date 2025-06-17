@@ -33,6 +33,25 @@ const createMess = async (req, res) => {
   }
 };
 
+const createMessWithoutHostel = async (req, res) => {
+  try {
+    const { name } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ message: "Mess name is required" });
+    }
+
+    const newMess = new Mess({ name });
+    await newMess.save();
+
+    return res.status(201).json(newMess);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
 const createMenu = async (req, res) => {
   try {
     const { messId, day, startTime, endTime, isGala, type } = req.body;
@@ -499,9 +518,61 @@ const getUnassignedMess = async (req, res) => {
   }
 };
 
+const assignMessToHostel = async (req, res) => {
+  try {
+    const messId = req.params.messId;
+    const hostelId = req.body.hostelId;
+    const oldMessId = req.body.oldMessId;
+
+    const newMess = await Mess.findByIdAndUpdate(
+      messId,
+      { hostelId: hostelId },
+      { hostel_name: req.body.hostelName },
+      { new: true }
+    );
+    if (!newMess) {
+      return res.status(404).json({ message: "Mess not found" });
+    }
+
+    if (oldMessId) {
+      const oldMess = await Mess.findByIdAndUpdate(
+        oldMessId,
+        { hostelId: null },
+        { hostel_name: null },
+        { new: true }
+      );
+      if (!oldMess) {
+        return res.status(404).json({ message: "Old mess not found" });
+      }
+    }
+
+
+    const hostelRes = await Hostel.findByIdAndUpdate(
+      hostelId,
+      { messId: messId },
+      { new: true }
+    );
+
+    if (!hostelRes) {
+      return res.status(404).json({ message: "Hostel not found" });
+    }
+
+    return res.status(200).json({
+      message: "Mess assigned to hostel successfully",
+      mess: newMess,
+      hostel: hostelRes,
+    });
+
+  }catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 
 module.exports = {
   createMess,
+  createMessWithoutHostel,
   createMenu,
   createMenuItem,
   deleteMenuItem,
@@ -511,5 +582,6 @@ module.exports = {
   getMessMenuItemById,
   toggleLikeMenuItem,
   ScanMess,
-  getUnassignedMess
+  getUnassignedMess,
+  assignMessToHostel
 };
