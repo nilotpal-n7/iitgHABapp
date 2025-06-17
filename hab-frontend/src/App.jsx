@@ -5,6 +5,7 @@ import Hostels from "./pages/Hostels";
 import AllHostelList from "./pages/AllHostelList";
 import Caterers from "./pages/Caterers";
 import Students from "./pages/Students";
+import HostelForm from "./pages/HostelForm";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/hostels" element={<AllHostelList />} />
+            <Route path="/create-hostel" element={<HostelForm />} />
             <Route path="/caterers" element={<Caterers />} />
             <Route path="/students" element={<Students />} />
           </Routes>

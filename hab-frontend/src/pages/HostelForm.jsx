@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 export default function HostelForm() {
+  const server = import.meta.env.VITE_SERVER_URL;
+
   const [hostelName, setHostelName] = useState('');
   const [capacity, setCapacity] = useState('');
   const [caterer, setCaterer] = useState('');
+
+  const [unassignedMess, setUnassignedMess] = useState([]);
 
   const uploadHandle = (e) => {
     e.preventDefault();
@@ -19,6 +23,20 @@ export default function HostelForm() {
     // POST data to backend
     //Redirect to Hostels page
   };
+
+  useEffect(() => {
+    const fetchUnassignedMess = async () => {
+      try {
+        const response = await fetch(`${server}/api/mess/unassigned`);
+        const data = await response.json();
+        setUnassignedMess(data);
+      } catch (error) {
+        console.error('Failed to fetch unassigned mess:', error);
+      }
+    };
+
+    fetchUnassignedMess();
+  }, [server]);
 
   return (
     <form onSubmit={uploadHandle}>
@@ -44,12 +62,17 @@ export default function HostelForm() {
 
       <div>
         <label>Mess Caterer: </label>
-        <input
-          type="text"
+        <select
           value={caterer}
           onChange={(e) => setCaterer(e.target.value)}
-          required
-        />
+          required>
+          <option value="">--Choose an option--</option>
+          {unassignedMess.map((mess) => (
+            <option key={mess._id} value={mess._id}>
+              {mess.name}
+            </option>
+          ))}
+          </select>
       </div>
 
       <button type="submit">Upload</button>
