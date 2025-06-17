@@ -3,6 +3,7 @@ const {authenticateJWT} = require("../../middleware/authenticateJWT.js");
 
 const {
   createMess,
+  createMessWithoutHostel,
   createMenu,
   createMenuItem,
   deleteMenuItem,
@@ -14,12 +15,14 @@ const {
   getMessMenuItemById,
   toggleLikeMenuItem,
   ScanMess,
-  getUnassignedMess
+  getUnassignedMess,
+  assignMessToHostel
 } = require("./messController");
 
 const messRouter = express.Router();
 
 messRouter.post("/create", createMess);
+messRouter.post("/create-without-hostel", createMessWithoutHostel);
 messRouter.post("/menu/create", createMenu);
 messRouter.post("/menu/item/create", createMenuItem);
 messRouter.delete("/menu/item/delete/:menuItemId", deleteMenuItem);
@@ -35,6 +38,7 @@ messRouter.post(
   toggleLikeMenuItem
 );
 messRouter.post("/scan/:messId",authenticateJWT, ScanMess);
+messRouter.post("/reassign/:messId", assignMessToHostel);
 messRouter.get('/unassigned', getUnassignedMess)
 
 module.exports = messRouter;
