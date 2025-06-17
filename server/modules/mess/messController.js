@@ -200,6 +200,43 @@ const getMessMenuByDay = async (req, res) => {
   }
 };
 
+const getMessMenuByDayForAdminHAB = async (req, res) => {
+  try {
+    const messId = req.params.messId;
+    const day = req.body.day;
+
+    if (!messId || !day) {
+      return res.status(400).json({ message: "Mess ID and day are required" });
+    }
+
+    const menu = await Menu.find({ messId, day });
+    if (!menu || menu.length === 0) {
+      return res.status(404).json({ message: "Menu not found" });
+    }
+
+    const populatedMenus = [];
+    for (let i = 0; i < menu.length; i++) {
+      const menuObj = menu[i].toObject();
+      const menuItems = menuObj.items;
+      const menuItemDetails = await MenuItem.find({ _id: { $in: menuItems } });
+
+      const updatedMenuItems = menuItemDetails.map((item) => {
+        const itemObj = item.toObject();
+        return itemObj;
+      });
+
+      menuObj.items = updatedMenuItems;
+      populatedMenus.push(menuObj);
+    }
+
+    return res.status(200).json(populatedMenus);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
 const getMessMenuItemById = async (req, res) => {
   try {
     const menuItemId = req.params.menuItemId;
@@ -531,6 +568,7 @@ module.exports = {
   getAllMessInfo,
   getMessInfo,
   getMessMenuByDay,
+  getMessMenuByDayForAdminHAB,
   getMessMenuItemById,
   toggleLikeMenuItem,
   ScanMess,

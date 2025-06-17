@@ -9,10 +9,12 @@ export default function MessItem({ mess }) {
       <span>Hostel: {mess.hostelName || "Not Assigned"}</span>
       <br />
       <Link to={`/mess/${mess._id}`}>
-            <button>View Mess Details</button>
+        <button>View Mess Details</button>
       </Link>
       <br />
-      <button>View Mess Menu</button>
+      <Link to={`/mess/menu/${mess._id}`}>
+        <button>View Mess Menu</button>
+      </Link>
       <br />
       <button>Delete Mess</button>
     </li>
