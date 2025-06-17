@@ -47,7 +47,7 @@ const createMess= async (req, res) => {
     return res.status(201).json(newMess);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Internal server error", error: error.message });
+    return res.status(500).json({ message: "Internal server error"});
 }
 };
 
