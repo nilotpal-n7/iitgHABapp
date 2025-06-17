@@ -8,6 +8,7 @@ import Students from "./pages/Students";
 import CreateMess from "./components/CreateMess";
 import MessDetails from "./components/MessDetails";
 import MessMenu from "./components/MessMenu";
+import HostelForm from "./pages/HostelForm";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/hostels" element={<AllHostelList />} />
+            <Route path="/create-hostel" element={<HostelForm />} />
             <Route path="/caterers" element={<Caterers />} />
             <Route path="/students" element={<Students />} />
             <Route path="/create-mess" element={<CreateMess />} />
