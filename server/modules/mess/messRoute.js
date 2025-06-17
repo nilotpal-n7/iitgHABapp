@@ -10,6 +10,7 @@ const {
   getAllMessInfo,
   getMessInfo,
   getMessMenuByDay,
+  getMessMenuByDayForAdminHAB,
   getMessMenuItemById,
   toggleLikeMenuItem,
   ScanMess,
@@ -25,6 +26,7 @@ messRouter.post("/get", authenticateJWT, getUserMessInfo);
 messRouter.post("/all", getAllMessInfo);
 messRouter.get("/:id", getMessInfo);
 messRouter.post("/menu/:messId", authenticateJWT, getMessMenuByDay);
+messRouter.post("/hab-menu/:messId", getMessMenuByDayForAdminHAB);
 messRouter.post("/menu/item/:menuItemId", authenticateJWT, getMessMenuItemById);
 messRouter.post(
   "/menu/item/like/:menuItemId",
