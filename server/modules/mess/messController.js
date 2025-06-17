@@ -11,22 +11,54 @@ const {
   getCurrentDay,
 } = require("../../utils/date.js");
 
-const createMess = async (req, res) => {
-  try {
-    const { name, hostelId } = req.body;
+// const createMess = async (req, res) => {
+//   try {
+//     const { name, hostelId } = req.body;
 
-    const newMess = new Mess({
-      name,
-      hostelId,
-    });
-    const hostel = await Hostel.findById(hostelId);
-    if (!hostel) {
-      return res.status(404).json({ message: "Hostel not found" });
+//     const newMess = new Mess({
+//       name,
+//       hostelId,
+//     });
+//     const hostel = await Hostel.findById(hostelId);
+//     if (!hostel) {
+//       return res.status(404).json({ message: "Hostel not found" });
+//     }
+//     await newMess.save();
+//     hostel.messId = newMess._id;
+//     await hostel.save();
+//     return res.status(201).json(newMess);
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ message: "Internal server error", error: error.message });
+// }
+// };
+
+const createMess= async (req, res) => {
+  try {
+    const { name } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ message: "Mess name is required" });
     }
+
+    const newMess = new Mess({ name });
     await newMess.save();
-    hostel.messId = newMess._id;
-    await hostel.save();
+
     return res.status(201).json(newMess);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error", error: error.message });
+}
+};
+
+const deleteMess = async (req, res) => {
+  try {
+    const messId = req.params.messId;
+    const deletedMess = await Mess.findByIdAndDelete(messId);
+    if (!deletedMess) {
+      return res.status(404).json({ message: "Mess not found" });
+    }
+    return res.status(200).json({ message: "Mess deleted successfully" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
@@ -48,6 +80,20 @@ const createMenu = async (req, res) => {
 
     await newMenu.save();
     return res.status(201).json(newMenu);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const deleteMenu = async (req, res) => {
+  try {
+    const menuId = req.params.menuId;
+    const deletedMenu = await Menu.findByIdAndDelete(menuId);
+    if (!deletedMenu) {
+      return res.status(404).json({ message: "Menu not found" });
+    }
+    return res.status(200).json({ message: "Menu deleted successfully" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
@@ -492,7 +538,9 @@ const formatDate = (date) => {
 
 module.exports = {
   createMess,
+  deleteMess,
   createMenu,
+  deleteMenu,
   createMenuItem,
   deleteMenuItem,
   getUserMessInfo,
