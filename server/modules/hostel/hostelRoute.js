@@ -4,6 +4,7 @@ const authenticateJWT = require("../../middleware/authenticateJWT.js");
 const {
   createHostel,
   getHostel,
+  getHostelbyId,
   applyMessChange,
   getAllHostelNameAndCaterer
 } = require("./hostelController.js");
@@ -11,6 +12,8 @@ const {
 const hostelRouter = express.Router();
 
 hostelRouter.post("/", createHostel);
+
+hostelRouter.get("/all/:hostelId",getHostelbyId);
 
 // hostelRouter.get('/:hostel_name', getHostel);
 
