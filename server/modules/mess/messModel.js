@@ -8,7 +8,7 @@ const messSchema = new mongoose.Schema({
   hostelId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Hostel",
-    required: true,
+    //required: true,
   },
   complaints: [
     {
