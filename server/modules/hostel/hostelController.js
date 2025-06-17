@@ -1,9 +1,22 @@
 const { User } = require('../user/userModel.js');
-const { Hostel } = require ('./hostelModel.js')
+const { Hostel } = require ('./hostelModel.js');
+const { Mess } = require('../mess/messModel.js');
 
 const createHostel = async (req, res) => {
     try {
         const hostel = await Hostel.create(req.body)
+
+        if (!hostel) {
+            return res.status(400).json({ message: "Hostel creation failed" });
+        }
+
+        const messUpdate = await Mess.findByIdAndUpdate(
+            hostel.messId,{hostelId: hostel._id},
+            { new: true })
+        
+        if (!messUpdate) {
+            return res.status(400).json({ message: "Mess update failed" });
+        }
 
         res.status(201).json({
             hostel,
@@ -25,6 +38,21 @@ const getHostel = async (req, res) => {
             return res.status(400).json({message: "No such hostel"});
         }
 
+        return res.status(200).json({message: "Hostel found", hostel: hostel});
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({message: "Error occured"});
+    }
+};
+
+const getHostelbyId = async (req, res) => {
+    const {hostelId} = req.params;
+    try {
+        const hostel = await Hostel.findById(hostelId)
+            .populate('messId', 'name');
+        if (!hostel) {
+            return res.status(404).json({message: "Hostel not found"});
+        }
         return res.status(200).json({message: "Hostel found", hostel: hostel});
     } catch (err) {
         console.log(err);
@@ -115,6 +143,7 @@ const getAllHostelNameAndCaterer = async (req, res) => {
 module.exports = {
     createHostel,
     getHostel,
+    getHostelbyId,
     applyMessChange,
     getAllHostelNameAndCaterer
 }
