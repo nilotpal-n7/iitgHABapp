@@ -5,6 +5,9 @@ import { useNavigate } from 'react-router-dom';
 
 export default function AllHostelList() {
     const navigate = useNavigate();
+
+    const server = import.meta.env.VITE_SERVER_URL;
+
     const [hostelList,setHostelList] = useState([
       {
         "hostelId" : 123,
@@ -18,19 +21,34 @@ export default function AllHostelList() {
       }
     ]);
 
-useEffect(()=>{
-    //Fetch the data for all the hostels
-},[])
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/api/hostel/gethnc`);
+        const data = await response.json();
+
+        setHostelList(data);
+
+        console.log(data);
+      } catch (error) {
+        console.error("Failed to fetch hostel data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
   return (
     <div>
   {/* // Header */}
   <h1>ALL HOSTELS</h1>
   <button onClick={(e)=>{navigate('/create-hostel')}}>Create New</button>
   {hostelList.map((item, index) => {
+     const catererName = item.messId?.name || "No caterer assigned";
+
     return (
       <div key={index} onClick={(e) => {console.log("navigate") 
                   navigate(`/hostel/${item.hostelId}`)}}>
-        <HostelItem hostelName={item.name} messCatererName={item.catererName} />
+        <HostelItem hostelName={item.hostel_name} messCatererName={catererName} />
       </div>
     );
   })}
