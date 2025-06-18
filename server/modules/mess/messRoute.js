@@ -22,7 +22,7 @@ messRouter.post("/menu/item/create", createMenuItem);
 messRouter.delete("/menu/item/delete/:menuItemId", deleteMenuItem);
 messRouter.post("/get", authenticateJWT, getUserMessInfo);
 messRouter.post("/all", getAllMessInfo);
-messRouter.post("/menu/:messId", authenticateJWT, getMessMenuByDay);
+messRouter.post("/menu/:messId", authenticateJWT,getMessMenuByDay);
 messRouter.post("/menu/item/:menuItemId", authenticateJWT, getMessMenuItemById);
 messRouter.post(
   "/menu/item/like/:menuItemId",
