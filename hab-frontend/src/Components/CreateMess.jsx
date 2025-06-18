@@ -4,40 +4,40 @@ import { useNavigate } from "react-router-dom";
 
 export default function CreateMess() {
   const [caterer, setCaterer] = useState("");
-  const [hostelId, setHostelId] = useState([]);
+  const [hostelId, setHostelId] = useState("");
   const [hostels, setHostels] = useState([]);
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    async function fetchData() {
+    async function fetchHostels() {
       try {
-        const hostelRes = await axios.get("http://localhost:8000/api/hostel/all");
-        console.log(hostelRes);
-        const messRes = await axios.post("http://localhost:8000/api/mess/all");
-        const messes = messRes.data;
-        const assignedHostelIds = new Set(messes.map((mess) => mess.hostelId));
-        const unassignedHostels = hostelRes.data.filter((hostel) => !assignedHostelIds.has(hostel._id));
-        setHostels(unassignedHostels);
+        const res = await axios.get(
+          "http://localhost:8000/api/hostel/all"
+        );
+        const hostels = res.data;
+        setHostels(hostels.filter((hostel) => hostel.messId === null));
       } catch (error) {
-        console.error("Error fetching hostels or messes:", error);
+        console.error("Error fetching hostels :", error);
       }
     }
-    fetchData();
+    fetchHostels();
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!hostelId || hostelId.length === 0) {
       try {
-        await axios.post(
+        const res = await axios.post(
           "http://localhost:8000/api/mess/create-without-hostel",
           {
             name: caterer,
           }
-        );
-        alert("Mess created successfully");
-        navigate("/caterers/");
+        ); 
+        if(res.status === 201){
+          alert("Mess created successfully");
+          navigate("/caterers/");
+        }
       } catch (error) {
         console.error("Error creating mess:", error);
         alert("Failed to create mess");
@@ -56,37 +56,67 @@ export default function CreateMess() {
       }
     }
   };
-  
 
   const handleCancel = () => {
     navigate("/caterers/");
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h1>Create New Mess</h1>
-      <input
-        type="text"
-        placeholder="Mess Caterer Name"
-        value={caterer}
-        onChange={(e) => setCaterer(e.target.value)}
-        required
-      />
-      <br />
-      <select
-        value={hostelId}
-        onChange={(e) => setHostelId(e.target.value)}
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-8 rounded-lg shadow-md w-full max-w-xl space-y-6"
       >
-        <option value="">Select Hostel</option>
-        {hostels.map((hostel) => (
-          <option key={hostel._id} value={hostel._id}>
-            {hostel.name}
-          </option>
-        ))}
-      </select>
-      <br />
-      <button type="submit">Create Mess</button>
-      <button type="button" onClick={handleCancel}>Cancel</button>
-    </form>
+        <h1 className="text-2xl font-bold text-center text-gray-800">
+          Add New Caterer
+        </h1>
+
+        <label className="block text-gray-700 font-medium mb-1 text-lg">
+          Caterer Name
+        </label>
+        <input
+          type="text"
+          placeholder="Caterer Name"
+          value={caterer}
+          onChange={(e) => setCaterer(e.target.value)}
+          required
+          className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+        />
+        <br />
+
+        <label className="block text-gray-700 font-medium mb-1 text-lg">
+          Hostel Name
+        </label>
+
+        <select
+          value={hostelId}
+          onChange={(e) => setHostelId(e.target.value)}
+          className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+        >
+          <option value="">Select Hostel</option>
+          {hostels.map((hostel) => (
+            <option key={hostel._id} value={hostel._id}>
+              {hostel.hostel_name}
+            </option>
+          ))}
+        </select>
+        <br />
+        <div className="flex justify-center">
+          <button
+            type="submit"
+            className="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-6 py-2 rounded-md shadow text-lg"
+          >
+            Create
+          </button>
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-6 py-2 rounded-md shadow ml-10 text-lg"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
