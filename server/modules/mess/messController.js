@@ -29,8 +29,26 @@ const createMess = async (req, res) => {
     return res.status(201).json(newMess);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Internal server error", error: error.message });
-}
+    return res.status(500).json({ message: "Internal server error"});
+  }
+};
+
+const createMessWithoutHostel = async (req, res) => {
+  try {
+    const { name } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ message: "Mess name is required" });
+    }
+
+    const newMess = new Mess({ name });
+    await newMess.save();
+
+    return res.status(201).json(newMess);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 const deleteMess = async (req, res) => {
@@ -517,9 +535,71 @@ const formatDate = (date) => {
   return `${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
 };
 
+const getUnassignedMess = async (req, res) => {
+  try {
+    const unassignedMesses = await Mess.find({ hostelId: null });
+    res.status(200).json(unassignedMesses);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const assignMessToHostel = async (req, res) => {
+  try {
+    const messId = req.params.messId;
+    const hostelId = req.body.hostelId;
+    const oldMessId = req.body.oldMessId;
+
+    const newMess = await Mess.findByIdAndUpdate(
+      messId,
+      { hostelId: hostelId },
+      { hostel_name: req.body.hostelName },
+      { new: true }
+    );
+    if (!newMess) {
+      return res.status(404).json({ message: "Mess not found" });
+    }
+
+    if (oldMessId) {
+      const oldMess = await Mess.findByIdAndUpdate(
+        oldMessId,
+        { hostelId: null },
+        { hostel_name: null },
+        { new: true }
+      );
+      if (!oldMess) {
+        return res.status(404).json({ message: "Old mess not found" });
+      }
+    }
+
+
+    const hostelRes = await Hostel.findByIdAndUpdate(
+      hostelId,
+      { messId: messId },
+      { new: true }
+    );
+
+    if (!hostelRes) {
+      return res.status(404).json({ message: "Hostel not found" });
+    }
+
+    return res.status(200).json({
+      message: "Mess assigned to hostel successfully",
+      mess: newMess,
+      hostel: hostelRes,
+    });
+
+  }catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 
 module.exports = {
   createMess,
+  createMessWithoutHostel,
   deleteMess,
   createMenu,
   deleteMenu,
@@ -531,4 +611,6 @@ module.exports = {
   getMessMenuItemById,
   toggleLikeMenuItem,
   ScanMess,
+  getUnassignedMess,
+  assignMessToHostel
 };
