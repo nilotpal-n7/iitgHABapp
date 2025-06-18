@@ -49,7 +49,8 @@ const getHostelbyId = async (req, res) => {
     const {hostelId} = req.params;
     try {
         const hostel = await Hostel.findById(hostelId)
-            .populate('messId', 'name');
+            .populate('messId', 'name')
+            .populate('users.user','name rollNumber degree')
         if (!hostel) {
             return res.status(404).json({message: "Hostel not found"});
         }

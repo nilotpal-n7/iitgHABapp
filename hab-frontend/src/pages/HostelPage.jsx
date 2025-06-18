@@ -126,7 +126,9 @@ export default function HostelPage() {
                 key={index}
                 className="bg-gray-100 px-3 py-2 rounded text-gray-800 text-sm font-medium"
               >
-                {user.user}
+                {user.user.name}
+                {user.user.degree}
+                {user.user.rollNumber}
               </div>
             ))}
           </div>
