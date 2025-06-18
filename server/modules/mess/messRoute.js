@@ -45,6 +45,6 @@ messRouter.post(
 messRouter.post("/scan/:messId",authenticateJWT, ScanMess);
 messRouter.post("/reassign/:messId", assignMessToHostel);
 messRouter.post("/change-hostel/:messId", changeHostel);
-messRouter.get('/unassigned', getUnassignedMess)
+messRouter.post('/unassigned', getUnassignedMess)
 
 module.exports = messRouter;
