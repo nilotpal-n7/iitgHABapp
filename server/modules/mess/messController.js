@@ -24,13 +24,16 @@ const createMess = async (req, res) => {
       return res.status(404).json({ message: "Hostel not found" });
     }
     await newMess.save();
-    await Hostel.findByIdAndUpdate(hostelId, { messId: newMess._id });
+    hostel.messId = newMess._id;
+    await hostel.save();
     return res.status(201).json(newMess);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Internal server error" });
-  }
+    return res.status(500).json({ message: "Internal server error", error: error.message });
+}
 };
+
+
 
 const createMessWithoutHostel = async (req, res) => {
   try {
@@ -44,6 +47,20 @@ const createMessWithoutHostel = async (req, res) => {
     await newMess.save();
 
     return res.status(201).json(newMess);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error"});
+}
+};
+
+const deleteMess = async (req, res) => {
+  try {
+    const messId = req.params.messId;
+    const deletedMess = await Mess.findByIdAndDelete(messId);
+    if (!deletedMess) {
+      return res.status(404).json({ message: "Mess not found" });
+    }
+    return res.status(200).json({ message: "Mess deleted successfully" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
@@ -66,6 +83,20 @@ const createMenu = async (req, res) => {
 
     await newMenu.save();
     return res.status(201).json(newMenu);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const deleteMenu = async (req, res) => {
+  try {
+    const menuId = req.params.menuId;
+    const deletedMenu = await Menu.findByIdAndDelete(menuId);
+    if (!deletedMenu) {
+      return res.status(404).json({ message: "Menu not found" });
+    }
+    return res.status(200).json({ message: "Menu deleted successfully" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
@@ -643,7 +674,9 @@ const assignMessToHostel = async (req, res) => {
 module.exports = {
   createMess,
   createMessWithoutHostel,
+  deleteMess,
   createMenu,
+  deleteMenu,
   createMenuItem,
   deleteMenuItem,
   getUserMessInfo,
