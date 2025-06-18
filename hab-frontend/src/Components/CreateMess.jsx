@@ -27,23 +27,38 @@ export default function CreateMess() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await axios.post("http://localhost:8000/api/mess/create",
-        {
+    if (!hostelId || hostelId.length === 0) {
+      try {
+        await axios.post(
+          "http://localhost:8000/api/mess/create-without-hostel",
+          {
+            name: caterer,
+          }
+        );
+        alert("Mess created successfully");
+        navigate("/caterers/");
+      } catch (error) {
+        console.error("Error creating mess:", error);
+        alert("Failed to create mess");
+      }
+    } else {
+      try {
+        await axios.post("http://localhost:8000/api/mess/create", {
           name: caterer,
-          hostelId: hostelId ,
-        }
-      );
-      alert("Mess created successfully");
-      navigate("/");
-    } catch (error) {
-      console.error("Error creating mess:", error);
-      alert("Failed to create mess");
+          hostelId: hostelId,
+        });
+        alert("Mess created successfully");
+        navigate("/caterers/");
+      } catch (error) {
+        console.error("Error creating mess:", error);
+        alert("Failed to create mess");
+      }
     }
   };
+  
 
   const handleCancel = () => {
-    navigate("/");
+    navigate("/caterers/");
   };
 
   return (
@@ -60,12 +75,11 @@ export default function CreateMess() {
       <select
         value={hostelId}
         onChange={(e) => setHostelId(e.target.value)}
-        required
       >
         <option value="">Select Hostel</option>
         {hostels.map((hostel) => (
           <option key={hostel._id} value={hostel._id}>
-            {hostel.hostel_name}
+            {hostel.name}
           </option>
         ))}
       </select>
