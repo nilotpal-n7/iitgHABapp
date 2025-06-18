@@ -1,12 +1,10 @@
-import React from 'react'
+import React from 'react';
 
-export default function HostelItem(props) {
-
+export default function HostelItem({ hostelName, messCatererName }) {
   return (
     <div>
-        <p>{props.hostelName}</p>
-        <p>{props.messCatererName ? props.messCatererName : "Mess not alloted"}</p>
-      
+      <h2 className="text-lg font-semibold text-gray-800">{hostelName}</h2>
+      <p className="text-sm text-gray-500">{messCatererName || "Mess not allotted"}</p>
     </div>
-  )
+  );
 }
