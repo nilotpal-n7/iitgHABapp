@@ -13,6 +13,7 @@ export default function CreateMess() {
     async function fetchData() {
       try {
         const hostelRes = await axios.get("http://localhost:8000/api/hostel/all");
+        console.log(hostelRes);
         const messRes = await axios.post("http://localhost:8000/api/mess/all");
         const messes = messRes.data;
         const assignedHostelIds = new Set(messes.map((mess) => mess.hostelId));
