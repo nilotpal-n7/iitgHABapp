@@ -11,7 +11,13 @@ export default function AllHostelList() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(server + '/api/hostel/gethnc');
+        const response = await fetch(server + '/api/hostel/gethnc',{
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({}),
+        });
         if (!response.ok) throw new Error('Fetch failed');
         const data = await response.json();
         setHostelList(data);
@@ -21,7 +27,7 @@ export default function AllHostelList() {
       }
     };
     fetchData();
-  }, []);
+  }, [server]);
 
   return (
     <div className="bg-gray-100 min-h-screen p-6">
