@@ -18,7 +18,8 @@ const {
   toggleLikeMenuItem,
   ScanMess,
   getUnassignedMess,
-  assignMessToHostel
+  assignMessToHostel,
+  changeHostel
 } = require("./messController");
 
 const messRouter = express.Router();
@@ -43,6 +44,7 @@ messRouter.post(
 );
 messRouter.post("/scan/:messId",authenticateJWT, ScanMess);
 messRouter.post("/reassign/:messId", assignMessToHostel);
+messRouter.post("/change-hostel/:messId", changeHostel);
 messRouter.get('/unassigned', getUnassignedMess)
 
 module.exports = messRouter;
