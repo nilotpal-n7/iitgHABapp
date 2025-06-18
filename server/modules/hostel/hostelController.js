@@ -32,6 +32,20 @@ const getHostel = async (req, res) => {
     }
 };
 
+const deleteHostel = async (req, res) => {
+  try {
+    const HostelId = req.params.hostelId;
+    const deletedHostel = await Hostel.findByIdAndDelete(HostelId);
+    if (!deletedHostel) {
+      return res.status(404).json({ message: "Hostel not found" });
+    }
+    return res.status(200).json({ message: "Hostel deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 const applyMessChange = async (req, res) => {
     const {hostel_name, roll_number, reason} = req.body;
 
@@ -100,6 +114,7 @@ const applyMessChange = async (req, res) => {
 
 module.exports = {
     createHostel,
+    deleteHostel,
     getHostel,
     applyMessChange
 }
