@@ -11,43 +11,25 @@ const {
   getCurrentDay,
 } = require("../../utils/date.js");
 
-// const createMess = async (req, res) => {
-//   try {
-//     const { name, hostelId } = req.body;
-
-//     const newMess = new Mess({
-//       name,
-//       hostelId,
-//     });
-//     const hostel = await Hostel.findById(hostelId);
-//     if (!hostel) {
-//       return res.status(404).json({ message: "Hostel not found" });
-//     }
-//     await newMess.save();
-//     hostel.messId = newMess._id;
-//     await hostel.save();
-//     return res.status(201).json(newMess);
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({ message: "Internal server error", error: error.message });
-// }
-// };
-
-const createMess= async (req, res) => {
+const createMess = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, hostelId } = req.body;
 
-    if (!name) {
-      return res.status(400).json({ message: "Mess name is required" });
+    const newMess = new Mess({
+      name,
+      hostelId,
+    });
+    const hostel = await Hostel.findById(hostelId);
+    if (!hostel) {
+      return res.status(404).json({ message: "Hostel not found" });
     }
-
-    const newMess = new Mess({ name });
     await newMess.save();
-
+    hostel.messId = newMess._id;
+    await hostel.save();
     return res.status(201).json(newMess);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Internal server error"});
+    return res.status(500).json({ message: "Internal server error", error: error.message });
 }
 };
 
