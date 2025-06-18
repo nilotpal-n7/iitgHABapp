@@ -37,6 +37,7 @@ const createMess = async (req, res) => {
 
 
 
+
 const createMessWithoutHostel = async (req, res) => {
   try {
     const { name } = req.body;
@@ -50,9 +51,9 @@ const createMessWithoutHostel = async (req, res) => {
 
     return res.status(201).json(newMess);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Internal server error"});
-}
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 

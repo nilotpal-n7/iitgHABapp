@@ -13,7 +13,14 @@ export default function HostelPage() {
   useEffect(() => {
     const fetchUnassignedMess = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/mess/unassigned`);
+        const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/mess/unassigned`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
         const data = await res.json();
         setUnassignedMess(data);
       } catch (error) {
@@ -27,7 +34,14 @@ export default function HostelPage() {
   useEffect(() => {
     const fetchHostel = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/hostel/all/${hostelId}`);
+        const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/hostel/all/${hostelId}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
         const data = await res.json();
         setHostel(data.hostel);
       } catch (error) {
@@ -69,6 +83,10 @@ export default function HostelPage() {
       console.error(err);
     }
   };
+
+  const handleDelete = async () => {
+    console.log("Delete button clicked");
+  }
 
   if (!hostel) {
     return <div className="p-6 text-gray-600">Loading hostel...</div>;
@@ -126,7 +144,9 @@ export default function HostelPage() {
                 key={index}
                 className="bg-gray-100 px-3 py-2 rounded text-gray-800 text-sm font-medium"
               >
-                {user.user}
+                {user.user.name}
+                {user.user.degree}
+                {user.user.rollNumber}
               </div>
             ))}
           </div>

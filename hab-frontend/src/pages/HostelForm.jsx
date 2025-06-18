@@ -42,7 +42,14 @@ export default function HostelForm() {
   useEffect(() => {
     const fetchUnassignedMess = async () => {
       try {
-        const response = await fetch(`${server}/api/mess/unassigned`);
+        const response = await fetch(`${server}/api/mess/unassigned`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
         const data = await response.json();
         setUnassignedMess(data);
       } catch (error) {

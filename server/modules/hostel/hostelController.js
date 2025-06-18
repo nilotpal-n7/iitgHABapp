@@ -56,7 +56,8 @@ const getHostelbyId = async (req, res) => {
     const {hostelId} = req.params;
     try {
         const hostel = await Hostel.findById(hostelId)
-            .populate('messId', 'name');
+            .populate('messId', 'name')
+            .populate('users.user','name rollNumber degree')
         if (!hostel) {
             return res.status(404).json({message: "Hostel not found"});
         }
@@ -65,6 +66,20 @@ const getHostelbyId = async (req, res) => {
         console.log(err);
         return res.status(500).json({message: "Error occured"});
     }
+};
+
+const deleteHostel = async (req, res) => {
+  try {
+    const HostelId = req.params.hostelId;
+    const deletedHostel = await Hostel.findByIdAndDelete(HostelId);
+    if (!deletedHostel) {
+      return res.status(404).json({ message: "Hostel not found" });
+    }
+    return res.status(200).json({ message: "Hostel deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 const applyMessChange = async (req, res) => {
@@ -169,6 +184,9 @@ module.exports = {
   loginHostel,
   getHostel,
   getAllHostels,
+    createHostel,
+    deleteHostel,
+    getHostel,
     getHostelbyId,
   applyMessChange,
     getAllHostelNameAndCaterer,
