@@ -6,18 +6,6 @@ const createHostel = async (req, res) => {
     try {
         const hostel = await Hostel.create(req.body)
 
-        if (!hostel) {
-            return res.status(400).json({ message: "Hostel creation failed" });
-        }
-
-        const messUpdate = await Mess.findByIdAndUpdate(
-            hostel.messId,{hostelId: hostel._id},
-            { new: true })
-        
-        if (!messUpdate) {
-            return res.status(400).json({ message: "Mess update failed" });
-        }
-
         res.status(201).json({
             hostel,
             message: "Hostel created successfully"
@@ -59,6 +47,20 @@ const getHostelbyId = async (req, res) => {
         console.log(err);
         return res.status(500).json({message: "Error occured"});
     }
+};
+
+const deleteHostel = async (req, res) => {
+  try {
+    const HostelId = req.params.hostelId;
+    const deletedHostel = await Hostel.findByIdAndDelete(HostelId);
+    if (!deletedHostel) {
+      return res.status(404).json({ message: "Hostel not found" });
+    }
+    return res.status(200).json({ message: "Hostel deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 const applyMessChange = async (req, res) => {
@@ -143,6 +145,7 @@ const getAllHostelNameAndCaterer = async (req, res) => {
 
 module.exports = {
     createHostel,
+    deleteHostel,
     getHostel,
     getHostelbyId,
     applyMessChange,
