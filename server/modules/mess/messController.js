@@ -19,13 +19,15 @@ const createMess = async (req, res) => {
       name,
       hostelId,
     });
-    const hostel = await Hostel.findById(hostelId);
-    if (!hostel) {
+    const hostelRes = await Hostel.findByIdAndUpdate(
+      hostelId,
+      { messId: newMess._id },
+      { new: true }
+    );
+    if (!hostelRes) {
       return res.status(404).json({ message: "Hostel not found" });
     }
     await newMess.save();
-    hostel.messId = newMess._id;
-    await hostel.save();
     return res.status(201).json(newMess);
   } catch (error) {
     console.error(error);
@@ -59,8 +61,17 @@ const deleteMess = async (req, res) => {
   try {
     const messId = req.params.messId;
     const deletedMess = await Mess.findByIdAndDelete(messId);
+
     if (!deletedMess) {
       return res.status(404).json({ message: "Mess not found" });
+    }
+    const hostelRes = await Hostel.findByIdAndUpdate(
+      deletedMess.hostelId,
+      { messId: null },
+      { new: true }
+    );
+    if (!hostelRes) {
+      return res.status(404).json({ message: "Hostel not found" });
     }
     return res.status(200).json({ message: "Mess deleted successfully" });
   } catch (error) {
@@ -672,6 +683,53 @@ const assignMessToHostel = async (req, res) => {
   }
 }
 
+const changeHostel = async (req,res) => {
+  try {
+    const messId = req.params.messId;
+    const hostelId = req.body.hostelId;
+    const oldHostelId = req.body.oldHostelId;
+
+    const newMess = await Mess.findByIdAndUpdate(
+      messId,
+      { hostelId: hostelId },
+      { new: true }
+    );
+    if (!newMess) {
+      return res.status(404).json({ message: "Mess not found" });
+    }
+
+    const oldHostel = await Hostel.findByIdAndUpdate(
+      oldHostelId,
+      { messId: null },
+      { new: true }
+    );
+    if (!oldHostel) {
+      return res.status(404).json({ message: "Old Hostel not found" });
+    }
+
+    const hostelRes = await Hostel.findByIdAndUpdate(
+      hostelId,
+      { messId: messId },
+      { new: true }
+    );
+
+    if (!hostelRes) {
+      return res.status(404).json({ message: "Hostel not found" });
+    }
+
+    return res.status(200).json({
+      message: "Mess assigned to hostel successfully",
+      mess: newMess,
+      hostel: hostelRes,
+    });
+
+  }catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+
+}
+
 
 module.exports = {
   createMess,
@@ -690,5 +748,6 @@ module.exports = {
   toggleLikeMenuItem,
   ScanMess,
   getUnassignedMess,
-  assignMessToHostel
+  assignMessToHostel,
+  changeHostel
 };
