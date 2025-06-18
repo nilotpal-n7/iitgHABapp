@@ -8,6 +8,7 @@ const {
   createHostel,
   loginHostel,
   getHostel,
+  getHostelbyId,
   getAllHostels,
   applyMessChange,
   getAllHostelNameAndCaterer
@@ -16,6 +17,10 @@ const {
 const hostelRouter = express.Router();
 
 hostelRouter.post("/", createHostel);
+
+hostelRouter.get("/all/:hostelId",getHostelbyId);
+
+hostelRouter.get("/all/:hostelId",getHostelbyId);
 
 hostelRouter.post("/login", authenticateAdminJWT, loginHostel);
 
