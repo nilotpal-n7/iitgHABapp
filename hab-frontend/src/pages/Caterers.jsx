@@ -18,6 +18,10 @@ export default function Caterers() {
     fetchMesses();
   }, []);
 
+  const handleDelete = (deletedId) => {
+    setMesses((prop) => prop.filter((mess) => mess._id !== deletedId));
+  };
+
   return (
     <div>
       <div className="text-xl font-medium">
@@ -26,7 +30,7 @@ export default function Caterers() {
       <h1>Mess List</h1>
       <ul>
         {messes.map((mess) => (
-          <MessItem key={mess._id} mess={mess} />
+          <MessItem key={mess._id} mess={mess} del={handleDelete} />
         ))}
       </ul>
       <Link to="/create-mess">
