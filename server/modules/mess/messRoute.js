@@ -1,5 +1,5 @@
 const express = require("express");
-const authenticateJWT = require("../../middleware/authenticateJWT.js");
+const {authenticateJWT} = require("../../middleware/authenticateJWT.js");
 
 const {
   createMess,
@@ -11,12 +11,15 @@ const {
   deleteMenuItem,
   getUserMessInfo,
   getAllMessInfo,
+  getMessInfo,
   getMessMenuByDay,
+  getMessMenuByDayForAdminHAB,
   getMessMenuItemById,
   toggleLikeMenuItem,
   ScanMess,
   getUnassignedMess,
-  assignMessToHostel
+  assignMessToHostel,
+  unassignMess
 } = require("./messController");
 
 const messRouter = express.Router();
@@ -30,7 +33,9 @@ messRouter.post("/menu/item/create", createMenuItem);
 messRouter.delete("/menu/item/delete/:menuItemId", deleteMenuItem);
 messRouter.post("/get", authenticateJWT, getUserMessInfo);
 messRouter.post("/all", getAllMessInfo);
+messRouter.get("/:id", getMessInfo);
 messRouter.post("/menu/:messId", authenticateJWT, getMessMenuByDay);
+messRouter.post("/hab-menu/:messId", getMessMenuByDayForAdminHAB);
 messRouter.post("/menu/item/:menuItemId", authenticateJWT, getMessMenuItemById);
 messRouter.post(
   "/menu/item/like/:menuItemId",
@@ -39,6 +44,7 @@ messRouter.post(
 );
 messRouter.post("/scan/:messId",authenticateJWT, ScanMess);
 messRouter.post("/reassign/:messId", assignMessToHostel);
-messRouter.post('/unassigned', getUnassignedMess)
+messRouter.post('/unassigned', getUnassignedMess);
+messRouter.post('/unassign/:messId', unassignMess);
 
 module.exports = messRouter;

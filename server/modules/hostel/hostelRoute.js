@@ -1,5 +1,8 @@
 const express = require("express");
-const authenticateJWT = require("../../middleware/authenticateJWT.js");
+const {
+  authenticateJWT,
+  authenticateAdminJWT,
+} = require("../../middleware/authenticateJWT.js");
 
 const {
   createHostel,

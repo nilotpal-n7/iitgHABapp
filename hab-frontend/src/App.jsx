@@ -7,6 +7,9 @@ import Caterers from "./pages/Caterers";
 import Students from "./pages/Students";
 import HostelForm from "./pages/HostelForm";
 import HostelPage from "./pages/HostelPage";
+import CreateMess from "./components/CreateMess";
+import MessDetails from "./components/MessDetails";
+import MessMenu from "./components/MessMenu";
 
 function App() {
   return (
@@ -21,6 +24,9 @@ function App() {
             <Route path="/hostel/:hostelId" element={<HostelPage />} />
             <Route path="/caterers" element={<Caterers />} />
             <Route path="/students" element={<Students />} />
+            <Route path="/create-mess" element={<CreateMess />} />
+            <Route path="/mess/:id" element={<MessDetails />} />
+            <Route path="/mess/menu/:id" element={<MessMenu />} />
           </Routes>
         </div>
       </div>
