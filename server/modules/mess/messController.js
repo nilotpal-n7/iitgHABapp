@@ -317,7 +317,7 @@ const ScanMess = async (req, res) => {
     console.log(userId);
     console.log(messId);
     // Find mess and user
-    const messInfo = await Mess.findById(messId);
+    const messInfo = await Mess.findById(mongoose.Types.ObjectId(id));
     const user = await User.findById(userId);
 
     if (!user) {
