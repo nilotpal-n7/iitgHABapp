@@ -1,7 +1,7 @@
 // server/index.js
 //import authRoutes from "./modules/auth/auth.routes.js";
 const authRoutes = require("./modules/auth/auth.routes.js");
-
+const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
 const itemRoute = require("./modules/item/itemRoute.js");
@@ -12,7 +12,6 @@ const feedbackRoute = require("./modules/feedback/feedbackRoute.js");
 const hostelRoute = require("./modules/hostel/hostelRoute.js");
 const qrRoute = require("./modules/qr/qrRoute.js");
 const messRoute = require("./modules/mess/messRoute.js");
-const cors = require("cors");
 const {
   wednesdayScheduler,
   sundayScheduler,
@@ -39,8 +38,13 @@ app.use(
 
 // Middleware
 app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // your frontend port
+    credentials: true, // allow cookies
+  })
+);
 app.use(cookieParser());
-
 app.use(express.urlencoded({ extended: true }));
 
 // MongoDB connection
