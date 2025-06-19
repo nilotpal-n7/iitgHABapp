@@ -12,7 +12,7 @@ export function LoginPage() {
     async function fetchHostels() {
       try {
         await axios
-          .get("http://localhost:800/api/hostel/all", {
+          .get("http://localhost:8000/api/hostel/all", {
             withCredentials: true,
           })
           .then((res) => setHostels(res.data));

@@ -4,7 +4,7 @@ const { MenuItem } = require("./menuItemModel");
 const { User } = require("../user/userModel");
 const { Hostel } = require("../hostel/hostelModel");
 const { ScanLogs } = require("./ScanLogsModel.js");
-
+const mongoose=require ("mongoose");
 const {
   getCurrentDate,
   getCurrentTime,
@@ -45,7 +45,6 @@ const createMenu = async (req, res) => {
       isGala,
       type,
     });
-
     await newMenu.save();
     return res.status(201).json(newMenu);
   } catch (error) {
@@ -56,22 +55,25 @@ const createMenu = async (req, res) => {
 
 const createMenuItem = async (req, res) => {
   try {
-    const { menuId, name, type } = req.body;
-
+    var {name, type,meal, messId} = req.body;
+    const menuId = new mongoose.Types.ObjectId();
     const newMenuItem = new MenuItem({
       menuId,
       name,
       type,
-    });
-
-    await newMenuItem.save();
-    const menu = await Menu.findById(menuId);
+    }); 
+    const newItem=await newMenuItem.save();
+    const menu = await Menu.findOne({messId:messId,type:meal}); 
     if (!menu) {
-      return res.status(404).json({ message: "Menu not found" });
+      return res.status(404).json({ message: "Mess not found" });
     }
-    menu.items.push(newMenuItem._id);
-    await menu.save();
-    return res.status(201).json(newMenuItem);
+    
+      menu.items.push(newItem._id);
+      const abc=await menu.save();
+      
+    
+    
+    return res.status(201).json(newItem);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
@@ -80,18 +82,18 @@ const createMenuItem = async (req, res) => {
 
 const deleteMenuItem = async (req, res) => {
   try {
-    const menuItemId = req.params.menuItemId;
-
-    const deletedMenuItem = await MenuItem.findByIdAndDelete(menuItemId);
+    const _Id = req.body._Id;
+    console.log("id:",req);
+    const deletedMenuItem = await MenuItem.findByIdAndDelete(_Id);
     if (!deletedMenuItem) {
       return res.status(404).json({ message: "Menu item not found" });
     }
-    const menu = await Menu.findById(deletedMenuItem.menuId);
+    /*const menu = await Menu.findById(deletedMenuItem.menuId);
     if (!menu) {
       return res.status(404).json({ message: "Menu not found" });
     }
-    menu.items = menu.items.filter((item) => item.toString() !== menuItemId);
-    await menu.save();
+    menu.items = menu.items.filter((item) => item.toString() !== menuItemId);*/
+    
 
     return res.status(200).json({ message: "Menu item deleted successfully" });
   } catch (error) {
