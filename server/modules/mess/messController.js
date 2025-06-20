@@ -35,18 +35,36 @@ const createMess = async (req, res) => {
 
 const createMenu = async (req, res) => {
   try {
-    const { messId, day, startTime, endTime, isGala, type } = req.body;
-
-    const newMenu = new Menu({
+    const { messId, day, BstartTime, BendTime,LstartTime, LendTime,DstartTime, DendTime, BisGala,LisGala,DisGala } = req.body;
+    const typeOptions=["Breakfast","Lunch","Dinner"];
+    const newMenuB = new Menu({
       messId,
       day,
-      startTime,
-      endTime,
-      isGala,
-      type,
+      startTime:BstartTime,
+      endTime:BendTime,
+      isGala:BisGala,
+      type: typeOptions[0]
     });
-    await newMenu.save();
-    return res.status(201).json(newMenu);
+    await newMenuB.save();
+    const newMenuL = new Menu({
+      messId,
+      day,
+      startTime:LstartTime,
+      endTime:LendTime,
+      isGala:LisGala,
+      type: typeOptions[1]
+    });
+    await newMenuL.save();
+    const newMenuD = new Menu({
+      messId,
+      day,
+      startTime:DstartTime,
+      endTime:DendTime,
+      isGala:DisGala,
+      type: typeOptions[2]
+    });
+    await newMenuD.save();
+    return res.status(201).json(newBMenu);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
@@ -55,15 +73,16 @@ const createMenu = async (req, res) => {
 
 const createMenuItem = async (req, res) => {
   try {
-    var {name, type,meal, messId} = req.body;
+    var {name, type,meal,day, messId} = req.body;
     const menuId = new mongoose.Types.ObjectId();
     const newMenuItem = new MenuItem({
       menuId,
       name,
       type,
     }); 
+    console.log(req.body);
     const newItem=await newMenuItem.save();
-    const menu = await Menu.findOne({messId:messId,type:meal}); 
+    const menu = await Menu.findOne({messId:messId,day:day,type:meal}); 
     if (!menu) {
       return res.status(404).json({ message: "Mess not found" });
     }
@@ -83,7 +102,6 @@ const createMenuItem = async (req, res) => {
 const deleteMenuItem = async (req, res) => {
   try {
     const _Id = req.body._Id;
-    console.log("id:",req);
     const deletedMenuItem = await MenuItem.findByIdAndDelete(_Id);
     if (!deletedMenuItem) {
       return res.status(404).json({ message: "Menu item not found" });
@@ -136,7 +154,6 @@ const getAllMessInfo = async (req, res) => {
         const messObj = mess.toObject();
         const hostel = await Hostel.findById(messObj.hostelId);
         messObj.hostelName = hostel ? hostel.hostel_name : "Unknown";
-        console.log(messObj.hostelName);
         return messObj;
       })
     );

@@ -21,7 +21,7 @@ const getMessMenuByDayForAdmin = async (req, res) => {
     const allMenus = await Menu.find({});
     const menu = await Menu.find({messId:messId,day:day}); //FIX THIS! PUT MESS ID AS WELL
     if (!menu || menu.length === 0) {
-      return res.status(200).json([]);
+      return res.status(200).json("DoesntExist");
     }
 
     const populatedMenus = [];
