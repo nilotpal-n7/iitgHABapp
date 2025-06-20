@@ -66,13 +66,16 @@ const deleteMess = async (req, res) => {
     if (!deletedMess) {
       return res.status(404).json({ message: "Mess not found" });
     }
-    const hostelRes = await Hostel.findByIdAndUpdate(
-      deletedMess.hostelId,
-      { messId: null },
-      { new: true }
-    );
-    if (!hostelRes) {
-      return res.status(404).json({ message: "Hostel not found" });
+    console.log(deletedMess.hostelId);
+    if(deletedMess.hostelId){
+      const hostelRes = await Hostel.findByIdAndUpdate(
+        deletedMess.hostelId,
+        { messId: null },
+        { new: true }
+      );
+      if (!hostelRes) {
+        return res.status(404).json({ message: "Hostel not found" });
+      }
     }
     return res.status(200).json({ message: "Mess deleted successfully" });
   } catch (error) {
