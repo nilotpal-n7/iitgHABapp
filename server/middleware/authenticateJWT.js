@@ -2,7 +2,7 @@ const { User } = require("../modules/user/userModel.js");
 const { Hostel } = require("../modules/hostel/hostelModel.js");
 const AppError = require("../utils/appError.js");
 
-function auth (Schema, param) {
+function auth(Schema, param) {
   return async function (req, res, next) {
     let token = req.cookies?.token;
 
