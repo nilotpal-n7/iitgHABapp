@@ -4,6 +4,9 @@ const { MenuItem } = require("./menuItemModel");
 const { User } = require("../user/userModel");
 const { Hostel } = require("../hostel/hostelModel");
 const { ScanLogs } = require("./ScanLogsModel.js");
+const { QR} = require("../qr/qrModel.js");
+const cloudinary = require("../../utils/cloudinary.js");
+const qrcode=require("qrcode");
 
 const {
   getCurrentDate,
@@ -28,6 +31,16 @@ const createMess = async (req, res) => {
       return res.status(404).json({ message: "Hostel not found" });
     }
     await newMess.save();
+    const qrDataUrl = await qrcode.toDataURL(newMess._id.toString());
+    const QRres = new QR({
+      qr_string : newMess._id.toString(),
+      qr_base64 : qrDataUrl
+
+    })
+    await QRres.save();
+    newMess.qrCode = QRres._id;
+    await newMess.save();
+    
     return res.status(201).json(newMess);
   } catch (error) {
     console.error(error);
@@ -48,7 +61,14 @@ const createMessWithoutHostel = async (req, res) => {
 
     const newMess = new Mess({ name });
     await newMess.save();
-
+    const qrDataUrl = await qrcode.toDataURL(newMess._id.toString());
+    const QRres = new QR({
+      qr_string: newMess._id.toString(),
+      qr_base64: qrDataUrl,
+    });
+    await QRres.save();
+    newMess.qrCode = QRres._id;
+    await newMess.save();
     return res.status(201).json(newMess);
   } catch (error) {
     console.log(error);
@@ -220,7 +240,9 @@ const getMessInfo = async (req, res) => {
     }
     const messObj = mess.toObject();
     const hostel = await Hostel.findById(messObj.hostelId);
+    const qr_img = await QR.findById(messObj.qrCode);
     messObj.hostelName = hostel ? hostel.hostel_name : "Not Assigned";
+    messObj.qr_img = qr_img.qr_base64;
     return res.status(200).json(messObj);
   } catch (error) {
     console.error(error);
