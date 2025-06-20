@@ -10,9 +10,6 @@ import MessDetails from "./components/MessDetails";
 import MessMenu from "./components/MessMenu";
 import HostelForm from "./pages/HostelForm";
 import HostelPage from "./pages/HostelPage";
-import CreateMess from "./components/CreateMess";
-import MessDetails from "./components/MessDetails";
-import MessMenu from "./components/MessMenu";
 
 function App() {
   return (

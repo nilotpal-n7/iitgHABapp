@@ -24,6 +24,11 @@ const messSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+
+  qrCode: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "QR",
+  },
 });
 
 const Mess = mongoose.model("Mess", messSchema);

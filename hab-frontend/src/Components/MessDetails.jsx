@@ -98,6 +98,12 @@ export default function MessDetails() {
     navigate("/caterers/");
   };
 
+  const hostelPage = () => {
+    if (mess.hostelId) {
+      navigate(`/hostel/${mess.hostelId}`);
+    }
+  };
+
   if (!mess) {
     return <div className="p-6 text-gray-600">Failed to load Caterer</div>;
   }
@@ -114,62 +120,88 @@ export default function MessDetails() {
         <h1 className="text-3xl font-bold text-gray-800">{mess.name}</h1>
         <button
           onClick={handleDelete}
-          className="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-6 py-2 rounded-md shadow text-lg"
+          className="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-md shadow text-lg "
         >
           Delete Mess
         </button>
       </div>
-      <div className="text-lg text-gray-700">
-        <span>
-          Hostel : {!mess.hostelId ? "No hostel assigned" : mess.hostelName}
-        </span>
-      </div>
+      <div className="flex flex-col md:flex-row gap-8">
+        <div className="flex-1 space-y-6">
+          <div className="text-lg text-gray-700">
+            <span>
+              Hostel : {!mess.hostelId ? "No hostel assigned" : mess.hostelName}
+            </span>
+            {mess.hostelId && (
+              <button
+                onClick={hostelPage}
+                className="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-6 py-2 rounded-md shadow text-lg ml-6"
+              >
+                View Hostel
+              </button>
+            )}
+          </div>
+          <div className="space-y-2">
+            <label className=" text-gray-700 text-lg">
+              {!mess.hostelId ? "Assign Hostel" : "Change Hostel"}
+            </label>
+            <div className="flex gap-4">
+              <select
+                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={hostelId}
+                onChange={(e) => setHostelId(e.target.value)}
+              >
+                <option value="">Choose a New Hostel</option>
+                {hostels.map((hostel) => (
+                  <option key={hostel._id} value={hostel._id}>
+                    {hostel.hostel_name}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleHostelChange}
+                className="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-6 py-2 rounded-md shadow text-lg"
+              >
+                {!mess.hostelId ? "Assign" : "Change"}
+              </button>
+            </div>
+          </div>
 
-      <div className="space-y-2">
-        <label className="block text-gray-700 font-medium text-lg">
-          {!mess.hostelId ? "Assign Hostel" : "Change Hostel"}
-        </label>
-        <div className="flex gap-4">
-          <select
-            className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={hostelId}
-            onChange={(e) => setHostelId(e.target.value)}
-          >
-            <option value="">Choose a New Hostel</option>
-            {hostels.map((hostel) => (
-              <option key={hostel._id} value={hostel._id}>
-                {hostel.hostel_name}
-              </option>
-            ))}
-          </select>
-          <button
-            onClick={handleHostelChange}
-            className="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-6 py-2 rounded-md shadow text-lg"
-          >
-            {!mess.hostelId ? "Assign Hostel" : "Change Hostel"}
-          </button>
+          <div>
+            <button
+              onClick={handleMenu}
+              className="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-6 py-2 rounded-md shadow text-lg"
+            >
+              View Menu
+            </button>
+          </div>
+          <div className="text-lg text-gray-700">
+            <span>Rating: {mess.rating}</span>
+          </div>
+          <div className="text-lg text-gray-700">
+            <span>Ranking: {mess.ranking}</span>
+          </div>
+          <div className="text-lg text-gray-700">
+            <span>Complaints: {mess.complaints}</span>
+          </div>
+          <div className="text-lg text-gray-700">
+            <span>Statistics:</span>
+          </div>
         </div>
-      </div>
-
-      <div>
-        <button
-          onClick={handleMenu}
-          className="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-6 py-2 rounded-md shadow text-lg"
-        >
-          View Menu
-        </button>
-      </div>
-      <div className="text-lg text-gray-700">
-        <span>Rating: {mess.rating}</span>
-      </div>
-      <div className="text-lg text-gray-700">
-        <span>Ranking: {mess.ranking}</span>
-      </div>
-      <div className="text-lg text-gray-700">
-        <span>Complaints: {mess.complaints}</span>
-      </div>
-      <div className="text-lg text-gray-700">
-        <span>Statistics:</span>
+        <div className="md:self-start md:mt-0 mt-6 flex flex-col items-center mr-10">
+          <div className="text-lg font-medium text-gray-700 mb-2">QR Code</div>
+          <img
+            src={mess.qr_img}
+            alt="QR Code"
+            className="w-50 h-50 border-grey-700 rounded shadow"
+          />
+          <a
+            href={mess.qr_img}
+            download={`QR_${mess.name}`}
+            className="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-6 py-2 rounded-md shadow text-lg mt-5"
+          >
+            Download
+          </a>
+        </div>
       </div>
     </div>
   );
