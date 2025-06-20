@@ -1,5 +1,5 @@
 const express = require("express");
-const authenticateJWT = require("../../middleware/authenticateJWT.js");
+const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
 
 const {
   createMess,
@@ -29,6 +29,6 @@ messRouter.post(
   authenticateJWT,
   toggleLikeMenuItem
 );
-messRouter.post("/scan/:messId",authenticateJWT, ScanMess);
+messRouter.post("/scan/:messId", authenticateJWT, ScanMess);
 
 module.exports = messRouter;
