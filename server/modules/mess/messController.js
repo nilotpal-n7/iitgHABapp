@@ -6,9 +6,8 @@ const { Hostel } = require("../hostel/hostelModel");
 const { ScanLogs } = require("./ScanLogsModel.js");
 const mongoose=require ("mongoose");
 const { QR} = require("../qr/qrModel.js");
-const cloudinary = require("../../utils/cloudinary.js");
 const qrcode=require("qrcode");
-const mongoose = require("mongoose");
+
 
 const {
   getCurrentDate,
