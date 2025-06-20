@@ -10,7 +10,7 @@ function OverallStatsHeader({ date, setDate }) {
           <BarChartOutlined className="!text-blue-500 text-3xl" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">Meal Statistics</h1>
+          <h1 className="text-2xl font-bold">Overall Statistics</h1>
           <h3 className="text-sm text-gray-500">Track daily meal attendance patterns</h3>
         </div>
       </div>
