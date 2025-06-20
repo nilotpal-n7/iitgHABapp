@@ -1,4 +1,5 @@
 import { DatePicker, Select } from "antd";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import { getStatsByDate, getAllHostelsWithMess } from "../../apis/stats.js";
 import dayjs from "dayjs";
@@ -85,31 +86,51 @@ function HostelStats() {
               placeholder="Pick a date"
             />
           </div>
-          <HostelInfo selectedHostel={selectedHostel} />
+          {stats.total ? (
+            <div>
+              <HostelInfo selectedHostel={selectedHostel} />
 
-          <p className="text-center text-lg font-medium mb-[15px] mt-[30px]">
-            Total Students: {stats.total}
-          </p>
+              <p className="text-center text-lg font-medium mb-[15px] mt-[30px]">
+                Total Students: {stats.total}
+              </p>
 
-          <div className="flex justify-around">
-            <MealChart
-              title="Breakfast"
-              data={makePieData("Breakfast",stats.breakfast,["#EF4444","#FEF2F2"])}
-              percentage={getPercentage(stats.breakfast)}
-            />
+              <div className="flex justify-around">
+                <MealChart
+                  title="Breakfast"
+                  data={makePieData("Breakfast", stats.breakfast, [
+                    "#EF4444",
+                    "#FEF2F2",
+                  ])}
+                  percentage={getPercentage(stats.breakfast)}
+                />
 
-            <MealChart
-              title="Lunch"
-              data={makePieData("Lunch", stats.lunch, ["#F59E0B", "#FFFBEB"])}
-              percentage={getPercentage(stats.lunch)}
-            />
+                <MealChart
+                  title="Lunch"
+                  data={makePieData("Lunch", stats.lunch, [
+                    "#F59E0B",
+                    "#FFFBEB",
+                  ])}
+                  percentage={getPercentage(stats.lunch)}
+                />
 
-            <MealChart
-              title="Dinner"
-              data={makePieData("Dinner", stats.dinner, ["#10B981", "#ECFDF5"])}
-              percentage={getPercentage(stats.dinner)}
-            />
-          </div>
+                <MealChart
+                  title="Dinner"
+                  data={makePieData("Dinner", stats.dinner, [
+                    "#10B981",
+                    "#ECFDF5",
+                  ])}
+                  percentage={getPercentage(stats.dinner)}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center mt-30">
+              <ExclamationCircleOutlined className="!text-red-500 text-8xl mb-6" />
+              <div className="font-semibold text-5xl text-gray-600">
+                This Date has no Stats!
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>
