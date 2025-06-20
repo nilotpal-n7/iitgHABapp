@@ -4,6 +4,7 @@ const { MenuItem } = require("./menuItemModel");
 const { User } = require("../user/userModel");
 const { Hostel } = require("../hostel/hostelModel");
 const { ScanLogs } = require("./ScanLogsModel.js");
+const mongoose=require ("mongoose");
 const { QR} = require("../qr/qrModel.js");
 const cloudinary = require("../../utils/cloudinary.js");
 const qrcode=require("qrcode");
@@ -108,15 +109,33 @@ const deleteMess = async (req, res) => {
 
 const createMenu = async (req, res) => {
   try {
-    const { messId, day, startTime, endTime, isGala, type } = req.body;
-
-    const newMenu = new Menu({
+    const { messId, day, BstartTime, BendTime,LstartTime, LendTime,DstartTime, DendTime, BisGala,LisGala,DisGala } = req.body;
+    const typeOptions=["Breakfast","Lunch","Dinner"];
+    const newMenuB = new Menu({
       messId,
       day,
-      startTime,
-      endTime,
-      isGala,
-      type,
+      startTime:BstartTime,
+      endTime:BendTime,
+      isGala:BisGala,
+      type: typeOptions[0]
+    });
+    await newMenuB.save();
+    const newMenuL = new Menu({
+      messId,
+      day,
+      startTime:LstartTime,
+      endTime:LendTime,
+      isGala:LisGala,
+      type: typeOptions[1]
+    });
+    await newMenuL.save();
+    const newMenuD = new Menu({
+      messId,
+      day,
+      startTime:DstartTime,
+      endTime:DendTime,
+      isGala:DisGala,
+      type: typeOptions[2]
     });
 
     await newMenu.save();
@@ -143,22 +162,26 @@ const deleteMenu = async (req, res) => {
 
 const createMenuItem = async (req, res) => {
   try {
-    const { menuId, name, type } = req.body;
-
+    var {name, type,meal,day, messId} = req.body;
+    const menuId = new mongoose.Types.ObjectId();
     const newMenuItem = new MenuItem({
       menuId,
       name,
       type,
-    });
-
-    await newMenuItem.save();
-    const menu = await Menu.findById(menuId);
+    }); 
+    console.log(req.body);
+    const newItem=await newMenuItem.save();
+    const menu = await Menu.findOne({messId:messId,day:day,type:meal}); 
     if (!menu) {
-      return res.status(404).json({ message: "Menu not found" });
+      return res.status(404).json({ message: "Mess not found" });
     }
-    menu.items.push(newMenuItem._id);
-    await menu.save();
-    return res.status(201).json(newMenuItem);
+    
+      menu.items.push(newItem._id);
+      const abc=await menu.save();
+      
+    
+    
+    return res.status(201).json(newItem);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
@@ -167,18 +190,17 @@ const createMenuItem = async (req, res) => {
 
 const deleteMenuItem = async (req, res) => {
   try {
-    const menuItemId = req.params.menuItemId;
-
-    const deletedMenuItem = await MenuItem.findByIdAndDelete(menuItemId);
+    const _Id = req.body._Id;
+    const deletedMenuItem = await MenuItem.findByIdAndDelete(_Id);
     if (!deletedMenuItem) {
       return res.status(404).json({ message: "Menu item not found" });
     }
-    const menu = await Menu.findById(deletedMenuItem.menuId);
+    /*const menu = await Menu.findById(deletedMenuItem.menuId);
     if (!menu) {
       return res.status(404).json({ message: "Menu not found" });
     }
-    menu.items = menu.items.filter((item) => item.toString() !== menuItemId);
-    await menu.save();
+    menu.items = menu.items.filter((item) => item.toString() !== menuItemId);*/
+    
 
     return res.status(200).json({ message: "Menu item deleted successfully" });
   } catch (error) {

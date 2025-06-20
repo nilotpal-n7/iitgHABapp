@@ -1,7 +1,6 @@
 // server/index.js
 //import authRoutes from "./modules/auth/auth.routes.js";
 const authRoutes = require("./modules/auth/auth.routes.js");
-const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
 const itemRoute = require("./modules/item/itemRoute.js");
