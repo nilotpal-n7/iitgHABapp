@@ -10,6 +10,7 @@ export default function HostelForm() {
   const [messId, setMessId] = useState('');
   const [unassignedMess, setUnassignedMess] = useState([]);
   const [error, setError] = useState(null);
+    const [password, setPassword] = useState('');
 
   const uploadHandle = async (e) => {
     e.preventDefault();
@@ -19,6 +20,7 @@ export default function HostelForm() {
       hostel_name: hostelName,
       current_cap: Number(capacity),
       messId,
+      password
     };
 
     try {
@@ -32,7 +34,7 @@ export default function HostelForm() {
 
       if (!response.ok) throw new Error('Failed to create hostel');
 
-      navigate('/all-hostels');
+      navigate('/hostels');
     } catch (err) {
       console.error('Upload error:', err);
       setError('Something went wrong while uploading.');
@@ -52,6 +54,8 @@ export default function HostelForm() {
         );
         const data = await response.json();
         setUnassignedMess(data);
+
+        setMessId(data.length > 0 ? data[0]._id : '');
       } catch (error) {
         console.error('Failed to fetch unassigned mess:', error);
         setError('Failed to load mess caterers.');
@@ -107,6 +111,16 @@ export default function HostelForm() {
               </option>
             ))}
           </select>
+        </div>
+        <div>
+          <label className="block text-gray-700 font-medium mb-1">Create Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
 
         <div className="flex justify-end">

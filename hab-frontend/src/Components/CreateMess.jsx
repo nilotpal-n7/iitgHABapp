@@ -12,9 +12,7 @@ export default function CreateMess() {
   useEffect(() => {
     async function fetchHostels() {
       try {
-        const res = await axios.get(
-          "http://localhost:8000/api/hostel/all"
-        );
+        const res = await axios.get("http://localhost:8000/api/hostel/all");
         const hostels = res.data;
         setHostels(hostels.filter((hostel) => hostel.messId === null));
       } catch (error) {
@@ -33,8 +31,8 @@ export default function CreateMess() {
           {
             name: caterer,
           }
-        ); 
-        if(res.status === 201){
+        );
+        if (res.status === 201) {
           alert("Mess created successfully");
           navigate("/caterers/");
         }

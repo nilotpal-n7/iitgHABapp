@@ -734,6 +734,24 @@ const changeHostel = async (req,res) => {
 
 }
 
+const unassignMess = async (req, res) => {
+  try{
+    const messId = req.params.messId;
+    const mess = await Mess.findByIdAndUpdate(
+      messId,
+      { hostelId: null},
+      { new: true }
+    );
+    return res.status(200).json({
+      message: "Mess unassigned successfully",
+      mess: mess,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 
 module.exports = {
   createMess,
@@ -753,5 +771,6 @@ module.exports = {
   ScanMess,
   getUnassignedMess,
   assignMessToHostel,
+  unassignMess,
   changeHostel
 };

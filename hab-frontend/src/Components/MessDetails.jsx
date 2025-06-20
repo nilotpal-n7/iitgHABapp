@@ -7,7 +7,7 @@ export default function MessDetails() {
   const navigate = useNavigate();
   //console.log("Mess ID from URL:", id);
   const [mess, setMess] = useState("");
-  const [hostelId , setHostelId] = useState("");
+  const [hostelId, setHostelId] = useState("");
   const [hostels, setHostels] = useState([]);
 
   useEffect(() => {
@@ -26,9 +26,7 @@ export default function MessDetails() {
   useEffect(() => {
     async function fetchHostels() {
       try {
-        const res = await axios.get(
-                  "http://localhost:8000/api/hostel/all"
-        );
+        const res = await axios.get("http://localhost:8000/api/hostel/all");
         const hostels = res.data;
         setHostels(hostels.filter((hostel) => hostel.messId === null));
       } catch (error) {
@@ -55,7 +53,7 @@ export default function MessDetails() {
 
   const handleHostelChange = async () => {
     console.log(mess.hostelId);
-    if(!mess.hostelId){
+    if (!mess.hostelId) {
       try {
         console.log(hostelId);
         const res = await axios.post(
@@ -72,8 +70,7 @@ export default function MessDetails() {
         console.error("Error assigning ", error);
         alert("Failed to assign hostel");
       }
-    }
-    else{
+    } else {
       try {
         const res = await axios.post(
           `http://localhost:8000/api/mess/change-hostel/${id}`,
@@ -93,15 +90,13 @@ export default function MessDetails() {
     }
   };
 
-
-
   const handleMenu = () => {
     navigate(`/mess/menu/${id}`);
   };
 
   const handleGoBack = () => {
-    navigate('/caterers/')
-  }
+    navigate("/caterers/");
+  };
 
   if (!mess) {
     return <div className="p-6 text-gray-600">Failed to load Caterer</div>;
