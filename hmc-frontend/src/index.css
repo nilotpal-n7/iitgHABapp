@@ -256,7 +256,9 @@ svg {
 
 /*NEW*/
 /* Menu_content.css */
-
+.loading{
+  color: #333!important;
+}
 .menu-content {
   padding: 20px 16px;
   max-width: 100%;

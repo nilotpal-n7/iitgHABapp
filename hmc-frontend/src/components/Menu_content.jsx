@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthProvider";
+import '../index.css';
+import CreateMenu from "./CreateMenuFallback";
 function Menu_content(props) {
   const { user} = useAuth();
   const [menuData, setMenuData] = useState({
@@ -11,7 +13,9 @@ function Menu_content(props) {
   });
   const messId = user.messId; 
   console.log(menuData);
-
+  const empty={
+    breakfast:[],lunch:[],dinner:[]
+  };
   const [editingItem, setEditingItem] = useState(null);
   const [editValue, setEditValue] = useState("");
   const [showDropdown, setShowDropdown] = useState(null);
@@ -40,6 +44,7 @@ function Menu_content(props) {
         name: itemData.name,
         type: itemData.category,
         meal:itemData.section,
+        day:props.day,
         messId:messId // Breakfast, Lunch, or Dinner
       }, {
         withCredentials: true,
@@ -259,6 +264,7 @@ function Menu_content(props) {
     const groupedItems = groupItemsByCategory(items, title);
 
     return (
+      
       <div className="menu-section" id={title}>
         <h3 className="section-title">{title}</h3>
         <div className="menu-items">
