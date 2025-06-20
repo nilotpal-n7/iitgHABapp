@@ -51,6 +51,9 @@ function Menu_content(props) {
       });
       
       console.log("Item created successfully:", response.data);
+      if(props.onSuccessfulItemCreation){
+        props.onSuccessfulItemCreation();
+      }
       return response.data; // Return the created item with server-generated ID
     } catch (error) {
       console.error("Error creating menu item:", error);
@@ -266,6 +269,7 @@ function Menu_content(props) {
     return (
       
       <div className="menu-section" id={title}>
+        <h2>{props.day} Menu</h2>
         <h3 className="section-title">{title}</h3>
         <div className="menu-items">
           {Object.entries(groupedItems).map(([category, categoryItems]) => (

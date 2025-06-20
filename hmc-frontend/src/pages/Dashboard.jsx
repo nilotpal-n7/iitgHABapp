@@ -113,7 +113,10 @@ export const Dashboard = () => {
     setShowCreateMenu(false); // Hide the creation form
     fetchMess(); // Re-fetch data to display the newly created menu
   };
-
+  const handleSuccessfulMenuItemCreation=()=>{
+    console.log("CreateMenuFallback signaled success. Re-fetching menu data...");
+    fetchMess();
+  }
   // Function to explicitly go to the CreateMenuFallback form (e.g., from a "Modify" button)
   const handleGoToCreateMenu = () => {
     setShowCreateMenu(true);
@@ -161,6 +164,7 @@ export const Dashboard = () => {
                 lunch={currentMenu.lunch}
                 dinner={currentMenu.dinner}
                 messId={user?.messId}
+                onSuccessfulItemCreation={handleSuccessfulMenuItemCreation}
                 click={handleGoToCreateMenu} 
               />
             )}

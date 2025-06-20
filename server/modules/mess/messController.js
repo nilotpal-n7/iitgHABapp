@@ -64,7 +64,7 @@ const createMenu = async (req, res) => {
       type: typeOptions[2]
     });
     await newMenuD.save();
-    return res.status(201).json(newBMenu);
+    return res.status(201).json(newMenuB);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
