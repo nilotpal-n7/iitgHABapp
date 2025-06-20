@@ -43,13 +43,24 @@ const getHostel = async (req, res) => {
 const getAllHostels = async (req, res) => {
   try {
     const hostels = await Hostel.find();
-
     return res.status(200).json(hostels);
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "Error occured" });
   }
 };
+
+const getAllHostelsWithMess = async (req, res) => {
+  try {
+    const hostels = await Hostel.find().populate("messId");
+    return res.status(200).json(hostels);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Error occured" });
+  }
+};
+
+
 
 const applyMessChange = async (req, res) => {
   const { hostel_name, roll_number, reason } = req.body;
@@ -135,5 +146,6 @@ module.exports = {
   loginHostel,
   getHostel,
   getAllHostels,
+  getAllHostelsWithMess,
   applyMessChange,
 };
