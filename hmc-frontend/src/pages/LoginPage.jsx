@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthProvider";
+//import { useAuth } from "../context/AuthContext";
 
 export function LoginPage() {
   const { login } = useAuth();
@@ -11,8 +12,11 @@ export function LoginPage() {
   useEffect(() => {
     async function fetchHostels() {
       try {
-        const res = await axios.get("http://localhost:3000/api/hostel/all");
-        setHostels(res.data);
+        await axios
+          .get("http://localhost:8000/api/hostel/all", {
+            withCredentials: true,
+          })
+          .then((res) => setHostels(res.data));
       } catch (error) {
         console.error("Error fetching hostels:", error);
       }
