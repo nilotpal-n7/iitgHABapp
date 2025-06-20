@@ -154,6 +154,7 @@ export const Dashboard = () => {
         ) : (
           <>
             <div className="day-header">
+              <h2>{days[activeTab]} Menu</h2>
               {isLoading && <p>Loading menu...</p>}
             </div>
             {!isLoading && (
