@@ -1,32 +1,30 @@
-const { User } = require('../user/userModel.js');
-const { Hostel } = require ('./hostelModel.js');
-const { Mess } = require('../mess/messModel.js');
+const { User } = require("../user/userModel.js");
+const { Hostel } = require("./hostelModel.js");
+const { Mess } = require("../mess/messModel.js");
 
 const createHostel = async (req, res) => {
   try {
     const hostel = await Hostel.create(req.body);
 
-    const assignMess = await Mess.findByIdAndUpdate(
-      req.body.messId, {
-        hostelId: hostel._id,
-      })
+    const assignMess = await Mess.findByIdAndUpdate(req.body.messId, {
+      hostelId: hostel._id,
+    });
 
     if (!assignMess) {
-        return res.status(400).json({ message: "Mess not found" });
-        }
-        
+      return res.status(400).json({ message: "Mess not found" });
+    }
+
     return res
       .status(201)
       .json({ message: "Hostel created successfully", hostel });
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ message: "Error occured" });
+    return res.status(500).json({ message: "Error occurred" });
   }
 };
 
 const loginHostel = async (req, res) => {
-  const { hostel_name, password,messId } = req.body;
-  console.log("in hostel login ");
+  const { hostel_name, password } = req.body;
   try {
     const hostel = await Hostel.findOne({ hostel_name });
     if (!hostel) return res.status(400).json({ message: "No such hostel" });
@@ -42,7 +40,7 @@ const loginHostel = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ message: "Error occured" });
+    return res.status(500).json({ message: "Error occurred" });
   }
 };
 
@@ -53,34 +51,35 @@ const getHostel = async (req, res) => {
 const getAllHostels = async (req, res) => {
   try {
     const hostels = await Hostel.find();
-
     return res.status(200).json(hostels);
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ message: "Error occured" });
+    return res.status(500).json({ message: "Error occurred" });
   }
 };
 
 const getHostelbyId = async (req, res) => {
-    const {hostelId} = req.params;
-    try {
-        const hostel = await Hostel.findById(hostelId)
-            .populate('messId', 'name')
-            .populate('users.user','name rollNumber degree')
-        if (!hostel) {
-            return res.status(404).json({message: "Hostel not found"});
-        }
-        return res.status(200).json({message: "Hostel found", hostel: hostel});
-    } catch (err) {
-        console.log(err);
-        return res.status(500).json({message: "Error occured"});
+  const { hostelId } = req.params;
+  try {
+    const hostel = await Hostel.findById(hostelId)
+      .populate("messId", "name")
+      .populate("users.user", "name rollNumber degree");
+
+    if (!hostel) {
+      return res.status(404).json({ message: "Hostel not found" });
     }
+
+    return res.status(200).json({ message: "Hostel found", hostel });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Error occurred" });
+  }
 };
 
 const deleteHostel = async (req, res) => {
   try {
-    const HostelId = req.params.hostelId;
-    const deletedHostel = await Hostel.findByIdAndDelete(HostelId);
+    const hostelId = req.params.hostelId;
+    const deletedHostel = await Hostel.findByIdAndDelete(hostelId);
     if (!deletedHostel) {
       return res.status(404).json({ message: "Hostel not found" });
     }
@@ -93,101 +92,74 @@ const deleteHostel = async (req, res) => {
 
 const applyMessChange = async (req, res) => {
   const { hostel_name, roll_number, reason } = req.body;
-
   const today = new Date();
-
   const dayOfMonth = today.getDate();
 
   if (dayOfMonth < 24 || dayOfMonth > 27) {
-    return res
-      .status(403)
-      .json({
-        message:
-          "Mess change requests only allowed between 24th and 27th of a month",
-      });
+    return res.status(403).json({
+      message:
+        "Mess change requests only allowed between 24th and 27th of a month",
+    });
   }
 
   try {
-    const hostel = await Hostel.findOne({ hostel_name: hostel_name });
-  try {
-    const hostel = await Hostel.findOne({ hostel_name: hostel_name });
-
-    // console.log(hostel);
-    // console.log(hostel.curr_cap);
-
+    const hostel = await Hostel.findOne({ hostel_name });
     const user = await User.findOne({ rollNumber: roll_number });
 
     user.applied_hostel_string = hostel_name;
-
     user.mess_change_button_pressed = true;
 
     if (
-      hostel != user.hostel &&
+      hostel &&
+      hostel._id.toString() !== user.hostel.toString() &&
       hostel.curr_cap < 150 &&
       !user.applied_for_mess_changed
     ) {
-      //const user_permanent_hostel = await Hostel.findById(user.hostel);
+      const userCurrMess = await Hostel.findById(user.curr_subscribed_mess);
 
-      const user_curr_subscribed_mess = await Hostel.findById(
-        user.curr_subscribed_mess
-      );
-
-      hostel.curr_cap = hostel.curr_cap + 1;
-
+      hostel.curr_cap += 1;
       user.next_mess = hostel._id;
-
-      // user.curr_subscribed_mess = hostel._id;
-
       user.applied_for_mess_changed = true;
 
-      user_curr_subscribed_mess.users.pull({ user: user._id });
-
+      userCurrMess.users.pull({ user: user._id });
       hostel.users.push({ user: user._id, reason_for_change: reason });
-      // user_permanent_hostel.users.pull({user: user._id});
 
       await user.save();
-
       await hostel.save();
+      await userCurrMess.save();
 
-      await user_curr_subscribed_mess.save();
-
-      //await user_permanent_hostel.save();
-
-      return res
-        .status(200)
-        .json({ message: "Mess change request proceeded", status_code: 0 });
+      return res.status(200).json({
+        message: "Mess change request proceeded",
+        status_code: 0,
+      });
     } else {
-      // capacity reached
-
       await user.save();
-
-      // await hostel.save();
-      return res
-        .status(200)
-        .json({
-          message:
-            "Sorry the cap has reached or you have already applied or you cannot apply for same hostel",
-          status_code: 1,
-        });
+      return res.status(200).json({
+        message:
+          "Sorry, the capacity has been reached or you have already applied or you're applying for the same hostel",
+        status_code: 1,
+      });
     }
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ message: "Error occured" });
+    return res.status(500).json({ message: "Error occurred" });
   }
 };
 
 const getAllHostelNameAndCaterer = async (req, res) => {
-    try {
-        const hostelData = await Hostel.find({},{ hostel_name: 1, messId: 1 })
-            .populate({
-                path: 'messId',
-                select: 'name -_id'
-            });
+  try {
+    const hostelData = await Hostel.find(
+      {},
+      { hostel_name: 1, messId: 1 }
+    ).populate({
+      path: "messId",
+      select: "name -_id",
+    });
 
-        res.status(200).json(hostelData);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    res.status(200).json(hostelData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 module.exports = {
@@ -195,10 +167,8 @@ module.exports = {
   loginHostel,
   getHostel,
   getAllHostels,
-    createHostel,
-    deleteHostel,
-    getHostel,
-    getHostelbyId,
+  getHostelbyId,
+  deleteHostel,
   applyMessChange,
-    getAllHostelNameAndCaterer,
+  getAllHostelNameAndCaterer,
 };
