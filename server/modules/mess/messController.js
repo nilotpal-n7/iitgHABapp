@@ -4,12 +4,7 @@ const { MenuItem } = require("./menuItemModel");
 const { User } = require("../user/userModel");
 const { Hostel } = require("../hostel/hostelModel");
 const { ScanLogs } = require("./ScanLogsModel.js");
-<<<<<<< HEAD
 const mongoose=require ("mongoose");
-=======
-const mongoose = require("mongoose");
-
->>>>>>> 01a3e615c63fef5c50d01c60cb5624d57ac6dca8
 const {
   getCurrentDate,
   getCurrentTime,

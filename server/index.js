@@ -1,7 +1,6 @@
 // server/index.js
 //import authRoutes from "./modules/auth/auth.routes.js";
 const authRoutes = require("./modules/auth/auth.routes.js");
-const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
 const itemRoute = require("./modules/item/itemRoute.js");
@@ -12,12 +11,8 @@ const feedbackRoute = require("./modules/feedback/feedbackRoute.js");
 const hostelRoute = require("./modules/hostel/hostelRoute.js");
 const qrRoute = require("./modules/qr/qrRoute.js");
 const messRoute = require("./modules/mess/messRoute.js");
-<<<<<<< HEAD
-//const cors = require("cors");
-=======
 const logsRoute = require("./modules/mess/ScanLogsRoute.js");
 const cors = require("cors");
->>>>>>> 01a3e615c63fef5c50d01c60cb5624d57ac6dca8
 const {
   wednesdayScheduler,
   sundayScheduler,
