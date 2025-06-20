@@ -1,5 +1,6 @@
 const express = require("express");
-const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
+const {authenticateJWT} = require("../../middleware/authenticateJWT.js");
+const {authenticateAdminJWT} = require("../../middleware/authenticateJWT.js");
 
 const {
   createMess,
@@ -13,16 +14,17 @@ const {
   toggleLikeMenuItem,
   ScanMess,
 } = require("./messController");
+const { getMessMenuByDayForAdmin, modifyMenuItem } = require("./messAdminController.js");
 
 const messRouter = express.Router();
 
 messRouter.post("/create", createMess);
 messRouter.post("/menu/create", createMenu);
 messRouter.post("/menu/item/create", createMenuItem);
-messRouter.delete("/menu/item/delete/:menuItemId", deleteMenuItem);
+messRouter.delete("/menu/item/delete", deleteMenuItem);
 messRouter.post("/get", authenticateJWT, getUserMessInfo);
 messRouter.post("/all", getAllMessInfo);
-messRouter.post("/menu/:messId", authenticateJWT, getMessMenuByDay);
+messRouter.post("/menu/:messId", authenticateJWT,getMessMenuByDay);
 messRouter.post("/menu/item/:menuItemId", authenticateJWT, getMessMenuItemById);
 messRouter.post(
   "/menu/item/like/:menuItemId",
@@ -31,4 +33,7 @@ messRouter.post(
 );
 messRouter.post("/scan/:messId", authenticateJWT, ScanMess);
 
+//for admin
+messRouter.post("/menu/admin/:messId", authenticateAdminJWT,getMessMenuByDayForAdmin);
+messRouter.post("/menu/modify/:messId", authenticateAdminJWT,modifyMenuItem);
 module.exports = messRouter;
