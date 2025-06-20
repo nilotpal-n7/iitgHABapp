@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useAuth } from "../context/AuthProvider";
 import React, { useState, useEffect, useCallback } from "react"; // Added useCallback
 import "../index.css";
@@ -123,11 +124,20 @@ export const Dashboard = () => {
     // Optionally clear currentMenu or set a loading state here if the form takes over
   };
 
+=======
+import { useAuth } from "../context/AuthContext";
+
+export const Dashboard = () => {
+  const { user, loading, logout } = useAuth();
+  if (loading) return <div>Loading...</div>;
+>>>>>>> 01a3e615c63fef5c50d01c60cb5624d57ac6dca8
 
   return (
     <div>
       <h1>Dashboard</h1>
-      <button onClick={logout}>Logout</button>
+      <h2>{user.hostel_name}</h2>
+      <button onClick={() => logout()}>Logout</button>
+
 
       <div className="menu-page">
         <div className="header">

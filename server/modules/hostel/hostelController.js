@@ -15,8 +15,13 @@ const createHostel = async (req, res) => {
 };
 
 const loginHostel = async (req, res) => {
+<<<<<<< HEAD
   const { hostel_name, password,messId } = req.body;
   console.log("in hostel login ");
+=======
+  const { hostel_name, password } = req.body;
+
+>>>>>>> 01a3e615c63fef5c50d01c60cb5624d57ac6dca8
   try {
     const hostel = await Hostel.findOne({ hostel_name });
     if (!hostel) return res.status(400).json({ message: "No such hostel" });
@@ -37,7 +42,11 @@ const loginHostel = async (req, res) => {
 };
 
 const getHostel = async (req, res) => {
+<<<<<<< HEAD
   return res.json(req.hostel);
+=======
+  return res.json({ hostel: req.hostel });
+>>>>>>> 01a3e615c63fef5c50d01c60cb5624d57ac6dca8
 };
 
 const getAllHostels = async (req, res) => {
@@ -59,12 +68,19 @@ const applyMessChange = async (req, res) => {
   const dayOfMonth = today.getDate();
 
   if (dayOfMonth < 24 || dayOfMonth > 27) {
+<<<<<<< HEAD
     return res
       .status(403)
       .json({
         message:
           "Mess change requests only allowed between 24th and 27th of a month",
       });
+=======
+    return res.status(403).json({
+      message:
+        "Mess change requests only allowed between 24th and 27th of a month",
+    });
+>>>>>>> 01a3e615c63fef5c50d01c60cb5624d57ac6dca8
   }
 
   try {
@@ -120,6 +136,7 @@ const applyMessChange = async (req, res) => {
       await user.save();
 
       // await hostel.save();
+<<<<<<< HEAD
       return res
         .status(200)
         .json({
@@ -127,6 +144,13 @@ const applyMessChange = async (req, res) => {
             "Sorry the cap has reached or you have already applied or you cannot apply for same hostel",
           status_code: 1,
         });
+=======
+      return res.status(200).json({
+        message:
+          "Sorry the cap has reached or you have already applied or you cannot apply for same hostel",
+        status_code: 1,
+      });
+>>>>>>> 01a3e615c63fef5c50d01c60cb5624d57ac6dca8
     }
   } catch (err) {
     console.log(err);

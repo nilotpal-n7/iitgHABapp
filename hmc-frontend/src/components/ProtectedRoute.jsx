@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Navigate, useLocation } from "react-router-dom"; // Import useLocation for redirect state
 import { useAuth } from "../context/AuthProvider"; // Assuming AuthProvider is where useAuth comes from
 
@@ -22,3 +23,14 @@ const ProtectedRoute = ({ children }) => {
 };
 
 export default ProtectedRoute;
+=======
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? children : <Navigate to="/login" />;
+};
+
+export default ProtectedRoute;
+>>>>>>> 01a3e615c63fef5c50d01c60cb5624d57ac6dca8
