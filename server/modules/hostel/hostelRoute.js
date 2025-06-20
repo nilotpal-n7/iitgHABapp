@@ -10,6 +10,7 @@ const {
   getHostel,
   getAllHostels,
   applyMessChange,
+  getAllHostelsWithMess,
 } = require("./hostelController.js");
 
 const hostelRouter = express.Router();
@@ -21,6 +22,8 @@ hostelRouter.post("/login", loginHostel);
 hostelRouter.get("/get", authenticateAdminJWT, getHostel);
 
 hostelRouter.get("/all", getAllHostels);
+
+hostelRouter.get("/allhostel", getAllHostelsWithMess);
 
 hostelRouter.post("/change", authenticateJWT, applyMessChange);
 

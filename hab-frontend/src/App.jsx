@@ -4,7 +4,7 @@ import Home from "./pages/Home";
 import Hostels from "./pages/Hostels";
 import Caterers from "./pages/Caterers";
 import Students from "./pages/Students";
-import HostelStats from "./pages/stats/HostelStats";
+import HostelStats from "./pages/stats/HostelStats.jsx";
 
 function App() {
   return (
