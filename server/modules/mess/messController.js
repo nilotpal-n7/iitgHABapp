@@ -5,6 +5,10 @@ const { User } = require("../user/userModel");
 const { Hostel } = require("../hostel/hostelModel");
 const { ScanLogs } = require("./ScanLogsModel.js");
 const mongoose=require ("mongoose");
+const { QR} = require("../qr/qrModel.js");
+const qrcode=require("qrcode");
+
+
 const {
   getCurrentDate,
   getCurrentTime,
@@ -19,19 +23,88 @@ const createMess = async (req, res) => {
       name,
       hostelId,
     });
-    const hostel = await Hostel.findById(hostelId);
-    if (!hostel) {
+    const hostelRes = await Hostel.findByIdAndUpdate(
+      hostelId,
+      { messId: newMess._id },
+      { new: true }
+    );
+    if (!hostelRes) {
       return res.status(404).json({ message: "Hostel not found" });
     }
     await newMess.save();
-    hostel.messId = newMess._id;
-    await hostel.save();
+    const qrDataUrl = await qrcode.toDataURL(newMess._id.toString());
+    const QRres = new QR({
+      qr_string : newMess._id.toString(),
+      qr_base64 : qrDataUrl
+
+    })
+    await QRres.save();
+    newMess.qrCode = QRres._id;
+    await newMess.save();
+    
     return res.status(201).json(newMess);
   } catch (error) {
     console.error(error);
+    return res.status(500).json({ message: "Internal server error", error: error.message });
+}
+};
+
+
+
+
+const createMessWithoutHostel = async (req, res) => {
+  try {
+    const { name } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ message: "Mess name is required" });
+    }
+
+    const newMess = new Mess({ name });
+    await newMess.save();
+    const qrDataUrl = await qrcode.toDataURL(newMess._id.toString());
+    const QRres = new QR({
+      qr_string: newMess._id.toString(),
+      qr_base64: qrDataUrl,
+    });
+    await QRres.save();
+    newMess.qrCode = QRres._id;
+    await newMess.save();
+    return res.status(201).json(newMess);
+  } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+
+const deleteMess = async (req, res) => {
+  try {
+    const messId = req.params.messId;
+    const deletedMess = await Mess.findByIdAndDelete(messId);
+
+    if (!deletedMess) {
+      return res.status(404).json({ message: "Mess not found" });
+    }
+    console.log(deletedMess.hostelId);
+    if(deletedMess.hostelId){
+      const hostelRes = await Hostel.findByIdAndUpdate(
+        deletedMess.hostelId,
+        { messId: null },
+        { new: true }
+      );
+      if (!hostelRes) {
+        return res.status(404).json({ message: "Hostel not found" });
+      }
+    }
+    return res.status(200).json({ message: "Mess deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 
 const createMenu = async (req, res) => {
   try {
@@ -63,8 +136,23 @@ const createMenu = async (req, res) => {
       isGala:DisGala,
       type: typeOptions[2]
     });
-    await newMenuD.save();
-    return res.status(201).json(newMenuB);
+
+    await newMenu.save();
+    return res.status(201).json(newMenu);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const deleteMenu = async (req, res) => {
+  try {
+    const menuId = req.params.menuId;
+    const deletedMenu = await Menu.findByIdAndDelete(menuId);
+    if (!deletedMenu) {
+      return res.status(404).json({ message: "Menu not found" });
+    }
+    return res.status(200).json({ message: "Menu deleted successfully" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
@@ -165,6 +253,25 @@ const getAllMessInfo = async (req, res) => {
   }
 };
 
+const getMessInfo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const mess = await Mess.findById(id);
+    if (!mess) {
+      return res.status(404).json({ message: "Mess not found" });
+    }
+    const messObj = mess.toObject();
+    const hostel = await Hostel.findById(messObj.hostelId);
+    const qr_img = await QR.findById(messObj.qrCode);
+    messObj.hostelName = hostel ? hostel.hostel_name : "Not Assigned";
+    messObj.qr_img = qr_img.qr_base64;
+    return res.status(200).json(messObj);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 const getMessMenuByDay = async (req, res) => {
   try {
     const messId = req.params.messId;
@@ -203,6 +310,43 @@ const getMessMenuByDay = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+const getMessMenuByDayForAdminHAB = async (req, res) => {
+  try {
+    const messId = req.params.messId;
+    const day = req.body.day;
+
+    if (!messId || !day) {
+      return res.status(400).json({ message: "Mess ID and day are required" });
+    }
+
+    const menu = await Menu.find({ messId, day });
+    if (!menu || menu.length === 0) {
+      return res.status(404).json({ message: "Menu not found" });
+    }
+
+    const populatedMenus = [];
+    for (let i = 0; i < menu.length; i++) {
+      const menuObj = menu[i].toObject();
+      const menuItems = menuObj.items;
+      const menuItemDetails = await MenuItem.find({ _id: { $in: menuItems } });
+
+      const updatedMenuItems = menuItemDetails.map((item) => {
+        const itemObj = item.toObject();
+        return itemObj;
+      });
+
+      menuObj.items = updatedMenuItems;
+      populatedMenus.push(menuObj);
+    }
+
+    return res.status(200).json(populatedMenus);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 
 const getMessMenuItemById = async (req, res) => {
   try {
@@ -512,6 +656,132 @@ const formatDate = (date) => {
   } ${dateObj.getFullYear()}`;
 };
 
+const getUnassignedMess = async (req, res) => {
+  try {
+    const unassignedMesses = await Mess.find({ hostelId: null });
+    res.status(200).json(unassignedMesses);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const assignMessToHostel = async (req, res) => {
+  try {
+    const messId = req.params.messId;
+    const hostelId = req.body.hostelId;
+    const oldMessId = req.body.oldMessId;
+
+    const newMess = await Mess.findByIdAndUpdate(
+      messId,
+      { hostelId: hostelId },
+      { hostel_name: req.body.hostelName },
+      { new: true }
+    );
+    if (!newMess) {
+      return res.status(404).json({ message: "Mess not found" });
+    }
+
+    if (oldMessId) {
+      const oldMess = await Mess.findByIdAndUpdate(
+        oldMessId,
+        { hostelId: null },
+        { hostel_name: null },
+        { new: true }
+      );
+      if (!oldMess) {
+        return res.status(404).json({ message: "Old mess not found" });
+      }
+    }
+
+
+    const hostelRes = await Hostel.findByIdAndUpdate(
+      hostelId,
+      { messId: messId },
+      { new: true }
+    );
+
+    if (!hostelRes) {
+      return res.status(404).json({ message: "Hostel not found" });
+    }
+
+    return res.status(200).json({
+      message: "Mess assigned to hostel successfully",
+      mess: newMess,
+      hostel: hostelRes,
+    });
+
+  }catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+const changeHostel = async (req,res) => {
+  try {
+    const messId = req.params.messId;
+    const hostelId = req.body.hostelId;
+    const oldHostelId = req.body.oldHostelId;
+
+    const newMess = await Mess.findByIdAndUpdate(
+      messId,
+      { hostelId: hostelId },
+      { new: true }
+    );
+    if (!newMess) {
+      return res.status(404).json({ message: "Mess not found" });
+    }
+
+    const oldHostel = await Hostel.findByIdAndUpdate(
+      oldHostelId,
+      { messId: null },
+      { new: true }
+    );
+    if (!oldHostel) {
+      return res.status(404).json({ message: "Old Hostel not found" });
+    }
+
+    const hostelRes = await Hostel.findByIdAndUpdate(
+      hostelId,
+      { messId: messId },
+      { new: true }
+    );
+
+    if (!hostelRes) {
+      return res.status(404).json({ message: "Hostel not found" });
+    }
+
+    return res.status(200).json({
+      message: "Mess assigned to hostel successfully",
+      mess: newMess,
+      hostel: hostelRes,
+    });
+
+  }catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+
+}
+
+const unassignMess = async (req, res) => {
+  try{
+    const messId = req.params.messId;
+    const mess = await Mess.findByIdAndUpdate(
+      messId,
+      { hostelId: null},
+      { new: true }
+    );
+    return res.status(200).json({
+      message: "Mess unassigned successfully",
+      mess: mess,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 const formatTime = (time) => {
   const timeObj = new Date(`1970-01-01T${time}:00`);
   const hours = timeObj.getHours();
@@ -532,13 +802,22 @@ const formatTime2 = (time) => {
 
 module.exports = {
   createMess,
+  createMessWithoutHostel,
+  deleteMess,
   createMenu,
+  deleteMenu,
   createMenuItem,
   deleteMenuItem,
   getUserMessInfo,
   getAllMessInfo,
+  getMessInfo,
   getMessMenuByDay,
+  getMessMenuByDayForAdminHAB,
   getMessMenuItemById,
   toggleLikeMenuItem,
   ScanMess,
+  getUnassignedMess,
+  assignMessToHostel,
+  unassignMess,
+  changeHostel
 };

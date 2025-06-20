@@ -46,7 +46,6 @@ app.use(
   })
 );
 app.use(cookieParser());
-
 app.use(express.urlencoded({ extended: true }));
 
 // MongoDB connection
