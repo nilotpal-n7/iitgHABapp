@@ -7,17 +7,25 @@ const {
 const {
   createHostel,
   loginHostel,
+  deleteHostel,
   getHostel,
+  getHostelbyId,
   getAllHostels,
   applyMessChange,
   getAllHostelsWithMess,
+  getAllHostelNameAndCaterer
 } = require("./hostelController.js");
 
 const hostelRouter = express.Router();
 
 hostelRouter.post("/", createHostel);
 
-hostelRouter.post("/login", loginHostel);
+hostelRouter.post("/all/:hostelId",getHostelbyId);
+hostelRouter.delete("/delete/:hostelId",deleteHostel);
+
+hostelRouter.get("/all/:hostelId",getHostelbyId);
+
+hostelRouter.post("/login", authenticateAdminJWT, loginHostel);
 
 hostelRouter.get("/get", authenticateAdminJWT, getHostel);
 
@@ -27,4 +35,6 @@ hostelRouter.get("/allhostel", getAllHostelsWithMess);
 
 hostelRouter.post("/change", authenticateJWT, applyMessChange);
 
+//Route to get only hostel and caterer information
+hostelRouter.post("/gethnc",getAllHostelNameAndCaterer);
 module.exports = hostelRouter;
