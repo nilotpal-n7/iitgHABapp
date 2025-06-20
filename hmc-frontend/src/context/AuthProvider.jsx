@@ -1,9 +1,8 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-
-const AuthContext = createContext();
+import { AuthContext } from "./AuthContext";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -14,7 +13,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (hostel_name, password) => {
     try {
-      const res = await axios.post("http://localhost:800/api/hostel/login", {
+      const res = await axios.post("http://localhost:3000/api/hostel/login", {
         hostel_name,
         password,
       });
@@ -28,30 +27,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = (reason = null) => {
-    localStorage.removeItem("token");
-    setUser(null);
-    setToken("");
+  const logout = useCallback(
+    (reason = null) => {
+      localStorage.removeItem("token");
+      setUser(null);
+      setToken("");
 
-    if (!reason) {
-      alert(`${reason}. Please log in again.`);
-    }
+      if (reason) {
+        alert(`${reason}. Please log in again.`);
+      }
 
-    navigate("/login");
-  };
-
-  const getData = async () => {
-    if (!token) return;
-    try {
-      const res = await axios.get(`http://localhost:800/api/hostel/get`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUser(res.data.hostel);
-    } catch (err) {
-      console.log(err);
-      logout("Invalid Session");
-    }
-  };
+      navigate("/login");
+    },
+    [navigate]
+  );
 
   useEffect(() => {
     if (!token) {
@@ -72,18 +61,29 @@ export const AuthProvider = ({ children }) => {
       logout("Session has expired");
     }, expire);
 
+    const getData = async () => {
+      if (!token) return;
+      try {
+        const res = await axios.get(`http://localhost:3000/api/hostel/get`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUser(res.data.hostel);
+      } catch (err) {
+        console.log(err);
+        logout("Invalid Session");
+      }
+    };
+
     getData().finally(() => setLoading(false)); // Refresh data
 
     return () => clearTimeout(timeout); // Cleanup
-  }, [token]);
+  }, [token, logout]);
 
   return (
     <AuthContext.Provider
-      value={{ user, token, login, logout, isAuthenticated: !!user }}
+      value={{ user, loading, token, login, logout, isAuthenticated: !!user }}
     >
       {!loading && children}
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);
