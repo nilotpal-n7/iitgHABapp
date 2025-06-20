@@ -6,6 +6,15 @@ const createHostel = async (req, res) => {
   try {
     const hostel = await Hostel.create(req.body);
 
+    const assignMess = await Mess.findByIdAndUpdate(
+      req.body.messId, {
+        hostelId: hostel._id,
+      })
+
+    if (!assignMess) {
+        return res.status(400).json({ message: "Mess not found" });
+        }
+        
     return res
       .status(201)
       .json({ message: "Hostel created successfully", hostel });

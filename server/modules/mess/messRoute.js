@@ -19,7 +19,8 @@ const {
   ScanMess,
   getUnassignedMess,
   assignMessToHostel,
-  changeHostel
+  changeHostel,
+  unassignMess
 } = require("./messController");
 
 const messRouter = express.Router();
@@ -45,6 +46,7 @@ messRouter.post(
 messRouter.post("/scan/:messId",authenticateJWT, ScanMess);
 messRouter.post("/reassign/:messId", assignMessToHostel);
 messRouter.post("/change-hostel/:messId", changeHostel);
-messRouter.post('/unassigned', getUnassignedMess)
+messRouter.post('/unassigned', getUnassignedMess);
+messRouter.post('/unassign/:messId', unassignMess);
 
 module.exports = messRouter;
