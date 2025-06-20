@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { useAuth } from "../context/AuthProvider";
 import React, { useState, useEffect, useCallback } from "react"; // Added useCallback
 import "../index.css";
@@ -10,7 +9,8 @@ import CreateMenuFallback from "../components/CreateMenuFallback.jsx"; // Rename
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export const Dashboard = () => {
-  const { user, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
+  //if (loading) return <div>Loading...</div>;
   console.log("here", user);
 
   // Use useState for controlling the view (show CreateMenuFallback or Menu_content)
@@ -124,13 +124,7 @@ export const Dashboard = () => {
     // Optionally clear currentMenu or set a loading state here if the form takes over
   };
 
-=======
-import { useAuth } from "../context/AuthContext";
 
-export const Dashboard = () => {
-  const { user, loading, logout } = useAuth();
-  if (loading) return <div>Loading...</div>;
->>>>>>> 01a3e615c63fef5c50d01c60cb5624d57ac6dca8
 
   return (
     <div>

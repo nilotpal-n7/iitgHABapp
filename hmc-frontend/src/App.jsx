@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-
-=======
->>>>>>> 01a3e615c63fef5c50d01c60cb5624d57ac6dca8
 import { Routes, Route, Navigate } from "react-router-dom";
 import { LoginPage } from "./pages/LoginPage";
 import { Dashboard } from "./pages/Dashboard.jsx"; // Create this page

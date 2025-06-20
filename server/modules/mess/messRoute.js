@@ -1,10 +1,6 @@
 const express = require("express");
-<<<<<<< HEAD
 const {authenticateJWT} = require("../../middleware/authenticateJWT.js");
 const {authenticateAdminJWT} = require("../../middleware/authenticateJWT.js");
-=======
-const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
->>>>>>> 01a3e615c63fef5c50d01c60cb5624d57ac6dca8
 
 const {
   createMess,
