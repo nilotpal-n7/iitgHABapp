@@ -1,19 +1,39 @@
+<<<<<<< HEAD
 const express = require('express');
 const {authenticateJWT} = require('../../middleware/authenticateJWT.js');
+=======
+const express = require("express");
+const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
+>>>>>>> 01a3e615c63fef5c50d01c60cb5624d57ac6dca8
 
-const { getComplaintsOfItemsByHostel, createItem, deleteItem, updateItem, getItems, getItem, getItemsWithComplaints, getItemsForHAB, resolveItem, inProgressItem } = require('./itemController');
+const {
+  getComplaintsOfItemsByHostel,
+  createItem,
+  deleteItem,
+  updateItem,
+  getItems,
+  getItem,
+  getItemsWithComplaints,
+  getItemsForHAB,
+  resolveItem,
+  inProgressItem,
+} = require("./itemController");
 
 const itemRouter = express.Router();
 
-itemRouter.get('/complaints/:hostel', authenticateJWT, getComplaintsOfItemsByHostel);
+itemRouter.get(
+  "/complaints/:hostel",
+  authenticateJWT,
+  getComplaintsOfItemsByHostel
+);
 
-itemRouter.post('/', authenticateJWT, createItem);
+itemRouter.post("/", authenticateJWT, createItem);
 
-itemRouter.delete('/:id', authenticateJWT, deleteItem);
+itemRouter.delete("/:id", authenticateJWT, deleteItem);
 
-itemRouter.put('/:id', authenticateJWT, updateItem);
+itemRouter.put("/:id", authenticateJWT, updateItem);
 
-itemRouter.get('/', authenticateJWT, getItems);
+itemRouter.get("/", authenticateJWT, getItems);
 
 // itemRouter.get('/:qr', getItem);
 
