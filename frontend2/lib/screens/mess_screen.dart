@@ -1,21 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:frontend1/apis/scan/qrscan_old.dart';
-import 'package:frontend1/screens/qr_scanner.dart';
-import 'package:frontend1/widgets/common/DateTimeParser.dart';
-import 'package:frontend1/widgets/common/popmenubutton.dart';
 import 'package:frontend1/screens/mess_feedback/mess_feedback_page.dart';
-import 'package:frontend1/widgets/mess_widgets/MessMenuBuilder.dart';
+import 'package:frontend1/screens/qr_scanner.dart';
+import 'package:frontend1/widgets/common/popmenubutton.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../apis/mess/mess_menu.dart';
-import '../models/mess_menu_model.dart';
 import '../utilities/ComingSoon.dart';
 import '../utilities/startupitem.dart';
-import '../widgets/feedback/FeedBackCard.dart';
 import '../widgets/mess_widgets/horizontal_menu_builder.dart';
-import '../widgets/mess_widgets/messmenu.dart';
 
 class MessApp extends StatefulWidget {
   const MessApp({super.key});
@@ -39,9 +32,6 @@ class MessScreen extends StatefulWidget {
 }
 
 String currSubscribedMess = '';
-
-
-
 
 class _MessScreenState extends State<MessScreen> {
   Widget xbuildQuickActions() {
@@ -104,7 +94,6 @@ class _MessScreenState extends State<MessScreen> {
                     ),
                   );
                 });
-
               },
               child: Container(
                 height: 90,
@@ -140,7 +129,6 @@ class _MessScreenState extends State<MessScreen> {
     );
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -160,7 +148,7 @@ class _MessScreenState extends State<MessScreen> {
         .size; //To make sure everything fits as per device size
     return Scaffold(
       body: Container(
-        color: Colors.white,// big bug
+        color: Colors.white, // big bug
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -245,7 +233,6 @@ class _FeedbackCardState extends State<_FeedbackCard> {
                       builder: (context) => MessFeedbackPage(),
                     ),
                   );
-
                 });
               },
               child: const Text(
@@ -260,19 +247,16 @@ class _FeedbackCardState extends State<_FeedbackCard> {
   }
 }
 
-
 class _MenuSection extends StatefulWidget {
   @override
   State<_MenuSection> createState() => _MenuSectionState();
 }
 
- String copyMessID = '';
+String copyMessID = '';
 
-String selectedDay = 'Monday';//also default this to todayday
+String selectedDay = 'Monday'; //also default this to todayday
 
 class _MenuSectionState extends State<_MenuSection> {
-
-
   final List<String> daysOnly = [
     'Monday',
     'Tuesday',
@@ -287,44 +271,49 @@ class _MenuSectionState extends State<_MenuSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Text("What’s in Menu",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const Spacer(),
-            HostelDrop(onChanged: (value){
-              final hostelMap = Provider.of<MessInfoProvider>(context,listen: false).hostelMap;
-               final MessID = hostelMap[value]?.messid ?? '6826dfda8493bb0870b10cbf';
-                copyMessID =MessID;
-              print("Mess ID for $value : $MessID");
-            }),
-          ],
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 40,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: daysOnly.map((day) {
-              return _DayChip(
-                label: day,
-                selected: selectedDay == day,
-                onTap: () {
-                  setState(() {
-                    selectedDay = day;
-                  });
-                },
-              );
-            }).toList(),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text("What’s in Menu",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Spacer(),
+              HostelDrop(onChanged: (value) {
+                final hostelMap =
+                    Provider.of<MessInfoProvider>(context, listen: false)
+                        .hostelMap;
+                final MessID =
+                    hostelMap[value]?.messid ?? '6826dfda8493bb0870b10cbf';
+                copyMessID = MessID;
+                print("Mess ID for $value : $MessID");
+              }),
+            ],
           ),
-        ),
-        const SizedBox(height: 16),
-        _MenuCard(),
-        const SizedBox(height: 10),
-      ],
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 40,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: daysOnly.map((day) {
+                return _DayChip(
+                  label: day,
+                  selected: selectedDay == day,
+                  onTap: () {
+                    setState(() {
+                      selectedDay = day;
+                    });
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _MenuCard(),
+          const SizedBox(height: 10),
+        ],
+      ),
     );
   }
 }
@@ -345,11 +334,14 @@ class _DayChip extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: ChoiceChip(
-        label: Text(label,style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          fontFamily: 'OpenSans_regular',
-        ),),
+        label: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            fontFamily: 'OpenSans_regular',
+          ),
+        ),
         selected: selected,
         onSelected: (_) => onTap(),
         selectedColor: Colors.deepPurple.shade100,
@@ -363,24 +355,27 @@ class _DayChip extends StatelessWidget {
 class _MenuCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Consumer<MessInfoProvider>(
-          builder: (context, messProvider, child) {
-            return FutureBuilder<String?>(
-              future: _getUserMessId(),
-              builder: (context, snapshot) {
-                return HorizontalMenuBuilder( // Changed from MenuFutureBuilder
-                  messId: copyMessID,
-                  day: selectedDay,
-                  userMessId: snapshot.data,
-                );
-              },
-            );
-          },
-        ),
-      ],
+    return IntrinsicHeight(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Consumer<MessInfoProvider>(
+            builder: (context, messProvider, child) {
+              return FutureBuilder<String?>(
+                future: _getUserMessId(),
+                builder: (context, snapshot) {
+                  return HorizontalMenuBuilder(
+                    // Changed from MenuFutureBuilder
+                    messId: copyMessID,
+                    day: selectedDay,
+                    userMessId: snapshot.data,
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -390,8 +385,6 @@ class _MenuCard extends StatelessWidget {
     return messId;
   }
 }
-
-
 
 class _MessInfo extends StatelessWidget {
   @override
@@ -462,4 +455,3 @@ class _MessInfo extends StatelessWidget {
     );
   }
 }
-
