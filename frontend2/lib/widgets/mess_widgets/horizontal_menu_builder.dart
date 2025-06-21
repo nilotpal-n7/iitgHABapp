@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dio/dio.dart';
+
 import '../../apis/mess/menu_like.dart';
 import '../../apis/mess/mess_menu.dart';
 import '../../models/mess_menu_model.dart';
-import '../../constants/endpoint.dart';
 import '../common/AutoHeightPageView.dart';
 
 // API class for like/unlike functionality
-
 
 class HorizontalMenuBuilder extends StatelessWidget {
   final String messId;
@@ -100,40 +97,42 @@ class HorizontalMenuBuilder extends StatelessWidget {
         final menus = snapshot.data!;
         final order = ['Breakfast', 'Lunch', 'Dinner'];
         final sortedMenus = List<MenuModel>.from(menus);
-        sortedMenus.sort((a, b) => order.indexOf(a.type).compareTo(order.indexOf(b.type)));
+        sortedMenus.sort(
+            (a, b) => order.indexOf(a.type).compareTo(order.indexOf(b.type)));
 
         return Column(
-          mainAxisSize: MainAxisSize.min, // Fixed: Remove unnecessary bottom space
+          mainAxisSize:
+              MainAxisSize.min, // Fixed: Remove unnecessary bottom space
           children: [
             // Meal type indicators at the top
-            Container(
-              height: 40,
-              margin: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: sortedMenus.map((menu) {
-                  return Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Center(
-                        child: Text(
-                          menu.type,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            color: Color(0xFF3754DB),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
+            // Container(
+            //   height: 40,
+            //   margin: const EdgeInsets.only(bottom: 12),
+            //   child: Row(
+            //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            //     children: sortedMenus.map((menu) {
+            //       return Expanded(
+            //         child: Container(
+            //           margin: const EdgeInsets.symmetric(horizontal: 4),
+            //           decoration: BoxDecoration(
+            //             color: Colors.grey[100],
+            //             borderRadius: BorderRadius.circular(20),
+            //           ),
+            //           child: Center(
+            //             child: Text(
+            //               menu.type,
+            //               style: const TextStyle(
+            //                 fontWeight: FontWeight.w600,
+            //                 fontSize: 15,
+            //                 color: Color(0xFF3754DB),
+            //               ),
+            //             ),
+            //           ),
+            //         ),
+            //       );
+            //     }).toList(),
+            //   ),
+            // ),
             // MenuPager here we r using the concept of premeasuring the size of IndividualMealCard widget and accordingly changing the ui by smooth scrolling downwards
             MenuPager(
               sortedMenus: sortedMenus,
@@ -261,7 +260,8 @@ class _IndividualMealCardState extends State<IndividualMealCard> {
             if (_isLikeEnabled && item.isLiked != true)
               const Padding(
                 padding: EdgeInsets.only(left: 6.0),
-                child: Icon(Icons.favorite_border, color: Colors.grey, size: 16),
+                child:
+                    Icon(Icons.favorite_border, color: Colors.grey, size: 16),
               ),
           ],
         ),
@@ -271,8 +271,10 @@ class _IndividualMealCardState extends State<IndividualMealCard> {
 
   @override
   Widget build(BuildContext context) {
-    final dishSection = _menu.items.where((item) => item.type == "Dish").toList();
-    final breadsRice = _menu.items.where((item) => item.type == "Breads and Rice").toList();
+    final dishSection =
+        _menu.items.where((item) => item.type == "Dish").toList();
+    final breadsRice =
+        _menu.items.where((item) => item.type == "Breads and Rice").toList();
     final others = _menu.items.where((item) => item.type == "Others").toList();
 
     final status = _getIndividualMealStatus();
@@ -355,7 +357,9 @@ class _IndividualMealCardState extends State<IndividualMealCard> {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            ...breadsRice.map((item) => buildMenuItem(item)).toList(),
+                            ...breadsRice
+                                .map((item) => buildMenuItem(item))
+                                .toList(),
                           ],
                         ),
                       ),
@@ -377,7 +381,9 @@ class _IndividualMealCardState extends State<IndividualMealCard> {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            ...others.map((item) => buildMenuItem(item)).toList(),
+                            ...others
+                                .map((item) => buildMenuItem(item))
+                                .toList(),
                           ],
                         ),
                       ),
