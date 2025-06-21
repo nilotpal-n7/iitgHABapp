@@ -63,6 +63,7 @@ const CreateUsers = ({ onUsersCreated }) => {
     setUploadProgress(0);
     let createdCount = 0;
     const hostelId = "68552a3a491f1303d2c4dbc9"; //To be modified...
+
     const totalRecords = csvData.length;
 
     for (let i = 0; i < csvData.length; i++) {
