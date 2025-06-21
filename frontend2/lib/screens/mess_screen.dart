@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:frontend1/screens/mess_feedback/mess_feedback_page.dart';
+import 'package:frontend1/apis/scan/qrscan_old.dart';
 import 'package:frontend1/screens/qr_scanner.dart';
+import 'package:frontend1/widgets/common/DateTimeParser.dart';
 import 'package:frontend1/widgets/common/popmenubutton.dart';
+import 'package:frontend1/screens/mess_feedback/mess_feedback_page.dart';
+import 'package:frontend1/widgets/mess_widgets/MessMenuBuilder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../apis/mess/mess_menu.dart';
+import '../models/mess_menu_model.dart';
 import '../utilities/ComingSoon.dart';
 import '../utilities/startupitem.dart';
+import '../widgets/feedback/FeedBackCard.dart';
 import '../widgets/mess_widgets/horizontal_menu_builder.dart';
+import '../widgets/mess_widgets/messmenu.dart';
 
 class MessApp extends StatefulWidget {
   const MessApp({super.key});
@@ -32,6 +39,9 @@ class MessScreen extends StatefulWidget {
 }
 
 String currSubscribedMess = '';
+
+
+
 
 class _MessScreenState extends State<MessScreen> {
   Widget xbuildQuickActions() {
@@ -94,6 +104,7 @@ class _MessScreenState extends State<MessScreen> {
                     ),
                   );
                 });
+
               },
               child: Container(
                 height: 90,
@@ -129,10 +140,13 @@ class _MessScreenState extends State<MessScreen> {
     );
   }
 
+
   @override
   void initState() {
     super.initState();
     fetchCurrSubscrMess();
+    fetchMessInfo();
+
   }
 
   Future<void> fetchCurrSubscrMess() async {
@@ -142,13 +156,33 @@ class _MessScreenState extends State<MessScreen> {
     });
   }
 
+
+
+  String caterername = '';
+  int? rating;
+  int? rank;
+
+  Future<void> fetchMessInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      caterername = prefs.getString('messName') ?? '';
+      rating = prefs.getInt('rating') ?? 0;
+      rank = prefs.getInt('ranking') ?? 0;
+    });
+
+    print("Mess name: $caterername");
+    print("Rating: $rating");
+    print("Rank: $rank");
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context)
         .size; //To make sure everything fits as per device size
     return Scaffold(
       body: Container(
-        color: Colors.white, // big bug
+        color: Colors.white,// big bug
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -173,7 +207,11 @@ class _MessScreenState extends State<MessScreen> {
                 const SizedBox(height: 16),
                 _MenuSection(),
                 const SizedBox(height: 20),
-                _MessInfo(),
+                _MessInfo(
+                  catererName: caterername,
+                  rating: rating,
+                  rank: rank,
+                ),
                 const SizedBox(height: 30),
               ],
             ),
@@ -233,6 +271,7 @@ class _FeedbackCardState extends State<_FeedbackCard> {
                       builder: (context) => MessFeedbackPage(),
                     ),
                   );
+
                 });
               },
               child: const Text(
@@ -247,16 +286,19 @@ class _FeedbackCardState extends State<_FeedbackCard> {
   }
 }
 
+
 class _MenuSection extends StatefulWidget {
   @override
   State<_MenuSection> createState() => _MenuSectionState();
 }
 
-String copyMessID = '';
+ String copyMessID = '';
 
-String selectedDay = 'Monday'; //also default this to todayday
+String selectedDay = 'Monday';//also default this to todayday
 
 class _MenuSectionState extends State<_MenuSection> {
+
+
   final List<String> daysOnly = [
     'Monday',
     'Tuesday',
@@ -386,7 +428,19 @@ class _MenuCard extends StatelessWidget {
   }
 }
 
+
+
 class _MessInfo extends StatelessWidget {
+  final String catererName;
+  final int? rating;
+  final int? rank;
+
+  const _MessInfo({
+    required this.catererName,
+    required this.rating,
+    required this.rank,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -410,7 +464,7 @@ class _MessInfo extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            "fill below from shared prefs",
+            catererName,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
           const Divider(height: 32),
@@ -420,7 +474,7 @@ class _MessInfo extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      "rating",
+                      rating?.toString() ?? "N/A",
                       style: const TextStyle(
                         fontSize: 24,
                         color: Color(0xFF3754DB),
@@ -436,7 +490,7 @@ class _MessInfo extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      "rank",
+                      rank?.toString() ?? "N/A",
                       style: const TextStyle(
                         fontSize: 24,
                         color: Color(0xFF3754DB),
@@ -455,3 +509,4 @@ class _MessInfo extends StatelessWidget {
     );
   }
 }
+

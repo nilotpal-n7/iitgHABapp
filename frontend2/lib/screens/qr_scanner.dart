@@ -79,6 +79,8 @@ class _QrScanState extends State<QrScan> {
         ),
       );
 
+
+
       if (await Vibration.hasVibrator() ?? false) {
         Vibration.vibrate(duration: 100);
       }
