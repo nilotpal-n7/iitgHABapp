@@ -11,7 +11,7 @@ import 'package:dio/dio.dart';
 
 Future<void> getUserMessInfo() async {
   try {
-    print('API calling');
+    print('API calling getusermessinfo');
     final dio = Dio();
     final token = await getAccessToken();
 
@@ -24,7 +24,8 @@ Future<void> getUserMessInfo() async {
         },
       ),
     );
-
+    print("response");
+  print(response);
     if (response.statusCode == 200) {
       final prefs = await SharedPreferences.getInstance();
 
