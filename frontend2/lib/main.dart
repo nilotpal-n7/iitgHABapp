@@ -23,7 +23,6 @@ Future<void> main() async {
   final bool asLoggedIn = await isLoggedIn();
   await getUserMessInfo();
 
-
   runApp(
     MultiProvider(
       providers: [
