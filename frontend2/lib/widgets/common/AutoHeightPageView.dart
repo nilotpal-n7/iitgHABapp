@@ -20,8 +20,6 @@ class MenuPager extends StatefulWidget {
   State<MenuPager> createState() => _MenuPagerState();
 }
 
-
-
 DateTime _parseTime(String timeStr) {
   final now = DateTime.now();
   final parts = timeStr.split(':');
@@ -52,36 +50,22 @@ class _MenuPagerState extends State<MenuPager> {
   final Map<int, double> _menuHeights = {};
   double _currentHeight = 250;
 
+  // **ADD MAXIMUM HEIGHT LIMIT**
+  static const double maxHeight = 400; // Adjust based on your screen
+
   void _updateHeight(int index, double height) {
-    if (_menuHeights[index] != height) {
+    // **CLAMP HEIGHT TO MAXIMUM**
+    final clampedHeight = height.clamp(200.0, maxHeight);
+
+    if (_menuHeights[index] != clampedHeight) {
       setState(() {
-        _menuHeights[index] = height;
-        if (_pageController.page?.round() == index || _menuHeights.length == 1) {
-          _currentHeight = height;
+        _menuHeights[index] = clampedHeight;
+        if (_pageController.page?.round() == index ||
+            _menuHeights.length == 1) {
+          _currentHeight = clampedHeight;
         }
       });
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    _pageController.addListener(() {
-      final page = _pageController.page ?? 0.0;
-      final int left = page.floor();
-      final int right = page.ceil();
-
-      if (_menuHeights.containsKey(left) && _menuHeights.containsKey(right)) {
-        final double lHeight = _menuHeights[left]!;
-        final double rHeight = _menuHeights[right]!;
-        final double frac = page - left;
-
-        setState(() {
-          _currentHeight = lHeight + (rHeight - lHeight) * frac;
-        });
-      }
-    });
   }
 
   @override
@@ -89,7 +73,7 @@ class _MenuPagerState extends State<MenuPager> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
-      height: _currentHeight,
+      height: _currentHeight.clamp(200.0, maxHeight), // **CLAMP HERE TOO**
       child: PageView.builder(
         controller: _pageController,
         itemCount: widget.sortedMenus.length,
@@ -100,12 +84,15 @@ class _MenuPagerState extends State<MenuPager> {
             padding: const EdgeInsets.only(right: 12.0),
             child: MeasureSize(
               onChange: (size) => _updateHeight(index, size.height),
-              child: IndividualMealCard(
-                menu: menu,
-                currentMessId: widget.messId,
-                userMessId: widget.userMessId,
-                parseTime: _parseTime,
-                formatDuration: _formatDuration,
+              child: SingleChildScrollView(
+                // **ADD SCROLLING**
+                child: IndividualMealCard(
+                  menu: menu,
+                  currentMessId: widget.messId,
+                  userMessId: widget.userMessId,
+                  parseTime: _parseTime,
+                  formatDuration: _formatDuration,
+                ),
               ),
             ),
           );
@@ -114,3 +101,72 @@ class _MenuPagerState extends State<MenuPager> {
     );
   }
 }
+
+//
+// class _MenuPagerState extends State<MenuPager> {
+//   final PageController _pageController = PageController(viewportFraction: 0.95);
+//   final Map<int, double> _menuHeights = {};
+//   double _currentHeight = 250;
+//
+//   void _updateHeight(int index, double height) {
+//     if (_menuHeights[index] != height) {
+//       setState(() {
+//         _menuHeights[index] = height;
+//         if (_pageController.page?.round() == index || _menuHeights.length == 1) {
+//           _currentHeight = height;
+//         }
+//       });
+//     }
+//   }
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//
+//     _pageController.addListener(() {
+//       final page = _pageController.page ?? 0.0;
+//       final int left = page.floor();
+//       final int right = page.ceil();
+//
+//       if (_menuHeights.containsKey(left) && _menuHeights.containsKey(right)) {
+//         final double lHeight = _menuHeights[left]!;
+//         final double rHeight = _menuHeights[right]!;
+//         final double frac = page - left;
+//
+//         setState(() {
+//           _currentHeight = lHeight + (rHeight - lHeight) * frac;
+//         });
+//       }
+//     });
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return AnimatedContainer(
+//       duration: const Duration(milliseconds: 250),
+//       curve: Curves.easeInOut,
+//       height: _currentHeight,
+//       child: PageView.builder(
+//         controller: _pageController,
+//         itemCount: widget.sortedMenus.length,
+//         itemBuilder: (context, index) {
+//           final menu = widget.sortedMenus[index];
+//
+//           return Padding(
+//             padding: const EdgeInsets.only(right: 12.0),
+//             child: MeasureSize(
+//               onChange: (size) => _updateHeight(index, size.height),
+//               child: IndividualMealCard(
+//                 menu: menu,
+//                 currentMessId: widget.messId,
+//                 userMessId: widget.userMessId,
+//                 parseTime: _parseTime,
+//                 formatDuration: _formatDuration,
+//               ),
+//             ),
+//           );
+//         },
+//       ),
+//     );
+//   }
+// }
