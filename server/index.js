@@ -12,7 +12,7 @@ const hostelRoute = require("./modules/hostel/hostelRoute.js");
 const qrRoute = require("./modules/qr/qrRoute.js");
 const messRoute = require("./modules/mess/messRoute.js");
 const logsRoute = require("./modules/mess/ScanLogsRoute.js");
-const cors = require("cors");
+// const cors = require("cors");
 const {
   wednesdayScheduler,
   sundayScheduler,
@@ -30,21 +30,21 @@ const app = express();
 const MONGOdb_uri = process.env.MONGODB_URI;
 const PORT = process.env.PORT || 3000;
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: "http://localhost:5173",
+//     credentials: true,
+//   })
+// );
 
 // Middleware
 app.use(express.json());
-app.use(
-  cors({
-    origin: "http://localhost:5173", // your frontend port
-    credentials: true, // allow cookies
-  })
-);
+// app.use(
+//   cors({
+//     origin: "http://localhost:5173", // your frontend port
+//     credentials: true, // allow cookies
+//   })
+// );
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
