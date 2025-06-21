@@ -35,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     fetchUserData();
     fetchMessIdAndToken();
+
   }
 
   Future<void> fetchUserData() async {
@@ -62,7 +63,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> fetchMessIdAndToken() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      currSubscribedMess = prefs.getString('curr_subscribed_mess') ?? '';
+      currSubscribedMess = prefs.getString('messID') ?? '';
+      print("mess id: ");
+      print(currSubscribedMess);
       token = prefs.getString('access_token');
     });
   }
@@ -226,7 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             final hostelData = messProvider.hostelMap[currSubscribedMess];
-            final messId = hostelData?.messid ?? '6826dfda8493bb0870b10cbf';
+            final messId = currSubscribedMess;
 
             return MenuFutureBuilder(
               messId: messId,
