@@ -8,6 +8,69 @@ const { adminjwtsecret } = require("../../config/default.js");
 dotenv.config();
 // Added comment 32
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     UserTimeStamp:
+ *       type: object
+ *       required:
+ *         - user
+ *       properties:
+ *         user:
+ *           type: string
+ *           description: Reference to User ObjectId
+ *           example: "64a1b2c3d4e5f6789012345"
+ *         reason_for_change:
+ *           type: string
+ *           description: Reason for hostel change
+ *           default: ""
+ *           example: "Academic requirements"
+ * 
+ *     Hostel:
+ *       type: object
+ *       required:
+ *         - hostel_name
+ *         - users
+ *         - curr_cap
+ *         - password
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: Unique identifier for the hostel
+ *           example: "64a1b2c3d4e5f6789012346"
+ *         hostel_name:
+ *           type: string
+ *           description: Name of the hostel
+ *           example: "Kameng Hostel"
+ *         users:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/UserTimeStamp'
+ *           description: Array of users in this hostel
+ *           default: []
+ *           example: [
+ *             {
+ *               "user": "64a1b2c3d4e5f6789012345",
+ *               "reason_for_change": "Academic requirements"
+ *             }
+ *           ]
+ *         messId:
+ *           type: string
+ *           description: Reference to Mess ObjectId
+ *           example: "64a1b2c3d4e5f6789012347"
+ *         curr_cap:
+ *           type: number
+ *           description: Current capacity/number of users in hostel
+ *           default: 0
+ *           example: 150
+ *         password:
+ *           type: string
+ *           format: password
+ *           description: Hashed password for hostel authentication
+ *           example: "$2b$10$N9qo8uLOickgx2ZMRZoMye..."
+ */
+
 const userTimeStampSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,

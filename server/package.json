@@ -29,6 +29,8 @@
     "papaparse": "^5.5.3",
     "qrcode": "^1.5.4",
     "server": "file:",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
