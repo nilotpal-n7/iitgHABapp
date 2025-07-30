@@ -10,14 +10,13 @@
 
 An Official platform being made for IIT Guwahati residents to improve their living experience in campus.
 
-This app helps students to put a complaint about issues faced in hostel. It also has a mess card system which enables swift authentication for mess purposes.
+This app helps students to put a complaint about issues faced in hostel. It also has a mess card system which enables swift authentication for mess related purposes.
 
 ---
 
 ## 📱 UI of the Application
 
 > All UI mock-ups, prototypes, designs were created in Figma.
-
 
 <div align="center">
   <img src="./readme-assets/boardingscreen.png" width="24%" alt="Mockup 1"/>
@@ -30,9 +29,7 @@ This app helps students to put a complaint about issues faced in hostel. It also
   <img src="./readme-assets/scanstatus3.png" width="24%" alt="Mockup 8"/>
 </div>
 
-
 ## NOTE: JUST ONE PART OF THE APP OTHER PART IN PROGRESS
-
 
 ---
 
