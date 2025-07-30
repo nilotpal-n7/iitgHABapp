@@ -36,5 +36,4 @@ jobs:
             cat <<EOF > .env
             ${{ secrets.EC2_ENV }}
             EOF
-            pm2 stop server || true
-            pm2 start index.js --name server
+            pm2 restart server || pm2 start index.js --name server
