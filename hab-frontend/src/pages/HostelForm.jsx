@@ -19,7 +19,6 @@ export default function HostelForm() {
     const hostelData = {
       hostel_name: hostelName,
       current_cap: Number(capacity),
-      messId,
       password,
     };
 
