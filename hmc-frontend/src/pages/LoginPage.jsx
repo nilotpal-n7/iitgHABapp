@@ -13,7 +13,7 @@ export function LoginPage() {
     async function fetchHostels() {
       try {
         await axios
-          .get("http://localhost:8000/api/hostel/all", {
+          .get("https://hab.codingclub.in/api/hostel/all", {
             withCredentials: true,
           })
           .then((res) => setHostels(res.data));

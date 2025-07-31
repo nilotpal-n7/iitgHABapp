@@ -12,7 +12,7 @@ const hostelRoute = require("./modules/hostel/hostelRoute.js");
 const qrRoute = require("./modules/qr/qrRoute.js");
 const messRoute = require("./modules/mess/messRoute.js");
 const logsRoute = require("./modules/mess/ScanLogsRoute.js");
-// const cors = require("cors");
+const cors = require("cors");
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
@@ -43,7 +43,7 @@ const swaggerOptions = {
       description: "API documentation for IITG HAB application",
       contact: {
         name: "API Support",
-        email: "md.hassan@iitg.ac.in"
+        email: "md.hassan@iitg.ac.in",
       },
     },
     servers: [
@@ -66,29 +66,29 @@ const swaggerOptions = {
       },
     },
   },
-  apis: [
-    "./modules/**/*.js",
-    "index.js",
-  ]
+  apis: ["./modules/**/*.js", "index.js"],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
-app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  explorer: true,
-  customSiteTitle: "IITG HAB API Documentation",
-}));
+app.use(
+  "/api/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    explorer: true,
+    customSiteTitle: "IITG HAB API Documentation",
+  })
+);
 
 app.get("/api/swagger.json", (req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.send(swaggerSpec);
 });
-// app.use(
-//   cors({
-//     origin: "http://localhost:5173",
-//     credentials: true,
-//   })
-// );
+app.use(
+  cors({
+    origin: "*", // Not recommended for production
+  })
+);
 
 // Middleware
 app.use(express.json());
@@ -136,7 +136,7 @@ app.get("/", (req, res) => {
  *    get:
  *      summary: "Health check hello endpoint"
  *      tags: ["Health"]
- *      responses: 
+ *      responses:
  *        200:
  *          description: "Hello from server"
  */
