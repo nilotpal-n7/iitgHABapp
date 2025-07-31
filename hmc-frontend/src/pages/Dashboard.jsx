@@ -6,10 +6,18 @@ import Menu_content from "../components/Menu_content.jsx";
 import axios from "axios";
 import CreateMenuFallback from "../components/CreateMenuFallback.jsx"; // Renamed to match your usage
 
-const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const days = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
 
 export const Dashboard = () => {
-  const { user, loading, logout } = useAuth();
+  const { user, logout } = useAuth();
   //if (loading) return <div>Loading...</div>;
   console.log("here", user);
 
@@ -37,8 +45,11 @@ export const Dashboard = () => {
 
     try {
       setIsLoading(true);
-      console.log(`Fetching menu for Mess ID: ${user.messId}, Day: ${days[activeTab]}`);
-      const response = await axios.post(`http://localhost:8000/api/mess/menu/admin/${user.messId}`,
+      console.log(
+        `Fetching menu for Mess ID: ${user.messId}, Day: ${days[activeTab]}`
+      );
+      const response = await axios.post(
+        `https://hab.codingclub.in/api/mess/menu/admin/${user.messId}`,
         { day: days[activeTab] }, // Data for the request body
         { withCredentials: true } // Axios option for cookies/credentials
       );
@@ -59,29 +70,29 @@ export const Dashboard = () => {
         };
 
         // Assuming response.data is an array of menu items
-        response.data.forEach(element => {
-          if (element.type === 'Breakfast') {
-            element.items.forEach(item => {
+        response.data.forEach((element) => {
+          if (element.type === "Breakfast") {
+            element.items.forEach((item) => {
               menuData.breakfast.push({
                 id: item._id,
                 name: item.name,
-                category: item.type // This refers to the Item's type (Dish, Breads, Others)
+                category: item.type, // This refers to the Item's type (Dish, Breads, Others)
               });
             });
-          } else if (element.type === 'Lunch') {
-            element.items.forEach(item => {
+          } else if (element.type === "Lunch") {
+            element.items.forEach((item) => {
               menuData.lunch.push({
                 id: item._id,
                 name: item.name,
-                category: item.type
+                category: item.type,
               });
             });
-          } else if (element.type === 'Dinner') {
-            element.items.forEach(item => {
+          } else if (element.type === "Dinner") {
+            element.items.forEach((item) => {
               menuData.dinner.push({
                 id: item._id,
                 name: item.name,
-                category: item.type
+                category: item.type,
               });
             });
           }
@@ -106,32 +117,32 @@ export const Dashboard = () => {
     fetchMess();
   }, [fetchMess]); // Depend on the memoized fetchMess function
 
-
   // Function to be passed to CreateMenuFallback
   // This is called when CreateMenuFallback successfully creates a menu
   const handleSuccessfulMenuCreation = () => {
-    console.log("CreateMenuFallback signaled success. Re-fetching menu data...");
+    console.log(
+      "CreateMenuFallback signaled success. Re-fetching menu data..."
+    );
     setShowCreateMenu(false); // Hide the creation form
     fetchMess(); // Re-fetch data to display the newly created menu
   };
-  const handleSuccessfulMenuItemCreation=()=>{
-    console.log("CreateMenuFallback signaled success. Re-fetching menu data...");
+  const handleSuccessfulMenuItemCreation = () => {
+    console.log(
+      "CreateMenuFallback signaled success. Re-fetching menu data..."
+    );
     fetchMess();
-  }
+  };
   // Function to explicitly go to the CreateMenuFallback form (e.g., from a "Modify" button)
   const handleGoToCreateMenu = () => {
     setShowCreateMenu(true);
     // Optionally clear currentMenu or set a loading state here if the form takes over
   };
 
-
-
   return (
     <div>
       <h1>Dashboard</h1>
       <h2>{user.hostel_name}</h2>
       <button onClick={() => logout()}>Logout</button>
-
 
       <div className="menu-page">
         <div className="header">
@@ -154,7 +165,9 @@ export const Dashboard = () => {
         {/* Conditional Rendering based on showCreateMenu state */}
         {showCreateMenu ? (
           // Pass the callback function to CreateMenuFallback
-          <CreateMenuFallback onSuccessfulCreation={handleSuccessfulMenuCreation} />
+          <CreateMenuFallback
+            onSuccessfulCreation={handleSuccessfulMenuCreation}
+          />
         ) : (
           <>
             <div className="day-header">
@@ -170,7 +183,7 @@ export const Dashboard = () => {
                 dinner={currentMenu.dinner}
                 messId={user?.messId}
                 onSuccessfulItemCreation={handleSuccessfulMenuItemCreation}
-                click={handleGoToCreateMenu} 
+                click={handleGoToCreateMenu}
               />
             )}
           </>

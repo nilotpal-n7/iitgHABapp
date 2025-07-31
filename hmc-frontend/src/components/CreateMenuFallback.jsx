@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import axios from 'axios'; // Assuming you'll make an API call
+import React, { useState } from "react";
+import axios from "axios"; // Assuming you'll make an API call
 // Corrected import path for AuthProvider - assuming a common src/context/AuthProvider structure
-import { useAuth } from '../context/AuthProvider'; // Adjust this path based on your actual project structure
+import { useAuth } from "../context/AuthProvider"; // Adjust this path based on your actual project structure
 
 // This section simulates a separate CSS file for styling
 // In a real project, this would be a .css file imported, e.g., import './MenuForm.css';
@@ -99,22 +99,30 @@ const styles = `
 // CreateMenuFallback component receives onSuccessfulCreation prop
 function CreateMenuFallback({ onSuccessfulCreation }) {
   const { user } = useAuth(); // Assuming you need user.messId here for the API call
-  const [menuType, setMenuType] = useState('');
-  const [day, setDay] = useState('');
+  const [menuType, setMenuType] = useState("");
+  const [day, setDay] = useState("");
   const [BisGala, setBIsGala] = useState(false);
-  const [BstartTime, setBStartTime] = useState('');
-  const [BendTime, setBEndTime] = useState('');
-  const [LstartTime, setLStartTime] = useState('');
-  const [LendTime, setLEndTime] = useState('');
+  const [BstartTime, setBStartTime] = useState("");
+  const [BendTime, setBEndTime] = useState("");
+  const [LstartTime, setLStartTime] = useState("");
+  const [LendTime, setLEndTime] = useState("");
   const [LisGala, setLIsGala] = useState(false);
-  const [DstartTime, setDStartTime] = useState('');
-  const [DendTime, setDEndTime] = useState('');
-const [DisGala, setDIsGala] = useState(false);
+  const [DstartTime, setDStartTime] = useState("");
+  const [DendTime, setDEndTime] = useState("");
+  const [DisGala, setDIsGala] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
-  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const daysOfWeek = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
   const menuTypes = ["Breakfast", "Lunch", "Dinner"];
 
   const handleSubmit = async (event) => {
@@ -135,18 +143,22 @@ const [DisGala, setDIsGala] = useState(false);
       DstartTime: DstartTime,
       DendTime: DendTime,
       DisGala: DisGala, // This 'type' refers to Breakfast/Lunch/Dinner
-      items: [] // Assuming you'll add item IDs here later or in a separate form
+      items: [], // Assuming you'll add item IDs here later or in a separate form
     };
 
-    console.log('Attempting to create menu with data:', formData);
+    console.log("Attempting to create menu with data:", formData);
 
     try {
       // Replace with your actual API endpoint for creating a menu
-      const response = await axios.post('http://localhost:8000/api/mess/menu/create', formData, {
-        withCredentials: true,
-      });
+      const response = await axios.post(
+        "https://hab.codingclub.in/api/mess/menu/create",
+        formData,
+        {
+          withCredentials: true,
+        }
+      );
 
-      console.log('Menu creation successful:', response.data);
+      console.log("Menu creation successful:", response.data);
       setSuccessMessage("Menu created successfully!");
 
       // Call the callback function passed from Dashboard
@@ -156,23 +168,28 @@ const [DisGala, setDIsGala] = useState(false);
       }
 
       // Optionally reset form fields after successful submission
-      
-      setBIsGala(false);
-      setDay('');
-      setBStartTime('');
-      setBEndTime('');
-      setMenuType('');
-      setLIsGala(false);
-      setLStartTime('');
-      setLEndTime('');
-      setMenuType('');
-      setDIsGala(false);
-      setDStartTime('');
-      setDEndTime('');
 
+      setBIsGala(false);
+      setDay("");
+      setBStartTime("");
+      setBEndTime("");
+      setMenuType("");
+      setLIsGala(false);
+      setLStartTime("");
+      setLEndTime("");
+      setMenuType("");
+      setDIsGala(false);
+      setDStartTime("");
+      setDEndTime("");
     } catch (err) {
-      console.error('Error creating menu:', err.response ? err.response.data : err.message);
-      setError(err.response?.data?.message || "Failed to create menu. Please try again.");
+      console.error(
+        "Error creating menu:",
+        err.response ? err.response.data : err.message
+      );
+      setError(
+        err.response?.data?.message ||
+          "Failed to create menu. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -184,14 +201,20 @@ const [DisGala, setDIsGala] = useState(false);
       <div className="menu-form-container">
         <h2 className="form-title">Create New Menu for a Day</h2>
         <form onSubmit={handleSubmit}>
-          {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
-          {successMessage && <p style={{ color: 'green', textAlign: 'center' }}>{successMessage}</p>}
-
-          
+          {error && (
+            <p style={{ color: "red", textAlign: "center" }}>{error}</p>
+          )}
+          {successMessage && (
+            <p style={{ color: "green", textAlign: "center" }}>
+              {successMessage}
+            </p>
+          )}
 
           <div className="form-group">
             <p>Breakfast</p>
-            <label htmlFor="day" className="form-label">Day of the Week</label>
+            <label htmlFor="day" className="form-label">
+              Day of the Week
+            </label>
             <select
               id="day"
               className="form-select"
@@ -210,7 +233,9 @@ const [DisGala, setDIsGala] = useState(false);
           </div>
 
           <div className="form-group">
-            <label htmlFor="startTime" className="form-label">Start Time</label>
+            <label htmlFor="startTime" className="form-label">
+              Start Time
+            </label>
             <input
               type="time"
               id="startTime"
@@ -223,7 +248,9 @@ const [DisGala, setDIsGala] = useState(false);
           </div>
 
           <div className="form-group">
-            <label htmlFor="endTime" className="form-label">End Time</label>
+            <label htmlFor="endTime" className="form-label">
+              End Time
+            </label>
             <input
               type="time"
               id="endTime"
@@ -244,15 +271,22 @@ const [DisGala, setDIsGala] = useState(false);
               onChange={(e) => setBIsGala(e.target.checked)}
               disabled={isSubmitting}
             />
-            <label htmlFor="isGala" className="form-label" style={{ marginBottom: 0 }}>Is this a Gala Menu?</label>
+            <label
+              htmlFor="isGala"
+              className="form-label"
+              style={{ marginBottom: 0 }}
+            >
+              Is this a Gala Menu?
+            </label>
           </div>
-              <div className="form-group">
+          <div className="form-group">
             <p>Lunch</p>
-            
           </div>
 
           <div className="form-group">
-            <label htmlFor="startTime" className="form-label">Start Time</label>
+            <label htmlFor="startTime" className="form-label">
+              Start Time
+            </label>
             <input
               type="time"
               id="startTime"
@@ -265,7 +299,9 @@ const [DisGala, setDIsGala] = useState(false);
           </div>
 
           <div className="form-group">
-            <label htmlFor="endTime" className="form-label">End Time</label>
+            <label htmlFor="endTime" className="form-label">
+              End Time
+            </label>
             <input
               type="time"
               id="endTime"
@@ -286,15 +322,22 @@ const [DisGala, setDIsGala] = useState(false);
               onChange={(e) => setLIsGala(e.target.checked)}
               disabled={isSubmitting}
             />
-            <label htmlFor="isGala" className="form-label" style={{ marginBottom: 0 }}>Is this a Gala Menu?</label>
+            <label
+              htmlFor="isGala"
+              className="form-label"
+              style={{ marginBottom: 0 }}
+            >
+              Is this a Gala Menu?
+            </label>
           </div>
           <div className="form-group">
             <p>Dinner</p>
-            
           </div>
 
           <div className="form-group">
-            <label htmlFor="startTime" className="form-label">Start Time</label>
+            <label htmlFor="startTime" className="form-label">
+              Start Time
+            </label>
             <input
               type="time"
               id="startTime"
@@ -307,7 +350,9 @@ const [DisGala, setDIsGala] = useState(false);
           </div>
 
           <div className="form-group">
-            <label htmlFor="endTime" className="form-label">End Time</label>
+            <label htmlFor="endTime" className="form-label">
+              End Time
+            </label>
             <input
               type="time"
               id="endTime"
@@ -328,10 +373,20 @@ const [DisGala, setDIsGala] = useState(false);
               onChange={(e) => setDIsGala(e.target.checked)}
               disabled={isSubmitting}
             />
-            <label htmlFor="isGala" className="form-label" style={{ marginBottom: 0 }}>Is this a Gala Menu?</label>
+            <label
+              htmlFor="isGala"
+              className="form-label"
+              style={{ marginBottom: 0 }}
+            >
+              Is this a Gala Menu?
+            </label>
           </div>
-          <button type="submit" className="submit-button" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating Menu...' : 'Add Menu'}
+          <button
+            type="submit"
+            className="submit-button"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Creating Menu..." : "Add Menu"}
           </button>
         </form>
       </div>

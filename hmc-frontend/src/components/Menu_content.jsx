@@ -2,19 +2,21 @@ import React, { useState } from "react";
 import { useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthProvider";
-import '../index.css';
+import "../index.css";
 import CreateMenu from "./CreateMenuFallback";
 function Menu_content(props) {
-  const { user} = useAuth();
+  const { user } = useAuth();
   const [menuData, setMenuData] = useState({
     breakfast: props.breakfast || [],
     lunch: props.lunch || [],
     dinner: props.dinner || [],
   });
-  const messId = user.messId; 
+  const messId = user.messId;
   console.log(menuData);
-  const empty={
-    breakfast:[],lunch:[],dinner:[]
+  const empty = {
+    breakfast: [],
+    lunch: [],
+    dinner: [],
   };
   const [editingItem, setEditingItem] = useState(null);
   const [editValue, setEditValue] = useState("");
@@ -39,19 +41,23 @@ function Menu_content(props) {
   // Function to create new item via API
   const createMenuItem = async (itemData) => {
     try {
-      const response = await axios.post(`http://localhost:8000/api/mess/menu/item/create`, {
-        menuId: itemData.id,
-        name: itemData.name,
-        type: itemData.category,
-        meal:itemData.section,
-        day:props.day,
-        messId:messId // Breakfast, Lunch, or Dinner
-      }, {
-        withCredentials: true,
-      });
-      
+      const response = await axios.post(
+        `https://hab.codingclub.in/api/mess/menu/item/create`,
+        {
+          menuId: itemData.id,
+          name: itemData.name,
+          type: itemData.category,
+          meal: itemData.section,
+          day: props.day,
+          messId: messId, // Breakfast, Lunch, or Dinner
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
       console.log("Item created successfully:", response.data);
-      if(props.onSuccessfulItemCreation){
+      if (props.onSuccessfulItemCreation) {
         props.onSuccessfulItemCreation();
       }
       return response.data; // Return the created item with server-generated ID
@@ -64,13 +70,17 @@ function Menu_content(props) {
   // Function to update existing item via API
   const updateMenuItem = async (messId, itemData) => {
     try {
-      const response = await axios.post(`http://localhost:8000/api/mess/menu/modify/${messId}`, {
-        _Id: itemData.id,
-        name: itemData.name,
-      }, {
-        withCredentials: true,
-      });
-      
+      const response = await axios.post(
+        `https://hab.codingclub.in/api/mess/menu/modify/${messId}`,
+        {
+          _Id: itemData.id,
+          name: itemData.name,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
       console.log("Item updated successfully:", response.data);
       return response.data;
     } catch (error) {
@@ -82,15 +92,17 @@ function Menu_content(props) {
   // Function to delete item via API
   const deleteMenuItem = async (itemData) => {
     try {
-      console.log("id ",itemData.id);
-      const response=await axios.delete('http://localhost:8000/api/mess/menu/item/delete', {
-        data: {
-          _Id: itemData.id
-        },
-        withCredentials: true,
-      });
+      console.log("id ", itemData.id);
+      const response = await axios.delete(
+        "https://hab.codingclub.in/api/mess/menu/item/delete",
+        {
+          data: {
+            _Id: itemData.id,
+          },
+          withCredentials: true,
+        }
+      );
 
-    
       console.log("Item deleted successfully:", response.data);
       return response.data;
     } catch (error) {
@@ -138,39 +150,39 @@ function Menu_content(props) {
       if (item.isNew) {
         // Create new item
         const itemData = {
-          id:Date.now(),
+          id: Date.now(),
           name: editValue,
           category: item.category,
           section: section,
         };
-        
+
         const createdItem = await createMenuItem(itemData);
-        
+
         // Update local state with the server response (which should include the real ID)
         setMenuData((prev) => ({
           ...prev,
           [section.toLowerCase()]: prev[section.toLowerCase()].map((prevItem) =>
             prevItem.id === editingItem
-              ? { 
-                  ...createdItem, 
+              ? {
+                  ...createdItem,
                   id: createdItem._id || createdItem.id, // Use server ID
                   name: editValue,
-                  isNew: false 
+                  isNew: false,
                 }
               : prevItem
           ),
         }));
       } else {
         // Update existing item
-        
+
         const itemData = {
           id: item.id,
           name: editValue,
           category: item.category,
         };
-        
+
         await updateMenuItem(messId, itemData);
-        
+
         // Update local state
         setMenuData((prev) => ({
           ...prev,
@@ -267,7 +279,6 @@ function Menu_content(props) {
     const groupedItems = groupItemsByCategory(items, title);
 
     return (
-      
       <div className="menu-section" id={title}>
         <h2>{props.day} Menu</h2>
         <h3 className="section-title">{title}</h3>
