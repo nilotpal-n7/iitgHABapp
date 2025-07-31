@@ -6,13 +6,13 @@ const createHostel = async (req, res) => {
   try {
     const hostel = await Hostel.create(req.body);
 
-    const assignMess = await Mess.findByIdAndUpdate(req.body.messId, {
-      hostelId: hostel._id,
-    });
+    // const assignMess = await Mess.findByIdAndUpdate(req.body.messId, {
+    //   hostelId: hostel._id,
+    // });
 
-    if (!assignMess) {
-      return res.status(400).json({ message: "Mess not found" });
-    }
+    // if (!assignMess) {
+    //   return res.status(400).json({ message: "Mess not found" });
+    // }
 
     return res
       .status(201)
@@ -99,8 +99,6 @@ const deleteHostel = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
-
 
 const applyMessChange = async (req, res) => {
   const { hostel_name, roll_number, reason } = req.body;
