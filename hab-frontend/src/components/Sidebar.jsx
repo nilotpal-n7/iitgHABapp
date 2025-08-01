@@ -49,6 +49,12 @@ const Sidebar = () => {
       name: "Hostel Statistics",
       path: "/hostelstats",
       icon: <BarChartOutlined />
+    },
+    {
+      key: "7",
+      name: "Mess Change Applications",
+      path: "/mess/changeapplication",
+      icon: <BarChartOutlined />
     }
   ];
 
