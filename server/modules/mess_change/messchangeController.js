@@ -72,7 +72,7 @@ const { hostelId } = req.params;
 const acceptMessChangeRequest = async (req, res) => {
   try {
     const { userId } = req.body;
-
+    // const mess = await Hostel.findOne({ user.next_mess });
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -82,6 +82,7 @@ const acceptMessChangeRequest = async (req, res) => {
     user.got_mess_changed = true;
     user.mess_change_button_pressed = false;
     await user.save();
+
 
     //Remove user's mess change request entry from their current hostel
     await Hostel.updateOne(
@@ -126,61 +127,65 @@ const rejectMessChangeRequest = async (req, res) => {
   }
 };
 
-const messChangeRequest = async (req,res) => {
+const messChangeRequest = async (req, res) => {
   const { hostel_name, roll_number, reason } = req.body;
+
   const today = new Date();
   const dayOfMonth = today.getDate();
 
   if (dayOfMonth < 24 || dayOfMonth > 27) {
     return res.status(403).json({
-      message:
-        "Mess change requests only allowed between 24th and 27th of a month",
+      message: "Mess change requests are only allowed between the 24th and 27th of the month.",
     });
   }
 
   try {
-    const hostel = await Hostel.findOne({ hostel_name });
+    const hostel = await Hostel.findOne({hostel_name });
     const user = await User.findOne({ rollNumber: roll_number });
 
+  
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    if (!hostel) {
+      return res.status(404).json({ message: "Mess not found." });
+    }
+
+    
     user.applied_hostel_string = hostel_name;
     user.mess_change_button_pressed = true;
 
-    if (
-      hostel &&
-      hostel._id.toString() !== user.hostel.toString() &&
-      hostel.curr_cap < 150 &&
-      !user.applied_for_mess_changed
-    ) {
-      const userCurrMess = await Hostel.findById(user.curr_subscribed_mess);
+    const isDifferentHostel = hostel.messId !== user.hostel;
+    const hasNotApplied = !user.applied_for_mess_changed;
 
-      hostel.curr_cap += 1;
-      user.next_mess = hostel._id;
+    if (isDifferentHostel && hasNotApplied) {
+
+      // Update user fields
+      user.next_mess = hostel.messId;
       user.applied_for_mess_changed = true;
 
-      userCurrMess.users.pull({ user: user._id });
-      hostel.users.push({ user: user._id, reason_for_change: reason });
-
+      
+      // hostel.users.push({ user: user._id, reason_for_change: reason });
       await user.save();
-      await hostel.save();
-      await userCurrMess.save();
+      // await mess.save();
 
       return res.status(200).json({
-        message: "Mess change request proceeded",
+        message: "Mess change request processed successfully.",
         status_code: 0,
       });
     } else {
-      await user.save();
+      await user.save(); 
       return res.status(200).json({
-        message:
-          "Sorry, the capacity has been reached or you have already applied or you're applying for the same hostel",
+        message: "Request denied: capacity full, same hostel selected, or request already made.",
         status_code: 1,
       });
     }
   } catch (err) {
-    console.log(err);
-    return res.status(500).json({ message: "Error occurred" });
+    console.error("Error during mess change request:", err);
+    return res.status(500).json({ message: "Internal server error occurred." });
   }
-}
+};
+
 
 module.exports = {
   getAllMessChangeRequests,
