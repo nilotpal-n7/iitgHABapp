@@ -84,21 +84,15 @@ app.get("/api/swagger.json", (req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.send(swaggerSpec);
 });
-app.use(
-  cors({
-    origin: "*", // Not recommended for production
-    credentials: true,
-  })
-);
 
 // Middleware
 app.use(express.json());
-// app.use(
-//   cors({
-//     origin: "http://localhost:5173", // your frontend port
-//     credentials: true, // allow cookies
-//   })
-// );
+app.use(
+  cors({
+    origin: "http://localhost:5173", // your frontend port
+    credentials: true, // allow cookies
+  })
+);
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
