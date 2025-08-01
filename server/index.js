@@ -28,6 +28,7 @@ const {
 const {
   feedbackResetScheduler,
 } = require("./modules/feedback/feedbackScheduler.js");
+const messChangeRouter = require("./modules/mess_change/messchangeRoute.js");
 require("dotenv").config();
 
 const app = express();
@@ -167,6 +168,9 @@ app.use("/api/qr", qrRoute);
 
 //mess route
 app.use("/api/mess", messRoute);
+
+//mess change route
+app.use("/api/mess-change", messChangeRouter);
 
 //scanlogs route
 app.use("/api/logs", logsRoute);
