@@ -12,7 +12,7 @@ const hostelRoute = require("./modules/hostel/hostelRoute.js");
 const qrRoute = require("./modules/qr/qrRoute.js");
 const messRoute = require("./modules/mess/messRoute.js");
 const logsRoute = require("./modules/mess/ScanLogsRoute.js");
-const cors = require("cors");
+// const cors = require("cors");
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
@@ -84,11 +84,12 @@ app.get("/api/swagger.json", (req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.send(swaggerSpec);
 });
-app.use(
-  cors({
-    origin: "*", // Not recommended for production
-  })
-);
+// app.use(
+//   cors({
+//     origin: "*", // Not recommended for production
+//     credentials: true,
+//   })
+// );
 
 // Middleware
 app.use(express.json());
