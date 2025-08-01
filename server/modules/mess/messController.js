@@ -182,14 +182,13 @@ const createMenuItem = async (req, res) => {
         messId,
         day,
         type: meal,
-        items: [newItem._id],
       });
       await newMenu.save();
       menu = newMenu;
     }
 
     menu.items.push(newItem._id);
-    const abc = await menu.save();
+    await menu.save();
     return res.status(201).json(newItem);
   } catch (error) {
     console.error(error);
