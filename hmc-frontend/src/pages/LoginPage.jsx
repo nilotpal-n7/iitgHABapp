@@ -14,7 +14,7 @@ export function LoginPage() {
       try {
         await axios
           .get("https://hab.codingclub.in/api/hostel/all", {
-            withCredentials: true,
+      
           })
           .then((res) => setHostels(res.data));
       } catch (error) {
