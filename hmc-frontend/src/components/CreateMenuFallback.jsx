@@ -1,7 +1,102 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { useAuth } from "../context/AuthProvider";
+import axios from "axios"; // Assuming you'll make an API call
+// Corrected import path for AuthProvider - assuming a common src/context/AuthProvider structure
+import { useAuth } from "../context/AuthProvider"; // Adjust this path based on your actual project structure
+import { API_BASE_URL } from "../apis"; // Assuming you have a common API base URL defined
+// This section simulates a separate CSS file for styling
+// In a real project, this would be a .css file imported, e.g., import './MenuForm.css';
+const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+  .menu-form-container {
+    font-family: 'Inter', sans-serif;
+    background-color: #f0f4f8; /* Light background */
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    max-width: 500px;
+    margin: 2rem auto;
+    border: 1px solid #e2e8f0;
+    color: #334155; /* Darker text */
+  }
+
+  .form-title {
+    font-size: 1.875rem; /* 30px */
+    font-weight: 700;
+    color: #1a202c; /* Very dark blue */
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #4a5568; /* Medium dark blue */
+  }
+
+  .form-input,
+  .form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #cbd5e0; /* Light border */
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #2d3748; /* Darker input text */
+    background-color: #ffffff;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  }
+
+  .form-input:focus,
+  .form-select:focus {
+    outline: none;
+    border-color: #4299e1; /* Blue on focus */
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5); /* Soft blue shadow */
+  }
+
+  .form-checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-checkbox {
+    margin-right: 0.75rem;
+    transform: scale(1.2); /* Slightly larger checkbox */
+  }
+
+  .submit-button {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    background-image: linear-gradient(to right, #4299e1, #63b3ed); /* Blue gradient */
+    color: white;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.125rem;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 4px 10px rgba(66, 153, 225, 0.3);
+  }
+
+  .submit-button:hover {
+    background-image: linear-gradient(to right, #3182ce, #4299e1); /* Darker blue on hover */
+    box-shadow: 0 6px 15px rgba(66, 153, 225, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .submit-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(66, 153, 225, 0.3);
+  }
+`;
+
+// CreateMenuFallback component receives onSuccessfulCreation prop
 function CreateMenuFallback({ onSuccessfulCreation }) {
   const { user } = useAuth();
   const [day, setDay] = useState("");
@@ -53,7 +148,7 @@ function CreateMenuFallback({ onSuccessfulCreation }) {
 
     try {
       const response = await axios.post(
-        "https://hab.codingclub.in/api/mess/menu/create",
+        `${API_BASE_URL}/mess/menu/create`,
         formData,
         {
           withCredentials: true,
