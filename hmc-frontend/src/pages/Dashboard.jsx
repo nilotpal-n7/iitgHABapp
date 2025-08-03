@@ -139,10 +139,10 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="w-screen bg-gray-50">
+    <div className="min-w-7xl bg-gray-50">
       {/* Main Dashboard Header */}
       <div className="bg-white shadow-sm border-b border-gray-200 p-4">
-        <div className="flex justify-between items-center max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mx-auto">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
             <h2 className="text-lg text-gray-600">{user.hostel_name}</h2>

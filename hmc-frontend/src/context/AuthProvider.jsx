@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
       // Set default header for Axios immediately for this session
       axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
 
-      console.log("bugCheck", res.data.hostel);
+      // console.log("bugCheck", res.data.hostel);
 
       // Assuming login also returns user data (hostel data)
       setUser(res.data.hostel);
