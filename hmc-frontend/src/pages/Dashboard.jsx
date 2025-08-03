@@ -42,6 +42,7 @@ export const Dashboard = () => {
   // }
 
   const fetchMess = useCallback(async () => {
+    console.log("Fetching mess for user:", user.messId);
     if (!user?.messId) {
       console.log("User or Mess ID not available, skipping fetchMess.");
       setIsLoading(false);
@@ -54,7 +55,7 @@ export const Dashboard = () => {
         `Fetching menu for Mess ID: ${user.messId}, Day: ${days[activeTab]}`
       );
       const response = await axios.post(
-        `${API_BASE_URL}/mess/menu/admin/${user.messId}`,
+        `${API_BASE_URL}/mess/menu/admin/${user.messId._id}`,
         { day: days[activeTab] }, // Data for the request body
         { withCredentials: true } // Axios option for cookies/credentials
       );
@@ -138,7 +139,7 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="w-screen bg-gray-50">
       {/* Main Dashboard Header */}
       <div className="bg-white shadow-sm border-b border-gray-200 p-4">
         <div className="flex justify-between items-center max-w-7xl mx-auto">
@@ -156,7 +157,7 @@ export const Dashboard = () => {
       </div>
 
       {/* Menu Section */}
-      <div className="max-w-7xl mx-auto">
+      <div className=" mx-auto">
         {/* Menu Page Header */}
         <div className="bg-blue-600 text-white p-6">
           <div className="flex justify-between items-center">
@@ -219,7 +220,7 @@ export const Dashboard = () => {
                   breakfast={currentMenu.breakfast}
                   lunch={currentMenu.lunch}
                   dinner={currentMenu.dinner}
-                  messId={user?.messId}
+                  messId={user.messId._id}
                   onSuccessfulItemCreation={handleSuccessfulMenuItemCreation}
                   click={handleGoToCreateMenu}
                 />
