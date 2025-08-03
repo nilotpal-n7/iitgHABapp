@@ -2,6 +2,7 @@ import { useAuth } from "../context/AuthProvider";
 import React, { useState, useEffect, useCallback } from "react";
 import Menu_content from "../components/Menu_content.jsx";
 import axios from "axios";
+import { API_BASE_URL } from "../apis"; // Assuming you have a common API base URL defined
 import CreateMenuFallback from "../components/CreateMenuFallback.jsx";
 
 const days = [
@@ -15,6 +16,7 @@ const days = [
 ];
 
 export const Dashboard = () => {
+  const [menuId, setMenuId] = useState(null);
   const { user, logout } = useAuth();
   console.log("here", user);
 
@@ -30,7 +32,17 @@ export const Dashboard = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
 
+  console.log("User:", user);
+
+  // if(user === null) {
+  //   console.log("User is null");
+  // }
+  // else {
+  //   console.log("User is not null");
+  // }
+
   const fetchMess = useCallback(async () => {
+    console.log("Fetching mess for user:", user.messId);
     if (!user?.messId) {
       console.log("User or Mess ID not available, skipping fetchMess.");
       setIsLoading(false);
@@ -43,9 +55,9 @@ export const Dashboard = () => {
         `Fetching menu for Mess ID: ${user.messId}, Day: ${days[activeTab]}`
       );
       const response = await axios.post(
-        `https://hab.codingclub.in/api/mess/menu/admin/${user.messId}`,
-        { day: days[activeTab] },
-        { withCredentials: true }
+        `${API_BASE_URL}/mess/menu/admin/${user.messId._id}`,
+        { day: days[activeTab] }, // Data for the request body
+        { withCredentials: true } // Axios option for cookies/credentials
       );
 
       if (response.data === "DoesntExist") {
@@ -60,6 +72,7 @@ export const Dashboard = () => {
           breakfast: [],
           lunch: [],
           dinner: [],
+          id: response.data._id, // Store the menu ID for later use
         };
 
         response.data.forEach((element) => {
@@ -126,10 +139,10 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-w-7xl bg-gray-50">
       {/* Main Dashboard Header */}
       <div className="bg-white shadow-sm border-b border-gray-200 p-4">
-        <div className="flex justify-between items-center max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mx-auto">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
             <h2 className="text-lg text-gray-600">{user.hostel_name}</h2>
@@ -144,7 +157,7 @@ export const Dashboard = () => {
       </div>
 
       {/* Menu Section */}
-      <div className="max-w-7xl mx-auto">
+      <div className=" mx-auto">
         {/* Menu Page Header */}
         <div className="bg-blue-600 text-white p-6">
           <div className="flex justify-between items-center">
@@ -207,7 +220,7 @@ export const Dashboard = () => {
                   breakfast={currentMenu.breakfast}
                   lunch={currentMenu.lunch}
                   dinner={currentMenu.dinner}
-                  messId={user?.messId}
+                  messId={user.messId._id}
                   onSuccessfulItemCreation={handleSuccessfulMenuItemCreation}
                   click={handleGoToCreateMenu}
                 />
