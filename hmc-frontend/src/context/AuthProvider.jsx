@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { API_BASE_URL } from "../apis"; // Assuming you have a common API base URL defined
 
 const AuthContext = createContext();
 
@@ -33,7 +34,7 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log("Attempting login for:", hostel_name);
       const res = await axios.post(
-        "https://hab.codingclub.in/api/hostel/login",
+        `${API_BASE_URL}/hostel/login`,
         {
           hostel_name,
           password,
@@ -105,7 +106,7 @@ export const AuthProvider = ({ children }) => {
       axios.defaults.headers.common[
         "Authorization"
       ] = `Bearer ${currentAuthToken}`;
-      const res = await axios.get(`https://hab.codingclub.in/api/hostel/get`);
+      const res = await axios.get(`${API_BASE_URL}/hostel/get`);
       setUser(res.data.hostel);
       console.log("getData successful. User set.");
     } catch (err) {

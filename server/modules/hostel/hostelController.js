@@ -37,6 +37,7 @@ const loginHostel = async (req, res) => {
       message: "Logged in successfully",
       token,
       hostel,
+      messId: hostel.messId,
     });
   } catch (err) {
     console.log(err);

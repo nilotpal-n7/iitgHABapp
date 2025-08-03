@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios"; // Assuming you'll make an API call
 // Corrected import path for AuthProvider - assuming a common src/context/AuthProvider structure
 import { useAuth } from "../context/AuthProvider"; // Adjust this path based on your actual project structure
-
+import { API_BASE_URL } from "../apis"; // Assuming you have a common API base URL defined
 // This section simulates a separate CSS file for styling
 // In a real project, this would be a .css file imported, e.g., import './MenuForm.css';
 const styles = `
@@ -151,7 +151,7 @@ function CreateMenuFallback({ onSuccessfulCreation }) {
     try {
       // Replace with your actual API endpoint for creating a menu
       const response = await axios.post(
-        "https://hab.codingclub.in/api/mess/menu/create",
+        `${API_BASE_URL}/mess/menu/create`,
         formData,
         {
           withCredentials: true,

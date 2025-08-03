@@ -4,6 +4,7 @@ import "../index.css";
 import Menu_content from "../components/Menu_content.jsx";
 // import menuData from "../menu.js"; // This import seems unused/redundant now
 import axios from "axios";
+import { API_BASE_URL } from "../apis"; // Assuming you have a common API base URL defined
 import CreateMenuFallback from "../components/CreateMenuFallback.jsx"; // Renamed to match your usage
 
 const days = [
@@ -17,6 +18,7 @@ const days = [
 ];
 
 export const Dashboard = () => {
+  const [menuId, setMenuId] = useState(null);
   const { user, logout } = useAuth();
   //if (loading) return <div>Loading...</div>;
   console.log("here", user);
@@ -35,6 +37,15 @@ export const Dashboard = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
 
+  console.log("User:", user);
+
+  // if(user === null) {
+  //   console.log("User is null");
+  // }
+  // else {
+  //   console.log("User is not null");
+  // }
+
   // useCallback to memoize fetchMess, preventing unnecessary re-creations
   const fetchMess = useCallback(async () => {
     if (!user?.messId) {
@@ -49,7 +60,7 @@ export const Dashboard = () => {
         `Fetching menu for Mess ID: ${user.messId}, Day: ${days[activeTab]}`
       );
       const response = await axios.post(
-        `https://hab.codingclub.in/api/mess/menu/admin/${user.messId}`,
+        `${API_BASE_URL}/mess/menu/admin/${user.messId}`,
         { day: days[activeTab] }, // Data for the request body
         { withCredentials: true } // Axios option for cookies/credentials
       );
@@ -63,10 +74,13 @@ export const Dashboard = () => {
         console.log("Menu found for", days[activeTab], response.data);
         setShowCreateMenu(false); // Show the menu content
 
+        console.log("Menu ID:" ,response.data._id);
+
         const menuData = {
           breakfast: [],
           lunch: [],
           dinner: [],
+          id: response.data._id, // Store the menu ID for later use
         };
 
         // Assuming response.data is an array of menu items
@@ -184,6 +198,7 @@ export const Dashboard = () => {
                 messId={user?.messId}
                 onSuccessfulItemCreation={handleSuccessfulMenuItemCreation}
                 click={handleGoToCreateMenu}
+                menuId={currentMenu.id} // Pass the menuId to Menu_content
               />
             )}
           </>

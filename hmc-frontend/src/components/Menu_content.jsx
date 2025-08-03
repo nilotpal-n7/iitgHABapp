@@ -41,10 +41,12 @@ function Menu_content(props) {
   // Function to create new item via API
   const createMenuItem = async (itemData) => {
     try {
+      console.log(props.menuId);
+      console.log("Creating item with data:", itemData);
       const response = await axios.post(
         `https://hab.codingclub.in/api/mess/menu/item/create`,
         {
-          menuId: itemData.id,
+          menuId: props.menuId, // Use the menuId from props
           name: itemData.name,
           type: itemData.category,
           meal: itemData.section,
@@ -54,6 +56,7 @@ function Menu_content(props) {
         {
           withCredentials: true,
         }
+
       );
 
       console.log("Item created successfully:", response.data);
