@@ -48,6 +48,8 @@ export const AuthProvider = ({ children }) => {
       // Set default header for Axios immediately for this session
       axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
 
+      console.log("bugCheck", res.data.hostel);
+
       // Assuming login also returns user data (hostel data)
       setUser(res.data.hostel);
       console.log("Login successful! Token and user set.", res.data.hostel);
@@ -107,6 +109,9 @@ export const AuthProvider = ({ children }) => {
         "Authorization"
       ] = `Bearer ${currentAuthToken}`;
       const res = await axios.get(`${API_BASE_URL}/hostel/get`);
+      
+      console.log(res.data.hostel);
+
       setUser(res.data.hostel);
       console.log("getData successful. User set.");
     } catch (err) {
