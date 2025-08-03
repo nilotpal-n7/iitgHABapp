@@ -28,6 +28,7 @@ const {
 const {
   feedbackResetScheduler,
 } = require("./modules/feedback/feedbackScheduler.js");
+const messChangeRouter = require("./modules/mess_change/messchangeRoute.js");
 require("dotenv").config();
 
 const app = express();
@@ -84,20 +85,15 @@ app.get("/api/swagger.json", (req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.send(swaggerSpec);
 });
-app.use(
-  cors({
-    origin: "*", // Not recommended for production
-  })
-);
 
 // Middleware
 app.use(express.json());
-// app.use(
-//   cors({
-//     origin: "http://localhost:5173", // your frontend port
-//     credentials: true, // allow cookies
-//   })
-// );
+app.use(
+  cors({
+    origin: "http://localhost:5173", // your frontend port
+    credentials: true, // allow cookies
+  })
+);
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
@@ -167,6 +163,9 @@ app.use("/api/qr", qrRoute);
 
 //mess route
 app.use("/api/mess", messRoute);
+
+//mess change route
+app.use("/api/mess-change", messChangeRouter);
 
 //scanlogs route
 app.use("/api/logs", logsRoute);
