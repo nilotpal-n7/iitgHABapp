@@ -282,7 +282,7 @@ class _MenuCardState extends State<_MenuCard> {
         AnimatedContainer(
           duration: Duration(milliseconds: 300),
           curve: Curves.easeInOut,
-          height: isOpen ? 200 : 0,
+          height: isOpen ? 251 : 0,
           padding: EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
