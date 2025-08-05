@@ -1,5 +1,9 @@
 // server/index.js
 //import authRoutes from "./modules/auth/auth.routes.js";
+
+
+require('dotenv').config();
+console.log("MONGODB_URI from env:", process.env.MONGODB_URI);
 const authRoutes = require("./modules/auth/auth.routes.js");
 const express = require("express");
 const mongoose = require("mongoose");
@@ -9,6 +13,7 @@ const cookieParser = require("cookie-parser");
 const complaintRoute = require("./modules/complaint/complaintRoute.js");
 const feedbackRoute = require("./modules/feedback/feedbackRoute.js");
 const hostelRoute = require("./modules/hostel/hostelRoute.js");
+const notificationRoute = require("./modules/notification/notificationRoute.js");
 const qrRoute = require("./modules/qr/qrRoute.js");
 const messRoute = require("./modules/mess/messRoute.js");
 const logsRoute = require("./modules/mess/ScanLogsRoute.js");
@@ -126,6 +131,8 @@ app.get("/", (req, res) => {
   res.send("Backend is running");
 });
 
+
+
 /**
  * @swagger
  * /hello:
@@ -157,6 +164,9 @@ app.use("/api/auth", authRoutes);
 
 //hostel route
 app.use("/api/hostel", hostelRoute);
+
+//notification route
+app.use("/api/notification", notificationRoute);
 
 //qr route
 app.use("/api/qr", qrRoute);
