@@ -99,7 +99,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // MongoDB connection
 mongoose
-  .connect(MONGOdb_uri, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(MONGOdb_uri)
   .then(() => {
     console.log("MongoDB connected");
 
