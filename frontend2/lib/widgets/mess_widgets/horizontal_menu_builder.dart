@@ -124,6 +124,7 @@ class _IndividualMealCardState extends State<IndividualMealCard>
   void initState() {
     super.initState();
     _menu = widget.menu;
+    print("🥳🥳 is mess subscribes??: ${widget.isSubscribed}");
   }
 
   /// Calculates total likes for the meal
@@ -172,16 +173,29 @@ class _IndividualMealCardState extends State<IndividualMealCard>
       onTap: widget.isSubscribed ? () => _toggleLike(item.id, index) : null,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          children: [
-            Expanded(child: Text(item.name)),
-            if (widget.isSubscribed)
-              Icon(
-                item.isLiked ? Icons.favorite : Icons.favorite_border,
-                color: item.isLiked ? Colors.red : Colors.grey,
-                size: 16,
-              ),
-          ],
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: item.isLiked ? Color.fromARGB(180, 250, 150, 150) : Color(0xFFF5F5F5),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.isSubscribed)
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _toggleLike(item.id, index),
+                  child: Icon(
+                    item.isLiked ? Icons.favorite : Icons.favorite_border,
+                    color: item.isLiked ? Colors.red : Colors.grey,
+                    size: 18, // slightly larger than before
+                  ),
+                ),
+              SizedBox(width: 4,),
+              Flexible(child: Text(item.name)),
+            ],
+          ),
         ),
       ),
     );
@@ -224,12 +238,23 @@ class _IndividualMealCardState extends State<IndividualMealCard>
                           ),
                           if (widget.isSubscribed) ...[
                             const SizedBox(width: 8),
-                            Icon(Icons.favorite, size: 16, color: Colors.red),
-                            const SizedBox(width: 2),
-                            Text(
-                              getTotalLikes().toString(),
-                              style: const TextStyle(
-                                  fontSize: 14, color: Colors.red),
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                color: Color.fromARGB(180, 250, 150, 150),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.favorite, size: 18, color: Colors.red),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    getTotalLikes().toString(),
+                                    style: const TextStyle(
+                                        fontSize: 14, color: Colors.red),
+                                  ),
+                                ],
+                              ),
                             ),
                           ]
                         ],
