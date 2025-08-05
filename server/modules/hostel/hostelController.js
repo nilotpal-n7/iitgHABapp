@@ -26,7 +26,7 @@ const createHostel = async (req, res) => {
 const loginHostel = async (req, res) => {
   const { hostel_name, password } = req.body;
   try {
-    const hostel = await Hostel.findOne({ hostel_name });
+    const hostel = await Hostel.findOne({ hostel_name }).populate("messId");
     if (!hostel) return res.status(400).json({ message: "No such hostel" });
 
     const verify = await hostel.verifyPassword(password);
@@ -45,6 +45,7 @@ const loginHostel = async (req, res) => {
 };
 
 const getHostel = async (req, res) => {
+  // console.log("xyz", req.hostel);
   return res.json({ hostel: req.hostel });
 };
 
