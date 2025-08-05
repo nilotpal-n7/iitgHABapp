@@ -118,7 +118,7 @@ const messChangeRequest = async (req, res) => {
   const today = new Date();
   const dayOfMonth = today.getDate();
 
-  if (dayOfMonth < 2 || dayOfMonth > 27) {
+  if (dayOfMonth < 24 || dayOfMonth > 27) {
     return res.status(403).json({
       message: "Mess change requests are only allowed between the 24th and 27th of the month.",
     });
@@ -128,6 +128,12 @@ const messChangeRequest = async (req, res) => {
     const hostel = await Hostel.findOne({hostel_name });
     const user = await User.findOne({ rollNumber: roll_number });
     let messChange = await MessChange.findOne({rollNumber: roll_number});
+        if (!user) {
+          return res.status(404).json({ message: "User not found." });
+        }
+        if (!hostel) {
+          return res.status(404).json({ message: "Mess not found." });
+        }
     //  console.log(hostel);
     //  console.log(user);
     //  console.log(messChange);
@@ -136,20 +142,10 @@ const messChangeRequest = async (req, res) => {
         message: "Request already made.",
         status_code: 1,
       });
-} 
+}
 
 
-     
-  
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
-    if (!hostel) {
-      return res.status(404).json({ message: "Mess not found." });
-    }
 
-   
-    
     user.applied_hostel_string = hostel_name;
     user.mess_change_button_pressed = true;
     

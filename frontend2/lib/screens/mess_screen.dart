@@ -220,7 +220,7 @@ class _DayChip extends StatelessWidget {
         onSelected: (_) => onTap(),
         selectedColor: Colors.deepPurple.shade100,
         labelStyle:
-        TextStyle(color: selected ? Color(0xFF3754DB) : Colors.black),
+        TextStyle(color: selected ? const Color(0xFF3754DB) : Colors.black),
       ),
     );
   }
@@ -260,31 +260,31 @@ class _MenuCardState extends State<_MenuCard> {
         GestureDetector(
           onTap: () => _toggleDropdown(index),
           child: Container(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: isOpen ? BorderRadius.vertical(top: Radius.circular(10)) : BorderRadius.circular(10),
+              borderRadius: isOpen ? const BorderRadius.vertical(top: Radius.circular(10)) : BorderRadius.circular(10),
               border: Border(
-                top: BorderSide(color: Color(0xFFB8B8B8), width: 1),
-                left: BorderSide(color: Color(0xFFB8B8B8), width: 1),
-                right: BorderSide(color: Color(0xFFB8B8B8), width: 1),
+                top: const BorderSide(color: Color(0xFFB8B8B8), width: 1),
+                left: const BorderSide(color: Color(0xFFB8B8B8), width: 1),
+                right: const BorderSide(color: Color(0xFFB8B8B8), width: 1),
                 bottom: isOpen
                     ? BorderSide.none
-                    : BorderSide(color: Color(0xFFB8B8B8), width: 1),
+                    : const BorderSide(color: Color(0xFFB8B8B8), width: 1),
               ),
             ),
             child: Text(
               title,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
           ),
         ),
         AnimatedContainer(
-          duration: Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
           height: isOpen ? 200 : 0,
-          padding: EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: const BoxDecoration(
             borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
             border: Border(
               bottom: BorderSide(color: const Color(0xFFB8B8B8), width: 1),
@@ -300,7 +300,7 @@ class _MenuCardState extends State<_MenuCard> {
               future: _getUserMessId(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator(strokeWidth: 2));
+                  return const Center(child: CircularProgressIndicator(strokeWidth: 2));
                 } else if (snapshot.hasError) {
                   return Text("Error: ${snapshot.error}");
                 } else {
@@ -319,7 +319,7 @@ class _MenuCardState extends State<_MenuCard> {
           ),
         ),
 
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
       ],
     );
   }
@@ -333,7 +333,7 @@ class _MenuCardState extends State<_MenuCard> {
           _buildExpandableSection(0, 'Breakfast'),
           _buildExpandableSection(1, 'Lunch'),
           _buildExpandableSection(2, 'Dinner'),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
         ],
       ),
     );
