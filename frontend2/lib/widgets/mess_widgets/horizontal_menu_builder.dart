@@ -177,7 +177,7 @@ class _IndividualMealCardState extends State<IndividualMealCard>
           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: item.isLiked ? Color.fromARGB(180, 250, 150, 150) : Color(0xFFF5F5F5),
+            color: item.isLiked && widget.isSubscribed ? Color.fromARGB(180, 250, 150, 150) : Color(0xFFF5F5F5),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

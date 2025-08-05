@@ -45,35 +45,23 @@ String currSubscribedMess = '';
 
 
 class _MessScreenState extends State<MessScreen> {
-
-  @override
-  void initState() {
-    super.initState();
-    fetchCurrSubscrMess();
-    fetchMessInfo();
-
-  }
-
-  Future<void> fetchCurrSubscrMess() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      currSubscribedMess = prefs.getString('curr_subscribed_mess') ?? '';
-    });
-  }
-
-
+  bool _isLoading = true;
 
   String caterername = '';
   int? rating;
   int? rank;
 
-  Future<void> fetchMessInfo() async {
-    final prefs = await SharedPreferences.getInstance();
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
+  Future<void> _loadData() async {
+    await fetchCurrSubscrMess();
+    await fetchMessInfo();
     setState(() {
-      caterername = prefs.getString('messName') ?? '';
-      rating = prefs.getInt('rating') ?? 0;
-      rank = prefs.getInt('ranking') ?? 0;
+      _isLoading = false; // Only now we render
     });
 
     print("Mess name: $caterername");
@@ -81,9 +69,29 @@ class _MessScreenState extends State<MessScreen> {
     print("Rank: $rank");
   }
 
+  Future<void> fetchCurrSubscrMess() async {
+    final prefs = await SharedPreferences.getInstance();
+    currSubscribedMess = prefs.getString('curr_subscribed_mess') ?? '';
+  }
+
+  Future<void> fetchMessInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    caterername = prefs.getString('messName') ?? '';
+    rating = prefs.getInt('rating') ?? 0;
+    rank = prefs.getInt('ranking') ?? 0;
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Colors.white, // Force correct bg
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
+      backgroundColor: Colors.white, // Avoid blue flicker
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -91,25 +99,22 @@ class _MessScreenState extends State<MessScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight, // fill at least the screen
+                  minHeight: constraints.maxHeight,
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Top content
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        RichText(
-                          text: const TextSpan(
-                            text: "MESS",
-                            style: TextStyle(
-                              fontFamily: 'OpenSans_regular',
-                              fontSize: 32,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black,
-                            ),
+                        const Text(
+                          "MESS",
+                          style: TextStyle(
+                            fontFamily: 'OpenSans_regular',
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -117,8 +122,6 @@ class _MessScreenState extends State<MessScreen> {
                         const SizedBox(height: 20),
                       ],
                     ),
-  
-                    // Bottom MessInfo
                     Column(
                       children: [
                         _MessInfo(
@@ -139,6 +142,7 @@ class _MessScreenState extends State<MessScreen> {
     );
   }
 }
+
 
 
 class _MenuSection extends StatefulWidget {
