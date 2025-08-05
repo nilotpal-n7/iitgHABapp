@@ -45,35 +45,23 @@ String currSubscribedMess = '';
 
 
 class _MessScreenState extends State<MessScreen> {
-
-  @override
-  void initState() {
-    super.initState();
-    fetchCurrSubscrMess();
-    fetchMessInfo();
-
-  }
-
-  Future<void> fetchCurrSubscrMess() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      currSubscribedMess = prefs.getString('curr_subscribed_mess') ?? '';
-    });
-  }
-
-
+  bool _isLoading = true;
 
   String caterername = '';
   int? rating;
   int? rank;
 
-  Future<void> fetchMessInfo() async {
-    final prefs = await SharedPreferences.getInstance();
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
+  Future<void> _loadData() async {
+    await fetchCurrSubscrMess();
+    await fetchMessInfo();
     setState(() {
-      caterername = prefs.getString('messName') ?? '';
-      rating = prefs.getInt('rating') ?? 0;
-      rank = prefs.getInt('ranking') ?? 0;
+      _isLoading = false; // Only now we render
     });
 
     print("Mess name: $caterername");
@@ -81,47 +69,82 @@ class _MessScreenState extends State<MessScreen> {
     print("Rank: $rank");
   }
 
+  Future<void> fetchCurrSubscrMess() async {
+    final prefs = await SharedPreferences.getInstance();
+    currSubscribedMess = prefs.getString('curr_subscribed_mess') ?? '';
+  }
+
+  Future<void> fetchMessInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    caterername = prefs.getString('messName') ?? '';
+    rating = prefs.getInt('rating') ?? 0;
+    rank = prefs.getInt('ranking') ?? 0;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context)
-        .size; //To make sure everything fits as per device size
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Colors.white, // Force correct bg
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
-      body: Container(
-        color: Colors.white,// big bug
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                RichText(
-                  text: const TextSpan(
-                    text: "MESS",
-                    style: TextStyle(
-                      fontFamily: 'OpenSans_regular',
-                      fontSize: 32,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
+      backgroundColor: Colors.white, // Avoid blue flicker
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "MESS",
+                          style: TextStyle(
+                            fontFamily: 'OpenSans_regular',
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _MenuSection(),
+                        const SizedBox(height: 20),
+                      ],
                     ),
-                  ),
+                    Column(
+                      children: [
+                        _MessInfo(
+                          catererName: caterername,
+                          rating: rating,
+                          rank: rank,
+                        ),
+                        const SizedBox(height: 30),
+                      ],
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                _MenuSection(),
-                const SizedBox(height: 20),
-                _MessInfo(
-                  catererName: caterername,
-                  rating: rating,
-                  rank: rank,
-                ),
-                const SizedBox(height: 30),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
   }
 }
+
+
+
 class _MenuSection extends StatefulWidget {
   @override
   State<_MenuSection> createState() => _MenuSectionState();
@@ -149,7 +172,7 @@ class _MenuSectionState extends State<_MenuSection> {
     final hostelMap = Provider.of<MessInfoProvider>(context, listen: false).hostelMap;
     messId = hostelMap.values.isNotEmpty
         ? hostelMap.values.first.messid
-        : '6826dfda8493bb0870b10cbf';
+        : '68552b70491f1303d2c4dbcc';
   }
 
   void _updateMessId(String hostelName) {
