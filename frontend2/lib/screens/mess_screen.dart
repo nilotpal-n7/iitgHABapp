@@ -83,45 +83,64 @@ class _MessScreenState extends State<MessScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context)
-        .size; //To make sure everything fits as per device size
     return Scaffold(
-      body: Container(
-        color: Colors.white,// big bug
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                RichText(
-                  text: const TextSpan(
-                    text: "MESS",
-                    style: TextStyle(
-                      fontFamily: 'OpenSans_regular',
-                      fontSize: 32,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight, // fill at least the screen
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Top content
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        RichText(
+                          text: const TextSpan(
+                            text: "MESS",
+                            style: TextStyle(
+                              fontFamily: 'OpenSans_regular',
+                              fontSize: 32,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _MenuSection(),
+                        const SizedBox(height: 20),
+                      ],
                     ),
-                  ),
+  
+                    // Bottom MessInfo
+                    Column(
+                      children: [
+                        _MessInfo(
+                          catererName: caterername,
+                          rating: rating,
+                          rank: rank,
+                        ),
+                        const SizedBox(height: 30),
+                      ],
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                _MenuSection(),
-                const SizedBox(height: 20),
-                _MessInfo(
-                  catererName: caterername,
-                  rating: rating,
-                  rank: rank,
-                ),
-                const SizedBox(height: 30),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
   }
 }
+
+
 class _MenuSection extends StatefulWidget {
   @override
   State<_MenuSection> createState() => _MenuSectionState();
@@ -149,7 +168,7 @@ class _MenuSectionState extends State<_MenuSection> {
     final hostelMap = Provider.of<MessInfoProvider>(context, listen: false).hostelMap;
     messId = hostelMap.values.isNotEmpty
         ? hostelMap.values.first.messid
-        : '6826dfda8493bb0870b10cbf';
+        : '68552b70491f1303d2c4dbcc';
   }
 
   void _updateMessId(String hostelName) {
