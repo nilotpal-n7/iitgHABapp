@@ -4,27 +4,13 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9f22e541-6f34-44ad-b768-3e17d6476ce7" name="Changes" comment="itembyqr screen changes">
-      <change afterPath="$PROJECT_DIR$/frontend2/assets/icon/information-line.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend2/lib/screens/mess_preference.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend2/lib/widgets/common/mess_pref_dropdowns.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
+    <list default="true" id="9f22e541-6f34-44ad-b768-3e17d6476ce7" name="Changes" comment="mess preference screen done">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/lib/screens/home_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/screens/home_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/lib/screens/mess_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/screens/mess_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/lib/widgets/common/popmenubutton.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/widgets/common/popmenubutton.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugin_registrant.cc" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugin_registrant.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugin_registrant.h" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugin_registrant.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugins.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/linux/flutter/generated_plugins.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/macos/Flutter/GeneratedPluginRegistrant.swift" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/macos/Flutter/GeneratedPluginRegistrant.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugin_registrant.cc" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugin_registrant.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugin_registrant.h" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugin_registrant.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugins.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/windows/flutter/generated_plugins.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend2/lib/screens/mess_preference.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/screens/mess_preference.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend2/lib/widgets/common/mess_pref_dropdowns.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/widgets/common/mess_pref_dropdowns.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/modules/mess_change/messchangeController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/mess_change/messchangeController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/modules/mess_change/messchangeModel.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/mess_change/messchangeModel.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/modules/user/userModel.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/user/userModel.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,6 +28,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -58,6 +49,9 @@
 }</component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 8
@@ -79,7 +73,7 @@
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "kaustubh1",
     "ignore.virus.scanning.warn.message": "true",
     "io.flutter.reload.alreadyRun": "true",
     "kotlin-language-version-configured": "true",
@@ -107,10 +101,43 @@
       <option name="presentableId" value="Default" />
       <updated>1736676962476</updated>
     </task>
+    <task id="LOCAL-00001" summary="mess preference screen done">
+      <option name="closed" value="true" />
+      <created>1754395944966</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1754395944966</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="kaustubh1" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="itembyqr screen changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="itembyqr screen changes" />
+    <MESSAGE value="mess preference screen done" />
+    <option name="LAST_COMMIT_MESSAGE" value="mess preference screen done" />
   </component>
 </project>

@@ -18,9 +18,9 @@ class _MessChangePreferenceScreenState
     extends State<MessChangePreferenceScreen> {
   bool first = true;
   String? firstpref;
-  String? secondpref;
+  // String? secondpref;
 
-  Future<void> handleSubmit(String? firstpref, String? secondpref) async {
+  Future<void> handleSubmit(String? firstpref) async {
     if (firstpref == null) {
       //Show error/snackbar
       showDialog(
@@ -39,24 +39,25 @@ class _MessChangePreferenceScreenState
         ),
       );
       return;
-    } else if (firstpref == secondpref) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Error"),
-          content: const Text("Please select different mess preferences"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text("OK"),
-            ),
-          ],
-        ),
-      );
-      return;
     }
+    // else if (firstpref == secondpref) {
+    //   showDialog(
+    //     context: context,
+    //     builder: (context) => AlertDialog(
+    //       title: const Text("Error"),
+    //       content: const Text("Please select different mess preferences"),
+    //       actions: [
+    //         TextButton(
+    //           onPressed: () {
+    //             Navigator.pop(context);
+    //           },
+    //           child: const Text("OK"),
+    //         ),
+    //       ],
+    //     ),
+    //   );
+    //   return;
+    // }
     final dio = Dio();
 
     try {
@@ -74,9 +75,9 @@ class _MessChangePreferenceScreenState
             },
           ),
           data: {
-            "next_mess": firstpref,
-            "sec_pref": secondpref,
-            "roll_number": rollnumber
+            "mess_pref": firstpref,
+            // "sec_pref": secondpref,
+            "roll_number": rollnumber,
           });
 
       if (res.statusCode == 200) {
@@ -218,25 +219,25 @@ class _MessChangePreferenceScreenState
                       ],
                     ),
                   ),
-              if (first != false)
-                const SizedBox(
-                  height: 20,
-                ),
-              const Text(
-                '2nd preference',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-              SecondMessChangePrefs(
-                firstpref: firstpref,
-                selectedOption: secondpref,
-                onChanged: (value) => setState(() => secondpref = value),
-              ),
+              // if (first != false)
+              //   const SizedBox(
+              //     height: 20,
+              //   ),
+              // const Text(
+              //   '2nd preference',
+              //   style: TextStyle(
+              //     fontSize: 16,
+              //     fontWeight: FontWeight.w500,
+              //   ),
+              // ),
+              // const SizedBox(
+              //   height: 8,
+              // ),
+              // SecondMessChangePrefs(
+              //   firstpref: firstpref,
+              //   selectedOption: secondpref,
+              //   onChanged: (value) => setState(() => secondpref = value),
+              // ),
             ],
           ),
         ),
@@ -249,7 +250,7 @@ class _MessChangePreferenceScreenState
                 Border(top: BorderSide(width: 1, color: Color(0xFFE5E5E5)))),
         child: ElevatedButton(
           onPressed: () {
-            handleSubmit(firstpref, secondpref);
+            handleSubmit(firstpref);
             setState(() {
               first = false;
             });

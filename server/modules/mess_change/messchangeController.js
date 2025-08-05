@@ -108,12 +108,12 @@ const rejectMessChangeRequest = async (req, res) => {
 };
 
 const messChangeRequest = async (req, res) => {
-  const { hostel_name, roll_number } = req.body;
+//  const { hostel_name, roll_number } = req.body;
+  const { userId, mess_pref } = req.body;
 
   // console.log("mess change request received ");
   // console.log(hostel_name);
   // console.log(roll_number);
-  
 
   const today = new Date();
   const dayOfMonth = today.getDate();
@@ -123,25 +123,34 @@ const messChangeRequest = async (req, res) => {
       message: "Mess change requests are only allowed between the 24th and 27th of the month.",
     });
   }
+    try{
+        const user = User.findOne({_id: userId});
+        user.applied_for_mess_changed = true;
+        user.applied_hostel_string = mess_pref;
+        user.applied_hostel_timestamp = Date.now();
+    } catch (e) {
+        console.log(`Error: ${e}`)
+    }
 
-  try {
-    const hostel = await Hostel.findOne({hostel_name });
-    const user = await User.findOne({ rollNumber: roll_number });
-    let messChange = await MessChange.findOne({rollNumber: roll_number});
-        if (!user) {
-          return res.status(404).json({ message: "User not found." });
-        }
-        if (!hostel) {
-          return res.status(404).json({ message: "Mess not found." });
-        }
-    //  console.log(hostel);
-    //  console.log(user);
-    //  console.log(messChange);
-     if (messChange) {
-   return res.status(200).json({
-        message: "Request already made.",
-        status_code: 1,
-      });
+
+//  try {
+//    const hostel = await Hostel.findOne({hostel_name });
+//    const user = await User.findOne({ rollNumber: roll_number });
+//    let messChange = await MessChange.findOne({rollNumber: roll_number});
+//        if (!user) {
+//          return res.status(404).json({ message: "User not found." });
+//        }
+//        if (!hostel) {
+//          return res.status(404).json({ message: "Mess not found." });
+//        }
+//    //  console.log(hostel);
+//    //  console.log(user);
+//    //  console.log(messChange);
+//     if (messChange) {
+//   return res.status(200).json({
+//        message: "Request already made.",
+//        status_code: 1,
+//      });
 }
 
 
