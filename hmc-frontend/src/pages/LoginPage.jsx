@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthProvider";
 //import { useAuth } from "../context/AuthContext";
+import { API_BASE_URL } from "../apis"; // Assuming you have a common API base URL defined
 
 export function LoginPage() {
   const { login } = useAuth();
@@ -15,7 +16,9 @@ export function LoginPage() {
       try {
         setLoading(true);
         await axios
-          .get("https://hab.codingclub.in/api/hostel/all", {})
+          .get(`${API_BASE_URL}/hostel/all`, {
+      
+          })
           .then((res) => setHostels(res.data));
         setLoading(false);
       } catch (error) {

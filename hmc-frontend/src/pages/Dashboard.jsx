@@ -2,7 +2,10 @@ import { useAuth } from "../context/AuthProvider";
 import React, { useState, useEffect, useCallback } from "react";
 import Menu_content from "../components/Menu_content.jsx";
 import axios from "axios";
+import { API_BASE_URL } from "../apis"; // Assuming you have a common API base URL defined
 import CreateMenuFallback from "../components/CreateMenuFallback.jsx";
+import { Menu, Users, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import RequestsContent from "../components/RequestsContent.jsx";
 
 const days = [
   "Monday",
@@ -15,6 +18,8 @@ const days = [
 ];
 
 export const Dashboard = () => {
+  const [menuId, setMenuId] = useState(null);
+  const [currentPage, setCurrentPage] = useState('menu'); // 'menu' or 'requests'
   const { user, logout } = useAuth();
   console.log("here", user);
 
@@ -30,7 +35,17 @@ export const Dashboard = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
 
+  console.log("User:", user);
+
+  // if(user === null) {
+  //   console.log("User is null");
+  // }
+  // else {
+  //   console.log("User is not null");
+  // }
+
   const fetchMess = useCallback(async () => {
+    console.log("Fetching mess for user:", user.messId);
     if (!user?.messId) {
       console.log("User or Mess ID not available, skipping fetchMess.");
       setIsLoading(false);
@@ -43,9 +58,9 @@ export const Dashboard = () => {
         `Fetching menu for Mess ID: ${user.messId}, Day: ${days[activeTab]}`
       );
       const response = await axios.post(
-        `https://hab.codingclub.in/api/mess/menu/admin/${user.messId}`,
-        { day: days[activeTab] },
-        { withCredentials: true }
+        `${API_BASE_URL}/mess/menu/admin/${user.messId._id}`,
+        { day: days[activeTab] }, // Data for the request body
+        { withCredentials: true } // Axios option for cookies/credentials
       );
 
       if (response.data === "DoesntExist") {
@@ -60,6 +75,7 @@ export const Dashboard = () => {
           breakfast: [],
           lunch: [],
           dinner: [],
+          id: response.data._id, // Store the menu ID for later use
         };
 
         response.data.forEach((element) => {
@@ -126,10 +142,10 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-w-7xl bg-gray-50">
       {/* Main Dashboard Header */}
       <div className="bg-white shadow-sm border-b border-gray-200 p-4">
-        <div className="flex justify-between items-center max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mx-auto">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
             <h2 className="text-lg text-gray-600">{user.hostel_name}</h2>
@@ -143,8 +159,42 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      {/* Menu Section */}
-      <div className="max-w-7xl mx-auto">
+
+      {/* Navigation Tabs */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="flex">
+          <button
+            onClick={() => setCurrentPage('menu')}
+            className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors duration-200 ${
+              currentPage === 'menu'
+                ? "text-blue-600 border-blue-600 bg-blue-50"
+                : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            <Menu className="w-4 h-4" />
+            Menu Management
+          </button>
+          <button
+            onClick={() => setCurrentPage('requests')}
+            className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors duration-200 ${
+              currentPage === 'requests'
+                ? "text-blue-600 border-blue-600 bg-blue-50"
+                : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            Change Requests
+            {/* <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+              {mockRequests.filter(r => r.status === 'pending').length}
+            </span> */}
+          </button>
+        </div>
+      </div>
+
+      
+      {currentPage==='menu' ? (
+        // Menu Section
+      <div className=" mx-auto">
         {/* Menu Page Header */}
         <div className="bg-blue-600 text-white p-6">
           <div className="flex justify-between items-center">
@@ -157,13 +207,14 @@ export const Dashboard = () => {
 
         {/* Day Tabs */}
         <div className="bg-white border-b border-gray-200 overflow-x-auto">
-          <div className="flex space-x-0 min-w-full">
+          <div className="flex justify-between min-w-full items-center">
+            <div>
             {days.map((day, index) => (
               <button
                 key={day}
                 className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors duration-200 whitespace-nowrap min-w-[120px] ${
                   activeTab === index
-                    ? "text-blue-600 border-blue-500 bg-blue-50"
+                    ? "text-blue-600 border-blue-600 bg-blue-50"
                     : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
                 }`}
                 onClick={() => setActiveTab(index)}
@@ -171,6 +222,9 @@ export const Dashboard = () => {
                 {day}
               </button>
             ))}
+            </div>
+
+            <button className="mr-5 bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium h-8">Download</button>
           </div>
         </div>
 
@@ -207,7 +261,7 @@ export const Dashboard = () => {
                   breakfast={currentMenu.breakfast}
                   lunch={currentMenu.lunch}
                   dinner={currentMenu.dinner}
-                  messId={user?.messId}
+                  messId={user.messId._id}
                   onSuccessfulItemCreation={handleSuccessfulMenuItemCreation}
                   click={handleGoToCreateMenu}
                 />
@@ -216,6 +270,26 @@ export const Dashboard = () => {
           )}
         </div>
       </div>
+      ):(
+        <>
+          {/* Requests Page Header */}
+            <div className="bg-green-600 text-white p-6">
+              <div className="flex justify-between items-center">
+                <h1 className="text-xl font-semibold">HMC - Requests Management</h1>
+                {/* <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  {mockRequests.filter(r => r.status === 'pending').length} Pending
+                </span> */}
+              </div>
+            </div>
+
+            {/* Requests Content */}
+            <div className="bg-white min-h-[600px]">
+              <RequestsContent hostelId={user._id} />
+            </div>
+        </>
+      )}
+
+      
     </div>
   );
 };
