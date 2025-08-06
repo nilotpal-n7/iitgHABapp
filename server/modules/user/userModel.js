@@ -146,7 +146,7 @@ const userSchema = new mongoose.Schema({
   applied_hostel_timestamp: {
     type: Date,
     default: new Date('2024-8-5'),
-  }
+  },
 
   applied_hostel_string: {
     type: String,
