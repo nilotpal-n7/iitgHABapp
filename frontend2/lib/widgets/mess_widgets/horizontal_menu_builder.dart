@@ -54,7 +54,7 @@ class HorizontalMenuBuilder extends StatelessWidget {
             color: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(24)),
-              side: BorderSide(color: Color(0xC5C5D1), width: 1),
+              side: BorderSide(color: Color(0xFFC5C5D1), width: 1),
             ),
             elevation: 0.5,
             child: Padding(
@@ -67,9 +67,9 @@ class HorizontalMenuBuilder extends StatelessWidget {
             color: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
-              side: BorderSide(color: Color(0xC5C5D1), width: 1),
+              side: const BorderSide(color: Color(0xFFC5C5D1), width: 1),
             ),
-            elevation: 0.5,
+            elevation: .5,
             child: Padding(
               padding: const EdgeInsets.all(18.0),
               child: Text(
@@ -287,7 +287,7 @@ class _IndividualMealCardState extends State<IndividualMealCard> {
           color: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
-            side: BorderSide(width: 1, color: Color(0xFFC5C5D1)),
+            side: const BorderSide(width: 1, color: Color(0xFFC5C5D1)),
           ),
           elevation: 0.5,
           child: Padding(
@@ -380,7 +380,7 @@ class _IndividualMealCardState extends State<IndividualMealCard> {
                                 letterSpacing: 0.5,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 40),
                             ...others
                                 .map((item) => buildMenuItem(item))
                                 .toList(),

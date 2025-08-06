@@ -4,12 +4,15 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9f22e541-6f34-44ad-b768-3e17d6476ce7" name="Changes" comment="mess preference screen done">
+    <list default="true" id="9f22e541-6f34-44ad-b768-3e17d6476ce7" name="Changes" comment="test push">
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend2/lib/constants/endpoint.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/constants/endpoint.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend2/lib/screens/mess_preference.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/screens/mess_preference.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/lib/widgets/common/mess_pref_dropdowns.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/widgets/common/mess_pref_dropdowns.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend2/lib/screens/mess_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/screens/mess_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend2/lib/widgets/mess_widgets/horizontal_menu_builder.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend2/lib/widgets/mess_widgets/horizontal_menu_builder.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/modules/mess_change/messchangeController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/mess_change/messchangeController.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/modules/mess_change/messchangeModel.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/mess_change/messchangeModel.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/modules/mess_change/messchangeRoute.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/mess_change/messchangeRoute.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/modules/user/userModel.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/modules/user/userModel.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -73,17 +76,18 @@
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "kaustubh1",
+    "git-widget-placeholder": "#58 on kaustubh1",
     "ignore.virus.scanning.warn.message": "true",
     "io.flutter.reload.alreadyRun": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/Kaustubh/OneDrive/Desktop/IITHABAPP/iitgHABapp/frontend2/assets/icon",
+    "last_opened_file_path": "C:/Users/Kaustubh/OneDrive/Desktop/IITHABAPP/iitgHABapp/server/modules/mess_change",
     "settings.editor.selected.configurable": "flutter.settings",
     "show.migrate.to.gradle.popup": "false"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Kaustubh\OneDrive\Desktop\IITHABAPP\iitgHABapp\server\modules\mess_change" />
       <recent name="C:\Users\Kaustubh\OneDrive\Desktop\IITHABAPP\iitgHABapp\frontend2\assets\icon" />
       <recent name="$PROJECT_DIR$/server" />
     </key>
@@ -109,7 +113,15 @@
       <option name="project" value="LOCAL" />
       <updated>1754395944966</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="test push">
+      <option name="closed" value="true" />
+      <created>1754410133141</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1754410133141</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -138,6 +150,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="itembyqr screen changes" />
     <MESSAGE value="mess preference screen done" />
-    <option name="LAST_COMMIT_MESSAGE" value="mess preference screen done" />
+    <MESSAGE value="test push" />
+    <option name="LAST_COMMIT_MESSAGE" value="test push" />
   </component>
 </project>

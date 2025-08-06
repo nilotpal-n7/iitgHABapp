@@ -62,11 +62,11 @@ class _MessChangePreferenceScreenState
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final String? rollnumber = prefs.getString('rollNumber');
+      final String? UserId = prefs.getString('userId');
       //?? What is the url
-      String url = '$baseUrl/mess-change/reqchange';
+      String url = MessChange.messChangeRequest;
       final token = prefs.getString('access_token');
-
+      print(token);
       final res = await dio.post(url,
           options: Options(
             headers: {
@@ -77,7 +77,6 @@ class _MessChangePreferenceScreenState
           data: {
             "mess_pref": firstpref,
             // "sec_pref": secondpref,
-            "roll_number": rollnumber,
           });
 
       if (res.statusCode == 200) {

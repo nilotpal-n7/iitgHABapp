@@ -256,10 +256,7 @@ class _MenuCardState extends State<_MenuCard> {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        GestureDetector(
-          onTap: () => _toggleDropdown(index),
-          child: Container(
+      children: [ Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -278,18 +275,16 @@ class _MenuCardState extends State<_MenuCard> {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
           ),
-        ),
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
-          height: isOpen ? 200 : 0,
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: const BoxDecoration(
             borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
             border: Border(
-              bottom: BorderSide(color: const Color(0xFFB8B8B8), width: 1),
-              left: BorderSide(color: const Color(0xFFB8B8B8), width: 1),
-              right: BorderSide(color: const Color(0xFFB8B8B8), width: 1),
+              bottom: BorderSide(color: Color(0xFFB8B8B8), width: 1),
+              left: BorderSide(color: Color(0xFFB8B8B8), width: 1),
+              right: BorderSide(color: Color(0xFFB8B8B8), width: 1),
             ),
           ),
           child: Visibility(
@@ -330,9 +325,7 @@ class _MenuCardState extends State<_MenuCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildExpandableSection(0, 'Breakfast'),
-          _buildExpandableSection(1, 'Lunch'),
-          _buildExpandableSection(2, 'Dinner'),
+          _buildExpandableSection(0, 'Menu'),
           const SizedBox(height: 16),
         ],
       ),
