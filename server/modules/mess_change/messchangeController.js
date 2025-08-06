@@ -10,7 +10,7 @@ const getAllMessChangeRequests = async (req, res) => {
   try {
     const messChangeRequests = await MessChange.find({ hostelId })
       .populate("hostelId", "name")
-    // .populate("next_mess", "next_mess");  
+      // .populate("next_mess", "next_mess");  
 
     if (!messChangeRequests || messChangeRequests.length === 0) {
       return res.status(404).json({ message: "No mess change requests found for this hostel" });
@@ -30,10 +30,10 @@ const getAllMessChangeRequests = async (req, res) => {
 
 const getAllMessChangeRequestsForAllMess = async (req, res) => {
   try {
-
+    
     const messChanges = await MessChange.find()
-    return res.status(200).json(messChanges);
-
+     return res.status(200).json(messChanges);
+   
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Internal server error" });
@@ -43,16 +43,14 @@ const getAllMessChangeRequestsForAllMess = async (req, res) => {
 
 const acceptMessChangeRequest = async (req, res) => {
   try {
-    const { userId } = req.body;
+     const { userId } = req.body;
+    
+// console.log(userId);
 
-    // console.log(userId);
-
-    const user = await User.findById(userId);
+const user = await User.findById( userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // console.log(user)
-
-    // const messChange = await MessChange.findOne({ rollNumber: user.rollNumber });
+    const messChange = await MessChange.findOne({rollNumber : user.rollNumber});
     // console.log(messChange);
 
     //Update user's mess details
@@ -61,16 +59,16 @@ const acceptMessChangeRequest = async (req, res) => {
     user.got_mess_changed = true;
     user.mess_change_button_pressed = false;
     await user.save();
-
+    
     // console.log(messChange.got_mess_changed)
-    // messChange.got_mess_changed = true;
-    // await messChange.save();
+      messChange.got_mess_changed = true;
+      await messChange.save();
 
     //Remove user's mess change request entry from their current hostel
-    // await Hostel.updateOne(
-    //   { _id: user.hostel },
-    //   { $pull: { users: { user: user._id } } }
-    // );
+    await Hostel.updateOne(
+      { _id: user.hostel },
+      { $pull: { users: { user: user._id } } }
+    );
 
     return res.status(200).json({ message: "Mess change request accepted" });
   } catch (error) {
@@ -110,10 +108,8 @@ const rejectMessChangeRequest = async (req, res) => {
 };
 
 const messChangeRequest = async (req, res) => {
-  //  const { hostel_name, roll_number } = req.body;
-
-  // User.findByJWT({});
-
+//  const { hostel_name, roll_number } = req.body;
+  const { userId, mess_pref } = req.body;
 
   // console.log("mess change request received ");
   // console.log(hostel_name);
@@ -127,92 +123,86 @@ const messChangeRequest = async (req, res) => {
       message: "Mess change requests are only allowed between the 24th and 27th of the month.",
     });
   }
-  
-  try {
-    const user = req.user;
-    const { mess_pref } = req.body;
-    if (!req.user) {
-      return res.status(404).json({message: "User not Found"})
+    try{
+        const user = User.findOne({_id: userId});
+        user.applied_for_mess_changed = true;
+        user.applied_hostel_string = mess_pref;
+        user.applied_hostel_timestamp = Date.now();
+    } catch (e) {
+        console.log(`Error: ${e}`)
     }
-    user.applied_for_mess_changed = true;
-    user.applied_hostel_string = mess_pref;
-    user.applied_hostel_timestamp = Date.now();
-    res.status(200).json({message: "Request Sent"})
-  } catch (e) {
-    console.log(`Error: ${e}`);
-    res.status(500).json("Internal Server Error")
+
+
+//  try {
+//    const hostel = await Hostel.findOne({hostel_name });
+//    const user = await User.findOne({ rollNumber: roll_number });
+//    let messChange = await MessChange.findOne({rollNumber: roll_number});
+//        if (!user) {
+//          return res.status(404).json({ message: "User not found." });
+//        }
+//        if (!hostel) {
+//          return res.status(404).json({ message: "Mess not found." });
+//        }
+//    //  console.log(hostel);
+//    //  console.log(user);
+//    //  console.log(messChange);
+//     if (messChange) {
+//   return res.status(200).json({
+//        message: "Request already made.",
+//        status_code: 1,
+//      });
+}
+
+
+
+    user.applied_hostel_string = hostel_name;
+    user.mess_change_button_pressed = true;
+    
+   const user_hostel=  await Hostel.findOne(user.hostel);
+    const isDifferentHostel = hostel.messId !== user_hostel.messId;
+    // console.log(hostel.messId);
+    // console.log(user_hostel.messId);
+    // console.log(user.applied_for_mess_changed);
+    const hasNotApplied = !user.applied_for_mess_changed;
+
+    if (isDifferentHostel && hasNotApplied) {
+
+      // Update user fields
+      user.next_mess = hostel.messId;
+      user.applied_for_mess_changed = true;
+      await user.save();
+      
+       const messchangedata = {
+    userId: user.userId,
+      name:user.name,
+      rollNumber : roll_number,
+      degree: user.degree,
+      hostelId : user.hostel,
+      next_mess: hostel.messId
+}
+     
+      const messChange = new MessChange(messchangedata);
+     
+      await messChange.save();
+
+     
+
+      return res.status(200).json({
+        message: "Mess change request processed successfully.",
+        status_code: 0,
+
+      });
+    } else {
+      await user.save(); 
+      return res.status(200).json({
+        message: "Request denied: capacity full, same hostel selected.",
+        status_code: 1,
+      });
+    }
+  } catch (err) {
+    console.error("Error during mess change request:", err);
+    return res.status(500).json({ message: "Internal server error occurred." });
   }
-
-
-  //  try {
-  //    const hostel = await Hostel.findOne({hostel_name });
-  //    const user = await User.findOne({ rollNumber: roll_number });
-  //    let messChange = await MessChange.findOne({rollNumber: roll_number});
-  //        if (!user) {
-  //          return res.status(404).json({ message: "User not found." });
-  //        }
-  //        if (!hostel) {
-  //          return res.status(404).json({ message: "Mess not found." });
-  //        }
-  //    //  console.log(hostel);
-  //    //  console.log(user);
-  //    //  console.log(messChange);
-  //     if (messChange) {
-  //   return res.status(200).json({
-  //        message: "Request already made.",
-  //        status_code: 1,
-  //      });
-
-
-
-//   user.applied_hostel_string = hostel_name;
-//   user.mess_change_button_pressed = true;
-
-//   const user_hostel = await Hostel.findOne(user.hostel);
-//   const isDifferentHostel = hostel.messId !== user_hostel.messId;
-//   // console.log(hostel.messId);
-//   // console.log(user_hostel.messId);
-//   // console.log(user.applied_for_mess_changed);
-//   const hasNotApplied = !user.applied_for_mess_changed;
-
-//   if (isDifferentHostel && hasNotApplied) {
-
-//     // Update user fields
-//     user.next_mess = hostel.messId;
-//     user.applied_for_mess_changed = true;
-//     await user.save();
-
-//     const messchangedata = {
-//       userId: user.userId,
-//       name: user.name,
-//       rollNumber: roll_number,
-//       degree: user.degree,
-//       hostelId: user.hostel,
-//       next_mess: hostel.messId
-//     }
-
-//     const messChange = new MessChange(messchangedata);
-
-//     await messChange.save();
-
-
-
-//     return res.status(200).json({
-//       message: "Mess change request processed successfully.",
-//       status_code: 0,
-
-//     });
-//   } else {
-//     await user.save();
-//     return res.status(200).json({
-//       message: "Request denied: capacity full, same hostel selected.",
-//       status_code: 1,
-//     });
-//   }
-// } catch (err) {
-//   console.error("Error during mess change request:", err);
-//   return res.status(500).json({ message: "Internal server error occurred." });
-// }
 };
 
 
