@@ -9,7 +9,7 @@ const getAllMessChangeRequests = async (req, res) => {
 
   try {
     const messChangeRequests = await MessChange.find({ hostelId })
-      .populate("hostelId", "name")  
+      .populate("hostelId", "name")
       // .populate("next_mess", "next_mess");  
 
     if (!messChangeRequests || messChangeRequests.length === 0) {
@@ -62,7 +62,6 @@ const user = await User.findById( userId);
     
     // console.log(messChange.got_mess_changed)
       messChange.got_mess_changed = true;
-      messChange.status = 'approved';
       await messChange.save();
 
     //Remove user's mess change request entry from their current hostel
@@ -88,19 +87,12 @@ const rejectMessChangeRequest = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const messChange = await MessChange.findOne({rollNumber : user.rollNumber});
-
     // Reset mess change-related fields
     user.applied_for_mess_changed = false;
     user.mess_change_button_pressed = false;
     user.applied_hostel_string = "";
     user.next_mess = user.curr_subscribed_mess; // Reset to current mess
     await user.save();
-
-    //updating messChange
-
-    messChange.status = 'rejected';
-    await messChange.save();
 
     // Remove user's request from current hostel's users list
     await Hostel.updateOne(
@@ -116,48 +108,53 @@ const rejectMessChangeRequest = async (req, res) => {
 };
 
 const messChangeRequest = async (req, res) => {
-  const { hostel_name, roll_number } = req.body;
+//  const { hostel_name, roll_number } = req.body;
+  const { userId, mess_pref } = req.body;
 
   // console.log("mess change request received ");
   // console.log(hostel_name);
   // console.log(roll_number);
-  
 
   const today = new Date();
   const dayOfMonth = today.getDate();
 
-  if (dayOfMonth < 2 || dayOfMonth > 27) {
+  if (dayOfMonth < 24 || dayOfMonth > 27) {
     return res.status(403).json({
       message: "Mess change requests are only allowed between the 24th and 27th of the month.",
     });
   }
-
-  try {
-    const hostel = await Hostel.findOne({hostel_name });
-    const user = await User.findOne({ rollNumber: roll_number });
-    let messChange = await MessChange.findOne({rollNumber: roll_number});
-    //  console.log(hostel);
-    //  console.log(user);
-    //  console.log(messChange);
-     if (messChange) {
-   return res.status(200).json({
-        message: "Request already made.",
-        status_code: 1,
-      });
-} 
-
-
-     
-  
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
-    if (!hostel) {
-      return res.status(404).json({ message: "Mess not found." });
+    try{
+        const user = User.findOne({_id: userId});
+        user.applied_for_mess_changed = true;
+        user.applied_hostel_string = mess_pref;
+        user.applied_hostel_timestamp = Date.now();
+    } catch (e) {
+        console.log(`Error: ${e}`)
     }
 
-   
-    
+
+//  try {
+//    const hostel = await Hostel.findOne({hostel_name });
+//    const user = await User.findOne({ rollNumber: roll_number });
+//    let messChange = await MessChange.findOne({rollNumber: roll_number});
+//        if (!user) {
+//          return res.status(404).json({ message: "User not found." });
+//        }
+//        if (!hostel) {
+//          return res.status(404).json({ message: "Mess not found." });
+//        }
+//    //  console.log(hostel);
+//    //  console.log(user);
+//    //  console.log(messChange);
+//     if (messChange) {
+//   return res.status(200).json({
+//        message: "Request already made.",
+//        status_code: 1,
+//      });
+}
+
+
+
     user.applied_hostel_string = hostel_name;
     user.mess_change_button_pressed = true;
     
