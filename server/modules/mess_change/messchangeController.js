@@ -115,14 +115,14 @@ const messChangeRequest = async (req, res) => {
   // console.log(hostel_name);
   // console.log(roll_number);
 
-  const today = new Date();
-  const dayOfMonth = today.getDate();
-
-  if (dayOfMonth < 24 || dayOfMonth > 27) {
-    return res.status(403).json({
-      message: "Mess change requests are only allowed between the 24th and 27th of the month.",
-    });
-  }
+//  const today = new Date();
+//  const dayOfMonth = today.getDate();
+//
+//  if (dayOfMonth < 24 || dayOfMonth > 27) {
+//    return res.status(202).json({
+//      message: "Mess change requests are only allowed between the 24th and 27th of the month.",
+//    });
+//  }
     try{
         const user = User.findOne({_id: userId});
         user.applied_for_mess_changed = true;
@@ -151,58 +151,58 @@ const messChangeRequest = async (req, res) => {
 //        message: "Request already made.",
 //        status_code: 1,
 //      });
-}
-
-
-
-    user.applied_hostel_string = hostel_name;
-    user.mess_change_button_pressed = true;
-    
-   const user_hostel=  await Hostel.findOne(user.hostel);
-    const isDifferentHostel = hostel.messId !== user_hostel.messId;
-    // console.log(hostel.messId);
-    // console.log(user_hostel.messId);
-    // console.log(user.applied_for_mess_changed);
-    const hasNotApplied = !user.applied_for_mess_changed;
-
-    if (isDifferentHostel && hasNotApplied) {
-
-      // Update user fields
-      user.next_mess = hostel.messId;
-      user.applied_for_mess_changed = true;
-      await user.save();
-      
-       const messchangedata = {
-    userId: user.userId,
-      name:user.name,
-      rollNumber : roll_number,
-      degree: user.degree,
-      hostelId : user.hostel,
-      next_mess: hostel.messId
-}
-     
-      const messChange = new MessChange(messchangedata);
-     
-      await messChange.save();
-
-     
-
-      return res.status(200).json({
-        message: "Mess change request processed successfully.",
-        status_code: 0,
-
-      });
-    } else {
-      await user.save(); 
-      return res.status(200).json({
-        message: "Request denied: capacity full, same hostel selected.",
-        status_code: 1,
-      });
-    }
-  } catch (err) {
-    console.error("Error during mess change request:", err);
-    return res.status(500).json({ message: "Internal server error occurred." });
-  }
+//}
+//
+//
+//
+//    user.applied_hostel_string = hostel_name;
+//    user.mess_change_button_pressed = true;
+//
+//   const user_hostel=  await Hostel.findOne(user.hostel);
+//    const isDifferentHostel = hostel.messId !== user_hostel.messId;
+//    // console.log(hostel.messId);
+//    // console.log(user_hostel.messId);
+//    // console.log(user.applied_for_mess_changed);
+//    const hasNotApplied = !user.applied_for_mess_changed;
+//
+//    if (isDifferentHostel && hasNotApplied) {
+//
+//      // Update user fields
+//      user.next_mess = hostel.messId;
+//      user.applied_for_mess_changed = true;
+//      await user.save();
+//
+//       const messchangedata = {
+//    userId: user.userId,
+//      name:user.name,
+//      rollNumber : roll_number,
+//      degree: user.degree,
+//      hostelId : user.hostel,
+//      next_mess: hostel.messId
+//}
+//
+//      const messChange = new MessChange(messchangedata);
+//
+//      await messChange.save();
+//
+//
+//
+//      return res.status(200).json({
+//        message: "Mess change request processed successfully.",
+//        status_code: 0,
+//
+//      });
+//    } else {
+//      await user.save();
+//      return res.status(200).json({
+//        message: "Request denied: capacity full, same hostel selected.",
+//        status_code: 1,
+//      });
+//    }
+//  } catch (err) {
+//    console.error("Error during mess change request:", err);
+//    return res.status(500).json({ message: "Internal server error occurred." });
+//  }
 };
 
 
