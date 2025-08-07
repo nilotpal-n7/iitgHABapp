@@ -113,22 +113,29 @@ const messChangeRequest = async (req, res) => {
   // console.log(roll_number);
 
 
-//  const today = new Date();
-//  const dayOfMonth = today.getDate();
-//
-//  if (dayOfMonth < 24 || dayOfMonth > 27) {
-//    return res.status(202).json({
-//      message: "Mess change requests are only allowed between the 24th and 27th of the month.",
-//    });
-//  }
-    try{
-        const user = User.findOne({_id: userId});
-        user.applied_for_mess_changed = true;
-        user.applied_hostel_string = mess_pref;
-        user.applied_hostel_timestamp = Date.now();
-    } catch (e) {
-        console.log(`Error: ${e}`)
+  const today = new Date();
+  const dayOfMonth = today.getDate();
+
+  if (dayOfMonth < 24 || dayOfMonth > 27) {
+    return res.status(202).json({
+      message: "Mess change requests are only allowed between the 24th and 27th of the month.",
+    });
+  }
+  
+  try {
+    const user = req.user;
+    const { mess_pref } = req.body;
+    if (!req.user) {
+      return res.status(404).json({message: "User not Found"})
     }
+    user.applied_for_mess_changed = true;
+    user.applied_hostel_string = mess_pref;
+    user.applied_hostel_timestamp = Date.now();
+    res.status(200).json({message: "Request Sent"})
+  } catch (e) {
+    console.log(`Error: ${e}`);
+    res.status(500).json("Internal Server Error")
+  }
 
 
 
