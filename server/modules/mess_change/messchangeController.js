@@ -113,14 +113,14 @@ const messChangeRequest = async (req, res) => {
   // console.log(roll_number);
 
 
-  const today = new Date();
-  const dayOfMonth = today.getDate();
+  // const today = new Date();
+  // const dayOfMonth = today.getDate();
 
-  if (dayOfMonth < 24 || dayOfMonth > 27) {
-    return res.status(202).json({
-      message: "Mess change requests are only allowed between the 24th and 27th of the month.",
-    });
-  }
+  // if (dayOfMonth < 24 || dayOfMonth > 27) {
+  //   return res.status(202).json({
+  //     message: "Mess change requests are only allowed between the 24th and 27th of the month.",
+  //   });
+  // }
   
   try {
     const user = req.user;
