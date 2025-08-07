@@ -50,11 +50,11 @@ class _MenuPagerState extends State<MenuPager> {
   final Map<int, double> _menuHeights = {};
   double _currentHeight = 250;
 
-  // *ADD MAXIMUM HEIGHT LIMIT*
+  // **ADD MAXIMUM HEIGHT LIMIT**
   static const double maxHeight = 400; // Adjust based on your screen
 
   void _updateHeight(int index, double height) {
-    // *CLAMP HEIGHT TO MAXIMUM*
+    // **CLAMP HEIGHT TO MAXIMUM**
     final clampedHeight = height.clamp(200.0, maxHeight);
 
     if (_menuHeights[index] != clampedHeight) {
@@ -73,7 +73,7 @@ class _MenuPagerState extends State<MenuPager> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
-      height: _currentHeight.clamp(200.0, maxHeight), // *CLAMP HERE TOO*
+      height: _currentHeight.clamp(200.0, maxHeight), // **CLAMP HERE TOO**
       child: PageView.builder(
         controller: _pageController,
         itemCount: widget.sortedMenus.length,
@@ -85,13 +85,18 @@ class _MenuPagerState extends State<MenuPager> {
             child: MeasureSize(
               onChange: (size) => _updateHeight(index, size.height),
               child: SingleChildScrollView(
-                // *ADD SCROLLING*
+                // **ADD SCROLLING**
                 child: IndividualMealCard(
                   menu: menu,
-                  currentMessId: widget.messId,
-                  userMessId: widget.userMessId,
+                  isSubscribed: widget.userMessId == widget.messId, // ✅ fixed
                   parseTime: _parseTime,
-                  formatDuration: _formatDuration,
+                  onExpandedChanged: () {
+                    // ✅ re-measure after expansion
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      // Trigger measure again
+                      setState(() {});
+                    });
+                  },
                 ),
               ),
             ),
