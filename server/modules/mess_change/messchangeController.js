@@ -266,6 +266,7 @@ const messChangeRequest = async (req, res) => {
 module.exports = {
   getAllMessChangeRequests,
   getAllMessChangeRequestsForAllMess,
+  acceptAndRejectByFCFS,
   acceptMessChangeRequest,
   rejectMessChangeRequest,
   messChangeRequest,
