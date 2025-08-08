@@ -14,7 +14,6 @@ const {
   applyMessChange,
   getAllHostelsWithMess,
   getAllHostelNameAndCaterer,
-  getHostelAlloc
 } = require("./hostelController.js");
 
 const hostelRouter = express.Router();
@@ -233,7 +232,7 @@ hostelRouter.get("/allhostel", getAllHostelsWithMess);
 
 hostelRouter.post("/change", authenticateJWT, applyMessChange);
 
-hostelRouter.get("/allocate", getHostelAlloc);
+// hostelRouter.get("/allocate", getHostelAlloc);
 
 //Route to get only hostel and caterer information
 hostelRouter.post("/gethnc",getAllHostelNameAndCaterer);
