@@ -183,9 +183,14 @@ const messChangeRequest = async (req, res) => {
     if (!req.user) {
       return res.status(404).json({message: "User not Found"})
     }
+
+    const next_mess = await Hostel.findOne({hostel_name: user.mess_pref});
+    // if (!next_mess) return res.status(404).json({ message: "Mess not found" }); // foff during testing
+
     user.applied_for_mess_changed = true;
     user.applied_hostel_string = mess_pref;
     user.applied_hostel_timestamp = Date.now();
+    user.next_mess = next_mess._id || user.next_mess; // || user.next_mess for testing as only kapili is there
     await user.save();
 
     res.status(200).json({message: "Request Sent"})
