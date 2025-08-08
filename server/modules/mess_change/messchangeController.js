@@ -1,5 +1,5 @@
 const { User } = require("../user/userModel.js");
-const { Hostel } = require("../modules/hostel/hostelModel");
+const { Hostel } = require("../hostel/hostelModel.js");
 
 const getAllMessChangeRequests = async (req, res) => {
   const { hostelId } = req.params;
