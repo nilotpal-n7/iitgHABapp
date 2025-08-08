@@ -175,26 +175,6 @@ const getAllHostelNameAndCaterer = async (req, res) => {
   }
 };
 
-const getHostelAlloc = async (req, res) => {
-  const { qr } = req.params;
-
-  try {
-    const user = await UserAllocHostel.findOne({ rollNumber: qr }).populate('hostel');
-
-    if (!user) {
-      return res.status(400).json({ message: "No such roll exists" });
-    }
-
-    const hostelname = user.hostel.name;
-
-    return res.status(200).json({ message: "hostel found", hostel: hostelname });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ message: "Error occured" });
-  }
-};
-
-
 module.exports = {
   createHostel,
   loginHostel,
@@ -205,5 +185,4 @@ module.exports = {
   deleteHostel,
   applyMessChange,
   getAllHostelNameAndCaterer,
-  getHostelAlloc,
 };

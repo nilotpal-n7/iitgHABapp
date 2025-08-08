@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const UserAllocHostelSchema = new mongoose.Schema({
-  rollNo: {
+  rollno: {
     type: String,
     required: true,
     unique: true,
