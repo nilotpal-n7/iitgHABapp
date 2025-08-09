@@ -24,6 +24,7 @@ class _MessChangePreferenceScreenState
   String? appliedHostel;
 
   Future<void> checkMessChangeStatus() async {
+    print("🥴🥴🥴🥴🥴 entered into check mess change status");
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('access_token');
     final dio = Dio();
@@ -35,9 +36,12 @@ class _MessChangePreferenceScreenState
         options: Options(
           headers: {
             'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json'
           },
         ),
       );
+
+      print("🙂🙂🙂🙂🙂🙂mess change ststaus code: ${res.statusCode}, message: ${res.data['message']}");
 
       if (res.statusCode == 200) {
         setState(() {
