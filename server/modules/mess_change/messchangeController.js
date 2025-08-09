@@ -268,6 +268,19 @@ const messChangeRequest = async (req, res) => {
   // }
 };
 
+const messChangeStatus = async (req, res) => {
+  try {
+    const user = req.user;
+    res.status(200).json({
+      applied: user.applied_for_mess_changed,
+      hostel: user.applied_hostel_string
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 module.exports = {
   getAllMessChangeRequests,
   getAllMessChangeRequestsForAllMess,
@@ -275,4 +288,5 @@ module.exports = {
   acceptMessChangeRequest,
   rejectMessChangeRequest,
   messChangeRequest,
+  messChangeStatus,
 };
