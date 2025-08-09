@@ -1,5 +1,9 @@
 const String baseUrl = "https://hab.codingclub.in/api";
 
+class NotificationEndpoints {
+  static const String registerToken = '$baseUrl/notification/register-token';
+}
+
 class MessChange {
   static const String messChangeRequest = "$baseUrl/mess-change/reqchange";
 }
