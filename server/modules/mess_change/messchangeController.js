@@ -281,6 +281,7 @@ const messChangeStatus = async (req, res) => {
       message: "User mess change status fetched successfully",
       applied: user.applied_for_mess_changed || false,
       hostel: user.applied_hostel_string || "",
+      default: user.hostel || "",
     });
 
   } catch (err) {

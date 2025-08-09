@@ -20,6 +20,7 @@ class _MessChangePreferenceScreenState
   String? firstpref;
   bool alreadyApplied = false;
   String? appliedHostel;
+  String? defaultMess;
 
   bool loadingStatus = true; // NEW: track API loading state
 
@@ -74,6 +75,7 @@ class _MessChangePreferenceScreenState
         setState(() {
           alreadyApplied = res.data['applied'] ?? false;
           appliedHostel = res.data['hostel'];
+          defaultMess = res.data['default'];
         });
       }
     } catch (e) {
@@ -87,6 +89,11 @@ class _MessChangePreferenceScreenState
   Future<void> handleSubmit(String? firstpref) async {
     if (firstpref == null) {
       _showMessage("Error", "Please select a mess preference");
+      return;
+    }
+
+    if (firstpref == defaultMess) {
+      _showMessage("Error", "Please select a different mess");
       return;
     }
 
