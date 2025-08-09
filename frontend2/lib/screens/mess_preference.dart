@@ -31,7 +31,7 @@ class _MessChangePreferenceScreenState
 
     try {
       String url = MessChange.messChangeStatus;
-      final res = await dio.get(
+      final res = await dio.post(
         url,
         options: Options(
           headers: {
