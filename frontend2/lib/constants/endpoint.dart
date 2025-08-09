@@ -6,6 +6,7 @@ class NotificationEndpoints {
 
 class MessChange {
   static const String messChangeRequest = "$baseUrl/mess-change/reqchange";
+  static const String messChangeStatus = "$baseUrl/mess-change/status";
 }
 
 class UserEndpoints {

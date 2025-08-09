@@ -9,6 +9,7 @@ const {
   acceptMessChangeRequest,
   rejectMessChangeRequest,
   messChangeRequest,
+  messChangeStatus,
 } = require("./messchangeController.js");
 
 const messChangeRouter = express.Router();
@@ -19,5 +20,6 @@ messChangeRouter.post("/accept-all/:hostelId", acceptAndRejectByFCFS); //accept 
 messChangeRouter.patch("/accept/:userId", acceptMessChangeRequest);
 messChangeRouter.patch("/reject/:userId", rejectMessChangeRequest);
 messChangeRouter.get("/:hostelId", getAllMessChangeRequests);
+messChangeRouter.get("/status", messChangeStatus);
 
 module.exports = messChangeRouter;
