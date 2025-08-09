@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
+
 const JWT_SECRET_KEY = process.env.JWT_SECRET;
 
 /**
@@ -141,6 +142,11 @@ const userSchema = new mongoose.Schema({
   mess_change_button_pressed: {
     type: Boolean,
     default: false,
+  },
+
+  applied_hostel_timestamp: {
+    type: Date,
+    default: new Date('2024-8-5'),
   },
 
   applied_hostel_string: {
