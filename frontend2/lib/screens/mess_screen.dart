@@ -16,6 +16,7 @@ import '../utilities/startupitem.dart';
 import '../widgets/feedback/FeedBackCard.dart';
 import '../widgets/mess_widgets/horizontal_menu_builder.dart';
 import '../widgets/mess_widgets/messmenu.dart';
+import 'package:intl/intl.dart';
 
 class MessApp extends StatefulWidget {
   const MessApp({super.key});
@@ -44,131 +45,23 @@ String currSubscribedMess = '';
 
 
 class _MessScreenState extends State<MessScreen> {
-  Widget xbuildQuickActions() {
-    const usernameBlue = Color(0xFF3754DB);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 18.0),
-      child: Row(
-        children: [
-          // New Complaint Button
-          Expanded(
-            child: InkWell(
-              borderRadius: BorderRadius.circular(18),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ComingSoonScreen(),
-                  ),
-                );
-              },
-              child: Container(
-                height: 90,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF6F6F6),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/icon/complaint.svg',
-                      width: 32,
-                      height: 32,
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      "Mess complaint",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 18),
-          // Mess QR Button
-          Expanded(
-            child: InkWell(
-              borderRadius: BorderRadius.circular(18),
-              onTap: () {
-                setState(() {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const QrScan(),
-                    ),
-                  );
-                });
-
-              },
-              child: Container(
-                height: 90,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF6F6F6),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/icon/qrscan.svg',
-                      width: 32,
-                      height: 32,
-                      color: const Color(0xFF3754DB),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      "Scan mess QR",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-  @override
-  void initState() {
-    super.initState();
-    fetchCurrSubscrMess();
-    fetchMessInfo();
-
-  }
-
-  Future<void> fetchCurrSubscrMess() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      currSubscribedMess = prefs.getString('curr_subscribed_mess') ?? '';
-    });
-  }
-
-
+  bool _isLoading = true;
 
   String caterername = '';
   int? rating;
   int? rank;
 
-  Future<void> fetchMessInfo() async {
-    final prefs = await SharedPreferences.getInstance();
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
+  Future<void> _loadData() async {
+    await fetchCurrSubscrMess();
+    await fetchMessInfo();
     setState(() {
-      caterername = prefs.getString('messName') ?? '';
-      rating = prefs.getInt('rating') ?? 0;
-      rank = prefs.getInt('ranking') ?? 0;
+      _isLoading = false; // Only now we render
     });
 
     print("Mess name: $caterername");
@@ -176,115 +69,80 @@ class _MessScreenState extends State<MessScreen> {
     print("Rank: $rank");
   }
 
+  Future<void> fetchCurrSubscrMess() async {
+    final prefs = await SharedPreferences.getInstance();
+    currSubscribedMess = prefs.getString('curr_subscribed_mess') ?? '';
+  }
+
+  Future<void> fetchMessInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    caterername = prefs.getString('messName') ?? '';
+    rating = prefs.getInt('rating') ?? 0;
+    rank = prefs.getInt('ranking') ?? 0;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context)
-        .size; //To make sure everything fits as per device size
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Colors.white, // Force correct bg
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
-      body: Container(
-        color: Colors.white,// big bug
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                RichText(
-                  text: const TextSpan(
-                    text: "MESS",
-                    style: TextStyle(
-                      fontFamily: 'OpenSans_regular',
-                      fontSize: 32,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
+      backgroundColor: Colors.white, // Avoid blue flicker
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "MESS",
+                          style: TextStyle(
+                            fontFamily: 'OpenSans_regular',
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _MenuSection(),
+                        const SizedBox(height: 20),
+                      ],
                     ),
-                  ),
+                    Column(
+                      children: [
+                        _MessInfo(
+                          catererName: caterername,
+                          rating: rating,
+                          rank: rank,
+                        ),
+                        const SizedBox(height: 30),
+                      ],
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
-                _FeedbackCard(),
-                const SizedBox(height: 20),
-                xbuildQuickActions(),
-                const SizedBox(height: 16),
-                _MenuSection(),
-                const SizedBox(height: 20),
-                _MessInfo(
-                  catererName: caterername,
-                  rating: rating,
-                  rank: rank,
-                ),
-                const SizedBox(height: 30),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
   }
 }
 
-class _FeedbackCard extends StatefulWidget {
-  @override
-  State<_FeedbackCard> createState() => _FeedbackCardState();
-}
-
-class _FeedbackCardState extends State<_FeedbackCard> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('How did the mess do this month?',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          const Text("You can help the mess team serve better meals.",
-              style: TextStyle(color: Colors.black54)),
-          const SizedBox(height: 8),
-          Row(
-            children: const [
-              Icon(Icons.access_time, color: Colors.red, size: 18),
-              SizedBox(width: 4),
-              Text('Form closes in 2 Days',
-                  style: TextStyle(color: Colors.red)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF3754DB),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24)),
-              ),
-              onPressed: () {
-                setState(() {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MessFeedbackPage(),
-                    ),
-                  );
-
-                });
-              },
-              child: const Text(
-                'Give feedback',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 
 class _MenuSection extends StatefulWidget {
@@ -292,13 +150,7 @@ class _MenuSection extends StatefulWidget {
   State<_MenuSection> createState() => _MenuSectionState();
 }
 
- String copyMessID = '';
-
-String selectedDay = 'Monday';//also default this to todayday
-
 class _MenuSectionState extends State<_MenuSection> {
-
-
   final List<String> daysOnly = [
     'Monday',
     'Tuesday',
@@ -309,53 +161,70 @@ class _MenuSectionState extends State<_MenuSection> {
     'Sunday',
   ];
 
-  String messidcopy = '';
+  late String messId;
+  late String selectedDay;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedDay = DateFormat('EEEE').format(DateTime.now()); // default to today
+    // default messId from provider
+    final hostelMap = Provider.of<MessInfoProvider>(context, listen: false).hostelMap;
+    messId = hostelMap.values.isNotEmpty
+        ? hostelMap.values.first.messid
+        : '68552b70491f1303d2c4dbcc';
+  }
+
+  void _updateMessId(String hostelName) {
+    final hostelMap = Provider.of<MessInfoProvider>(context, listen: false).hostelMap;
+    final id = hostelMap[hostelName]?.messid ?? '6826dfda8493bb0870b10cbf';
+    setState(() {
+      messId = id;
+    });
+  }
+
+  void _updateDay(String day) {
+    setState(() {
+      selectedDay = day;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Text("What’s in Menu",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const Spacer(),
-              HostelDrop(onChanged: (value) {
-                final hostelMap =
-                    Provider.of<MessInfoProvider>(context, listen: false)
-                        .hostelMap;
-                final MessID =
-                    hostelMap[value]?.messid ?? '6826dfda8493bb0870b10cbf';
-                copyMessID = MessID;
-                print("Mess ID for $value : $MessID");
-              }),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 40,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: daysOnly.map((day) {
-                return _DayChip(
-                  label: day,
-                  selected: selectedDay == day,
-                  onTap: () {
-                    setState(() {
-                      selectedDay = day;
-                    });
-                  },
-                );
-              }).toList(),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Text(
+              "What’s in Menu",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+            const Spacer(),
+            HostelDrop(onChanged: _updateMessId),
+          ],
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 40,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: daysOnly.map((day) {
+              return _DayChip(
+                label: day,
+                selected: selectedDay == day,
+                onTap: () => _updateDay(day),
+              );
+            }).toList(),
           ),
-          const SizedBox(height: 16),
-          _MenuCard(),
-          const SizedBox(height: 10),
-        ],
-      ),
+        ),
+        const SizedBox(height: 16),
+        _MenuCard(
+          messId: messId,
+          day: selectedDay,
+        ),
+        const SizedBox(height: 10),
+      ],
     );
   }
 }
@@ -388,45 +257,72 @@ class _DayChip extends StatelessWidget {
         onSelected: (_) => onTap(),
         selectedColor: Colors.deepPurple.shade100,
         labelStyle:
-            TextStyle(color: selected ? Color(0xFF3754DB) : Colors.black),
+        TextStyle(color: selected ? Color(0xFF3754DB) : Colors.black),
       ),
     );
   }
 }
 
 class _MenuCard extends StatelessWidget {
+  final String messId;
+  final String day;
+
+  const _MenuCard({required this.messId, required this.day});
+
   @override
   Widget build(BuildContext context) {
-    return IntrinsicHeight(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Consumer<MessInfoProvider>(
-            builder: (context, messProvider, child) {
-              return FutureBuilder<String?>(
-                future: _getUserMessId(),
-                builder: (context, snapshot) {
-                  return HorizontalMenuBuilder(
-                    // Changed from MenuFutureBuilder
-                    messId: copyMessID,
-                    day: selectedDay,
-                    userMessId: snapshot.data,
-                  );
-                },
-              );
-            },
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        _MealWrapper(meal: 'Breakfast', messId: messId, day: day),
+        _MealWrapper(meal: 'Lunch', messId: messId, day: day),
+        _MealWrapper(meal: 'Dinner', messId: messId, day: day),
+      ],
     );
   }
+}
+
+class _MealWrapper extends StatelessWidget {
+  final String meal;
+  final String messId;
+  final String day;
+
+  const _MealWrapper({
+    required this.meal,
+    required this.messId,
+    required this.day,
+  });
 
   Future<String?> _getUserMessId() async {
     final prefs = await SharedPreferences.getInstance();
-    String messId = prefs.getString('messID') ?? '6826dfda8493bb0870b10cbf';
-    return messId;
+    return prefs.getString('messID') ?? '';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String?>(
+      future: _getUserMessId(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.all(12),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          );
+        }
+        final userMessId = snapshot.data ?? '';
+        return HorizontalMenuBuilder(
+          messId: messId,
+          day: day,
+          userMessId: userMessId,
+          mealType: meal,
+        );
+      },
+    );
   }
 }
+
+
+
+
 
 
 
@@ -509,4 +405,3 @@ class _MessInfo extends StatelessWidget {
     );
   }
 }
-
