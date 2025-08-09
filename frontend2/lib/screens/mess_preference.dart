@@ -24,13 +24,11 @@ class _MessChangePreferenceScreenState
   String? appliedHostel;
 
   Future<void> checkMessChangeStatus() async {
-    print("🥴🥴🥴🥴🥴 entered into check mess change status");
     final dio = Dio();
 
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('access_token');
-      print(token);
       String url = MessChange.messChangeStatus;
 
       final res = await dio.get(
@@ -42,8 +40,6 @@ class _MessChangePreferenceScreenState
           },
         ),
       );
-
-      print("🙂🙂🙂🙂🙂🙂mess change ststaus code: ${res.statusCode}, message: ${res.data['message']}");
 
       if (res.statusCode == 200) {
         setState(() {
@@ -63,9 +59,6 @@ class _MessChangePreferenceScreenState
   }
 
   Future<void> handleSubmit(String? firstpref) async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? currentMess = prefs.getString('currentMess') ?? "";
-
     if (firstpref == null) {
       //Show error/snackbar
       showDialog(
@@ -104,29 +97,10 @@ class _MessChangePreferenceScreenState
     //   return;
     // }
 
-    if (firstpref == currentMess) {
-      //Show error/snackbar
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Error"),
-          content: const Text("Choose a mess different from default mess"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text("OK"),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-
     final dio = Dio();
 
     try {
+      final prefs = await SharedPreferences.getInstance();
       final String? UserId = prefs.getString('userId');
       //?? What is the url
       String url = MessChange.messChangeRequest;
