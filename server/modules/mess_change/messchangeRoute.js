@@ -20,6 +20,6 @@ messChangeRouter.post("/accept-all/:hostelId", acceptAndRejectByFCFS); //accept 
 messChangeRouter.patch("/accept/:userId", acceptMessChangeRequest);
 messChangeRouter.patch("/reject/:userId", rejectMessChangeRequest);
 messChangeRouter.get("/:hostelId", getAllMessChangeRequests);
-messChangeRouter.get("/status", messChangeStatus);
+messChangeRouter.get("/status", authenticateJWT, messChangeStatus);
 
 module.exports = messChangeRouter;
