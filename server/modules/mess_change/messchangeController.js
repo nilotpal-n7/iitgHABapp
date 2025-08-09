@@ -271,7 +271,13 @@ const messChangeRequest = async (req, res) => {
 const messChangeStatus = async (req, res) => {
   try {
     const user = req.user;
+
+    if (!req.user) {
+      return res.status(403).json({ message: "Not Authenticated" });
+    }
+
     res.status(200).json({
+      message: "User mess change status",
       applied: user.applied_for_mess_changed,
       hostel: user.applied_hostel_string
     });
