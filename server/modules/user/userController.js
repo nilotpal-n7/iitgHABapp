@@ -145,6 +145,20 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+const clearAllStudents = async (req, res) => {
+  try {
+    // Optional: allow only HAB
+    if (req.user && req.user.role && req.user.role !== "hab") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    const result = await User.deleteMany({ role: "student" });
+    return res.status(200).json({ message: "All students cleared", deleted: result.deletedCount });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Error clearing students" });
+  }
+};
+
 module.exports = {
   getUserData,
   createUser,
@@ -155,4 +169,5 @@ module.exports = {
   getUserComplaints,
   getUserByRoll,
   getAllUsers,
+  clearAllStudents,
 };
