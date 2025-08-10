@@ -12,6 +12,7 @@ const {
   // getEmailsOfSecyUsers,
   getUserByRoll,
   getAllUsers,
+  clearAllStudents,
 } = require("./userController.js");
 
 const userRouter = express.Router();
@@ -168,6 +169,9 @@ userRouter.get("/roll/:qr", getUserByRoll); //removed authenticateJWT from here
  *                   example: "Error fetching users"
  */
 userRouter.get("/all", getAllUsers);
+
+// Clear all students
+userRouter.delete("/all", authenticateJWT, clearAllStudents);
 
 // userRouter.get('/complaints/:outlook', getUserComplaints);
 

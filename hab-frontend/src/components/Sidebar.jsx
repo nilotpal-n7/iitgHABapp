@@ -7,6 +7,7 @@ import {
   UserOutlined,
   BookOutlined,
   BarChartOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 
@@ -37,6 +38,12 @@ const Sidebar = () => {
       name: "Students",
       path: "/students",
       icon: <UserOutlined />,
+    },
+    {
+      key: "5",
+      name: "Allocate Hostel",
+      path: "/allocate-hostel",
+      icon: <UploadOutlined />,
     },
     {
       key: "6",

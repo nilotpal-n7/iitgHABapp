@@ -1,25 +1,25 @@
 // Students.jsx (Main Component)
 import React, { useState } from "react";
-import { Button, Modal } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
-import CreateUsers from "../components/CreateUsers";
+import { Button, Modal, message, Popconfirm } from "antd";
 import StudentList from "../components/StudentList";
+import { clearAllStudents } from "../apis/students";
 
 const Students = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
-  const handleUsersCreated = () => {
-    setRefreshTrigger((prev) => prev + 1);
-    setIsModalVisible(false);
-  };
-
-  const showModal = () => {
-    setIsModalVisible(true);
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
+  const handleClearAll = async () => {
+    try {
+      setClearing(true);
+      await clearAllStudents();
+      message.success("All students cleared");
+      setRefreshTrigger((prev) => prev + 1);
+    } catch (e) {
+      console.error(e);
+      message.error("Failed to clear students");
+    } finally {
+      setClearing(false);
+    }
   };
 
   return (
@@ -54,39 +54,20 @@ const Students = () => {
             Student Management
           </h1>
 
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            size="large"
-            onClick={showModal}
-            style={{
-              borderRadius: "6px",
-              height: "40px",
-              fontWeight: "500",
-            }}
+          <Popconfirm
+            title="Clear all students?"
+            description="This will delete all student users. This action cannot be undone."
+            okText="Yes, clear"
+            cancelText="Cancel"
+            onConfirm={handleClearAll}
           >
-            Add Students
-          </Button>
+            <Button danger loading={clearing} size="large" style={{ borderRadius: "6px", height: "40px", fontWeight: 500 }}>
+              Clear All Students
+            </Button>
+          </Popconfirm>
         </div>
 
         <StudentList refreshTrigger={refreshTrigger} />
-
-        <Modal
-          title={
-            <div style={{ fontSize: "20px", fontWeight: "bold" }}>
-              <PlusOutlined style={{ marginRight: "8px", color: "#1890ff" }} />
-              Upload Student CSV
-            </div>
-          }
-          open={isModalVisible}
-          onCancel={handleCancel}
-          footer={null}
-          width={600}
-          centered
-          destroyOnClose={true}
-        >
-          <CreateUsers onUsersCreated={handleUsersCreated} />
-        </Modal>
       </div>
     </div>
   );
