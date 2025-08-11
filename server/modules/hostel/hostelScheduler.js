@@ -48,7 +48,6 @@ const sundayScheduler = () => {
                         user.curr_subscribed_mess = user.next_mess;
                         user.next_mess = user.hostel;
                         user.applied_hostel_string = "";
-                        user.mess_change_button_pressed = false;
                         userWithTimeStamp.reason_for_change = "";
 
                         await userWithTimeStamp.save();
