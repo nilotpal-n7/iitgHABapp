@@ -1,4 +1,7 @@
-const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
+const {
+  authenticateJWT,
+  authenticateAdminJWT,
+} = require("../../middleware/authenticateJWT.js");
 
 const express = require("express");
 
@@ -6,8 +9,6 @@ const {
   getAllMessChangeRequests,
   getAllMessChangeRequestsForAllMess,
   acceptAndRejectByFCFS,
-  acceptMessChangeRequest,
-  rejectMessChangeRequest,
   messChangeRequest,
   messChangeStatus,
 } = require("./messchangeController.js");
@@ -17,9 +18,11 @@ const messChangeRouter = express.Router();
 messChangeRouter.get("/all", getAllMessChangeRequestsForAllMess);
 messChangeRouter.get("/status", authenticateJWT, messChangeStatus);
 messChangeRouter.post("/reqchange", authenticateJWT, messChangeRequest);
-messChangeRouter.post("/accept-all/:hostelId", acceptAndRejectByFCFS); //accept all by first come first serve and reject rest
-messChangeRouter.patch("/accept/:userId", acceptMessChangeRequest);
-messChangeRouter.patch("/reject/:userId", rejectMessChangeRequest);
-messChangeRouter.get("/:hostelId", getAllMessChangeRequests);
+messChangeRouter.post(
+  "/accept-all",
+  authenticateAdminJWT,
+  acceptAndRejectByFCFS
+);
+messChangeRouter.get("/hostel", authenticateAdminJWT, getAllMessChangeRequests);
 
 module.exports = messChangeRouter;

@@ -11,7 +11,6 @@ const {
   getHostel,
   getHostelbyId,
   getAllHostels,
-  applyMessChange,
   getAllHostelsWithMess,
   getAllHostelNameAndCaterer,
 } = require("./hostelController.js");
@@ -89,7 +88,7 @@ const hostelRouter = express.Router();
  */
 hostelRouter.post("/", createHostel);
 
-hostelRouter.post("/all/:hostelId",getHostelbyId);
+hostelRouter.post("/all/:hostelId", getHostelbyId);
 
 /**
  * @swagger
@@ -138,7 +137,7 @@ hostelRouter.post("/all/:hostelId",getHostelbyId);
  *                   type: string
  *                   example: "Internal server error"
  */
-hostelRouter.delete("/delete/:hostelId",deleteHostel);
+hostelRouter.delete("/delete/:hostelId", deleteHostel);
 
 /**
  * @swagger
@@ -189,7 +188,7 @@ hostelRouter.delete("/delete/:hostelId",deleteHostel);
  *                   type: string
  *                   example: "Error occurred"
  */
-hostelRouter.get("/all/:hostelId",getHostelbyId);
+hostelRouter.get("/all/:hostelId", getHostelbyId);
 
 hostelRouter.post("/login", loginHostel);
 
@@ -239,14 +238,17 @@ hostelRouter.get("/all", getAllHostels);
 
 hostelRouter.get("/allhostel", getAllHostelsWithMess);
 
-hostelRouter.post("/change", authenticateJWT, applyMessChange);
-
 // hostelRouter.get("/allocate", getHostelAlloc);
 
 //Route to get only hostel and caterer information
-hostelRouter.post("/gethnc",getAllHostelNameAndCaterer);
+hostelRouter.post("/gethnc", getAllHostelNameAndCaterer);
 
 // Allocation upload endpoint
-hostelRouter.post("/alloc/upload", authenticateJWT, upload.single("file"), uploadData);
+hostelRouter.post(
+  "/alloc/upload",
+  authenticateJWT,
+  upload.single("file"),
+  uploadData
+);
 
 module.exports = hostelRouter;
