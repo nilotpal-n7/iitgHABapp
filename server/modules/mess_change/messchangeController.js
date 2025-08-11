@@ -89,7 +89,6 @@ const acceptAndRejectByFCFS = async (req, res) => {
         user.curr_subscribed_mess = user.next_mess;
         user.applied_for_mess_changed = false;
         user.got_mess_changed = true;
-        user.mess_change_button_pressed = false;
         await user.save();
 
         acceptedUsers.push({
@@ -100,7 +99,6 @@ const acceptAndRejectByFCFS = async (req, res) => {
       } else {
         // Reject the request
         user.applied_for_mess_changed = false;
-        user.mess_change_button_pressed = false;
         user.applied_hostel_string = "";
         user.next_mess = user.curr_subscribed_mess;
         await user.save();
