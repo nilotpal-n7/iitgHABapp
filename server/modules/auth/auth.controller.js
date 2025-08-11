@@ -5,6 +5,8 @@ const {
   User,
   findUserWithEmail,
 } = require("../user/userModel.js"); // Assuming getUserFromToken is a named export
+const AppError = require("../../utils/appError.js");
+const UserAllocHostel = require("../hostel/hostelAllocModel.js");
 require("dotenv").config();
 
 const appConfig = require("../../config/default.js");
@@ -26,18 +28,14 @@ const loginHandler = (req, res) => {
 //** */
 const getHostelAlloc = async (rollno) => {
   try {
-    const user = await UserAllocHostel.findOne({ rollNumber: rollno }).populate('hostel');
-
-    if (!user) {
-      return res.status(400).json({ message: "No such roll exists" });
+    const allocation = await UserAllocHostel.findOne({ rollno: rollno }).populate("hostel");
+    if (!allocation || !allocation.hostel) {
+      return null;
     }
-
-    const hostelname = user.hostel.name;
-
-    return res.status(200).json({ message: "hostel found", hostel: hostelname });
+    return allocation.hostel; // return populated Hostel document
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ message: "Error occured" });
+    return null;
   }
 };
 
@@ -92,6 +90,12 @@ const mobileRedirectHandler = async (req, res, next) => {
     const roll = userFromToken.data.surname;
     if (!roll) throw new AppError(401, "Sign in using Institute Account");
 
+    // Ensure hostel allocation exists for this roll number
+    const allocatedHostel = await getHostelAlloc(roll);
+    if (!allocatedHostel) {
+      throw new AppError(401, "Hostel allocation not found for this roll number");
+    }
+
     // create an existing user instance with finduserwithemail
     let existingUser = await findUserWithEmail(userFromToken.data.mail);
 
@@ -103,17 +107,26 @@ const mobileRedirectHandler = async (req, res, next) => {
         degree: userFromToken.data.jobTitle,
         rollNumber: userFromToken.data.surname,
         email: userFromToken.data.mail,
+        hostel: allocatedHostel._id,
       };
-      
-      const hostelAlloc = await getHostelAlloc(userFromToken.data.surname);
-      console.log("hostelAlloc is", hostelAlloc);
-      userData.hostel = hostelAlloc;
 
       //console.log(userData);
 
       const user = new User(userData);
       //console.log( "user model is",user);
       existingUser = await user.save();
+    } else {
+      // Optionally ensure user's hostel matches allocated hostel
+      try {
+        const needsUpdate = !existingUser.hostel || existingUser.hostel.toString() !== allocatedHostel._id.toString();
+        if (needsUpdate) {
+          existingUser.hostel = allocatedHostel._id;
+          existingUser.curr_subscribed_mess = allocatedHostel._id;
+          await existingUser.save();
+        }
+      } catch (e) {
+        console.log("Error while syncing user hostel with allocation", e);
+      }
     }
 
     // Generate JWT for the existing or new user

@@ -15,6 +15,15 @@ const {
   getAllHostelsWithMess,
   getAllHostelNameAndCaterer,
 } = require("./hostelController.js");
+const { uploadData } = require("./hostelAlloc.js");
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
+const uploadDir = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+const upload = multer({ dest: uploadDir });
 
 const hostelRouter = express.Router();
 /**
@@ -236,4 +245,8 @@ hostelRouter.post("/change", authenticateJWT, applyMessChange);
 
 //Route to get only hostel and caterer information
 hostelRouter.post("/gethnc",getAllHostelNameAndCaterer);
+
+// Allocation upload endpoint
+hostelRouter.post("/alloc/upload", authenticateJWT, upload.single("file"), uploadData);
+
 module.exports = hostelRouter;

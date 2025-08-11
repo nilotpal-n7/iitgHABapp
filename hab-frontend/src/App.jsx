@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Sidebar from "./components/Sidebar";
+import Sidebar from "./Components/Sidebar";
 import Home from "./pages/Home";
 import Hostels from "./pages/Hostels";
 import AllHostelList from "./pages/AllHostelList";
@@ -13,6 +13,7 @@ import HostelForm from "./pages/HostelForm";
 import HostelPage from "./pages/HostelPage";
 import MessChangeCard from "./Components/MessChangeCard";
 import MessChangePage from "./pages/MessChangePage.jsx";
+import AllocateHostel from "./pages/AllocateHostel.jsx";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
             <Route path="/mess/:id" element={<MessDetails />} />
             <Route path="/mess/menu/:id" element={<MessMenu />} />
             <Route path="/mess/changeapplication" element={ <><MessChangePage/></> } />
+            <Route path="/allocate-hostel" element={<AllocateHostel />} />
           </Routes>
         </div>
       </div>
