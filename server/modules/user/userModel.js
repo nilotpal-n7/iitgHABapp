@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-
 const JWT_SECRET_KEY = process.env.JWT_SECRET;
 
 /**
@@ -138,37 +137,21 @@ const userSchema = new mongoose.Schema({
       return this.hostel;
     },
   },
-
-  mess_change_button_pressed: {
-    type: Boolean,
-    default: false,
-  },
-
   applied_hostel_timestamp: {
     type: Date,
-    default: new Date('2024-8-5'),
+    default: new Date("2024-8-5"),
   },
-
   applied_hostel_string: {
     type: String,
     default: "",
   },
-
   applied_for_mess_changed: {
     type: Boolean,
     default: false,
   },
-
   got_mess_changed: {
     type: Boolean,
     default: false,
-  },
-
-  role: {
-    type: String,
-    enum: ["student", "hab", "welfare_secy", "gen_secy"],
-    default: "student",
-    // here it was required true
   },
   complaints: [
     {
