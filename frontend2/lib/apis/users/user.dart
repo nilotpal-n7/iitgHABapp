@@ -40,7 +40,7 @@ Future<Map<String, String>?> fetchUserDetails() async {
           userData['applied_hostel_string'] ?? "Not provided";
       final hostel = userData['hostel'] ?? "Not provided";
 
-      final bool gotHostel = userData['got_mess_changed'];
+      final bool gotHostel = userData['got_mess_changed'] ?? false;
       final bool buttonPressed = userData['mess_change_button_pressed'];
       prefs.setBool('gotMess', gotHostel);
       prefs.setString('rollNumber', roll);

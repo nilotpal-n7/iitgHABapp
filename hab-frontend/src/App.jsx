@@ -11,7 +11,7 @@ import MessDetails from "./components/MessDetails";
 import MessMenu from "./components/MessMenu";
 import HostelForm from "./pages/HostelForm";
 import HostelPage from "./pages/HostelPage";
-import MessChangeCard from "./Components/MessChangeCard";
+
 import MessChangePage from "./pages/MessChangePage.jsx";
 import AllocateHostel from "./pages/AllocateHostel.jsx";
 
@@ -31,7 +31,14 @@ function App() {
             <Route path="/create-mess" element={<CreateMess />} />
             <Route path="/mess/:id" element={<MessDetails />} />
             <Route path="/mess/menu/:id" element={<MessMenu />} />
-            <Route path="/mess/changeapplication" element={ <><MessChangePage/></> } />
+            <Route
+              path="/mess/changeapplication"
+              element={
+                <>
+                  <MessChangePage />
+                </>
+              }
+            />
             <Route path="/allocate-hostel" element={<AllocateHostel />} />
           </Routes>
         </div>
