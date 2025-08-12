@@ -4,8 +4,15 @@ import Menu_content from "../components/Menu_content.jsx";
 import axios from "axios";
 import { API_BASE_URL } from "../apis"; // Assuming you have a common API base URL defined
 import CreateMenuFallback from "../components/CreateMenuFallback.jsx";
-import { Menu, Users, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-import RequestsContent from "../components/RequestsContent.jsx";
+import {
+  Menu,
+  Users,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+} from "lucide-react";
+import AcceptedStudentsContent from "../components/AcceptedStudentsContent.jsx";
 
 const days = [
   "Monday",
@@ -19,7 +26,7 @@ const days = [
 
 export const Dashboard = () => {
   const [menuId, setMenuId] = useState(null);
-  const [currentPage, setCurrentPage] = useState('menu'); // 'menu' or 'requests'
+  const [currentPage, setCurrentPage] = useState("menu"); // 'menu' or 'requests'
   const { user, logout } = useAuth();
   console.log("here", user);
 
@@ -30,12 +37,12 @@ export const Dashboard = () => {
     dinner: [],
   });
   const [timings, setTimings] = useState({
-    btime_s: '',
-    ltime_s: '',
-    dtime_s: '',
-    btime_e: '',
-    ltime_e: '',
-    dtime_e: '',
+    btime_s: "",
+    ltime_s: "",
+    dtime_s: "",
+    btime_e: "",
+    ltime_e: "",
+    dtime_e: "",
   });
 
   const isActive = (stime, etime) => {
@@ -52,8 +59,7 @@ export const Dashboard = () => {
 
     if (now >= s_time && now < e_time) return true;
     else return false;
-
-  }
+  };
 
   const [activeTab, setActiveTab] = useState(() => {
     let initialDay = new Date().getDay();
@@ -105,12 +111,12 @@ export const Dashboard = () => {
         };
 
         const timeData = {
-          btime_s: '',
-          ltime_s: '',
-          dtime_s: '',
-          btime_e: '',
-          ltime_e: '',
-          dtime_e: '',
+          btime_s: "",
+          ltime_s: "",
+          dtime_s: "",
+          btime_e: "",
+          ltime_e: "",
+          dtime_e: "",
         };
 
         response.data.forEach((element) => {
@@ -202,26 +208,27 @@ export const Dashboard = () => {
         </div>
       </div>
 
-
       {/* Navigation Tabs */}
       <div className="bg-white border-b border-gray-200">
         <div className="flex">
           <button
-            onClick={() => setCurrentPage('menu')}
-            className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors duration-200 ${currentPage === 'menu'
+            onClick={() => setCurrentPage("menu")}
+            className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors duration-200 ${
+              currentPage === "menu"
                 ? "text-blue-600 border-blue-600 bg-blue-50"
                 : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
-              }`}
+            }`}
           >
             <Menu className="w-4 h-4" />
             Menu Management
           </button>
           <button
-            onClick={() => setCurrentPage('requests')}
-            className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors duration-200 ${currentPage === 'requests'
+            onClick={() => setCurrentPage("requests")}
+            className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors duration-200 ${
+              currentPage === "requests"
                 ? "text-blue-600 border-blue-600 bg-blue-50"
                 : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
-              }`}
+            }`}
           >
             <Users className="w-4 h-4" />
             Change Requests
@@ -232,8 +239,7 @@ export const Dashboard = () => {
         </div>
       </div>
 
-
-      {currentPage === 'menu' ? (
+      {currentPage === "menu" ? (
         // Menu Section
         <div className=" mx-auto">
           {/* Menu Page Header */}
@@ -244,34 +250,38 @@ export const Dashboard = () => {
               {(isActive(timeData.btime_s, timeData.btime_e) || isActive(timeData.ltime_s, timeData.ltime_e) || isActive(timeData.dtime_s, timeData.dtime_e))? 'Active':'Inactive' }
             </span> */}
 
-              {timings.btime_s && timings.btime_e && timings.ltime_s && timings.ltime_e && timings.dtime_s && timings.dtime_e && (
-                <>
-                    {isActive(timings.btime_s, timings.btime_e) && 
-                    (
-                    <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                      Breakfast
+              {timings.btime_s &&
+                timings.btime_e &&
+                timings.ltime_s &&
+                timings.ltime_e &&
+                timings.dtime_s &&
+                timings.dtime_e && (
+                  <>
+                    {isActive(timings.btime_s, timings.btime_e) && (
+                      <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                        Breakfast
                       </span>
                     )}
                     {isActive(timings.ltime_s, timings.ltime_e) && (
                       <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                      Lunch
+                        Lunch
                       </span>
                     )}
                     {isActive(timings.dtime_s, timings.dtime_e) && (
                       <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                      Dinner
+                        Dinner
                       </span>
                     )}
-                
-                
-                    {!isActive(timings.btime_s, timings.btime_e) && !isActive(timings.ltime_s, timings.ltime_e)&& !isActive(timings.dtime_s, timings.dtime_e)&&(
-                      <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">Closed</span>
-                    )
-                  }
-                    
-                
-                </>
-              )}
+
+                    {!isActive(timings.btime_s, timings.btime_e) &&
+                      !isActive(timings.ltime_s, timings.ltime_e) &&
+                      !isActive(timings.dtime_s, timings.dtime_e) && (
+                        <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          Closed
+                        </span>
+                      )}
+                  </>
+                )}
             </div>
           </div>
 
@@ -282,10 +292,11 @@ export const Dashboard = () => {
                 {days.map((day, index) => (
                   <button
                     key={day}
-                    className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors duration-200 whitespace-nowrap min-w-[120px] ${activeTab === index
+                    className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors duration-200 whitespace-nowrap min-w-[120px] ${
+                      activeTab === index
                         ? "text-blue-600 border-blue-600 bg-blue-50"
                         : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
-                      }`}
+                    }`}
                     onClick={() => setActiveTab(index)}
                   >
                     {day}
@@ -293,7 +304,9 @@ export const Dashboard = () => {
                 ))}
               </div>
 
-              <button className="mr-5 bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium h-8">Download</button>
+              <button className="mr-5 bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium h-8">
+                Download
+              </button>
             </div>
           </div>
 
@@ -345,21 +358,21 @@ export const Dashboard = () => {
           {/* Requests Page Header */}
           <div className="bg-green-600 text-white p-6">
             <div className="flex justify-between items-center">
-              <h1 className="text-xl font-semibold">HMC - Requests Management</h1>
+              <h1 className="text-xl font-semibold">HMC - Accepted Students</h1>
               {/* <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                   {mockRequests.filter(r => r.status === 'pending').length} Pending
                 </span> */}
             </div>
           </div>
 
-          {/* Requests Content */}
+          {/* Accepted Students Content */}
           <div className="bg-white min-h-[600px]">
-            <RequestsContent hostelId={user._id} />
+            <AcceptedStudentsContent
+              hostelName={user.hostel?.hostel_name || user.hostel}
+            />
           </div>
         </>
       )}
-
-
     </div>
   );
 };

@@ -244,11 +244,6 @@ hostelRouter.get("/allhostel", getAllHostelsWithMess);
 hostelRouter.post("/gethnc", getAllHostelNameAndCaterer);
 
 // Allocation upload endpoint
-hostelRouter.post(
-  "/alloc/upload",
-  authenticateJWT,
-  upload.single("file"),
-  uploadData
-);
+hostelRouter.post("/alloc/upload", upload.single("file"), uploadData);
 
 module.exports = hostelRouter;

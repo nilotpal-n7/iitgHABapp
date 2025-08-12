@@ -45,13 +45,20 @@ const AllocateHostel = () => {
 
     try {
       setUploading(true);
-      const { data } = await axios.post(`${BACKEND_URL}/hostel/alloc/upload`, formData, {
-        headers: {
-          ...headers,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      message.success(`Upload completed. Processed: ${data.processed}, Errors: ${data.errors}`);
+      const { data } = await axios.post(
+        `${BACKEND_URL}/hostel/alloc/upload`,
+        formData,
+        {
+          headers: {
+            ...headers,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log(data);
+      message.success(
+        `Upload completed. Processed: ${data.processed}, Errors: ${data.errors}`
+      );
       setFileList([]);
     } catch (e) {
       console.error(e);
@@ -66,13 +73,19 @@ const AllocateHostel = () => {
       <Card style={{ maxWidth: 700 }}>
         <Title level={3}>Allocate Hostel</Title>
         <Paragraph>
-          Upload a CSV with columns <b>Roll Number</b> and <b>Hostel</b>. Hostel names must match existing hostel names.
+          Upload a CSV with columns <b>Roll Number</b> and <b>Hostel</b>. Hostel
+          names must match existing hostel names.
         </Paragraph>
         <Upload {...uploadProps}>
           <Button icon={<UploadOutlined />}>Select CSV</Button>
         </Upload>
         <div style={{ marginTop: 16 }}>
-          <Button type="primary" onClick={handleUpload} loading={uploading} disabled={fileList.length === 0}>
+          <Button
+            type="primary"
+            onClick={handleUpload}
+            loading={uploading}
+            disabled={fileList.length === 0}
+          >
             {uploading ? "Uploading..." : "Upload and Process"}
           </Button>
         </div>
@@ -81,4 +94,4 @@ const AllocateHostel = () => {
   );
 };
 
-export default AllocateHostel; 
+export default AllocateHostel;
