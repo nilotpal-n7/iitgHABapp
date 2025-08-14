@@ -147,10 +147,7 @@ const getAllUsers = async (req, res) => {
 
 const clearAllStudents = async (req, res) => {
   try {
-    // Optional: allow only HAB
-    if (req.user && req.user.role && req.user.role !== "hab") {
-      return res.status(403).json({ message: "Forbidden" });
-    }
+    console.log("clearing all students");
     const result = await User.deleteMany({ role: "student" });
     return res.status(200).json({ message: "All students cleared", deleted: result.deletedCount });
   } catch (err) {

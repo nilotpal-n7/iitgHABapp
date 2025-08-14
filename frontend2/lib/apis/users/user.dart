@@ -40,11 +40,9 @@ Future<Map<String, String>?> fetchUserDetails() async {
           userData['applied_hostel_string'] ?? "Not provided";
       final hostel = userData['hostel'] ?? "Not provided";
 
-      final bool gotHostel = userData['got_mess_changed'] ?? false;
-      final bool buttonPressed = userData['mess_change_button_pressed'];
+      final bool gotHostel = userData['got_mess_changed'];
       prefs.setBool('gotMess', gotHostel);
       prefs.setString('rollNumber', roll);
-      prefs.setBool('buttonpressed', buttonPressed);
       prefs.setString('appliedMess', appliedMess);
       prefs.setString('rollNo', roll);
       prefs.setString('hostel', hostel);
@@ -58,7 +56,6 @@ Future<Map<String, String>?> fetchUserDetails() async {
       print("Roll: $roll");
       print("Curr Mess: $CurrSubscribedMess");
       print("your mess is $gotHostel");
-      print('you pressed: $buttonPressed');
 
       // Return the data as a map
       return {
