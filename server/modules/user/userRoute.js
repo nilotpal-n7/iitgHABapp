@@ -103,6 +103,8 @@ userRouter.post("/", createUser);
 // userRouter.get('/roll/:roll', getUserByRoll);
 
 userRouter.get("/", authenticateJWT, getUserData);
+// Clear all students
+userRouter.delete("/all", clearAllStudents);
 
 userRouter.delete("/:outlook", authenticateJWT, deleteUser);
 
@@ -170,8 +172,7 @@ userRouter.get("/roll/:qr", getUserByRoll); //removed authenticateJWT from here
  */
 userRouter.get("/all", getAllUsers);
 
-// Clear all students
-userRouter.delete("/all", authenticateJWT, clearAllStudents);
+
 
 // userRouter.get('/complaints/:outlook', getUserComplaints);
 
