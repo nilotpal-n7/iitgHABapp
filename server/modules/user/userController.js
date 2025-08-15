@@ -1,7 +1,6 @@
 const { User } = require("./userModel.js");
 const { Hostel } = require("../hostel/hostelModel.js");
 
-
 const getUserData = async (req, res, next) => {
   //console.log(req);
   return res.json(req.user);
@@ -120,19 +119,27 @@ const getAllUsers = async (req, res) => {
   try {
     const users = await User.find();
 
-    // Map over users and populate the hostel name
+    // Map over users and populate both hostel and mess names
     const updatedUsers = await Promise.all(
       users.map(async (user) => {
-        const hostelId = user.curr_subscribed_mess;
+        const hostelId = user.hostel;
+        const messId = user.curr_subscribed_mess;
         let hostelName = null;
+        let messName = null;
 
         if (hostelId) {
           const hostel = await Hostel.findById(hostelId);
           hostelName = hostel ? hostel.hostel_name : null;
         }
 
+        if (messId) {
+          const mess = await Hostel.findById(messId);
+          messName = mess ? mess.hostel_name : null;
+        }
+
         const userObj = user.toObject();
-        userObj.curr_subscribed_mess_name = hostelName;
+        userObj.hostel_name = hostelName;
+        userObj.curr_subscribed_mess_name = messName;
 
         return userObj;
       })
@@ -149,7 +156,9 @@ const clearAllStudents = async (req, res) => {
   try {
     console.log("clearing all students");
     const result = await User.deleteMany({ role: "student" });
-    return res.status(200).json({ message: "All students cleared", deleted: result.deletedCount });
+    return res
+      .status(200)
+      .json({ message: "All students cleared", deleted: result.deletedCount });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Error clearing students" });
