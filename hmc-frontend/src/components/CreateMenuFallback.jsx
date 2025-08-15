@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, use } from "react";
 import axios from "axios"; // Assuming you'll make an API call
 // Corrected import path for AuthProvider - assuming a common src/context/AuthProvider structure
 import { useAuth } from "../context/AuthProvider"; // Adjust this path based on your actual project structure
@@ -7,9 +7,9 @@ import { API_BASE_URL } from "../apis"; // Assuming you have a common API base U
 // In a real project, this would be a .css file imported, e.g., import './MenuForm.css';
 
 // CreateMenuFallback component receives onSuccessfulCreation prop
-function CreateMenuFallback({ onSuccessfulCreation }) {
+function CreateMenuFallback({ onSuccessfulCreation, activeDay }) {
   const { user } = useAuth();
-  const [day, setDay] = useState("");
+  const [day, setDay] = useState(activeDay); // Default to Friday
   const [BisGala, setBIsGala] = useState(false);
   const [BstartTime, setBStartTime] = useState("");
   const [BendTime, setBEndTime] = useState("");
@@ -97,6 +97,22 @@ function CreateMenuFallback({ onSuccessfulCreation }) {
     }
   };
 
+  useEffect(() => {
+    // Reset form when activeDay changes
+    if (activeDay) {
+      setDay(activeDay);
+      setBIsGala(false);
+      setBStartTime("");
+      setBEndTime("");
+      setLIsGala(false);
+      setLStartTime("");
+      setLEndTime("");
+      setDIsGala(false);
+      setDStartTime("");
+      setDEndTime("");
+    }
+  }, [activeDay]);
+
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
       {/* Header */}
@@ -135,7 +151,8 @@ function CreateMenuFallback({ onSuccessfulCreation }) {
               value={day}
               onChange={(e) => setDay(e.target.value)}
               required
-              disabled={isSubmitting}
+              disabled
+              style={{ backgroundColor: "#f3f4f6" }} // Light gray background
             >
               <option value="">Select a day</option>
               {daysOfWeek.map((dayOption) => (
