@@ -34,6 +34,7 @@ const loginHostel = async (req, res) => {
     if (!verify) return res.status(401).json({ message: "Incorrect password" });
 
     const token = hostel.generateJWT();
+    //console.log("Generated tokenin cont:", token);
     return res.status(201).json({
       message: "Logged in successfully",
       token,
