@@ -20,7 +20,7 @@ const messChangeRouter = express.Router();
 messChangeRouter.get("/all", getAllMessChangeRequestsForAllHostels);
 messChangeRouter.get("/status", messChangeStatus);
 messChangeRouter.post("/reqchange", authenticateJWT, messChangeRequest);
-messChangeRouter.post("/reqcancel", authenticateJWT, messChangeCancel);
+messChangeRouter.patch("/reqcancel", authenticateJWT, messChangeCancel);
 messChangeRouter.post("/process-all", processAllMessChangeRequests);
 messChangeRouter.post("/reject-all", rejectAllMessChangeRequests);
 messChangeRouter.get(
