@@ -33,13 +33,10 @@ export const AuthProvider = ({ children }) => {
     console.log("Login function called. Setting isLoading to true.");
     try {
       console.log("Attempting login for:", hostel_name);
-      const res = await axios.post(
-        `${API_BASE_URL}/hostel/login`,
-        {
-          hostel_name,
-          password,
-        }
-      );
+      const res = await axios.post(`${API_BASE_URL}/hostel/login`, {
+        hostel_name,
+        password,
+      });
 
       const newToken = res.data.token;
       localStorage.setItem("token", newToken);
@@ -109,7 +106,7 @@ export const AuthProvider = ({ children }) => {
         "Authorization"
       ] = `Bearer ${currentAuthToken}`;
       const res = await axios.get(`${API_BASE_URL}/hostel/get`);
-      
+
       console.log(res.data.hostel);
 
       setUser(res.data.hostel);

@@ -1,21 +1,16 @@
 // upload.js
-const fs = require('fs');
-const path = require('path');
-const csv = require('csv-parser');
+const fs = require("fs");
+const path = require("path");
+const csv = require("csv-parser");
 
 // Import Mongoose Models
-const UserAllocHostel = require('./hostelAllocModel');
-const {Hostel} = require('./hostelModel');
+const UserAllocHostel = require("./hostelAllocModel");
+const { Hostel } = require("./hostelModel");
 
-/**
- * Controller to upload allocation CSV and create/update UserAllocHostel records.
- * Accepts a CSV file via multipart/form-data under field name `file`.
- * Columns expected: "Roll Number" (or rollno) and "Hostel" (or hostelName)
- */
 async function uploadData(req, res) {
   try {
     if (!req.file || !req.file.path) {
-      return res.status(400).json({ message: 'CSV file is required' });
+      return res.status(400).json({ message: "CSV file is required" });
     }
 
     const filePath = req.file.path;
@@ -23,17 +18,27 @@ async function uploadData(req, res) {
 
     fs.createReadStream(filePath)
       .pipe(csv())
-      .on('data', (data) => results.push(data))
-      .on('end', async () => {
+      .on("data", (data) => results.push(data))
+      .on("end", async () => {
         let processed = 0;
         let errors = 0;
         for (const row of results) {
           // Support different header names
-          const rollRaw = row['Roll Number'] || row['rollno'] || row['rollNo'] || row['roll'] || row['Roll'] || row['ROLL'];
-          const hostelRaw = row['Hostel'] || row['hostelName'] || row['hostel'] || row['HOSTEL'];
+          const rollRaw =
+            row["Roll Number"] ||
+            row["rollno"] ||
+            row["rollNo"] ||
+            row["roll"] ||
+            row["Roll"] ||
+            row["ROLL"];
+          const hostelRaw =
+            row["Hostel"] ||
+            row["hostelName"] ||
+            row["hostel"] ||
+            row["HOSTEL"];
 
-          const rollno = rollRaw ? String(rollRaw).trim() : '';
-          const hostelName = hostelRaw ? String(hostelRaw).trim() : '';
+          const rollno = rollRaw ? String(rollRaw).trim() : "";
+          const hostelName = hostelRaw ? String(hostelRaw).trim() : "";
 
           if (!rollno || !hostelName) {
             errors++;
@@ -64,15 +69,17 @@ async function uploadData(req, res) {
         // cleanup temp file
         fs.unlink(filePath, () => {});
 
-        return res.status(200).json({ message: 'Allocation upload completed', processed, errors });
+        return res
+          .status(200)
+          .json({ message: "Allocation upload completed", processed, errors });
       })
-      .on('error', (err) => {
-        console.error('CSV parse error', err);
-        return res.status(500).json({ message: 'CSV parse error' });
+      .on("error", (err) => {
+        console.error("CSV parse error", err);
+        return res.status(500).json({ message: "CSV parse error" });
       });
   } catch (error) {
-    console.error('Failed to upload allocation CSV:', error);
-    return res.status(500).json({ message: 'Failed to upload allocation CSV' });
+    console.error("Failed to upload allocation CSV:", error);
+    return res.status(500).json({ message: "Failed to upload allocation CSV" });
   }
 }
 

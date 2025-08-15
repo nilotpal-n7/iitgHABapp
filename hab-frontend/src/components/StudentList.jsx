@@ -44,8 +44,7 @@ const StudentList = ({ refreshTrigger }) => {
     return students.filter(
       (student) =>
         student.name?.toLowerCase().includes(query) ||
-        student.rollNumber?.toLowerCase().includes(query) ||
-        student.email?.toLowerCase().includes(query)
+        student.rollNumber?.toLowerCase().includes(query)
     );
   }, [students, searchQuery]);
 
@@ -77,17 +76,21 @@ const StudentList = ({ refreshTrigger }) => {
       render: (text) => text || "N/A",
     },
     {
-      title: <span>Email</span>,
-      dataIndex: "email",
-      key: "email",
-      sorter: (a, b) => (a.email || "").localeCompare(b.email || ""),
+      title: <span>Hostel</span>,
+      dataIndex: "hostel_name",
+      key: "hostel_name",
+      sorter: (a, b) =>
+        (a.hostel_name || "").localeCompare(b.hostel_name || ""),
       render: (text) => text || "N/A",
     },
     {
-      title: <span>Hostel</span>,
+      title: <span>Current Mess</span>,
       dataIndex: "curr_subscribed_mess_name",
       key: "curr_subscribed_mess_name",
-      sorter: (a, b) => (a.email || "").localeCompare(b.email || ""),
+      sorter: (a, b) =>
+        (a.curr_subscribed_mess_name || "").localeCompare(
+          b.curr_subscribed_mess_name || ""
+        ),
       render: (text) => text || "N/A",
     },
   ];
@@ -125,7 +128,7 @@ const StudentList = ({ refreshTrigger }) => {
         </h2>
 
         <Search
-          placeholder="Search by name, roll number, or email..."
+          placeholder="Search by name or roll number..."
           allowClear
           enterButton={<SearchOutlined />}
           size="large"
