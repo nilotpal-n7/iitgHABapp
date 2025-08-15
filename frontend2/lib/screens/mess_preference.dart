@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend1/apis/protected.dart';
 import 'package:frontend1/widgets/common/mess_pref_dropdowns.dart';
 import 'package:frontend1/constants/themes.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -57,12 +58,11 @@ class _MessChangePreferenceScreenState
     setState(() => loadingStatus = true);
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('access_token');
-      String url = MessChange.messChangeStatus;
+     final dio = Dio();
+      final token = await getAccessToken();
 
       final res = await dio.get(
-        url,
+        MessChange.messChangeStatus,
         options: Options(
           headers: {
             'Authorization': 'Bearer $token',
@@ -70,6 +70,8 @@ class _MessChangePreferenceScreenState
           },
         ),
       );
+
+      print(res);
 
       if (res.statusCode == 200) {
         setState(() {
@@ -98,16 +100,15 @@ class _MessChangePreferenceScreenState
     }
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('access_token');
-      String url = MessChange.messChangeRequest;
+      final token = await getAccessToken();
+      print(token);
+      String url = MessChange.messChangeCancel;
 
       final res = await dio.post(
         url,
         options: Options(
           headers: {
             'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
           },
         ),
         data: {
@@ -135,12 +136,76 @@ class _MessChangePreferenceScreenState
         );
       }
     } catch (e) {
-      debugPrint('Error submitting mess change: $e');
-      _showMessage(
-        "Error",
-        "We couldn't process your request!",
-        popPageAfter: true,
+      if (e is DioException) {
+        debugPrint('Error submitting mess change: $e');
+        _showMessage(
+          "Error",
+          "${e.response?.data['message']??"We couldn't process your request!"}",
+          popPageAfter: true,
+        );
+      } else {
+        debugPrint('Error submitting mess change: $e');
+        _showMessage(
+          "Error",
+          "We couldn't process your request!",
+          popPageAfter: true,
+        );
+      }
+    }
+  }
+
+
+  Future<void> handleCancel() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('access_token');
+      String url = MessChange.messChangeCancel;
+      
+      final res = await dio.post(
+        url,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ),
       );
+
+      if (res.statusCode == 202) {
+        _showMessage(
+          "Mess Cancel Rejected",
+          "Mess Cancel is only permitted between 24th and 27th of each month.",
+          popPageAfter: true,
+        );
+      } else if (res.statusCode == 200) {
+        _showMessage(
+          "Success",
+          "Mess Change Request Cancelled Successfully!",
+          popPageAfter: true,
+        );
+      } else {
+        _showMessage(
+          "Error",
+          "Form couldn't be submitted. Try again later!",
+          popPageAfter: true,
+        );
+      }
+    } catch (e) {
+      if (e is DioException) {
+        debugPrint('Error submitting mess change: $e');
+        _showMessage(
+          "Error",
+          "${e.response?.data['message']??"We couldn't process your request!"}",
+          popPageAfter: true,
+        );
+      } else {
+        debugPrint('Error submitting mess change: $e');
+        _showMessage(
+          "Error",
+          "We couldn't process your request!",
+          popPageAfter: true,
+        );
+      }
     }
   }
 
@@ -240,31 +305,61 @@ class _MessChangePreferenceScreenState
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-        height: 94,
+        height: 148,
         decoration: const BoxDecoration(
           border: Border(top: BorderSide(width: 1, color: Color(0xFFE5E5E5))),
         ),
-        child: ElevatedButton(
-          onPressed: (loadingStatus || alreadyApplied)
-              ? null
-              : () {
-                  handleSubmit(firstpref);
-                  setState(() => first = false);
-                },
-          style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.all(
-              (loadingStatus || alreadyApplied)
-                  ? Colors.grey
-                  : const Color(0xFF4C4EDB),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 8,
+          children: [
+            ElevatedButton(
+              onPressed: (loadingStatus || alreadyApplied)
+                  ? null
+                  : () {
+                      handleSubmit(firstpref);
+                      setState(() => first = false);
+                    },
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(
+                  (loadingStatus || alreadyApplied)
+                      ? Colors.grey
+                      : const Color(0xFF4C4EDB),
+                ),
+                elevation: WidgetStateProperty.all(0),
+              ),
+              child: Text(
+                alreadyApplied
+                    ? 'Request already sent to $appliedHostel'
+                    : 'Submit',
+                style: const TextStyle(fontSize: 16, color: Colors.white),
+              ),
             ),
-            elevation: WidgetStateProperty.all(0),
-          ),
-          child: Text(
-            alreadyApplied
-                ? 'Request already sent to $appliedHostel'
-                : 'Submit',
-            style: const TextStyle(fontSize: 16, color: Colors.white),
-          ),
+                        ElevatedButton(
+              onPressed: (alreadyApplied)
+                  ? () {
+                    handleCancel();
+                    setState(() {
+                      // first = true;
+                    });
+                  }
+                  : () {
+
+                    },
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(
+                  (alreadyApplied)
+                      ? const Color.fromARGB(255, 255, 0, 0)
+                      : Colors.grey
+                ),
+                elevation: WidgetStateProperty.all(0),
+              ),
+              child: Text(
+                'Cancel Mess Request',
+                style: const TextStyle(fontSize: 16, color: Colors.white),
+              ),
+            ),
+          ],
         ),
       ),
     );
