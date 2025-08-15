@@ -26,7 +26,7 @@ dotenv.config();
  *           description: Reason for hostel change
  *           default: ""
  *           example: "Academic requirements"
- * 
+ *
  *     Hostel:
  *       type: object
  *       required:
@@ -71,32 +71,11 @@ dotenv.config();
  *           example: "$2b$10$N9qo8uLOickgx2ZMRZoMye..."
  */
 
-const userTimeStampSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  // timestamp: {
-  //     type: Date,
-  //     default: Date.now
-  // },
-  reason_for_change: {
-    type: String,
-    default: "",
-  },
-});
-
 const hostelSchema = new mongoose.Schema({
   hostel_name: {
     type: String,
     required: true,
     unique: true,
-  },
-  users: {
-    type: [userTimeStampSchema],
-    default: [],
-    required: true,
   },
   messId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -104,7 +83,6 @@ const hostelSchema = new mongoose.Schema({
   },
   curr_cap: {
     type: Number,
-    default: 0,
     required: true,
   },
   password: {
