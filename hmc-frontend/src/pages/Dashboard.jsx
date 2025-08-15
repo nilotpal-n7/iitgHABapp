@@ -191,7 +191,7 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="min-w-7xl bg-gray-50">
+    <div className="w-full bg-gray-50">
       {/* Main Dashboard Header */}
       <div className="bg-white shadow-sm border-b border-gray-200 p-4">
         <div className="flex justify-between items-center mx-auto">
@@ -201,7 +201,7 @@ export const Dashboard = () => {
           </div>
           <button
             onClick={() => logout()}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 mr-4"
           >
             Logout
           </button>
@@ -258,17 +258,17 @@ export const Dashboard = () => {
                 timings.dtime_e && (
                   <>
                     {isActive(timings.btime_s, timings.btime_e) && (
-                      <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                      <span className="mr-2 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                         Breakfast
                       </span>
                     )}
                     {isActive(timings.ltime_s, timings.ltime_e) && (
-                      <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                      <span className="mr-2 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                         Lunch
                       </span>
                     )}
                     {isActive(timings.dtime_s, timings.dtime_e) && (
-                      <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                      <span className="mr-2 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                         Dinner
                       </span>
                     )}
@@ -276,7 +276,7 @@ export const Dashboard = () => {
                     {!isActive(timings.btime_s, timings.btime_e) &&
                       !isActive(timings.ltime_s, timings.ltime_e) &&
                       !isActive(timings.dtime_s, timings.dtime_e) && (
-                        <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                        <span className="mr-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                           Closed
                         </span>
                       )}
@@ -304,7 +304,7 @@ export const Dashboard = () => {
                 ))}
               </div>
 
-              <button className="mr-5 bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium h-8">
+              <button className="mr-8 bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium h-8">
                 Download
               </button>
             </div>
@@ -324,6 +324,7 @@ export const Dashboard = () => {
               <div className="p-6">
                 <CreateMenuFallback
                   onSuccessfulCreation={handleSuccessfulMenuCreation}
+                  activeDay ={days[activeTab]}
                 />
               </div>
             ) : (
