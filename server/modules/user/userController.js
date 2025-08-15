@@ -165,6 +165,27 @@ const clearAllStudents = async (req, res) => {
   }
 };
 
+const getUsersByHostelForMess = async (req, res) => {
+  try {
+    const { hostelId } = req.params;
+    
+    if (!hostelId) {
+      return res.status(400).json({ message: "Hostel ID is required" });
+    }
+
+    const users = await User.find({ curr_subscribed_mess: hostelId });
+    
+    res.status(200).json({
+      message: "Users fetched successfully",
+      count: users.length,
+      users: users
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching users by hostel" });
+  }
+};
+
 module.exports = {
   getUserData,
   createUser,
@@ -176,4 +197,5 @@ module.exports = {
   getUserByRoll,
   getAllUsers,
   clearAllStudents,
+  getUsersByHostelForMess,
 };

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import MessBillCalculator from '../Components/MessBillCalculator';
 import HostelStats from './stats/HostelStats';
 
 export default function HostelPage() {
@@ -11,6 +12,7 @@ export default function HostelPage() {
   const [hostel, setHostel] = useState(null);
   const [messDetails, setMessDetails] = useState(null);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('details'); // 'details' or 'bill'
 
   useEffect(() => {
     const fetchUnassignedMess = async () => {
@@ -131,8 +133,35 @@ export default function HostelPage() {
           </button>
         </div>
 
-        {/* Grid Layout for Users + Mess */}
-        <div className="grid md:grid-cols-2 gap-6">
+        {/* Tab Navigation */}
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('details')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'details'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Hostel Details
+            </button>
+            <button
+              onClick={() => setActiveTab('bill')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'bill'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Mess Bill Calculator
+            </button>
+          </nav>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'details' && (
+          <div className="grid md:grid-cols-2 gap-6">
           {/* Users Table */}
           <div>
             <h2 className="text-lg font-semibold text-gray-800 mb-3">
@@ -275,6 +304,14 @@ export default function HostelPage() {
             </div>
           )}
         </div>
+        )}
+
+        {activeTab === 'bill' && (
+          <MessBillCalculator 
+            hostelId={hostelId} 
+            hostelName={hostel.hostel_name}
+          />
+        )}
 
         {error && <div className="text-red-500">{error}</div>}
         {messDetails && (<HostelStats />)}

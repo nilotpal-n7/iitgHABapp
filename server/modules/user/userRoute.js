@@ -13,6 +13,7 @@ const {
   getUserByRoll,
   getAllUsers,
   clearAllStudents,
+  getUsersByHostelForMess,
 } = require("./userController.js");
 
 const userRouter = express.Router();
@@ -172,7 +173,8 @@ userRouter.get("/roll/:qr", getUserByRoll); //removed authenticateJWT from here
  */
 userRouter.get("/all", getAllUsers);
 
-
+// Get users by hostel for mess subscription
+userRouter.get("/mess-subscribers/:hostelId", getUsersByHostelForMess);
 
 // userRouter.get('/complaints/:outlook', getUserComplaints);
 
