@@ -68,17 +68,6 @@ const JWT_SECRET_KEY = process.env.JWT_SECRET;
  *           description: Whether mess change was approved in the current cycle
  *           default: false
  *           example: false
- *         isWaitlisted:
- *           type: boolean
- *           description: Whether user is currently on a waitlist for mess change
- *           default: false
- *           example: false
- *         waitlistTimestamp:
- *           type: date
- *           description: When user was added to waitlist
- *           default: null
- *           example: "2024-01-15T10:30:00.000Z"
-
  *         role:
  *           type: string
  *           enum: ["student", "hab", "welfare_secy", "gen_secy"]
@@ -154,14 +143,6 @@ const userSchema = new mongoose.Schema({
   got_mess_changed: {
     type: Boolean,
     default: false,
-  },
-  isWaitlisted: {
-    type: Boolean,
-    default: false,
-  },
-  waitlistTimestamp: {
-    type: Date,
-    default: null,
   },
   complaints: [
     {
