@@ -257,7 +257,7 @@ class _DayChip extends StatelessWidget {
         onSelected: (_) => onTap(),
         selectedColor: Colors.deepPurple.shade100,
         labelStyle:
-        TextStyle(color: selected ? Color(0xFF3754DB) : Colors.black),
+        TextStyle(color: selected ? const Color(0xFF3754DB) : Colors.black),
       ),
     );
   }
