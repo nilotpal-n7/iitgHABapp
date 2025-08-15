@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import HostelStats from './stats/HostelStats';
 
 export default function HostelPage() {
   const { hostelId } = useParams();
@@ -276,6 +277,8 @@ export default function HostelPage() {
         </div>
 
         {error && <div className="text-red-500">{error}</div>}
+        {messDetails && (<HostelStats />)}
+        </div>
       </div>
     </div>
   );
