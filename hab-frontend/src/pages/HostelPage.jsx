@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MessBillCalculator from '../Components/MessBillCalculator';
+import HostelStats from './stats/HostelStats';
 
 export default function HostelPage() {
   const { hostelId } = useParams();
   const navigate = useNavigate();
 
   const [unassignedMess, setUnassignedMess] = useState([]);
-  const [selectedMess, setSelectedMess] = useState('');
+  const [selectedMess, setSelectedMess] = useState("");
   const [hostel, setHostel] = useState(null);
   const [messDetails, setMessDetails] = useState(null);
   const [error, setError] = useState(null);
@@ -16,15 +17,18 @@ export default function HostelPage() {
   useEffect(() => {
     const fetchUnassignedMess = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/mess/unassigned`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-        });
+        const res = await fetch(
+          `${import.meta.env.VITE_SERVER_URL}/api/mess/unassigned`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          }
+        );
         const data = await res.json();
         setUnassignedMess(data);
       } catch (err) {
-        console.error('Error fetching unassigned mess:', err);
-        setError('Could not load mess data.');
+        console.error("Error fetching unassigned mess:", err);
+        setError("Could not load mess data.");
       }
     };
 
@@ -34,22 +38,29 @@ export default function HostelPage() {
   useEffect(() => {
     const fetchHostel = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/hostel/all/${hostelId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-        });
+        const res = await fetch(
+          `${import.meta.env.VITE_SERVER_URL}/api/hostel/all/${hostelId}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          }
+        );
         const data = await res.json();
         setHostel(data.hostel);
 
         if (data.hostel.messId) {
-          const messRes = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/mess/${data.hostel.messId._id}`);
+          const messRes = await fetch(
+            `${import.meta.env.VITE_SERVER_URL}/api/mess/${
+              data.hostel.messId._id
+            }`
+          );
           const messData = await messRes.json();
           setMessDetails(messData);
-          console.log('Mess Details:', messData);
+          console.log("Mess Details:", messData);
         }
       } catch (err) {
-        console.error('Error fetching hostel:', err);
-        setError('Could not load hostel data.');
+        console.error("Error fetching hostel:", err);
+        setError("Could not load hostel data.");
       }
     };
 
@@ -58,37 +69,48 @@ export default function HostelPage() {
 
   const handleCatererChange = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/mess/reassign/${selectedMess}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          hostelId: hostelId,
-          oldMessId: hostel?.messId?._id,
-        }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/api/mess/reassign/${selectedMess}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            hostelId: hostelId,
+            oldMessId: hostel?.messId?._id,
+          }),
+        }
+      );
 
-      if (!res.ok) throw new Error('Failed to reassign caterer');
+      if (!res.ok) throw new Error("Failed to reassign caterer");
       window.location.reload();
     } catch (err) {
-      console.error('Reassign error:', err);
+      console.error("Reassign error:", err);
     }
   };
 
   const handleDelete = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/hostel/delete/${hostelId}`, {
-        method: 'DELETE',
-      });
-      if (!res.ok) throw new Error('Deletion failed');
+      const res = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/api/hostel/delete/${hostelId}`,
+        {
+          method: "DELETE",
+        }
+      );
+      if (!res.ok) throw new Error("Deletion failed");
 
-      const messUnassigned = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/mess/unassign/${messDetails._id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!messUnassigned.ok) throw new Error('Failed to unassign mess');
-      navigate('/hostels');
+      const messUnassigned = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/api/mess/unassign/${
+          messDetails._id
+        }`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      if (!messUnassigned.ok) throw new Error("Failed to unassign mess");
+      navigate("/hostels");
     } catch (err) {
-      console.error('Delete error:', err);
+      console.error("Delete error:", err);
     }
   };
 
@@ -100,7 +122,9 @@ export default function HostelPage() {
     <div className="p-8 max-w-6xl mx-auto">
       <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">{hostel.hostel_name}</h1>
+          <h1 className="text-2xl font-bold text-gray-800">
+            {hostel.hostel_name}
+          </h1>
           <button
             onClick={handleDelete}
             className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md shadow"
@@ -172,24 +196,34 @@ export default function HostelPage() {
           {/* Mess Details */}
           {messDetails && (
             <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Current Caterer Details</h2>
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                Current Caterer Details
+              </h2>
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-gray-700 font-medium">Name:</span>
-                  <span className="text-gray-900">{messDetails.name || 'N/A'}</span>
+                  <span className="text-gray-900">
+                    {messDetails.name || "N/A"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-700 font-medium">Rating:</span>
-                  <span className="text-yellow-600 font-semibold">{messDetails.rating?.toFixed(1) || '0.0'} / 5</span>
+                  <span className="text-yellow-600 font-semibold">
+                    {messDetails.rating?.toFixed(1) || "0.0"} / 5
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-700 font-medium">Ranking:</span>
-                  <span className="text-gray-900">{messDetails.ranking || 'Not Ranked'}</span>
+                  <span className="text-gray-900">
+                    {messDetails.ranking || "Not Ranked"}
+                  </span>
                 </div>
               </div>
 
               <div className="mt-4">
-                <h3 className="text-md font-medium text-gray-700 mb-2">Feedbacks</h3>
+                <h3 className="text-md font-medium text-gray-700 mb-2">
+                  Feedbacks
+                </h3>
                 {messDetails.complaints?.length > 0 ? (
                   <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
                     {messDetails.complaints.map((fb, idx) => (
@@ -197,13 +231,17 @@ export default function HostelPage() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-gray-500">No feedbacks available.</p>
+                  <p className="text-sm text-gray-500">
+                    No feedbacks available.
+                  </p>
                 )}
               </div>
 
               {/* Caterer Change */}
               <div className="mt-6">
-                <label className="block text-gray-700 font-medium mb-1">Change Caterer</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Change Caterer
+                </label>
                 <div className="flex gap-3">
                   <select
                     className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -230,12 +268,20 @@ export default function HostelPage() {
 
           {/* No Mess Assigned */}
           {!messDetails && (
-            <div className="p-4 border border-gray-200 rounded-lg bg-gray-
-50 shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">No Caterer Assigned</h2>
-              <p className="text-gray-600">This hostel currently has no caterer assigned.</p>
+            <div
+              className="p-4 border border-gray-200 rounded-lg bg-gray-
+50 shadow-sm"
+            >
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                No Caterer Assigned
+              </h2>
+              <p className="text-gray-600">
+                This hostel currently has no caterer assigned.
+              </p>
               <div className="mt-4">
-                <label className="block text-gray-700 font-medium mb-1">Assign a Caterer</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Assign a Caterer
+                </label>
                 <select
                   className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={selectedMess}
@@ -255,7 +301,6 @@ export default function HostelPage() {
                   Assign
                 </button>
               </div>
-          
             </div>
           )}
         </div>
@@ -269,7 +314,9 @@ export default function HostelPage() {
         )}
 
         {error && <div className="text-red-500">{error}</div>}
+        {messDetails && (<HostelStats />)}
         </div>
       </div>
-      );
+    </div>
+  );
 }

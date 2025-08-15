@@ -57,7 +57,7 @@ function HostelStats() {
 
   return (
     <>
-      <div className="p-4 min-h-full bg-gray-100 m-auto">
+      <div className="mt-6 min-h-full m-auto">
         <div className="m-auto p-1 min-h-screen max-w-300 shadow-md rounded-2xl bg-white">
           <div className="flex justify-between p-5 items-center bg-sky-200/75 rounded-2xl shadow-md">
             <h1 className="text-[28px] font-bold w-160">Hostel Statistics</h1>

@@ -15,7 +15,17 @@ const MessChangePage = () => {
   const [processedRequests, setProcessedRequests] = useState([]);
   const [processedLoading, setProcessedLoading] = useState(false);
 
-  const fetchRequests = async () => {
+  const buildHostelMap = (list) => {
+    const map = {};
+    (list || []).forEach((h) => {
+      if (h && h._id) {
+        map[String(h._id)] = h.hostel_name;
+      }
+    });
+    return map;
+  };
+
+  const fetchRequests = async (hostelMapParam) => {
     try {
       setLoading(true);
       const response = await fetch(`${BACKEND_URL}/mess-change/all`);
@@ -25,7 +35,16 @@ const MessChangePage = () => {
       }
 
       const data = await response.json();
-      setRequests(data.data || []);
+      const hostelMap = hostelMapParam || buildHostelMap(hostels);
+      const withNames = (data.data || []).map((req) => {
+        const currentHostelId = req.curr_subscribed_mess || req.hostel;
+        const idStr = currentHostelId ? String(currentHostelId) : "";
+        return {
+          ...req,
+          currentHostelName: hostelMap[idStr] || "Unknown",
+        };
+      });
+      setRequests(withNames);
     } catch (error) {
       console.error("Error fetching requests:", error);
       setRequests([]);
@@ -60,12 +79,15 @@ const MessChangePage = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setHostels(
-        Array.isArray(data) ? data : data?.hostels || data?.data || []
-      );
+      const list = Array.isArray(data)
+        ? data
+        : data?.hostels || data?.data || [];
+      setHostels(list);
+      return list;
     } catch (error) {
       console.error("Error fetching hostels:", error);
       setHostels([]);
+      return [];
     } finally {
       setHostelsLoading(false);
     }
@@ -182,9 +204,12 @@ const MessChangePage = () => {
   };
 
   useEffect(() => {
-    fetchRequests();
-    fetchMessChangeSettings();
-    fetchHostels();
+    (async () => {
+      const list = await fetchHostels();
+      const hostelMap = buildHostelMap(list);
+      await fetchRequests(hostelMap);
+      await fetchMessChangeSettings();
+    })();
   }, []);
 
   useEffect(() => {
@@ -353,7 +378,7 @@ const MessChangePage = () => {
                         {request.rollNumber}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {request.hostel?.hostel_name || "Unknown"}
+                        {request.currentHostelName}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {request.applied_hostel_string}

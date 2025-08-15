@@ -18,7 +18,7 @@ export default function HostelForm() {
 
     const hostelData = {
       hostel_name: hostelName,
-      current_cap: Number(capacity),
+      curr_cap: Number(capacity),
       password,
     };
 
@@ -98,22 +98,6 @@ export default function HostelForm() {
           />
         </div>
 
-        <div>
-          <label className="block text-gray-700 font-medium mb-1">
-            Mess Caterer
-          </label>
-          <select
-            value={messId}
-            onChange={(e) => setMessId(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {unassignedMess.map((mess) => (
-              <option key={mess._id} value={mess._id}>
-                {mess.name}
-              </option>
-            ))}
-          </select>
-        </div>
         <div>
           <label className="block text-gray-700 font-medium mb-1">
             Create Password
