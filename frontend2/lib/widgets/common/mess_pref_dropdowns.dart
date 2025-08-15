@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class MessChangePrefs extends StatelessWidget {
+class MessChangePrefs extends StatefulWidget {
   final String? selectedOption;
   final ValueChanged<String?> onChanged;
 
@@ -9,22 +10,28 @@ class MessChangePrefs extends StatelessWidget {
       {super.key, required this.selectedOption, required this.onChanged});
 
   @override
+  State<MessChangePrefs> createState() => _MessChangePrefsState();
+}
+
+class _MessChangePrefsState extends State<MessChangePrefs> {
+  late List<String> options = ["No Hostels Found"];
+
+  @override
+  void initState() {
+    super.initState();
+    initHostels();
+  }
+
+  void initHostels() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      options = prefs.getStringList("hostels")??[];
+    });
+    print(options);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final List<String> options = [
-      'Barak',
-      'Brahmaputra',
-      'Dhansiri',
-      'Dihing',
-      'Disang',
-      'Gaurang',
-      'Kameng',
-      'Kapili',
-      'Lohit',
-      'Manas',
-      'Siang',
-      'Subansiri',
-      'Umiam',
-    ];
     return DropdownButtonHideUnderline(
       child: DropdownButton2<String>(
         isExpanded: true,
@@ -74,17 +81,17 @@ class MessChangePrefs extends StatelessWidget {
                     )));
           }).toList();
         },
-        value: selectedOption,
-        onChanged: onChanged,
+        value: widget.selectedOption,
+        onChanged: widget.onChanged,
         buttonStyleData: ButtonStyleData(
             height: 56,
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             decoration: BoxDecoration(
-                color: selectedOption == null
+                color: widget.selectedOption == null
                     ? const Color(0xFFF5F5F5)
                     : const Color(0xFFEDEDFB),
                 borderRadius: BorderRadius.circular(16),
-                border: selectedOption == null
+                border: widget.selectedOption == null
                     ? Border.all(color: const Color(0xFFC5C5D1), width: 1)
                     : Border.all(color: const Color(0xFF4C4EDB), width: 2))),
         dropdownStyleData: DropdownStyleData(
