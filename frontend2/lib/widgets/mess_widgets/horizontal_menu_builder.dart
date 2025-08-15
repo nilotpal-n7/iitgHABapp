@@ -174,10 +174,10 @@ class _IndividualMealCardState extends State<IndividualMealCard>
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: item.isLiked && widget.isSubscribed ? Color.fromARGB(180, 250, 150, 150) : Color(0xFFF5F5F5),
+            color: item.isLiked && widget.isSubscribed ? const Color.fromARGB(180, 250, 150, 150) :const  Color(0xFFF5F5F5),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -239,10 +239,10 @@ class _IndividualMealCardState extends State<IndividualMealCard>
                           if (widget.isSubscribed) ...[
                             const SizedBox(width: 8),
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20),
-                                color: Color.fromARGB(180, 250, 150, 150),
+                                color: const Color.fromARGB(180, 250, 150, 150),
                               ),
                               child: Row(
                                 children: [
