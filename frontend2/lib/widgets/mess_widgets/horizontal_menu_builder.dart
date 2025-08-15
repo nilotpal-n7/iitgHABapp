@@ -246,7 +246,7 @@ class _IndividualMealCardState extends State<IndividualMealCard>
                               ),
                               child: Row(
                                 children: [
-                                  Icon(Icons.favorite, size: 18, color: Colors.red),
+                                  const Icon(Icons.favorite, size: 18, color: Colors.red),
                                   const SizedBox(width: 2),
                                   Text(
                                     getTotalLikes().toString(),
@@ -267,10 +267,9 @@ class _IndividualMealCardState extends State<IndividualMealCard>
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 4),
                     Text("${_menu.startTime} - ${_menu.endTime}",
                         style: const TextStyle(color: Colors.grey)),
-                    const SizedBox(width: 6),
                     Icon(
                       _expanded ? Icons.expand_less : Icons.expand_more,
                       size: 20,
