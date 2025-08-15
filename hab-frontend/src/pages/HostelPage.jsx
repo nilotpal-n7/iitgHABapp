@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import MessBillCalculator from '../Components/MessBillCalculator';
-import HostelStats from './stats/HostelStats';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import MessBillCalculator from "../Components/MessBillCalculator";
+import HostelStats from "./stats/HostelStats";
 
 export default function HostelPage() {
   const { hostelId } = useParams();
@@ -12,7 +12,7 @@ export default function HostelPage() {
   const [hostel, setHostel] = useState(null);
   const [messDetails, setMessDetails] = useState(null);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('details'); // 'details' or 'bill'
+  const [activeTab, setActiveTab] = useState("details"); // 'details' or 'bill'
 
   useEffect(() => {
     const fetchUnassignedMess = async () => {
@@ -137,118 +137,167 @@ export default function HostelPage() {
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8">
             <button
-              onClick={() => setActiveTab('details')}
+              onClick={() => setActiveTab("details")}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'details'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                activeTab === "details"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
               Hostel Details
             </button>
             <button
-              onClick={() => setActiveTab('bill')}
+              onClick={() => setActiveTab("bill")}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'bill'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                activeTab === "bill"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
               Mess Bill Calculator
+            </button>
+            <button
+              onClick={() => setActiveTab("stats")}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "stats"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              Hostel Stats
             </button>
           </nav>
         </div>
 
         {/* Tab Content */}
-        {activeTab === 'details' && (
+        {activeTab === "details" && (
           <div className="grid md:grid-cols-2 gap-6">
-          {/* Users Table */}
-          <div>
-            <h2 className="text-lg font-semibold text-gray-800 mb-3">
-              Users ({hostel.users?.length || 0})
-            </h2>
-            {hostel.users?.length > 0 ? (
-              <div className="overflow-x-auto rounded shadow-sm border">
-                <table className="min-w-full text-sm text-left text-gray-600">
-                  <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
-                    <tr>
-                      <th className="px-4 py-2">Name</th>
-                      <th className="px-4 py-2">Degree</th>
-                      <th className="px-4 py-2">Roll No.</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {hostel.users.map((user, idx) => (
-                      <tr key={idx} className="border-t">
-                        <td className="px-4 py-2">{user.user.name}</td>
-                        <td className="px-4 py-2">{user.user.degree}</td>
-                        <td className="px-4 py-2">{user.user.rollNumber}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-sm text-gray-500">No users assigned.</p>
-            )}
-          </div>
-
-          {/* Mess Details */}
-          {messDetails && (
-            <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                Current Caterer Details
+            {/* Users Table */}
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800 mb-3">
+                Users ({hostel.users?.length || 0})
               </h2>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-700 font-medium">Name:</span>
-                  <span className="text-gray-900">
-                    {messDetails.name || "N/A"}
-                  </span>
+              {hostel.users?.length > 0 ? (
+                <div className="overflow-x-auto rounded shadow-sm border">
+                  <table className="min-w-full text-sm text-left text-gray-600">
+                    <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
+                      <tr>
+                        <th className="px-4 py-2">Name</th>
+                        <th className="px-4 py-2">Degree</th>
+                        <th className="px-4 py-2">Roll No.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {hostel.users.map((user, idx) => (
+                        <tr key={idx} className="border-t">
+                          <td className="px-4 py-2">{user.user.name}</td>
+                          <td className="px-4 py-2">{user.user.degree}</td>
+                          <td className="px-4 py-2">{user.user.rollNumber}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-700 font-medium">Rating:</span>
-                  <span className="text-yellow-600 font-semibold">
-                    {messDetails.rating?.toFixed(1) || "0.0"} / 5
-                  </span>
+              ) : (
+                <p className="text-sm text-gray-500">No users assigned.</p>
+              )}
+            </div>
+
+            {/* Mess Details */}
+            {messDetails && (
+              <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                  Current Caterer Details
+                </h2>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-700 font-medium">Name:</span>
+                    <span className="text-gray-900">
+                      {messDetails.name || "N/A"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-700 font-medium">Rating:</span>
+                    <span className="text-yellow-600 font-semibold">
+                      {messDetails.rating?.toFixed(1) || "0.0"} / 5
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-700 font-medium">Ranking:</span>
+                    <span className="text-gray-900">
+                      {messDetails.ranking || "Not Ranked"}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-700 font-medium">Ranking:</span>
-                  <span className="text-gray-900">
-                    {messDetails.ranking || "Not Ranked"}
-                  </span>
+
+                <div className="mt-4">
+                  <h3 className="text-md font-medium text-gray-700 mb-2">
+                    Feedbacks
+                  </h3>
+                  {messDetails.complaints?.length > 0 ? (
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
+                      {messDetails.complaints.map((fb, idx) => (
+                        <li key={idx}>{fb}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      No feedbacks available.
+                    </p>
+                  )}
+                </div>
+
+                {/* Caterer Change */}
+                <div className="mt-6">
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Change Caterer
+                  </label>
+                  <div className="flex gap-3">
+                    <select
+                      className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={selectedMess}
+                      onChange={(e) => setSelectedMess(e.target.value)}
+                    >
+                      <option value="">-- Choose a new caterer --</option>
+                      {unassignedMess.map((mess) => (
+                        <option key={mess._id} value={mess._id}>
+                          {mess.name}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={handleCatererChange}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow"
+                    >
+                      Change
+                    </button>
+                  </div>
                 </div>
               </div>
+            )}
 
-              <div className="mt-4">
-                <h3 className="text-md font-medium text-gray-700 mb-2">
-                  Feedbacks
-                </h3>
-                {messDetails.complaints?.length > 0 ? (
-                  <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
-                    {messDetails.complaints.map((fb, idx) => (
-                      <li key={idx}>{fb}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-gray-500">
-                    No feedbacks available.
-                  </p>
-                )}
-              </div>
-
-              {/* Caterer Change */}
-              <div className="mt-6">
-                <label className="block text-gray-700 font-medium mb-1">
-                  Change Caterer
-                </label>
-                <div className="flex gap-3">
+            {/* No Mess Assigned */}
+            {!messDetails && (
+              <div
+                className="p-4 border border-gray-200 rounded-lg bg-gray-
+50 shadow-sm"
+              >
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                  No Caterer Assigned
+                </h2>
+                <p className="text-gray-600">
+                  This hostel currently has no caterer assigned.
+                </p>
+                <div className="mt-4">
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Assign a Caterer
+                  </label>
                   <select
                     className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={selectedMess}
                     onChange={(e) => setSelectedMess(e.target.value)}
                   >
-                    <option value="">-- Choose a new caterer --</option>
+                    <option value="">-- Choose a caterer --</option>
                     {unassignedMess.map((mess) => (
                       <option key={mess._id} value={mess._id}>
                         {mess.name}
@@ -257,65 +306,32 @@ export default function HostelPage() {
                   </select>
                   <button
                     onClick={handleCatererChange}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow mt-2"
                   >
-                    Change
+                    Assign
                   </button>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* No Mess Assigned */}
-          {!messDetails && (
-            <div
-              className="p-4 border border-gray-200 rounded-lg bg-gray-
-50 shadow-sm"
-            >
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                No Caterer Assigned
-              </h2>
-              <p className="text-gray-600">
-                This hostel currently has no caterer assigned.
-              </p>
-              <div className="mt-4">
-                <label className="block text-gray-700 font-medium mb-1">
-                  Assign a Caterer
-                </label>
-                <select
-                  className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={selectedMess}
-                  onChange={(e) => setSelectedMess(e.target.value)}
-                >
-                  <option value="">-- Choose a caterer --</option>
-                  {unassignedMess.map((mess) => (
-                    <option key={mess._id} value={mess._id}>
-                      {mess.name}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  onClick={handleCatererChange}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow mt-2"
-                >
-                  Assign
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
         )}
 
-        {activeTab === 'bill' && (
-          <MessBillCalculator 
-            hostelId={hostelId} 
+        {activeTab === "bill" && (
+          <MessBillCalculator
+            hostelId={hostelId}
             hostelName={hostel.hostel_name}
           />
         )}
 
+        {activeTab === "stats" && messDetails && (
+          <HostelStats
+            hostelId={hostelId}
+            hostelName={hostel.hostel_name}
+            messId={messDetails._id}
+          />
+        )}
+
         {error && <div className="text-red-500">{error}</div>}
-        {messDetails && (<HostelStats />)}
-        </div>
       </div>
     </div>
   );
