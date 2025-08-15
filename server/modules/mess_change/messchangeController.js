@@ -270,9 +270,37 @@ const messChangeRequest = async (req, res) => {
     user.applied_hostel_string = mess_pref;
     user.applied_hostel_timestamp = Date.now();
     user.next_mess = next_hostel._id;
-    user.isWaitlisted = false;
-    user.waitlistTimestamp = null;
     await user.save();
+
+    res.status(200).json({ message: "Request Sent" });
+  } catch (e) {
+    console.log(`Error: ${e}`);
+    res.status(500).json("Internal Server Error");
+  }
+};
+
+const messChangeCancel = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!req.user) {
+      return res.status(404).json({ message: "User not Found" });
+    }
+
+    // Check if mess change is enabled
+    const settings = await MessChangeSettings.findOne();
+    if (!settings || !settings.isEnabled) {
+      return res.status(403).json({
+        message: "Mess change is currently disabled. Please contact HAB admin.",
+      });
+    }
+
+    if (user.applied_for_mess_changed) {
+      user.applied_for_mess_changed = false;
+      user.applied_hostel_string = "";
+      user.applied_hostel_timestamp = new Date(2025, 8, 1);
+      user.next_mess = null;
+      await user.save();
+    }
 
     res.status(200).json({ message: "Request Sent" });
   } catch (e) {
@@ -298,8 +326,6 @@ const messChangeStatus = async (req, res) => {
       applied: user.applied_for_mess_changed || false,
       hostel: user.applied_hostel_string || "",
       default: user.hostel || "",
-      isWaitlisted: user.isWaitlisted || false,
-      waitlistPosition: user.waitlistPosition || null,
       isMessChangeEnabled,
     });
   } catch (err) {
@@ -417,6 +443,7 @@ module.exports = {
   getAcceptedStudentsByHostel,
   messChangeRequest,
   messChangeStatus,
+  messChangeCancel,
   getMessChangeStatus,
   enableMessChange,
   disableMessChange,
