@@ -18,7 +18,7 @@ const {authenticateJWT} = require("../../middleware/authenticateJWT.js");
 const messChangeRouter = express.Router();
 
 messChangeRouter.get("/all", getAllMessChangeRequestsForAllHostels);
-messChangeRouter.get("/status", messChangeStatus);
+messChangeRouter.get("/status", authenticateJWT, messChangeStatus);
 messChangeRouter.post("/reqchange", authenticateJWT, messChangeRequest);
 messChangeRouter.patch("/reqcancel", authenticateJWT, messChangeCancel);
 messChangeRouter.post("/process-all", processAllMessChangeRequests);
