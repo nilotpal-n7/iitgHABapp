@@ -16,6 +16,7 @@ import '../utilities/startupitem.dart';
 import '../widgets/feedback/FeedBackCard.dart';
 import '../widgets/mess_widgets/horizontal_menu_builder.dart';
 import '../widgets/mess_widgets/messmenu.dart';
+import '../apis/hostel/hostels.dart';
 import 'package:intl/intl.dart';
 
 class MessApp extends StatefulWidget {
@@ -58,6 +59,7 @@ class _MessScreenState extends State<MessScreen> {
   }
 
   Future<void> _loadData() async {
+    await fetchAllHostels();
     await fetchCurrSubscrMess();
     await fetchMessInfo();
     setState(() {
