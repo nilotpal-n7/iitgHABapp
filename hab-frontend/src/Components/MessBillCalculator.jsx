@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { BACKEND_URL } from '../apis/server';
+import React, { useState, useEffect } from "react";
+import { BACKEND_URL } from "../apis/server";
 
 const MessBillCalculator = ({ hostelId, hostelName }) => {
   const [billData, setBillData] = useState({
-    month: new Date().toLocaleString('default', { month: 'long' }),
+    month: new Date().toLocaleString("default", { month: "long" }),
     year: new Date().getFullYear(),
-    hostelName: hostelName || '',
-    accountNumber: '',
+    hostelName: hostelName || "",
+    accountNumber: "",
     operatingDays: 30, // Hardcoded as per requirement
-    shutdownDate: 'NA',
+    shutdownDate: "NA",
     totalSubscribers: 0,
     messDays: 0,
     rebateDays: 0,
@@ -24,48 +24,46 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
     rebateReimbursement: 0,
     miscDeduction: 0,
     habTransfer: 0,
-    totalExpenditure: 0
+    totalExpenditure: 0,
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // Fetch users subscribed to this hostel's mess
-  useEffect(() => {
-    if (hostelId) {
-      fetchMessSubscribers();
-    }
-  }, [hostelId]);
-
   const fetchMessSubscribers = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${BACKEND_URL}/users/mess-subscribers/${hostelId}`);
+      const response = await fetch(
+        `${BACKEND_URL}/users/mess-subscribers/${hostelId}`
+      );
       if (!response.ok) {
-        throw new Error('Failed to fetch mess subscribers');
+        throw new Error("Failed to fetch mess subscribers");
       }
       const data = await response.json();
-      
-      setBillData(prev => ({
+
+      setBillData((prev) => ({
         ...prev,
         totalSubscribers: data.count,
-        messDays: data.count * 30 // M = N * D
+        messDays: data.count * 30, // M = N * D
       }));
     } catch (err) {
-      setError('Failed to fetch mess subscribers: ' + err.message);
+      setError("Failed to fetch mess subscribers: " + err.message);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (hostelId) {
+      fetchMessSubscribers();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hostelId]);
+
   // Calculate all derived values when inputs change
   useEffect(() => {
-    const {
-      messDays,
-      rebateDays,
-      totalWage,
-      miscDeduction
-    } = billData;
+    const { messDays, rebateDays, totalWage, miscDeduction } = billData;
 
     const consumingDays = messDays - rebateDays; // T1 = M - R
     const foodCost = consumingDays * 119; // F = T1 * 119
@@ -73,13 +71,15 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
     const messBillClaimed = 1.05 * messBill; // B = 1.05 * (F + W)
     const gstAmount = 0.05 * messBill; // GST = 5% * (F + W)
     const tdsAmount = 0.02 * messBill; // T2 = 0.02 * (F + W)
-    const firstInstallment = messBillClaimed - (tdsAmount + (0.2 * foodCost)) - miscDeduction; // P1 = B - (T2 + (0.2*F)) - Misc
+    const firstInstallment =
+      messBillClaimed - (tdsAmount + 0.2 * foodCost) - miscDeduction; // P1 = B - (T2 + (0.2*F)) - Misc
     const secondInstallment = 0.2 * foodCost; // P2 = 0.2 * F
     const rebateReimbursement = rebateDays * 119; // RR = R * 119
-    const habTransfer = firstInstallment + secondInstallment + rebateReimbursement; // T3 = P1 + P2 + RR
+    const habTransfer =
+      firstInstallment + secondInstallment + rebateReimbursement; // T3 = P1 + P2 + RR
     const totalExpenditure = tdsAmount + habTransfer; // T2 + T3
 
-    setBillData(prev => ({
+    setBillData((prev) => ({
       ...prev,
       consumingDays,
       foodCost,
@@ -91,75 +91,34 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
       secondInstallment,
       rebateReimbursement,
       habTransfer,
-      totalExpenditure
+      totalExpenditure,
     }));
-  }, [billData.messDays, billData.rebateDays, billData.totalWage, billData.miscDeduction]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    billData.messDays,
+    billData.rebateDays,
+    billData.totalWage,
+    billData.miscDeduction,
+  ]);
 
   const handleInputChange = (field, value) => {
-    setBillData(prev => ({
+    setBillData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: 2
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      minimumFractionDigits: 2,
     }).format(amount);
-  };
-
-  const handleGenerateBill = () => {
-    // Here you can implement the logic to save or export the bill
-    console.log('Bill Data:', billData);
-    alert('Bill calculation completed! Check console for details.');
-  };
-
-  const downloadBillAsCSV = () => {
-    const csvContent = [
-      ['MESS BILL CALCULATION FOR ' + billData.month.toUpperCase() + ' ' + billData.year],
-      [''],
-      ['A', 'B', 'C', 'D', 'E'],
-      ['Month and Year', '', billData.month + ', ' + billData.year, '', ''],
-      ['Hostel Name', '', billData.hostelName, '', ''],
-      ['Hostel Mess Account Number (Canara Bank)', '', billData.accountNumber, '', ''],
-      ['No of mess operating Days', 'D', billData.operatingDays, '', ''],
-      ['Mess Shutdown Date', '', billData.shutdownDate, '', ''],
-      ['Total No of mess subscribers', 'N', billData.totalSubscribers, 'To be auto-populated/Entered by Hostel Staff', ''],
-      ['No of Mess Days (Actual days)', 'M', billData.messDays, '', ''],
-      ['Total Rebate Days', 'R', billData.rebateDays, 'To be auto-populated/Entered by Hostel Staff', ''],
-      ['Total no of consuming Days', 'T1=M-R', billData.consumingDays, '', ''],
-      ['Food Cost', 'F=T1 X 119', billData.foodCost, '', ''],
-      ['Total Wage', 'W', billData.totalWage, 'See Wage Calculation sheet (Derived from there)', ''],
-      ['Mess Bill (Claimed by caterer)', 'B=1.05 X (F+W)', formatCurrency(billData.messBillClaimed), '', ''],
-      ['Mess Bill', 'F+W', formatCurrency(billData.messBill), '', ''],
-      ['GST Amount, 5%', 'GST=5%*(F+W)', formatCurrency(billData.gstAmount), '', ''],
-      ['TDS Amount', 'T2=0.02 X (F+W)', formatCurrency(billData.tdsAmount), '', ''],
-      ['First Installment of Payment from hostel office to the caterer', 'P1=B-(T2+(0.2*F))-Misc', formatCurrency(billData.firstInstallment), '', ''],
-      ['Second Installment of Payment from hostel office to the caterer', 'P2=0.2 X F', formatCurrency(billData.secondInstallment), '', ''],
-      ['Rebate Reimbursement (hostel office should relese to the student)', 'RR= R X 119', formatCurrency(billData.rebateReimbursement), '', ''],
-      ['Misc deduction', 'Misc', billData.miscDeduction, '', ''],
-      ['HAB Transfer to hostel offices', 'T3=P1+P2+RR', formatCurrency(billData.habTransfer), '', ''],
-      ['Total Mess bill Expenditure (For HAB Office Use Only)', 'T2+T3', formatCurrency(billData.totalExpenditure), '', ''],
-      [''],
-      ['Above data has been verified and found to be true and correct.', '', '', '', '']
-    ].map(row => row.join(',')).join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `mess_bill_${billData.hostelName}_${billData.month}_${billData.year}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   const downloadBillAsPDF = () => {
     // Create a new window for PDF printing
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
@@ -181,7 +140,9 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
           </style>
         </head>
         <body>
-          <div class="header">MESS BILL CALCULATION FOR ${billData.month.toUpperCase()} ${billData.year}</div>
+          <div class="header">MESS BILL CALCULATION FOR ${billData.month.toUpperCase()} ${
+      billData.year
+    }</div>
           
           <table>
             <tr>
@@ -283,19 +244,25 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
             <tr>
               <td>First Installment of Payment from hostel office to the caterer</td>
               <td class="formula">P1 = B - (T2 + (0.2×F)) - Misc</td>
-              <td class="value">${formatCurrency(billData.firstInstallment)}</td>
+              <td class="value">${formatCurrency(
+                billData.firstInstallment
+              )}</td>
               <td></td>
             </tr>
             <tr>
               <td>Second Installment of Payment from hostel office to the caterer</td>
               <td class="formula">P2 = 0.2 × F</td>
-              <td class="value">${formatCurrency(billData.secondInstallment)}</td>
+              <td class="value">${formatCurrency(
+                billData.secondInstallment
+              )}</td>
               <td></td>
             </tr>
             <tr>
               <td>Rebate Reimbursement (hostel office should release to the student)</td>
               <td class="formula">RR = R × 119</td>
-              <td class="value">${formatCurrency(billData.rebateReimbursement)}</td>
+              <td class="value">${formatCurrency(
+                billData.rebateReimbursement
+              )}</td>
               <td></td>
             </tr>
             <tr>
@@ -313,7 +280,9 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
             <tr>
               <td>Total Mess bill Expenditure (For HAB Office Use Only)</td>
               <td class="formula">T2 + T3</td>
-              <td class="value">${formatCurrency(billData.totalExpenditure)}</td>
+              <td class="value">${formatCurrency(
+                billData.totalExpenditure
+              )}</td>
               <td></td>
             </tr>
           </table>
@@ -353,7 +322,7 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
           <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
             General Information
           </h3>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Month and Year
@@ -373,7 +342,7 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
             <input
               type="text"
               value={billData.hostelName}
-              onChange={(e) => handleInputChange('hostelName', e.target.value)}
+              onChange={(e) => handleInputChange("hostelName", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -385,7 +354,9 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
             <input
               type="text"
               value={billData.accountNumber}
-              onChange={(e) => handleInputChange('accountNumber', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("accountNumber", e.target.value)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter account number"
             />
@@ -397,7 +368,7 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
           <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
             Input Parameters
           </h3>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               No of mess operating Days (D)
@@ -421,7 +392,9 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100"
               readOnly
             />
-            <p className="text-xs text-gray-500 mt-1">Auto-populated from database</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Auto-populated from database
+            </p>
           </div>
 
           <div>
@@ -443,7 +416,9 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
             <input
               type="number"
               value={billData.rebateDays}
-              onChange={(e) => handleInputChange('rebateDays', parseFloat(e.target.value) || 0)}
+              onChange={(e) =>
+                handleInputChange("rebateDays", parseFloat(e.target.value) || 0)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter rebate days"
             />
@@ -456,7 +431,9 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
             <input
               type="number"
               value={billData.totalWage}
-              onChange={(e) => handleInputChange('totalWage', parseFloat(e.target.value) || 0)}
+              onChange={(e) =>
+                handleInputChange("totalWage", parseFloat(e.target.value) || 0)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter total wage"
             />
@@ -469,7 +446,12 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
             <input
               type="number"
               value={billData.miscDeduction}
-              onChange={(e) => handleInputChange('miscDeduction', parseFloat(e.target.value) || 0)}
+              onChange={(e) =>
+                handleInputChange(
+                  "miscDeduction",
+                  parseFloat(e.target.value) || 0
+                )
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter misc deduction"
             />
@@ -482,163 +464,305 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
         <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">
           Mess Bill Calculation Table
         </h3>
-        
+
         <div className="overflow-x-auto">
           <table className="min-w-full border border-gray-300">
             <thead>
               <tr className="bg-gray-100">
-                <th className="border border-gray-300 px-4 py-2 text-left font-semibold">Description</th>
-                <th className="border border-gray-300 px-4 py-2 text-left font-semibold">Formula</th>
-                <th className="border border-gray-300 px-4 py-2 text-left font-semibold">Value</th>
-                <th className="border border-gray-300 px-4 py-2 text-left font-semibold">Notes</th>
+                <th className="border border-gray-300 px-4 py-2 text-left font-semibold">
+                  Description
+                </th>
+                <th className="border border-gray-300 px-4 py-2 text-left font-semibold">
+                  Formula
+                </th>
+                <th className="border border-gray-300 px-4 py-2 text-left font-semibold">
+                  Value
+                </th>
+                <th className="border border-gray-300 px-4 py-2 text-left font-semibold">
+                  Notes
+                </th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td className="border border-gray-300 px-4 py-2">Month and Year</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  Month and Year
+                </td>
                 <td className="border border-gray-300 px-4 py-2 text-gray-600"></td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{billData.month}, {billData.year}</td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {billData.month}, {billData.year}
+                </td>
                 <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500"></td>
               </tr>
               <tr className="bg-gray-50">
-                <td className="border border-gray-300 px-4 py-2">Hostel Name</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  Hostel Name
+                </td>
                 <td className="border border-gray-300 px-4 py-2 text-gray-600"></td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{billData.hostelName}</td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {billData.hostelName}
+                </td>
                 <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500"></td>
               </tr>
               <tr>
-                <td className="border border-gray-300 px-4 py-2">Hostel Mess Account Number (Canara Bank)</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  Hostel Mess Account Number (Canara Bank)
+                </td>
                 <td className="border border-gray-300 px-4 py-2 text-gray-600"></td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{billData.accountNumber}</td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {billData.accountNumber}
+                </td>
                 <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500"></td>
               </tr>
               <tr className="bg-gray-50">
-                <td className="border border-gray-300 px-4 py-2">No of mess operating Days</td>
-                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">D</td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{billData.operatingDays}</td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">Hardcoded</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  No of mess operating Days
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">
+                  D
+                </td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {billData.operatingDays}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">
+                  Hardcoded
+                </td>
               </tr>
               <tr>
-                <td className="border border-gray-300 px-4 py-2">Mess Shutdown Date</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  Mess Shutdown Date
+                </td>
                 <td className="border border-gray-300 px-4 py-2 text-gray-600"></td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{billData.shutdownDate}</td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {billData.shutdownDate}
+                </td>
                 <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500"></td>
               </tr>
               <tr className="bg-gray-50">
-                <td className="border border-gray-300 px-4 py-2">Total No of mess subscribers</td>
-                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">N</td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{billData.totalSubscribers}</td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">Auto-populated from database</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  Total No of mess subscribers
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">
+                  N
+                </td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {billData.totalSubscribers}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">
+                  Auto-populated from database
+                </td>
               </tr>
               <tr>
-                <td className="border border-gray-300 px-4 py-2">No of Mess Days (Actual days)</td>
-                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">M = N × D</td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{billData.messDays}</td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">Calculated</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  No of Mess Days (Actual days)
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">
+                  M = N × D
+                </td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {billData.messDays}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">
+                  Calculated
+                </td>
               </tr>
               <tr className="bg-gray-50">
-                <td className="border border-gray-300 px-4 py-2">Total Rebate Days</td>
-                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">R</td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{billData.rebateDays}</td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">Manual entry</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  Total Rebate Days
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">
+                  R
+                </td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {billData.rebateDays}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">
+                  Manual entry
+                </td>
               </tr>
               <tr>
-                <td className="border border-gray-300 px-4 py-2">Total no of consuming Days</td>
-                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">T1 = M - R</td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{billData.consumingDays}</td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">Calculated</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  Total no of consuming Days
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">
+                  T1 = M - R
+                </td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {billData.consumingDays}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">
+                  Calculated
+                </td>
               </tr>
               <tr className="bg-gray-50">
                 <td className="border border-gray-300 px-4 py-2">Food Cost</td>
-                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">F = T1 × 119</td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{formatCurrency(billData.foodCost)}</td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">Calculated</td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">
+                  F = T1 × 119
+                </td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {formatCurrency(billData.foodCost)}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">
+                  Calculated
+                </td>
               </tr>
               <tr>
                 <td className="border border-gray-300 px-4 py-2">Total Wage</td>
-                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">W</td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{formatCurrency(billData.totalWage)}</td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">Manual entry</td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">
+                  W
+                </td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {formatCurrency(billData.totalWage)}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">
+                  Manual entry
+                </td>
               </tr>
               <tr className="bg-gray-50">
-                <td className="border border-gray-300 px-4 py-2">Mess Bill (Claimed by caterer)</td>
-                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">B = 1.05 × (F + W)</td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{formatCurrency(billData.messBillClaimed)}</td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">Calculated</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  Mess Bill (Claimed by caterer)
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">
+                  B = 1.05 × (F + W)
+                </td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {formatCurrency(billData.messBillClaimed)}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">
+                  Calculated
+                </td>
               </tr>
               <tr>
                 <td className="border border-gray-300 px-4 py-2">Mess Bill</td>
-                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">F + W</td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{formatCurrency(billData.messBill)}</td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">Calculated</td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">
+                  F + W
+                </td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {formatCurrency(billData.messBill)}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">
+                  Calculated
+                </td>
               </tr>
               <tr className="bg-gray-50">
-                <td className="border border-gray-300 px-4 py-2">GST Amount, 5%</td>
-                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">GST = 5% × (F + W)</td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{formatCurrency(billData.gstAmount)}</td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">Calculated</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  GST Amount, 5%
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">
+                  GST = 5% × (F + W)
+                </td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {formatCurrency(billData.gstAmount)}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">
+                  Calculated
+                </td>
               </tr>
               <tr>
                 <td className="border border-gray-300 px-4 py-2">TDS Amount</td>
-                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">T2 = 0.02 × (F + W)</td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{formatCurrency(billData.tdsAmount)}</td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">Calculated</td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">
+                  T2 = 0.02 × (F + W)
+                </td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {formatCurrency(billData.tdsAmount)}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">
+                  Calculated
+                </td>
               </tr>
               <tr className="bg-gray-50">
-                <td className="border border-gray-300 px-4 py-2">First Installment of Payment from hostel office to the caterer</td>
-                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">P1 = B - (T2 + (0.2×F)) - Misc</td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{formatCurrency(billData.firstInstallment)}</td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">Calculated</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  First Installment of Payment from hostel office to the caterer
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">
+                  P1 = B - (T2 + (0.2×F)) - Misc
+                </td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {formatCurrency(billData.firstInstallment)}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">
+                  Calculated
+                </td>
               </tr>
               <tr>
-                <td className="border border-gray-300 px-4 py-2">Second Installment of Payment from hostel office to the caterer</td>
-                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">P2 = 0.2 × F</td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{formatCurrency(billData.secondInstallment)}</td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">Calculated</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  Second Installment of Payment from hostel office to the
+                  caterer
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">
+                  P2 = 0.2 × F
+                </td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {formatCurrency(billData.secondInstallment)}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">
+                  Calculated
+                </td>
               </tr>
               <tr className="bg-gray-50">
-                <td className="border border-gray-300 px-4 py-2">Rebate Reimbursement (hostel office should release to the student)</td>
-                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">RR = R × 119</td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{formatCurrency(billData.rebateReimbursement)}</td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">Calculated</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  Rebate Reimbursement (hostel office should release to the
+                  student)
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">
+                  RR = R × 119
+                </td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {formatCurrency(billData.rebateReimbursement)}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">
+                  Calculated
+                </td>
               </tr>
               <tr>
-                <td className="border border-gray-300 px-4 py-2">Misc deduction</td>
-                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">Misc</td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{formatCurrency(billData.miscDeduction)}</td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">Manual entry</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  Misc deduction
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">
+                  Misc
+                </td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {formatCurrency(billData.miscDeduction)}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">
+                  Manual entry
+                </td>
               </tr>
               <tr className="bg-gray-50">
-                <td className="border border-gray-300 px-4 py-2">HAB Transfer to hostel offices</td>
-                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">T3 = P1 + P2 + RR</td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold">{formatCurrency(billData.habTransfer)}</td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">Calculated</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  HAB Transfer to hostel offices
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic">
+                  T3 = P1 + P2 + RR
+                </td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  {formatCurrency(billData.habTransfer)}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">
+                  Calculated
+                </td>
               </tr>
               <tr className="bg-blue-100">
-                <td className="border border-gray-300 px-4 py-2 font-semibold">Total Mess bill Expenditure (For HAB Office Use Only)</td>
-                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic font-semibold">T2 + T3</td>
-                <td className="border border-gray-300 px-4 py-2 font-semibold text-blue-800">{formatCurrency(billData.totalExpenditure)}</td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">Final Total</td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  Total Mess bill Expenditure (For HAB Office Use Only)
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-600 italic font-semibold">
+                  T2 + T3
+                </td>
+                <td className="border border-gray-300 px-4 py-2 font-semibold text-blue-800">
+                  {formatCurrency(billData.totalExpenditure)}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-500">
+                  Final Total
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="mt-8 flex justify-center space-x-4">
-        <button
-          onClick={handleGenerateBill}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md shadow-md font-medium"
-        >
-          Generate Bill
-        </button>
-        <button
-          onClick={downloadBillAsCSV}
-          className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-md shadow-md font-medium"
-        >
-          Download CSV
-        </button>
+      {/* Action Button */}
+      <div className="mt-8 flex justify-center">
         <button
           onClick={downloadBillAsPDF}
           className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-md shadow-md font-medium"
