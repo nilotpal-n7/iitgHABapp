@@ -5,15 +5,12 @@ const UserAllocHostel = require("./hostelAllocModel.js");
 
 const createHostel = async (req, res) => {
   try {
-    const hostel = await Hostel.create(req.body);
-
-    // const assignMess = await Mess.findByIdAndUpdate(req.body.messId, {
-    //   hostelId: hostel._id,
-    // });
-
-    // if (!assignMess) {
-    //   return res.status(400).json({ message: "Mess not found" });
-    // }
+    const { hostel_name, password, curr_cap } = req.body;
+    const hostel = await Hostel.create({
+      hostel_name,
+      password,
+      curr_cap,
+    });
 
     return res
       .status(201)
@@ -73,9 +70,7 @@ const getAllHostelsWithMess = async (req, res) => {
 const getHostelbyId = async (req, res) => {
   const { hostelId } = req.params;
   try {
-    const hostel = await Hostel.findById(hostelId)
-      .populate("messId", "name")
-      .populate("users.user", "name rollNumber degree");
+    const hostel = await Hostel.findById(hostelId).populate("messId", "name");
 
     if (!hostel) {
       return res.status(404).json({ message: "Hostel not found" });
