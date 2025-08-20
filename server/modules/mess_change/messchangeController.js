@@ -29,6 +29,7 @@ const getAllMessChangeRequestsForAllHostels = async (req, res) => {
 const initializeCapacityTracker = async (hostels) => {
   const capacityTracker = {};
   for (const hostel of hostels) {
+    console.log("hostel", hostel);
     const currentCount = await User.countDocuments({
       curr_subscribed_mess: hostel._id,
     });
@@ -36,6 +37,7 @@ const initializeCapacityTracker = async (hostels) => {
       available: (hostel.curr_cap || 0) - currentCount,
     };
   }
+  console.log("capacityTracker", capacityTracker);
   return capacityTracker;
 };
 
@@ -55,17 +57,20 @@ const processUsersInIterations = (users, capacityTracker) => {
     const remainingUsers = [];
 
     const sortedUsers = sortUsersByPriority(users);
-
     for (const user of sortedUsers) {
       const targetHostelId = user.next_mess?.toString();
-
+      console.log("targetHostelId", targetHostelId);
       if (!targetHostelId || !capacityTracker[targetHostelId]) {
         // Skip invalid requests - they remain unprocessed
         remainingUsers.push(user);
         continue;
       }
-
+      console.log(
+        "capacityTracker[targetHostelId].available",
+        capacityTracker[targetHostelId].available
+      );
       if (capacityTracker[targetHostelId].available > 0) {
+        console.log("accepted");
         acceptedUsers.push({
           id: user._id,
           name: user.name,
@@ -82,6 +87,7 @@ const processUsersInIterations = (users, capacityTracker) => {
     }
 
     users = remainingUsers;
+    console.log("users", users);
     if (processedInThisIteration === 0) break;
   }
 
@@ -149,13 +155,10 @@ const rejectAllMessChangeRequests = async (req, res) => {
     }
 
     await updateLastProcessedTimestamp();
-    
 
-    return res
-      .status(200)
-      .json({
-        message: `Rejected ${users.length} pending requests. Mess change has been automatically disabled.`,
-      });
+    return res.status(200).json({
+      message: `Rejected ${users.length} pending requests. Mess change has been automatically disabled.`,
+    });
   } catch (error) {
     console.error("Error rejecting all mess change requests:", error);
     return res.status(500).json({ message: "Internal server error" });
@@ -245,13 +248,13 @@ const getAcceptedStudentsByHostel = async (req, res) => {
 
 const messChangeRequest = async (req, res) => {
   try {
-    const user = req.user;
+    const userId = req.user.id;
+    const user = await User.findById(userId);
     const { mess_pref } = req.body;
-    if (!req.user) {
-      return res.status(404).json({ message: "User not Found" });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    // Check if mess change is enabled
     const settings = await MessChangeSettings.findOne();
     if (!settings || !settings.isEnabled) {
       return res.status(403).json({
@@ -279,9 +282,10 @@ const messChangeRequest = async (req, res) => {
 
 const messChangeCancel = async (req, res) => {
   try {
-    const user = req.user;
-    if (!req.user) {
-      return res.status(404).json({ message: "User not Found" });
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Check if mess change is enabled
@@ -309,12 +313,11 @@ const messChangeCancel = async (req, res) => {
 
 const messChangeStatus = async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(403).json({ message: "Not Authenticated" });
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-
-    const user = req.user;
-
     // Get global mess change status
     const settings = await MessChangeSettings.findOne();
     const isMessChangeEnabled = settings ? settings.isEnabled : false;
