@@ -6,8 +6,10 @@ function auth(Schema, param) {
   return async function (req, res, next) {
     let token = req.cookies?.token;
 
+    //console.log("Verifying tokeninauth:", req.headers.authorization);
+
     // Check for token in headers if not in cookies
-    if (!token && req.headers?.authorization) {
+    if (req.headers?.authorization) {
       const authHeader = req.headers.authorization;
       if (authHeader.startsWith("Bearer ")) {
         token = authHeader.split(" ")[1];
@@ -25,9 +27,13 @@ function auth(Schema, param) {
     // If token is missing, send error response
     if (!token) return next(new AppError(403, "Invalid token"));
 
+    console.log(token);
+
     try {
       // Validate the token and find the element
+      
       const found = await Schema.findByJWT(token);
+      //console.log("Found user/hostel:", found);
       if (!found) return next(new AppError(403, "Not Authenticated"));
 
       console.log(found);
