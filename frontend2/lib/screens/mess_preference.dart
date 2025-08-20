@@ -22,6 +22,7 @@ class _MessChangePreferenceScreenState
   bool alreadyApplied = false;
   String? appliedHostel;
   String? defaultMess;
+  bool? isMessChangeEnabled;
 
   bool loadingStatus = true; // NEW: track API loading state
 
@@ -78,6 +79,7 @@ class _MessChangePreferenceScreenState
           alreadyApplied = res.data['applied'] ?? false;
           appliedHostel = res.data['hostel'];
           defaultMess = res.data['default'];
+          isMessChangeEnabled = res.data['isMessChangeEnabled'];
         });
       }
     } catch (e) {
