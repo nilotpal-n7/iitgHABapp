@@ -15,9 +15,9 @@ Widget customOption({
       margin: const EdgeInsets.symmetric(vertical: 6),
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       decoration: BoxDecoration(
-        color: isSelected ? Color(0xFFE7ECFF) : Colors.white,
+        color: isSelected ? const Color(0xFFE7ECFF) : Colors.white,
         border: Border.all(
-          color: isSelected ? Color(0xFF4C4BD9) : Colors.grey.shade300,
+          color: isSelected ? const Color(0xFF4C4BD9) : Colors.grey.shade300,
           width: 2,
         ),
         borderRadius: BorderRadius.circular(9999), // pill shape
@@ -26,16 +26,16 @@ Widget customOption({
         children: [
           Icon(
             isSelected ? Icons.check_circle : Icons.circle_outlined,
-            color: isSelected ? Color(0xFF4C4BD9) : Colors.grey,
+            color: isSelected ? const Color(0xFF4C4BD9) : Colors.grey,
           ),
 
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Text(
             text,
             style: TextStyle(
               fontFamily: 'OpenSans-Regular',
               fontSize: 16,
-              color: isSelected ? Color(0xFF4C4BD9) : Colors.black,
+              color: isSelected ? const Color(0xFF4C4BD9) : Colors.black,
               fontWeight: FontWeight.w500,
             ),
           ),

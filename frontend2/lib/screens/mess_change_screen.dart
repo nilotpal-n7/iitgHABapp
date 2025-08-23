@@ -162,7 +162,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
           : RefreshIndicator(
               onRefresh: _onRefresh,
               child: SingleChildScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
+                physics: const AlwaysScrollableScrollPhysics(),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -203,7 +203,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                       const Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             "Roll Number",
                             style: TextStyle(
                                 fontFamily: 'OpenSans_regular',
@@ -211,10 +211,10 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                                 color: Color.fromRGBO(0, 0, 0, 1)),
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(
+                            padding: EdgeInsets.only(
                                 right:
                                     10.0), // Adding padding only to the right
-                            child: const Text(
+                            child: Text(
                               "Hostel",
                               style: TextStyle(
                                 fontFamily: 'OpenSans_regular',
@@ -294,7 +294,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                           ),
                           child: const TextField(
                             maxLines: 5,
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               hintText: "Write your reason here",
                               contentPadding: EdgeInsets.all(16.0),
                               border: InputBorder.none,
@@ -374,7 +374,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                                   ),
                                   Center(
                                     child: Text(
-                                      "$applyMess",
+                                      applyMess,
                                       style: const TextStyle(
                                         fontFamily: 'OpenSans_bold',
                                         fontSize: 21,

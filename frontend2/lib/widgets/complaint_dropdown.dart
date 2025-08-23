@@ -54,10 +54,9 @@ class _ComplaintsCardState extends State<ComplaintsCard> {
               radius: 12,
               backgroundColor: Colors.red[50],
               child: Icon(Icons.warning_amber_outlined,
-                  weight: 20, color: Colors.red[800], size: 16)),
-          SizedBox(
-            width: 12,
+              weight: 20, color: Colors.red[800], size: 16)
           ),
+          const SizedBox(width: 12),
 
           Text(title,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(

@@ -26,8 +26,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget build(BuildContext context) {
     final screens = [
       HomeScreen(onNavigateToTab: _handleNavTap),
-      MessScreen(),
-      ComingSoonScreen(),
+      const MessScreen(),
+      const ComingSoonScreen(),
     ];
     return Scaffold(
       body: IndexedStack(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/mess_menu_model.dart';
 import '../../apis/mess/menu_like.dart';
 
@@ -87,7 +86,7 @@ class _InteractiveMessMenuCardState extends State<InteractiveMessMenuCard> {
     // Find which meal to show and what status
     MenuModel? currentMenu;
     String statusText = "";
-    Color statusColor = Color(0x1F8441);
+    Color statusColor = const Color(0x1F8441);
 
     for (final menu in _menus) {
       final start = widget.parseTime(menu.startTime);
@@ -164,7 +163,7 @@ class _InteractiveMessMenuCardState extends State<InteractiveMessMenuCard> {
           color: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
-            side: BorderSide(width: 1, color: Color(0xFFC5C5D1)),
+            side: const BorderSide(width: 1, color: Color(0xFFC5C5D1)),
           ),
           elevation: 0.5,
           child: Padding(

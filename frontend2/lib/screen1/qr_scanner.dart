@@ -61,7 +61,7 @@ class WelcomePage extends StatelessWidget {
               onPressed: () async {
                 await signOut(context);
               },
-              icon: Icon(Icons.close))
+              icon: const Icon(Icons.close))
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -74,7 +74,7 @@ class WelcomePage extends StatelessWidget {
           );
         },
         backgroundColor: Colors.deepPurple,
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }

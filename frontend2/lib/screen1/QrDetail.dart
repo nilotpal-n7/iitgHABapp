@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/widgets/common/hostel_details.dart';
-import 'package:frontend1/screens/home_screen.dart';
 import 'package:frontend1/widgets/common/hostel_name.dart';
-import 'package:http/http.dart' as http;
-import 'package:frontend1/apis/protected.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 
@@ -51,21 +46,21 @@ class _QrDetailState extends State<QrDetail> {
     String hostel = user['hostel'] ?? 'N/A';
 
     return Scaffold(
-      appBar: AppBar(title: Text('QR Details')),
+      appBar: AppBar(title: const Text('QR Details')),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Current Mess is: ${calculateHostel(currMess)}' , style: TextStyle(fontSize: 20)),
-              SizedBox(height: 8),
-              Text('Name: $name', style: TextStyle(fontSize: 20)),
-              SizedBox(height: 8),
-              Text('rollNumber: $rollNumber', style: TextStyle(fontSize: 16)),
-              SizedBox(height: 8),
-              Text('Hostel: ${calculateHostel(hostel)}', style: TextStyle(fontSize: 16)),
-              Divider(height: 30),
+              Text('Current Mess is: ${calculateHostel(currMess)}' , style: const TextStyle(fontSize: 20)),
+              const SizedBox(height: 8),
+              Text('Name: $name', style: const TextStyle(fontSize: 20)),
+              const SizedBox(height: 8),
+              Text('rollNumber: $rollNumber', style: const TextStyle(fontSize: 16)),
+              const SizedBox(height: 8),
+              Text('Hostel: ${calculateHostel(hostel)}', style: const TextStyle(fontSize: 16)),
+              const Divider(height: 30),
             ],
           ),
         ),

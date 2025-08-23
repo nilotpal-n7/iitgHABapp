@@ -3,7 +3,6 @@ import 'package:frontend1/constants/endpoint.dart';
 import 'package:frontend1/apis/protected.dart';
 import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> registerFcmToken() async {
   try {

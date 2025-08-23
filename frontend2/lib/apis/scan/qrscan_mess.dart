@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:frontend1/utilities/permission_handler/permission_handler.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:frontend1/apis/protected.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:vibration/vibration.dart';
 import 'package:frontend1/widgets/common/cornerQR.dart';
-import 'package:frontend1/constants/endpoint.dart';
 import 'package:dio/dio.dart';
 
 import '../../screen1/QrDetail.dart';
@@ -114,7 +110,7 @@ class _QrScanState extends State<QrScanMess> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('QR Scanner')),
+      appBar: AppBar(title: const Text('QR Scanner')),
       body: Stack(
         children: [
           MobileScanner(

@@ -32,19 +32,19 @@ class NotificationCard extends StatelessWidget {
                         .headlineSmall
                         ?.copyWith(color: Colors.grey[600], fontSize: 14)),
               ),
-              Icon(Icons.close, size: 16, color: Colors.grey),
+              const Icon(Icons.close, size: 16, color: Colors.grey),
             ]),
             Divider(color: Colors.grey[300], height: 16),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(subtitle, style: TextStyle(color: Colors.grey[700])),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             GestureDetector(
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Notification tapped')),
+                  const SnackBar(content: Text('Notification tapped')),
                 );
               },
-              child: Row(
+              child: const Row(
                 children: [
                   Text("View  ",
                       style: TextStyle(color: Colors.blue, fontSize: 14)),
