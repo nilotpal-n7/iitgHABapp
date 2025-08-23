@@ -37,7 +37,7 @@ class _QrScanOldState extends State<QrScanOld> {
   }
 
   Future<void> fetchItemBySerialNumber(String qrCode) async {
-    final url = "https://hab.codingclubiitg.in/api/qr/check";
+    const url = "https://hab.codingclubiitg.in/api/qr/check";
 
     try {
       final response = await dio.put(
@@ -57,7 +57,7 @@ class _QrScanOldState extends State<QrScanOld> {
 
         print("User details: $displayData");
 
-        Future.delayed(Duration(seconds: 1), () {
+        Future.delayed(const Duration(seconds: 1), () {
           setState(() {
             displayData = null;
             _hasScanned = false;
@@ -73,7 +73,7 @@ class _QrScanOldState extends State<QrScanOld> {
     } catch (e) {
       showSnackBar('Something went wrong!', Colors.red, context);
     } finally {
-      Future.delayed(Duration(seconds: 1), () {
+      Future.delayed(const Duration(seconds: 1), () {
         setState(() {
           _hasScanned = false;
         });
@@ -119,7 +119,7 @@ class _QrScanOldState extends State<QrScanOld> {
               left: 20,
               right: 20,
               child: Container(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.green,
                   borderRadius: BorderRadius.circular(10),

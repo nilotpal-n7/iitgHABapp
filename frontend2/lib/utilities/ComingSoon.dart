@@ -9,7 +9,7 @@ class ComingSoonScreen extends StatelessWidget {
     return Scaffold(appBar: AppBar(
       backgroundColor: Colors.white,
       leading: IconButton(
-        icon: Icon(Icons.arrow_back),
+        icon: const Icon(Icons.arrow_back),
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => const MainNavigationScreen()));
         },

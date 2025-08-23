@@ -8,17 +8,17 @@ class CornerPainter extends CustomPainter {
       ..strokeWidth = 4
       ..style = PaintingStyle.stroke;
 
-    final double cornerLength = 20.0; // Length of the corner lines
+    const double cornerLength = 20.0; // Length of the corner lines
 
     // Top-left corner
     canvas.drawLine(
-      Offset(0, 0),
-      Offset(0, cornerLength),
+      const Offset(0, 0),
+      const Offset(0, cornerLength),
       paint,
     ); // Vertical line
     canvas.drawLine(
-      Offset(0, 0),
-      Offset(cornerLength, 0),
+     const Offset(0, 0),
+      const Offset(cornerLength, 0),
       paint,
     ); // Horizontal line
 
