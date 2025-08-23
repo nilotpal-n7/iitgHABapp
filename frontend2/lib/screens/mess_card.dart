@@ -33,10 +33,10 @@ class _messcardState extends State<messcard> {
     String url = rollNumber;
 
     return Scaffold(
-      appBar: AppBar(title: Text("QR Code")),
+      appBar: AppBar(title: const Text("QR Code")),
       body: Center(
         child: rollNumber.isEmpty
-            ? CircularProgressIndicator() // Show loading indicator while fetching data
+            ? const CircularProgressIndicator() // Show loading indicator while fetching data
             : QrImageView(
           data: url, // QR Code contains the GET request URL
           version: QrVersions.auto,

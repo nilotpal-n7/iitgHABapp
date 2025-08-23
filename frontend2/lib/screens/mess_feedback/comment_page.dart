@@ -39,7 +39,7 @@ class _CommentPageState extends State<CommentPage> {
 
       if (token == 'error') {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Access token not found. Please login again.')),
+          const SnackBar(content: Text('Access token not found. Please login again.')),
         );
         return;
       }
@@ -65,7 +65,7 @@ class _CommentPageState extends State<CommentPage> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Feedback submitted successfully')),
+          const SnackBar(content: Text('Feedback submitted successfully')),
         );
         provider.clear();
         Navigator.popUntil(context, (route) => route.isFirst);
@@ -88,7 +88,7 @@ class _CommentPageState extends State<CommentPage> {
     print("Building CommentPage");
     final provider = Provider.of<FeedbackProvider>(context);
     return Scaffold(
-      appBar: AppBar(leading: BackButton(),backgroundColor: Colors.white,),
+      appBar: AppBar(leading: const BackButton(),backgroundColor: Colors.white,),
       body: Container(
         color: Colors.white,
         child: SafeArea(
@@ -100,7 +100,7 @@ class _CommentPageState extends State<CommentPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         "Mess Feedback",
                         style: TextStyle(
                           fontFamily: 'OpenSans_Bold',
@@ -110,13 +110,13 @@ class _CommentPageState extends State<CommentPage> {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      SizedBox(height: 32),
-                      Text("Step 2 / 2",
+                      const SizedBox(height: 32),
+                      const Text("Step 2 / 2",
                           style: TextStyle(color: Colors.deepPurple)),
-                      SizedBox(height: 16),
-                      LinearProgressIndicator(value: 1, color: Colors.deepPurple),
-                      SizedBox(height: 11),
-                      Text(
+                      const SizedBox(height: 16),
+                      const LinearProgressIndicator(value: 1, color: Colors.deepPurple),
+                      const SizedBox(height: 11),
+                      const Text(
                         "Add additional comments that would help improve the mess service",
                         style: TextStyle(
                           fontFamily: 'OpenSans-Regular',
@@ -125,7 +125,7 @@ class _CommentPageState extends State<CommentPage> {
                           color: Color.fromRGBO(46, 47, 49, 1),
                         ),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       TextField(
                         controller: commentController,
                         maxLines: 5,
@@ -169,11 +169,11 @@ class _CommentPageState extends State<CommentPage> {
                 child: ElevatedButton(
                   onPressed: () => submitFeedback(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromRGBO(76, 78, 219, 1),
-                    shape: StadiumBorder(),
-                    minimumSize: Size(358, 54),
+                    backgroundColor: const Color.fromRGBO(76, 78, 219, 1),
+                    shape: const StadiumBorder(),
+                    minimumSize: const Size(358, 54),
                   ),
-                  child: Text(
+                  child: const Text(
                     'Submit',
                     style: TextStyle(
                       fontFamily: 'OpenSans-Regular',

@@ -22,7 +22,7 @@ class MessMenuCard extends StatelessWidget {
     // Find which meal to show and what status
     MenuModel? currentMenu;
     String statusText = "";
-    Color statusColor = Color(0x1F8441);
+    Color statusColor = const Color(0x1F8441);
 
     for (final menu in menus) {
       final start = parseTime(menu.startTime);
@@ -66,7 +66,7 @@ class MessMenuCard extends StatelessWidget {
       color: Colors.white,
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
-          side: BorderSide(width: 1, color:Color(0xFFC5C5D1),)
+          side: const BorderSide(width: 1, color:Color(0xFFC5C5D1),)
 
       ),
       elevation: 0.5,

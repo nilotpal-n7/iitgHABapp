@@ -22,8 +22,8 @@ class MessFeedbackPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
 
-        Text(meal, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        SizedBox(
+        Text(meal, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        const SizedBox(
           height: 8,
         ),
         ...options.map((option) => customOption(
@@ -48,7 +48,7 @@ class MessFeedbackPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        leading: BackButton(),
+        leading: const BackButton(),
       ),
       body: Container(
         color: Colors.white,
@@ -57,7 +57,7 @@ class MessFeedbackPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 "Mess Feedback",
                 style: TextStyle(
                     fontFamily: 'OpenSans_Bold',
@@ -65,20 +65,20 @@ class MessFeedbackPage extends StatelessWidget {
                     fontSize: 32,
                     fontWeight: FontWeight.w700),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 32,
               ),
-              Text("Step 1 / 2", style: TextStyle(color: Colors.deepPurple)),
-              SizedBox(
+              const Text("Step 1 / 2", style: TextStyle(color: Colors.deepPurple)),
+              const SizedBox(
                 height: 11,
               ),
-              LinearProgressIndicator(value: 0.5, color: Colors.deepPurple),
-              SizedBox(height: 16),
-              SizedBox(height: 8),
+              const LinearProgressIndicator(value: 0.5, color: Colors.deepPurple),
+              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               Expanded(
                 child: ListView(
                   children: [
-                    Text(
+                    const Text(
                       "How satisfied are you with the respective meals?",
                       style: TextStyle(
                           fontFamily: 'OpenSans-Regular',
@@ -86,7 +86,7 @@ class MessFeedbackPage extends StatelessWidget {
                           fontSize: 20),
                     ),
 
-                    SizedBox(
+                    const SizedBox(
                       height: 24,
                     ),
                     mealBlock("Breakfast", provider.breakfast,
@@ -111,11 +111,11 @@ class MessFeedbackPage extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
                     decoration: BoxDecoration(
-                      color: Color.fromRGBO(76, 78, 219, 1),
+                      color: const Color.fromRGBO(76, 78, 219, 1),
 
                       borderRadius: BorderRadius.circular(9999), // pill shape
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         SizedBox(width: 12),

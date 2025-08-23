@@ -75,7 +75,7 @@ class _GoogleSignInDialogState extends State<GoogleSignInDialog> {
     } catch (e) {
       print('Error during Google sign-in: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred during Google sign-in.')),
+        const SnackBar(content: Text('An error occurred during Google sign-in.')),
       );
     } finally {
       setState(() {

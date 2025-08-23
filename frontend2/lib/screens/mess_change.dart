@@ -41,25 +41,25 @@ class _MessChangeReqState extends State<MessChangeReq> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mess Preference',style: TextStyle(
+        title: const Text('Mess Preference',style: TextStyle(
           fontWeight: FontWeight.w700,
         ),),
       ),
       backgroundColor: Colors.white,
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 15),
+        padding: const EdgeInsets.symmetric(horizontal: 15),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 20),
-            Text('Choose the mess that suits your taste or convenience'),
-            SizedBox(height: 10),
+            const SizedBox(height: 20),
+            const Text('Choose the mess that suits your taste or convenience'),
+            const SizedBox(height: 10),
             DropdownButton<String>(
-              hint: Text('First Preference'),
+              hint: const Text('First Preference'),
               value: selectedValue,
-              icon: Icon(Icons.keyboard_arrow_down),
+              icon: const Icon(Icons.keyboard_arrow_down),
               elevation: 16,
-              style: TextStyle(color: Colors.deepPurple),
+              style: const TextStyle(color: Colors.deepPurple),
               underline: Container(
                 height: 2,
                 color: Colors.deepPurpleAccent,
@@ -76,13 +76,13 @@ class _MessChangeReqState extends State<MessChangeReq> {
                 );
               }).toList(),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             DropdownButton<String>(
-              hint: Text('Second Preference'),
+              hint: const Text('Second Preference'),
               value: selectedValue,
-              icon: Icon(Icons.keyboard_arrow_down),
+              icon: const Icon(Icons.keyboard_arrow_down),
               elevation: 16,
-              style: TextStyle(color: Colors.deepPurple),
+              style: const TextStyle(color: Colors.deepPurple),
               underline: Container(
                 height: 2,
                 color: Colors.deepPurpleAccent,
