@@ -123,7 +123,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         maxChildSize: 0.95,
         builder: (context, controller) {
           return Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
@@ -138,10 +138,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       CircleAvatar(
                         radius: 20,
                         backgroundColor: Colors.blue[50],
-                        child: Icon(Icons.notifications_none,
+                        child: const Icon(Icons.notifications_none,
                             color: Colors.blue, size: 27),
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Text(
                         "Notifications",
                         style: Theme.of(context)
@@ -149,9 +149,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             .headlineMedium
                             ?.copyWith(color: Colors.black, fontSize: 20),
                       ),
-                      Spacer(),
+                      const Spacer(),
                       IconButton(
-                        icon: Icon(Icons.close, size: 26),
+                        icon: const Icon(Icons.close, size: 26),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ],
@@ -161,7 +161,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 // List of notifications
                 Expanded(
                   child: storedNotifications.isEmpty
-                      ? Center(
+                      ? const Center(
                           child: Text(
                             'No notifications yet.',
                             style: TextStyle(color: Colors.grey),
@@ -187,7 +187,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                   subtitle: subtitle,
                                   description: 'Tap to view details',
                                 ),
-                                SizedBox(height: 12),
+                                const SizedBox(height: 12),
                               ],
                             );
                           },

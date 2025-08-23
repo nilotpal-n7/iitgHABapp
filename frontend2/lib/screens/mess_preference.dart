@@ -24,7 +24,7 @@ class _MessChangePreferenceScreenState
   String? defaultMess;
   bool? isMessChangeEnabled;
 
-  bool loadingStatus = true; // NEW: track API loading state
+  bool loadingStatus = true; // track API loading state
 
   final dio = Dio();
 
@@ -34,9 +34,9 @@ class _MessChangePreferenceScreenState
     checkMessChangeStatus();
   }
 
-  /// Helper to show dialogs
+  /// Helper to show dialogs and refresh after user presses OK
   Future<void> _showMessage(String title, String message,
-      {bool popPageAfter = false}) async {
+      {bool refreshAfter = false}) async {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -46,20 +46,23 @@ class _MessChangePreferenceScreenState
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(); // close dialog
-              if (popPageAfter) Navigator.of(context).maybePop();
             },
             child: const Text("OK"),
           ),
         ],
       ),
     );
+
+    if (refreshAfter && mounted) {
+      await checkMessChangeStatus(); // 🔄 refresh after dialog OK
+    }
   }
 
   Future<void> checkMessChangeStatus() async {
     setState(() => loadingStatus = true);
 
     try {
-     final dio = Dio();
+      final dio = Dio();
       final token = await getAccessToken();
 
       final res = await dio.get(
@@ -72,21 +75,21 @@ class _MessChangePreferenceScreenState
         ),
       );
 
-      print(res);
-
       if (res.statusCode == 200) {
         setState(() {
           alreadyApplied = res.data['applied'] ?? false;
           appliedHostel = res.data['hostel'];
           defaultMess = res.data['default'];
           isMessChangeEnabled = res.data['isMessChangeEnabled'];
+          firstpref = null; // reset selection to avoid stale values
+          first = true;
         });
       }
     } catch (e) {
       debugPrint('Error fetching mess change status: $e');
       _showMessage("Error", "Unable to fetch mess change status.");
     } finally {
-      setState(() => loadingStatus = false);
+      if (mounted) setState(() => loadingStatus = false);
     }
   }
 
@@ -103,8 +106,7 @@ class _MessChangePreferenceScreenState
 
     try {
       final token = await getAccessToken();
-      print(token);
-      String url = MessChange.messChangeCancel;
+      String url = MessChange.messChangeRequest;
 
       final res = await dio.post(
         url,
@@ -122,19 +124,19 @@ class _MessChangePreferenceScreenState
         _showMessage(
           "Mess Change Rejected",
           "Mess change is only permitted between 24th and 27th of each month.",
-          popPageAfter: true,
+          refreshAfter: true,
         );
       } else if (res.statusCode == 200) {
         _showMessage(
           "Success",
           "Form submitted successfully!",
-          popPageAfter: true,
+          refreshAfter: true,
         );
       } else {
         _showMessage(
           "Error",
           "Form couldn't be submitted. Try again later!",
-          popPageAfter: true,
+          refreshAfter: true,
         );
       }
     } catch (e) {
@@ -142,27 +144,26 @@ class _MessChangePreferenceScreenState
         debugPrint('Error submitting mess change: $e');
         _showMessage(
           "Error",
-          "${e.response?.data['message']??"We couldn't process your request!"}",
-          popPageAfter: true,
+          "${e.response?.data['message'] ?? "We couldn't process your request!"}",
+          refreshAfter: true,
         );
       } else {
         debugPrint('Error submitting mess change: $e');
         _showMessage(
           "Error",
           "We couldn't process your request!",
-          popPageAfter: true,
+          refreshAfter: true,
         );
       }
     }
   }
-
 
   Future<void> handleCancel() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('access_token');
       String url = MessChange.messChangeCancel;
-      
+
       final res = await dio.post(
         url,
         options: Options(
@@ -177,35 +178,35 @@ class _MessChangePreferenceScreenState
         _showMessage(
           "Mess Cancel Rejected",
           "Mess Cancel is only permitted between 24th and 27th of each month.",
-          popPageAfter: true,
+          refreshAfter: true,
         );
       } else if (res.statusCode == 200) {
         _showMessage(
           "Success",
           "Mess Change Request Cancelled Successfully!",
-          popPageAfter: true,
+          refreshAfter: true,
         );
       } else {
         _showMessage(
           "Error",
           "Form couldn't be submitted. Try again later!",
-          popPageAfter: true,
+          refreshAfter: true,
         );
       }
     } catch (e) {
       if (e is DioException) {
-        debugPrint('Error submitting mess change: $e');
+        debugPrint('Error submitting mess cancel: $e');
         _showMessage(
           "Error",
-          "${e.response?.data['message']??"We couldn't process your request!"}",
-          popPageAfter: true,
+          "${e.response?.data['message'] ?? "We couldn't process your request!"}",
+          refreshAfter: true,
         );
       } else {
-        debugPrint('Error submitting mess change: $e');
+        debugPrint('Error submitting mess cancel: $e');
         _showMessage(
           "Error",
           "We couldn't process your request!",
-          popPageAfter: true,
+          refreshAfter: true,
         );
       }
     }
@@ -313,7 +314,6 @@ class _MessChangePreferenceScreenState
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: 8,
           children: [
             ElevatedButton(
               onPressed: (loadingStatus || alreadyApplied)
@@ -337,28 +337,23 @@ class _MessChangePreferenceScreenState
                 style: const TextStyle(fontSize: 16, color: Colors.white),
               ),
             ),
-                        ElevatedButton(
+            ElevatedButton(
               onPressed: (alreadyApplied)
                   ? () {
-                    handleCancel();
-                    setState(() {
-                      // first = true;
-                    });
-                  }
-                  : () {
-
-                    },
+                      handleCancel();
+                    }
+                  : null,
               style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all(
                   (alreadyApplied)
                       ? const Color.fromARGB(255, 255, 0, 0)
-                      : Colors.grey
+                      : Colors.grey,
                 ),
                 elevation: WidgetStateProperty.all(0),
               ),
-              child: Text(
+              child: const Text(
                 'Cancel Mess Request',
-                style: const TextStyle(fontSize: 16, color: Colors.white),
+                style: TextStyle(fontSize: 16, color: Colors.white),
               ),
             ),
           ],

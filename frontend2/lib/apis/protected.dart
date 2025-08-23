@@ -5,7 +5,7 @@ Future<String> getAccessToken() async {
   final token = prefs.getString('access_token');
 
   if (token != null) {
-    return '$token';
+    return token;
   } else {
     return 'error';
   }

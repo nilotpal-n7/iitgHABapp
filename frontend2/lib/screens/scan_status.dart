@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:frontend1/screens/MainNavigationScreen.dart';
 
-import 'Home_screen.dart';
-
 class ScanStatusPage extends StatelessWidget {
   final Response response;
 
@@ -141,7 +139,7 @@ class ScanStatusPage extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => MainNavigationScreen()),
+                  MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
                       (Route<dynamic> route) => false,
                 );
               },
@@ -254,7 +252,7 @@ class ScanStatusPage extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => MainNavigationScreen()),
+                      MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
                           (Route<dynamic> route) => false,
                     );
                   },
@@ -356,7 +354,7 @@ class ScanStatusPage extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => MainNavigationScreen()),
+                  MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
                       (Route<dynamic> route) => false,
                 );
               },

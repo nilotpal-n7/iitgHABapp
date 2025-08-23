@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 Future<Map<String, String>?> fetchUserDetails() async {
   final header = await getAccessToken();
 
-  print("token is " + header);
+  print("token is $header");
   if (header == 'error') {
     throw ('token not found');
   }
@@ -34,7 +34,7 @@ Future<Map<String, String>?> fetchUserDetails() async {
       prefs.setString('email', mail);
 
       final String roll = userData['rollNumber'] ?? "Not provided";
-      final String CurrSubscribedMess =
+      final String currSubscribedMess =
           userData['curr_subscribed_mess'] ?? "Not provided";
       final String appliedMess =
           userData['applied_hostel_string'] ?? "Not provided";
@@ -46,7 +46,7 @@ Future<Map<String, String>?> fetchUserDetails() async {
       prefs.setString('appliedMess', appliedMess);
       prefs.setString('rollNo', roll);
       prefs.setString('hostel', hostel);
-      prefs.setString('currMess', CurrSubscribedMess);
+      prefs.setString('currMess', currSubscribedMess);
       prefs.setString('name', name);
       prefs.setString('userId', userId);
 
@@ -54,7 +54,7 @@ Future<Map<String, String>?> fetchUserDetails() async {
       print("Degree: $degree");
       print("Email: $mail");
       print("Roll: $roll");
-      print("Curr Mess: $CurrSubscribedMess");
+      print("Curr Mess: $currSubscribedMess");
       print("your mess is $gotHostel");
 
       // Return the data as a map
