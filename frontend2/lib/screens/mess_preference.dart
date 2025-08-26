@@ -263,7 +263,7 @@ class _MessChangePreferenceScreenState
 
                     const SizedBox(height: 24),
                     const Text(
-                      '1st preference',
+                      'Preferences',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -307,10 +307,10 @@ class _MessChangePreferenceScreenState
               ),
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-        height: 148,
+        padding: const EdgeInsets.all(16),
+        height: 85,
         decoration: const BoxDecoration(
-          border: Border(top: BorderSide(width: 1, color: Color(0xFFE5E5E5))),
+          //border: Border(top: BorderSide(width: 1, color: Color(0xFFE5E5E5))),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -337,25 +337,25 @@ class _MessChangePreferenceScreenState
                 style: const TextStyle(fontSize: 16, color: Colors.white),
               ),
             ),
-            ElevatedButton(
-              onPressed: (alreadyApplied)
-                  ? () {
-                      handleCancel();
-                    }
-                  : null,
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(
-                  (alreadyApplied)
-                      ? const Color.fromARGB(255, 255, 0, 0)
-                      : Colors.grey,
-                ),
-                elevation: WidgetStateProperty.all(0),
-              ),
-              child: const Text(
-                'Cancel Mess Request',
-                style: TextStyle(fontSize: 16, color: Colors.white),
-              ),
-            ),
+            // ElevatedButton(
+            //   onPressed: (alreadyApplied)
+            //       ? () {
+            //           handleCancel();
+            //         }
+            //       : null,
+            //   style: ButtonStyle(
+            //     backgroundColor: WidgetStateProperty.all(
+            //       (alreadyApplied)
+            //           ? const Color.fromARGB(255, 255, 0, 0)
+            //           : Colors.grey,
+            //     ),
+            //     elevation: WidgetStateProperty.all(0),
+            //   ),
+            //   child: const Text(
+            //     'Cancel Mess Request',
+            //     style: TextStyle(fontSize: 16, color: Colors.white),
+            //   ),
+            // ),
           ],
         ),
       ),
