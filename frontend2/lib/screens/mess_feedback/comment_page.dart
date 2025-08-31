@@ -1,37 +1,29 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
-
-
-
 import 'package:frontend1/constants/endpoint.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../apis/protected.dart';
 import '../../constants/themes.dart';
-
 import '../../providers/feedback_provider.dart';
-
-
-
 
 class CommentPage extends StatefulWidget {
   @override
   State<CommentPage> createState() => _CommentPageState();
 }
 
-
 class _CommentPageState extends State<CommentPage> {
   final TextEditingController commentController = TextEditingController();
 
-
   Future<void> submitFeedback(BuildContext context) async {
     try {
-      print('submitFeedback triggered'); // Debug log
+      print('submitFeedback triggered');
       final provider = Provider.of<FeedbackProvider>(context, listen: false);
+
+      // Set comment in provider
       provider.setComment(commentController.text);
+
       final prefs = await SharedPreferences.getInstance();
       final name = prefs.getString('name');
       final roll = prefs.getString('rollNumber');
@@ -46,6 +38,26 @@ class _CommentPageState extends State<CommentPage> {
 
       print("starting feedback request");
 
+      // Prepare payload
+      final Map<String, dynamic> payload = {
+        'name': name,
+        'rollNumber': roll,
+        'breakfast': provider.breakfast,
+        'lunch': provider.lunch,
+        'dinner': provider.dinner,
+        'comment': provider.comment,
+      };
+
+      // Add SMC fields if applicable
+      if (provider.isSMC) {
+        payload['smcFields'] = {
+          'hygiene': provider.hygiene,
+          'wasteDisposal': provider.wasteDisposal,
+          'qualityOfIngredients': provider.qualityOfIngredients,
+          'uniformAndPunctuality': provider.uniformAndPunctuality,
+        };
+      }
+
       final url = Uri.parse(messFeedback.feedbackSubmit);
       final response = await http.post(
         url,
@@ -53,14 +65,7 @@ class _CommentPageState extends State<CommentPage> {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({
-          'name': name,
-          'rollNumber': roll,
-          'breakfast': provider.breakfast,
-          'lunch': provider.lunch,
-          'dinner': provider.dinner,
-          'comment': provider.comment,
-        }),
+        body: jsonEncode(payload),
       );
 
       if (response.statusCode == 200) {
@@ -87,8 +92,12 @@ class _CommentPageState extends State<CommentPage> {
   Widget build(BuildContext context) {
     print("Building CommentPage");
     final provider = Provider.of<FeedbackProvider>(context);
+
     return Scaffold(
-      appBar: AppBar(leading: const BackButton(),backgroundColor: Colors.white,),
+      appBar: AppBar(
+        leading: const BackButton(),
+        backgroundColor: Colors.white,
+      ),
       body: Container(
         color: Colors.white,
         child: SafeArea(
@@ -105,7 +114,6 @@ class _CommentPageState extends State<CommentPage> {
                         style: TextStyle(
                           fontFamily: 'OpenSans_Bold',
                           color: Themes.feedbackColor,
-
                           fontSize: 32,
                           fontWeight: FontWeight.w700,
                         ),
@@ -114,7 +122,10 @@ class _CommentPageState extends State<CommentPage> {
                       const Text("Step 2 / 2",
                           style: TextStyle(color: Colors.deepPurple)),
                       const SizedBox(height: 16),
-                      const LinearProgressIndicator(value: 1, color: Colors.deepPurple),
+                      const LinearProgressIndicator(
+                        value: 1,
+                        color: Colors.deepPurple,
+                      ),
                       const SizedBox(height: 11),
                       const Text(
                         "Add additional comments that would help improve the mess service",
@@ -130,42 +141,17 @@ class _CommentPageState extends State<CommentPage> {
                         controller: commentController,
                         maxLines: 5,
                         maxLength: 100,
-
                         decoration: const InputDecoration(
                           hintText: "Write in less than 100 words",
                           border: OutlineInputBorder(),
                         ),
-                        // onChanged: provider.setComment,
                       ),
                     ],
                   ),
                 ),
               ),
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 16.0, horizontal: 10),
-                // child: GestureDetector(
-                //   onTap: () => submitFeedback(context),
-                //   child: Container(
-                //     width: 358,
-                //     height: 54,
-                //     decoration: BoxDecoration(
-                //       color: Color.fromRGBO(76, 78, 219, 1),
-                //       borderRadius: BorderRadius.circular(9999),
-                //     ),
-                //     child: Center(
-                //       child: Text(
-                //         'Submit',
-                //         style: TextStyle(
-                //           fontFamily: 'OpenSans-Regular',
-                //           fontSize: 16,
-                //           color: Colors.white,
-                //           fontWeight: FontWeight.w500,
-                //         ),
-                //       ),
-                //     ),
-                //   ),
-                // ),
+                padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 10),
                 child: ElevatedButton(
                   onPressed: () => submitFeedback(context),
                   style: ElevatedButton.styleFrom(
