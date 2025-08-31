@@ -11,7 +11,7 @@ const feedbackFilePath = path.join(__dirname, '../output', 'Feedback_Report.xlsx
 const submitFeedback = async (req, res) => {
   console.log("request received");
   try {
-    const { name, rollNumber, breakfast, lunch, dinner, comment } = req.body;
+    const { name, rollNumber, breakfast, lunch, dinner, comment, smcFields } = req.body;
      console.log('Received feedback:', req.body);
     if (!name || !rollNumber || !breakfast || !lunch || !dinner) {
       return res.status(400).send("Incomplete feedback data");
@@ -69,19 +69,29 @@ const submitFeedback = async (req, res) => {
     // xlsx.writeFile(workbook, feedbackFilePath);
 
     // 5. Prepare to upload data in form of schema 
-    const feedback = new Feedback({
+    const feedbackData = {
       user: user._id,
       breakfast,
       lunch,
       dinner,
       comment,
       timestamp: new Date(),
-    });
+    };
 
+
+    // 6. Include SMC fields only if user.isSMC === true
+    if (user.isSMC) {
+      if (!smcFields) {
+        return res.status(400).send("SMC users must provide extra feedback fields");
+      }
+      feedbackData.smcFields = smcFields;
+    }
+
+    const feedback = new Feedback(feedbackData);
     await feedback.save();
 
 
-    // 6. Mark feedback as submitted
+    // 7. Mark feedback as submitted
     user.feedbackSubmitted = true;
     await user.save();
 
@@ -194,13 +204,40 @@ const removeFeedback = async (req, res) => {
 //};
 //
 
+// Fetch all feedbacks (or you can filter by user/hostel if needed)
+const getAllFeedback = async (req, res) => {
+  try {
+    const feedbacks = await Feedback.find()
+      .populate('user', 'name rollNumber isSMC') // get only needed user fields
+      .sort({ date: -1 }) // latest first
+      .lean(); // optional: returns plain JS objects instead of Mongoose docs
+
+    // Format the response for frontend
+    const formatted = feedbacks.map(fb => ({
+      user: fb.user,
+      breakfast: fb.breakfast,
+      lunch: fb.lunch,
+      dinner: fb.dinner,
+      comment: fb.comment,
+      smcFields: fb.user.isSMC ? fb.smcFields : undefined, // only include smcFields if SMC
+      date: fb.date
+    }));
+
+    res.status(200).json(formatted);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error fetching feedbacks");
+  }
+};
 
 
 module.exports = {
   submitFeedback,
   removeFeedback,
- // downloadFeedbackSheet,
-//removeAllFeedbacks
+  // downloadFeedbackSheet,
+  // removeAllFeedbacks,
+  getAllFeedback,
 };
 
 
