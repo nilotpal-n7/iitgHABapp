@@ -31,7 +31,18 @@ const feedbackSchema = new mongoose.Schema({
   comment: {
     type: String,
     default: ''
-  }
+  },
+
+  // Extra fields if user is SMC
+  smcFields: {
+    type: {
+      hygiene: { type: String, enum: ratingOptions },
+      wasteDisposal: { type: String, enum: ratingOptions },
+      qualityOfIngredients: { type: String, enum: ratingOptions },
+      UniformAndPunctuality: { type: String, enum: ratingOptions },
+    },
+    default: null,
+  },
 });
 
 const Feedback = mongoose.model('Feedback', feedbackSchema);
