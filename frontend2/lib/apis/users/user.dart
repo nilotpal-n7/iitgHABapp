@@ -31,17 +31,16 @@ Future<Map<String, String>?> fetchUserDetails() async {
       final String userId = userData['_id'] ?? "";
       final String degree = userData['degree'] ?? "Not Provided";
       final String mail = userData['email'];
-      prefs.setString('email', mail);
-
       final String roll = userData['rollNumber'] ?? "Not provided";
-      final String currSubscribedMess =
-          userData['curr_subscribed_mess'] ?? "Not provided";
-      final String appliedMess =
-          userData['applied_hostel_string'] ?? "Not provided";
-      final hostel = userData['hostel'] ?? "Not provided";
-
+      final String currSubscribedMess = userData['curr_subscribed_mess'] ?? "Not provided";
+      final String appliedMess = userData['applied_hostel_string'] ?? "Not provided";
+      final String hostel = userData['hostel'] ?? "Not provided";
       final bool gotHostel = userData['got_mess_changed'];
+      final bool isSMC = userData['isSMC'] ?? false;
+
+      prefs.setBool('isSMC', isSMC);
       prefs.setBool('gotMess', gotHostel);
+      prefs.setString('email', mail);
       prefs.setString('rollNumber', roll);
       prefs.setString('appliedMess', appliedMess);
       prefs.setString('rollNo', roll);
