@@ -75,7 +75,7 @@ const processUsersInIterations = (users, capacityTracker) => {
           id: user._id,
           name: user.name,
           rollNumber: user.rollNumber,
-          fromHostelId: user.curr_subscribed_mess,
+          fromHostelId: user.hostel, // Use user's actual hostel for HAB processed requests
           toHostelId: user.next_mess,
         });
         capacityTracker[targetHostelId].available--;
@@ -95,7 +95,7 @@ const processUsersInIterations = (users, capacityTracker) => {
     id: user._id,
     name: user.name,
     rollNumber: user.rollNumber,
-    fromHostelId: user.curr_subscribed_mess,
+    fromHostelId: user.hostel, // Use user's actual hostel for HAB processed requests
     toHostelId: user.next_mess,
   }));
 
@@ -103,11 +103,7 @@ const processUsersInIterations = (users, capacityTracker) => {
 };
 
 // Database update function for accepted users
-const updateAcceptedUsers = async (
-  acceptedUsers,
-  currentYear,
-  currentMonth
-) => {
+const updateAcceptedUsers = async (acceptedUsers) => {
   for (const acceptedUser of acceptedUsers) {
     const user = await User.findById(acceptedUser.id);
     if (!user) continue;
@@ -115,19 +111,38 @@ const updateAcceptedUsers = async (
     user.curr_subscribed_mess = acceptedUser.toHostelId;
     user.applied_for_mess_changed = false;
     user.got_mess_changed = true;
+    user.applied_hostel_string = "";
+    user.next_mess = null;
+    user.applied_hostel_timestamp = null;
+    console.log("user", user);
     await user.save();
 
     const fromHostel = await Hostel.findById(acceptedUser.fromHostelId);
     const toHostel = await Hostel.findById(acceptedUser.toHostelId);
 
-    const messChangeRecord = new MessChange({
-      userName: user.name,
-      fromHostel: fromHostel ? fromHostel.hostel_name : "Unknown",
-      toHostel: toHostel ? toHostel.hostel_name : "Unknown",
-      year: currentYear,
-      month: currentMonth,
+    // Check if a MessChange record already exists for this user
+    const existingRecord = await MessChange.findOne({
+      rollNumber: user.rollNumber,
     });
-    await messChangeRecord.save();
+
+    if (existingRecord) {
+      // Update existing record
+      existingRecord.userName = user.name;
+      existingRecord.fromHostel = fromHostel
+        ? fromHostel.hostel_name
+        : "Unknown";
+      existingRecord.toHostel = toHostel ? toHostel.hostel_name : "Unknown";
+      await existingRecord.save();
+    } else {
+      // Create new record
+      const messChangeRecord = new MessChange({
+        userName: user.name,
+        rollNumber: user.rollNumber,
+        fromHostel: fromHostel ? fromHostel.hostel_name : "Unknown",
+        toHostel: toHostel ? toHostel.hostel_name : "Unknown",
+      });
+      await messChangeRecord.save();
+    }
 
     acceptedUser.fromHostel = fromHostel ? fromHostel.hostel_name : "Unknown";
     acceptedUser.toHostel = toHostel ? toHostel.hostel_name : "Unknown";
@@ -201,13 +216,8 @@ const processAllMessChangeRequests = async (req, res) => {
       capacityTracker
     );
 
-    // Get current date for mess change records
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1;
-
     // Update database for all user categories
-    await updateAcceptedUsers(acceptedUsers, currentYear, currentMonth);
+    await updateAcceptedUsers(acceptedUsers);
     await updateRejectedUsers(rejectedUsers);
 
     // Automatically disable mess change after processing and update timestamp
@@ -437,10 +447,27 @@ const updateLastProcessedTimestamp = async () => {
   }
 };
 
+const getAllAcceptedStudents = async (req, res) => {
+  try {
+    const allAcceptedStudents = await MessChange.find({}).sort({
+      createdAt: 1,
+    });
+
+    return res.status(200).json({
+      message: "All accepted students fetched successfully",
+      data: allAcceptedStudents,
+    });
+  } catch (error) {
+    console.error("Error fetching all accepted students:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   getAllMessChangeRequestsForAllHostels,
   processAllMessChangeRequests,
   getAcceptedStudentsByHostel,
+  getAllAcceptedStudents,
   messChangeRequest,
   messChangeStatus,
   messChangeCancel,

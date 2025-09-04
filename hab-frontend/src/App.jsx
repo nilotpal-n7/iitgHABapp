@@ -6,9 +6,9 @@ import AllHostelList from "./pages/AllHostelList";
 import Caterers from "./pages/Caterers";
 import Students from "./pages/Students";
 import HostelStats from "./pages/stats/HostelStats.jsx";
-import CreateMess from "./components/CreateMess";
-import MessDetails from "./components/MessDetails";
-import MessMenu from "./components/MessMenu";
+import CreateMess from "./Components/CreateMess";
+import MessDetails from "./Components/MessDetails";
+import MessMenu from "./Components/MessMenu";
 import HostelForm from "./pages/HostelForm";
 import HostelPage from "./pages/HostelPage";
 

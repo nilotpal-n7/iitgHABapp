@@ -2,6 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import MessBillCalculator from "../Components/MessBillCalculator";
 import HostelStats from "./stats/HostelStats";
+import HostelUsersList from "../Components/HostelUsersList";
+import {
+  getUnassignedMesses,
+  assignMessToHostel,
+  unassignMess,
+  getMessById,
+} from "../apis/mess";
+import { getHostelById } from "../apis/hostel";
 
 export default function HostelPage() {
   const { hostelId } = useParams();
@@ -13,22 +21,18 @@ export default function HostelPage() {
   const [messDetails, setMessDetails] = useState(null);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("details"); // 'details' or 'bill'
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [isUnassigning, setIsUnassigning] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     const fetchUnassignedMess = async () => {
       try {
-        const res = await fetch(
-          `${import.meta.env.VITE_SERVER_URL}/api/mess/unassigned`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-        const data = await res.json();
+        const data = await getUnassignedMesses();
         setUnassignedMess(data);
       } catch (err) {
         console.error("Error fetching unassigned mess:", err);
-        setError("Could not load mess data.");
+        setError("Failed to fetch unassigned mess");
       }
     };
 
@@ -38,25 +42,31 @@ export default function HostelPage() {
   useEffect(() => {
     const fetchHostel = async () => {
       try {
-        const res = await fetch(
-          `${import.meta.env.VITE_SERVER_URL}/api/hostel/all/${hostelId}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-        const data = await res.json();
+        const data = await getHostelById(hostelId);
+        console.log("Hostel data received:", data);
         setHostel(data.hostel);
 
+        // If hostel has a mess assigned, fetch full mess details
         if (data.hostel.messId) {
-          const messRes = await fetch(
-            `${import.meta.env.VITE_SERVER_URL}/api/mess/${
-              data.hostel.messId._id
-            }`
-          );
-          const messData = await messRes.json();
-          setMessDetails(messData);
-          console.log("Mess Details:", messData);
+          console.log("Mess ID found:", data.hostel.messId);
+          try {
+            const fullMessDetails = await getMessById(data.hostel.messId._id);
+            console.log("Full mess details:", fullMessDetails);
+            setMessDetails(fullMessDetails);
+          } catch (messError) {
+            console.error("Error fetching mess details:", messError);
+            // Fallback to basic mess info from hostel data with minimal required fields
+            setMessDetails({
+              _id: data.hostel.messId._id,
+              name: data.hostel.messId.name,
+              rating: 0,
+              ranking: "N/A",
+              complaints: [],
+            });
+          }
+        } else {
+          console.log("No mess assigned to hostel");
+          setMessDetails(null);
         }
       } catch (err) {
         console.error("Error fetching hostel:", err);
@@ -68,47 +78,111 @@ export default function HostelPage() {
   }, [hostelId]);
 
   const handleCatererChange = async () => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/api/mess/reassign/${selectedMess}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            hostelId: hostelId,
-            oldMessId: hostel?.messId?._id,
-          }),
-        }
-      );
+    setIsAssigning(true);
+    setError(null);
+    setSuccessMessage(null);
 
-      if (!res.ok) throw new Error("Failed to reassign caterer");
-      window.location.reload();
+    try {
+      await assignMessToHostel(selectedMess, {
+        hostelId: hostelId,
+      });
+
+      // Refresh the hostel and mess data
+      const data = await getHostelById(hostelId);
+      setHostel(data.hostel);
+
+      if (data.hostel.messId) {
+        const fullMessDetails = await getMessById(data.hostel.messId._id);
+        setMessDetails(fullMessDetails);
+      }
+
+      // Refresh unassigned mess list
+      const unassignedData = await getUnassignedMesses();
+      setUnassignedMess(unassignedData);
+
+      setSelectedMess(""); // Reset selection
+
+      // Show success message
+      setSuccessMessage("Caterer assigned successfully!");
+      setError(null);
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-      console.error("Reassign error:", err);
+      console.error("Error assigning caterer:", err);
+      setError("Failed to assign caterer.");
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  const handleUnassignMess = async () => {
+    console.log("Current hostel data:", hostel);
+    console.log("Current messDetails:", messDetails);
+
+    if (!hostel.messId) {
+      setError("No caterer is currently assigned to this hostel.");
+      return;
+    }
+
+    if (
+      !window.confirm("Are you sure you want to unassign the current caterer?")
+    ) {
+      return;
+    }
+
+    setIsUnassigning(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      // Get the mess ID - it could be a string or an object with _id
+      const messIdToUnassign =
+        typeof hostel.messId === "object" ? hostel.messId._id : hostel.messId;
+      console.log("Unassigning mess with ID:", messIdToUnassign);
+
+      const result = await unassignMess(messIdToUnassign);
+      console.log("Unassign result:", result);
+
+      // Refresh the hostel data
+      const data = await getHostelById(hostelId);
+      console.log("Refreshed hostel data after unassign:", data);
+      setHostel(data.hostel);
+      setMessDetails(null);
+
+      // Refresh unassigned mess list
+      const unassignedData = await getUnassignedMesses();
+      setUnassignedMess(unassignedData);
+
+      // Show success message
+      setSuccessMessage("Caterer unassigned successfully!");
+      setError(null);
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(null), 3000);
+
+      // Additional verification - fetch mess details to confirm unassignment
+      try {
+        const messCheck = await getMessById(messIdToUnassign);
+        console.log("Mess details after unassign:", messCheck);
+      } catch (checkError) {
+        console.log(
+          "Could not fetch mess details for verification:",
+          checkError
+        );
+      }
+    } catch (err) {
+      console.error("Error unassigning mess:", err);
+      setError("Failed to unassign mess. Please try again.");
+    } finally {
+      setIsUnassigning(false);
     }
   };
 
   const handleDelete = async () => {
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/api/hostel/delete/${hostelId}`,
-        {
-          method: "DELETE",
-        }
-      );
-      if (!res.ok) throw new Error("Deletion failed");
-
-      const messUnassigned = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/api/mess/unassign/${
-          messDetails._id
-        }`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-      if (!messUnassigned.ok) throw new Error("Failed to unassign mess");
-      navigate("/hostels");
+      // This would need a deleteHostel API function
+      console.log("Delete hostel functionality not implemented yet");
     } catch (err) {
       console.error("Delete error:", err);
     }
@@ -147,6 +221,16 @@ export default function HostelPage() {
               Hostel Details
             </button>
             <button
+              onClick={() => setActiveTab("users")}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "users"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              Users ({hostel.users?.length || 0})
+            </button>
+            <button
               onClick={() => setActiveTab("bill")}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === "bill"
@@ -171,38 +255,7 @@ export default function HostelPage() {
 
         {/* Tab Content */}
         {activeTab === "details" && (
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Users Table */}
-            <div>
-              <h2 className="text-lg font-semibold text-gray-800 mb-3">
-                Users ({hostel.users?.length || 0})
-              </h2>
-              {hostel.users?.length > 0 ? (
-                <div className="overflow-x-auto rounded shadow-sm border">
-                  <table className="min-w-full text-sm text-left text-gray-600">
-                    <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
-                      <tr>
-                        <th className="px-4 py-2">Name</th>
-                        <th className="px-4 py-2">Degree</th>
-                        <th className="px-4 py-2">Roll No.</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {hostel.users.map((user, idx) => (
-                        <tr key={idx} className="border-t">
-                          <td className="px-4 py-2">{user.user.name}</td>
-                          <td className="px-4 py-2">{user.user.degree}</td>
-                          <td className="px-4 py-2">{user.user.rollNumber}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500">No users assigned.</p>
-              )}
-            </div>
-
+          <div className="grid md:grid-cols-1 gap-6">
             {/* Mess Details */}
             {messDetails && (
               <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
@@ -249,9 +302,20 @@ export default function HostelPage() {
 
                 {/* Caterer Change */}
                 <div className="mt-6">
-                  <label className="block text-gray-700 font-medium mb-1">
-                    Change Caterer
-                  </label>
+                  <div className="flex justify-between items-center mb-4">
+                    <label className="block text-gray-700 font-medium">
+                      Change Caterer
+                    </label>
+                    <button
+                      onClick={handleUnassignMess}
+                      disabled={isUnassigning}
+                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                      {isUnassigning
+                        ? "Unassigning..."
+                        : "Unassign Current Caterer"}
+                    </button>
+                  </div>
                   <div className="flex gap-3">
                     <select
                       className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -267,9 +331,10 @@ export default function HostelPage() {
                     </select>
                     <button
                       onClick={handleCatererChange}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow"
+                      disabled={!selectedMess || isAssigning}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
-                      Change
+                      {isAssigning ? "Changing..." : "Change"}
                     </button>
                   </div>
                 </div>
@@ -306,14 +371,22 @@ export default function HostelPage() {
                   </select>
                   <button
                     onClick={handleCatererChange}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow mt-2"
+                    disabled={!selectedMess || isAssigning}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow mt-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
                   >
-                    Assign
+                    {isAssigning ? "Assigning..." : "Assign"}
                   </button>
                 </div>
               </div>
             )}
           </div>
+        )}
+
+        {activeTab === "users" && (
+          <HostelUsersList
+            hostelName={hostel.hostel_name}
+            users={hostel.users}
+          />
         )}
 
         {activeTab === "bill" && (
@@ -331,6 +404,11 @@ export default function HostelPage() {
           />
         )}
 
+        {successMessage && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-700 mb-4">
+            {successMessage}
+          </div>
+        )}
         {error && <div className="text-red-500">{error}</div>}
       </div>
     </div>

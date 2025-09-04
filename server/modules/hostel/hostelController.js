@@ -44,8 +44,14 @@ const loginHostel = async (req, res) => {
 };
 
 const getHostel = async (req, res) => {
-  // console.log("xyz", req.hostel);
-  return res.json({ hostel: req.hostel });
+  try {
+    // Fetch the hostel with populated messId
+    const hostel = await Hostel.findById(req.hostel._id).populate("messId");
+    return res.json({ hostel });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Error occurred" });
+  }
 };
 
 const getAllHostels = async (req, res) => {
@@ -77,7 +83,42 @@ const getHostelbyId = async (req, res) => {
       return res.status(404).json({ message: "Hostel not found" });
     }
 
-    return res.status(200).json({ message: "Hostel found", hostel });
+    // Fetch users associated with this hostel
+    const users = await User.find({ hostel: hostelId }).select(
+      "name rollNumber email degree curr_subscribed_mess"
+    );
+    console.log(`Found ${users.length} users for hostel ${hostelId}:`, users);
+
+    // Fetch all hostels with their mess information to map curr_subscribed_mess
+    const hostelsWithMess = await Hostel.find().populate("messId", "name");
+    console.log("All hostels with mess mapping:", hostelsWithMess);
+
+    // Format users to match the expected structure (with user wrapper)
+    const formattedUsers = users.map((user) => ({
+      user: {
+        _id: user._id,
+        name: user.name,
+        rollNumber: user.rollNumber,
+        email: user.email,
+        degree: user.degree,
+        curr_subscribed_mess_name: (() => {
+          if (!user.curr_subscribed_mess) return "N/A";
+          const subscribedHostel = hostelsWithMess.find(
+            (h) => h._id.toString() === user.curr_subscribed_mess.toString()
+          );
+          return subscribedHostel?.hostel_name || "N/A";
+        })(),
+      },
+    }));
+    console.log("Formatted users:", formattedUsers);
+    const hostelWithUsers = {
+      ...hostel.toObject(),
+      users: formattedUsers,
+    };
+
+    return res
+      .status(200)
+      .json({ message: "Hostel found", hostel: hostelWithUsers });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "Error occurred" });
@@ -108,7 +149,18 @@ const getAllHostelNameAndCaterer = async (req, res) => {
       select: "name -_id",
     });
 
-    res.status(200).json(hostelData);
+    // Get user count for each hostel
+    const hostelDataWithUserCount = await Promise.all(
+      hostelData.map(async (hostel) => {
+        const userCount = await User.countDocuments({ hostel: hostel._id });
+        return {
+          ...hostel.toObject(),
+          user_count: userCount,
+        };
+      })
+    );
+
+    res.status(200).json(hostelDataWithUserCount);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

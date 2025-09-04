@@ -11,8 +11,13 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
+  Download,
 } from "lucide-react";
-import AcceptedStudentsContent from "../components/AcceptedStudentsContent.jsx";
+
+import MessUsersContent from "../components/MessUsersContent.jsx";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
+import Tabs from "../components/ui/Tabs";
 
 const days = [
   "Monday",
@@ -25,12 +30,13 @@ const days = [
 ];
 
 export const Dashboard = () => {
-  const [menuId, setMenuId] = useState(null);
-  const [currentPage, setCurrentPage] = useState("menu"); // 'menu' or 'requests'
+  const [currentPage, setCurrentPage] = useState("menu"); // 'menu' or 'users'
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const { user, logout } = useAuth();
-  console.log("here", user);
+  console.log("Dashboard user:", user);
 
   const [showCreateMenu, setShowCreateMenu] = useState(false);
+  const [menuExists, setMenuExists] = useState(true);
   const [currentMenu, setCurrentMenu] = useState({
     breakfast: [],
     lunch: [],
@@ -77,7 +83,7 @@ export const Dashboard = () => {
   // }
 
   const fetchMess = useCallback(async () => {
-    console.log("Fetching mess for user:", user.messId);
+    console.log("Fetching mess for user:", user);
     if (!user?.messId) {
       console.log("User or Mess ID not available, skipping fetchMess.");
       setIsLoading(false);
@@ -87,20 +93,22 @@ export const Dashboard = () => {
     try {
       setIsLoading(true);
       console.log(
-        `Fetching menu for Mess ID: ${user.messId}, Day: ${days[activeTab]}`
+        `Fetching menu for Mess ID: ${user?.messId?._id}, Day: ${days[activeTab]}`
       );
       const response = await axios.post(
-        `${API_BASE_URL}/mess/menu/admin/${user.messId._id}`,
+        `${API_BASE_URL}/mess/menu/admin/${user?.messId?._id}`,
         { day: days[activeTab] }, // Data for the request body
         { withCredentials: true } // Axios option for cookies/credentials
       );
 
       if (response.data === "DoesntExist") {
-        console.log("No menu exists for this day. Showing CreateMenuFallback.");
-        setShowCreateMenu(true);
+        console.log("No menu exists for this day.");
+        // Menu doesn't exist yet; show create CTA inside Menu_content
+        setMenuExists(false);
+        setShowCreateMenu(false);
         setCurrentMenu({ breakfast: [], lunch: [], dinner: [] });
       } else {
-        console.log("Menu found for", days[activeTab], response.data);
+        setMenuExists(true);
         setShowCreateMenu(false);
 
         const menuData = {
@@ -165,7 +173,7 @@ export const Dashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.messId, activeTab]);
+  }, [user, activeTab]);
 
   useEffect(() => {
     fetchMess();
@@ -190,190 +198,223 @@ export const Dashboard = () => {
     setShowCreateMenu(true);
   };
 
+  const downloadMenu = async () => {
+    if (!user?.messId?._id) {
+      alert("Mess ID not available");
+      return;
+    }
+
+    try {
+      const response = await axios.get(`${API_BASE_URL}/mess/menu/download`, {
+        params: { day: days[activeTab], messId: user?.messId?._id },
+        responseType: "blob",
+      });
+
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"] || "application/octet-stream",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+
+      const disposition = response.headers["content-disposition"];
+      let filename = `menu-${days[activeTab]}.pdf`;
+      if (disposition) {
+        const match = disposition.match(/filename=?"?([^";]+)"?/);
+        if (match) filename = match[1];
+      }
+
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to download menu:", error);
+      alert(error.response?.data?.message || "Failed to download menu");
+    }
+  };
+
   return (
-    <div className="w-full bg-gray-50">
-      {/* Main Dashboard Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200 p-4">
-        <div className="flex justify-between items-center mx-auto">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-            <h2 className="text-lg text-gray-600">{user.hostel_name}</h2>
-          </div>
-          <button
-            onClick={() => logout()}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 mr-4"
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-
-      {/* Navigation Tabs */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="flex">
-          <button
-            onClick={() => setCurrentPage("menu")}
-            className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors duration-200 ${
-              currentPage === "menu"
-                ? "text-blue-600 border-blue-600 bg-blue-50"
-                : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
+    <div className="min-h-screen bg-gray-50 w-full">
+      <div className="w-full p-6">
+        <div className="flex gap-6 w-full">
+          {/* Sidebar (collapsible) */}
+          <aside
+            className={`bg-white border border-gray-100 rounded-lg shadow-sm p-3 transition-all duration-200 ${
+              sidebarOpen ? "w-72" : "w-16"
             }`}
           >
-            <Menu className="w-4 h-4" />
-            Menu Management
-          </button>
-          <button
-            onClick={() => setCurrentPage("requests")}
-            className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors duration-200 ${
-              currentPage === "requests"
-                ? "text-blue-600 border-blue-600 bg-blue-50"
-                : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            Change Requests
-            {/* <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-              {mockRequests.filter(r => r.status === 'pending').length}
-            </span> */}
-          </button>
-        </div>
-      </div>
-
-      {currentPage === "menu" ? (
-        // Menu Section
-        <div className=" mx-auto">
-          {/* Menu Page Header */}
-          <div className="bg-blue-600 text-white p-6">
-            <div className="flex justify-between items-center">
-              <h1 className="text-xl font-semibold">HMC - Menu page</h1>
-              {/* <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-              {(isActive(timeData.btime_s, timeData.btime_e) || isActive(timeData.ltime_s, timeData.ltime_e) || isActive(timeData.dtime_s, timeData.dtime_e))? 'Active':'Inactive' }
-            </span> */}
-
-              {timings.btime_s &&
-                timings.btime_e &&
-                timings.ltime_s &&
-                timings.ltime_e &&
-                timings.dtime_s &&
-                timings.dtime_e && (
-                  <>
-                    {isActive(timings.btime_s, timings.btime_e) && (
-                      <span className="mr-2 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        Breakfast
-                      </span>
-                    )}
-                    {isActive(timings.ltime_s, timings.ltime_e) && (
-                      <span className="mr-2 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        Lunch
-                      </span>
-                    )}
-                    {isActive(timings.dtime_s, timings.dtime_e) && (
-                      <span className="mr-2 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        Dinner
-                      </span>
-                    )}
-
-                    {!isActive(timings.btime_s, timings.btime_e) &&
-                      !isActive(timings.ltime_s, timings.ltime_e) &&
-                      !isActive(timings.dtime_s, timings.dtime_e) && (
-                        <span className="mr-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                          Closed
-                        </span>
-                      )}
-                  </>
-                )}
-            </div>
-          </div>
-
-          {/* Day Tabs */}
-          <div className="bg-white border-b border-gray-200 overflow-x-auto">
-            <div className="flex justify-between min-w-full items-center">
-              <div>
-                {days.map((day, index) => (
-                  <button
-                    key={day}
-                    className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors duration-200 whitespace-nowrap min-w-[120px] ${
-                      activeTab === index
-                        ? "text-blue-600 border-blue-600 bg-blue-50"
-                        : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
-                    }`}
-                    onClick={() => setActiveTab(index)}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setSidebarOpen((v) => !v)}
+                  className="p-2 rounded-md hover:bg-gray-100"
+                  title="Toggle sidebar"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-5 h-5 text-gray-700"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
                   >
-                    {day}
-                  </button>
-                ))}
+                    <path
+                      fillRule="evenodd"
+                      d="M3 5h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+                {sidebarOpen && (
+                  <div>
+                    <h2 className="text-lg font-semibold">
+                      {user?.hostel_name || "HMC"}
+                    </h2>
+                    <p className="text-xs text-gray-500">Admin Dashboard</p>
+                  </div>
+                )}
               </div>
+              {sidebarOpen ? (
+                <button
+                  onClick={() => logout()}
+                  className="text-sm text-red-600"
+                >
+                  Logout
+                </button>
+              ) : (
+                <button
+                  onClick={() => logout()}
+                  className="text-red-600"
+                  title="Logout"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-5 h-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M3 10a1 1 0 011-1h8a1 1 0 110 2H4a1 1 0 01-1-1z" />
+                  </svg>
+                </button>
+              )}
+            </div>
 
-              <button className="mr-8 bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium h-8">
-                Download
+            <div className="mt-6 space-y-2">
+              <button
+                onClick={() => setCurrentPage("menu")}
+                className={`flex items-center gap-3 w-full px-3 py-2 rounded-md ${
+                  currentPage === "menu"
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                <Menu className="w-5 h-5" />
+                {sidebarOpen && <span>Menu Management</span>}
+              </button>
+
+              <button
+                onClick={() => setCurrentPage("users")}
+                className={`flex items-center gap-3 w-full px-3 py-2 rounded-md ${
+                  currentPage === "users"
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                <Users className="w-5 h-5" />
+                {sidebarOpen && <span>Mess Users</span>}
               </button>
             </div>
-          </div>
+          </aside>
 
-          {/* Main Content Area */}
-          <div className="bg-white min-h-[600px]">
-            {/* Current Day Header */}
-            <div className="text-center py-6 border-b border-gray-100">
-              <h2 className="text-3xl font-bold text-blue-600">
-                {days[activeTab]} Menu
-              </h2>
-            </div>
-
-            {/* Conditional Content Rendering */}
-            {showCreateMenu ? (
-              <div className="p-6">
-                <CreateMenuFallback
-                  onSuccessfulCreation={handleSuccessfulMenuCreation}
-                  activeDay ={days[activeTab]}
-                />
+          {/* Main content */}
+          <main className="flex-1 w-full">
+            <Card>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-bold">Dashboard</h1>
+                  <p className="text-sm text-gray-500">
+                    {days[activeTab]} overview
+                  </p>
+                </div>
+                <div className="flex items-center gap-4">
+                  {currentPage === "menu" && (
+                    <Button onClick={downloadMenu}>
+                      <Download className="w-4 h-4 mr-2" /> Download
+                    </Button>
+                  )}
+                </div>
               </div>
-            ) : (
-              <div>
-                {/* Loading State */}
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <span className="ml-3 text-gray-600 text-lg">
-                      Loading menu...
-                    </span>
+            </Card>
+
+            <div className="mt-6">
+              {currentPage === "menu" ? (
+                <div>
+                  <div className="bg-white border-b border-gray-200 overflow-x-auto rounded-md w-full">
+                    <div className="flex justify-between items-center px-4 py-3">
+                      <Tabs
+                        items={days.map((d, i) => ({ label: d, value: i }))}
+                        value={activeTab}
+                        onChange={(val) => setActiveTab(val)}
+                      />
+                      {/* Download button removed from day-selection tab; overview Download button remains */}
+                    </div>
                   </div>
-                ) : (
-                  <Menu_content
-                    key={activeTab}
-                    day={days[activeTab]}
-                    breakfast={currentMenu.breakfast}
-                    lunch={currentMenu.lunch}
-                    dinner={currentMenu.dinner}
-                    messId={user.messId._id}
-                    timeData={timings}
-                    onSuccessfulItemCreation={handleSuccessfulMenuItemCreation}
-                    click={handleGoToCreateMenu}
-                  />
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        <>
-          {/* Requests Page Header */}
-          <div className="bg-green-600 text-white p-6">
-            <div className="flex justify-between items-center">
-              <h1 className="text-xl font-semibold">HMC - Accepted Students</h1>
-              {/* <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                  {mockRequests.filter(r => r.status === 'pending').length} Pending
-                </span> */}
-            </div>
-          </div>
 
-          {/* Accepted Students Content */}
-          <div className="bg-white min-h-[600px]">
-            <AcceptedStudentsContent
-              hostelName={user.hostel?.hostel_name || user.hostel}
-            />
-          </div>
-        </>
-      )}
+                  <div className="mt-4">
+                    <div className="mt-4">
+                      <div>
+                        {showCreateMenu ? (
+                          <div className="p-6 bg-white rounded-md">
+                            <CreateMenuFallback
+                              onSuccessfulCreation={
+                                handleSuccessfulMenuCreation
+                              }
+                              activeDay={days[activeTab]}
+                            />
+                          </div>
+                        ) : isLoading ? (
+                          <div className="flex items-center justify-center py-12">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+                            <span className="ml-3 text-gray-600 text-lg">
+                              Loading menu...
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="w-full">
+                            <Menu_content
+                              key={activeTab}
+                              day={days[activeTab]}
+                              breakfast={currentMenu.breakfast}
+                              lunch={currentMenu.lunch}
+                              dinner={currentMenu.dinner}
+                              messId={user?.messId?._id}
+                              timeData={timings}
+                              onSuccessfulItemCreation={
+                                handleSuccessfulMenuItemCreation
+                              }
+                              click={handleGoToCreateMenu}
+                              menuExists={menuExists}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <Card>
+                    <h3 className="text-xl font-semibold">Mess Users</h3>
+                  </Card>
+                  <div className="mt-4 bg-white rounded-md p-4">
+                    <MessUsersContent />
+                  </div>
+                </div>
+              )}
+            </div>
+          </main>
+        </div>
+      </div>
     </div>
   );
 };

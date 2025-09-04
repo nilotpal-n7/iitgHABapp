@@ -248,15 +248,26 @@ const getAllMessInfo = async (req, res) => {
     const messesWithHostelName = await Promise.all(
       messes.map(async (mess) => {
         const messObj = mess.toObject();
-        const hostel = await Hostel.findById(messObj.hostelId);
-        messObj.hostelName = hostel ? hostel.hostel_name : "Unknown";
+        if (messObj.hostelId) {
+          const hostel = await Hostel.findById(messObj.hostelId);
+          messObj.hostelName = hostel ? hostel.hostel_name : null;
+        } else {
+          messObj.hostelName = null;
+        }
+
+        const userCount = await User.find({
+          curr_subscribed_mess: messObj.hostelId,
+        });
+        messObj.user_count = userCount.length;
+
         return messObj;
       })
     );
+    console.log("All messes with hostel names:", messesWithHostelName);
 
     return res.status(200).json(messesWithHostelName);
   } catch (error) {
-    console.error(error);
+    console.error("Error in getAllMessInfo:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -269,10 +280,14 @@ const getMessInfo = async (req, res) => {
       return res.status(404).json({ message: "Mess not found" });
     }
     const messObj = mess.toObject();
-    const hostel = await Hostel.findById(messObj.hostelId);
+    if (messObj.hostelId) {
+      const hostel = await Hostel.findById(messObj.hostelId);
+      messObj.hostelName = hostel ? hostel.hostel_name : null;
+    } else {
+      messObj.hostelName = null;
+    }
     const qr_img = await QR.findById(messObj.qrCode);
-    messObj.hostelName = hostel ? hostel.hostel_name : "Not Assigned";
-    messObj.qr_img = qr_img.qr_base64;
+    messObj.qr_img = qr_img ? qr_img.qr_base64 : null;
     return res.status(200).json(messObj);
   } catch (error) {
     console.error(error);
@@ -770,17 +785,41 @@ const changeHostel = async (req, res) => {
 const unassignMess = async (req, res) => {
   try {
     const messId = req.params.messId;
-    const mess = await Mess.findByIdAndUpdate(
+    console.log("Unassigning mess with ID:", messId);
+
+    // First, get the mess to find which hostel it was assigned to
+    const mess = await Mess.findById(messId);
+    if (!mess) {
+      return res.status(404).json({ message: "Mess not found" });
+    }
+
+    const hostelId = mess.hostelId;
+    console.log("Mess was assigned to hostel:", hostelId);
+
+    // Update mess to remove hostel assignment
+    const updatedMess = await Mess.findByIdAndUpdate(
       messId,
       { hostelId: null },
       { new: true }
     );
+    console.log("Updated mess:", updatedMess);
+
+    // Update hostel to remove mess assignment
+    if (hostelId) {
+      const updatedHostel = await Hostel.findByIdAndUpdate(
+        hostelId,
+        { messId: null },
+        { new: true }
+      );
+      console.log("Updated hostel:", updatedHostel);
+    }
+
     return res.status(200).json({
       message: "Mess unassigned successfully",
-      mess: mess,
+      mess: updatedMess,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error in unassignMess:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };

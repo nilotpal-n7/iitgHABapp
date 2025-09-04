@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Users, Zap, Play, Info, XCircle } from "lucide-react";
+import { Users, Zap, Play, Info, XCircle, Square } from "lucide-react";
 import { BACKEND_URL } from "../apis/server";
 
 const MessChangePage = () => {
@@ -11,7 +11,7 @@ const MessChangePage = () => {
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [hostels, setHostels] = useState([]);
   const [hostelsLoading, setHostelsLoading] = useState(false);
-  const [selectedHostel, setSelectedHostel] = useState("");
+  const [selectedHostel, setSelectedHostel] = useState("all");
   const [processedRequests, setProcessedRequests] = useState([]);
   const [processedLoading, setProcessedLoading] = useState(false);
 
@@ -94,17 +94,22 @@ const MessChangePage = () => {
   };
 
   const fetchProcessedRequests = async (hostelName) => {
-    if (!hostelName) {
-      setProcessedRequests([]);
-      return;
-    }
     try {
       setProcessedLoading(true);
-      const response = await fetch(
-        `${BACKEND_URL}/mess-change/accepted-students/${encodeURIComponent(
-          hostelName
-        )}`
-      );
+      let response;
+
+      if (!hostelName || hostelName === "all") {
+        // Fetch all processed requests
+        response = await fetch(`${BACKEND_URL}/mess-change/all-accepted`);
+      } else {
+        // Fetch for specific hostel
+        response = await fetch(
+          `${BACKEND_URL}/mess-change/accepted-students/${encodeURIComponent(
+            hostelName
+          )}`
+        );
+      }
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -140,6 +145,31 @@ const MessChangePage = () => {
     }
   };
 
+  const disableMessChange = async () => {
+    try {
+      setSettingsLoading(true);
+      const response = await fetch(`${BACKEND_URL}/mess-change/disable`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      await response.json();
+      alert("Mess change disabled successfully!");
+      await fetchMessChangeSettings();
+    } catch (error) {
+      console.error("Error disabling mess change:", error);
+      alert("Failed to disable mess change. Please try again.");
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
   const processAllRequests = async () => {
     try {
       setProcessing(true);
@@ -162,9 +192,7 @@ const MessChangePage = () => {
       // Refresh the requests, settings and processed list (if a hostel is selected)
       await fetchRequests();
       await fetchMessChangeSettings();
-      if (selectedHostel) {
-        await fetchProcessedRequests(selectedHostel);
-      }
+      await fetchProcessedRequests(selectedHostel);
     } catch (error) {
       console.error("Error processing requests:", error);
       alert("Failed to process requests. Please try again.");
@@ -190,9 +218,7 @@ const MessChangePage = () => {
       alert(data.message || "All pending requests rejected");
       await fetchRequests();
       await fetchMessChangeSettings();
-      if (selectedHostel) {
-        await fetchProcessedRequests(selectedHostel);
-      }
+      await fetchProcessedRequests(selectedHostel);
       // Ensure UI reflects disabled state immediately
       window.location.reload();
     } catch (error) {
@@ -209,14 +235,13 @@ const MessChangePage = () => {
       const hostelMap = buildHostelMap(list);
       await fetchRequests(hostelMap);
       await fetchMessChangeSettings();
+      await fetchProcessedRequests("all");
     })();
   }, []);
 
   useEffect(() => {
     if (selectedHostel) {
       fetchProcessedRequests(selectedHostel);
-    } else {
-      setProcessedRequests([]);
     }
   }, [selectedHostel]);
 
@@ -230,7 +255,6 @@ const MessChangePage = () => {
           Control mess change functionality and process requests for all hostels
         </p>
       </div>
-
       {/* Mess Change Control Panel */}
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
@@ -290,6 +314,15 @@ const MessChangePage = () => {
               <Play className="w-4 h-4" />
               Enable Mess Change
             </button>
+          ) : requests.length === 0 ? (
+            <button
+              onClick={disableMessChange}
+              disabled={settingsLoading}
+              className="bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors duration-200"
+            >
+              <Square className="w-4 h-4" />
+              Disable
+            </button>
           ) : (
             <>
               <button
@@ -315,96 +348,96 @@ const MessChangePage = () => {
           )}
         </div>
       </div>
+      {/* Pending Requests Table - Only show when mess change is enabled */}
+      {messChangeSettings?.isEnabled && (
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Pending Requests
+          </h2>
 
-      {/* Pending Requests Table */}
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Pending Requests
-        </h2>
-
-        {loading && (
-          <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p className="text-gray-500 mt-2">Loading requests...</p>
-          </div>
-        )}
-
-        {!loading && requests.length === 0 ? (
-          <div className="text-center py-12">
-            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg">
-              No pending mess change requests found
-            </p>
-          </div>
-        ) : (
-          !loading && (
-            <div className="overflow-x-auto">
-              <table className="w-full bg-white border border-gray-200 rounded-lg shadow-sm">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Sl. No
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Roll Number
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Current Hostel
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Requested Hostel
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Applied At
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {requests.map((request, index) => (
-                    <tr
-                      key={request._id}
-                      className="hover:bg-gray-50 transition-colors duration-200"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {index + 1}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {request.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {request.rollNumber}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {request.currentHostelName}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {request.applied_hostel_string}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {request.applied_hostel_timestamp
-                          ? new Date(
-                              request.applied_hostel_timestamp
-                            ).toLocaleString("en-IN", {
-                              year: "numeric",
-                              month: "2-digit",
-                              day: "2-digit",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : "N/A"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {loading && (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <p className="text-gray-500 mt-2">Loading requests...</p>
             </div>
-          )
-        )}
-      </div>
+          )}
 
+          {!loading && requests.length === 0 ? (
+            <div className="text-center py-12">
+              <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg">
+                No pending mess change requests found
+              </p>
+            </div>
+          ) : (
+            !loading && (
+              <div className="overflow-x-auto">
+                <table className="w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-200">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Sl. No
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Roll Number
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Current Hostel
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Requested Hostel
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Applied At
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {requests.map((request, index) => (
+                      <tr
+                        key={request._id}
+                        className="hover:bg-gray-50 transition-colors duration-200"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {index + 1}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {request.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {request.rollNumber}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {request.currentHostelName}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {request.applied_hostel_string}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {request.applied_hostel_timestamp
+                            ? new Date(
+                                request.applied_hostel_timestamp
+                              ).toLocaleString("en-IN", {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "N/A"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
+          )}
+        </div>
+      )}{" "}
       {/* Processed Requests Section */}
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-4">
@@ -413,14 +446,14 @@ const MessChangePage = () => {
           </h2>
 
           <div className="flex items-center gap-3">
-            <label className="text-sm text-gray-700">Select Hostel</label>
+            <label className="text-sm text-gray-700">Filter by Hostel</label>
             <select
               className="border border-gray-300 rounded-md px-3 py-2 text-sm"
               value={selectedHostel}
               onChange={(e) => setSelectedHostel(e.target.value)}
               disabled={hostelsLoading}
             >
-              <option value="">-- Choose hostel --</option>
+              <option value="all">All Hostels</option>
               {hostels.map((h) => (
                 <option key={h._id || h.hostel_name} value={h.hostel_name}>
                   {h.hostel_name}
@@ -430,11 +463,7 @@ const MessChangePage = () => {
           </div>
         </div>
 
-        {!selectedHostel ? (
-          <p className="text-gray-500">
-            Choose a hostel to view processed requests.
-          </p>
-        ) : processedLoading ? (
+        {processedLoading ? (
           <div className="text-center py-8">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             <p className="text-gray-500 mt-2">Loading processed requests...</p>
@@ -443,7 +472,9 @@ const MessChangePage = () => {
           <div className="text-center py-12">
             <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500 text-lg">
-              No processed requests found for {selectedHostel}.
+              {selectedHostel === "all"
+                ? "No processed requests found."
+                : `No processed requests found for ${selectedHostel}.`}
             </p>
           </div>
         ) : (
