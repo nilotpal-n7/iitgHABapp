@@ -1,128 +1,155 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Trash2,
-  Building2,
   Eye,
-  RotateCcw,
-  CheckCircle,
   Menu,
   Star,
   Trophy,
   FileText,
   QrCode,
   Download,
+  AlertCircle,
 } from "lucide-react";
+import { getMessById, deleteMess } from "../apis/mess";
 
 export default function MessDetails() {
-  // Extract ID from URL params (assuming you have routing setup)
-  const id = "your-mess-id"; // Replace with actual useParams() hook
-  const navigate = (path) => console.log(`Navigate to: ${path}`); // Replace with actual useNavigate() hook
+  const { id } = useParams();
+  const navigate = useNavigate();
 
-  const [mess, setMess] = useState("");
-  const [hostelId, setHostelId] = useState("");
-  const [hostels, setHostels] = useState([]);
+  const [mess, setMess] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     async function fetchMess() {
+      if (!id) {
+        setError("Invalid mess ID");
+        setLoading(false);
+        return;
+      }
+
       try {
-        const res = await axios.get(`https://hab.codingclub.in/api/mess/${id}`);
-        setMess(res.data);
+        setLoading(true);
+        const data = await getMessById(id);
+        setMess(data);
+        setError(null);
       } catch (error) {
         console.error("Error fetching mess:", error);
+        setError("Failed to load mess details. Please try again.");
+      } finally {
+        setLoading(false);
       }
     }
 
     fetchMess();
   }, [id]);
 
-  useEffect(() => {
-    async function fetchHostels() {
-      try {
-        const res = await axios.get("https://hab.codingclub.in/api/hostel/all");
-        const hostels = res.data;
-        setHostels(hostels.filter((hostel) => hostel.messId === null));
-      } catch (error) {
-        console.error("Error fetching hostels :", error);
-      }
-    }
-    fetchHostels();
-  }, []);
-
   const handleDelete = async () => {
-    if (window.confirm("Are you sure you want to delete this mess?")) {
-      try {
-        const res = await axios.delete(
-          `https://hab.codingclub.in/api/mess/delete/${id}`
-        );
-        if (res.status === 200) {
-          alert("Mess deleted successfully");
-          navigate("/caterers/");
-        }
-      } catch (error) {
-        console.error("Error deleting mess:", error);
-        alert("Failed to delete mess");
-      }
+    if (!window.confirm("Are you sure you want to delete this mess?")) {
+      return;
     }
-  };
 
-  const handleHostelChange = async () => {
-    console.log(mess.hostelId);
-    if (!mess.hostelId) {
-      try {
-        console.log(hostelId);
-        const res = await axios.post(
-          `https://hab.codingclub.in/api/mess/reassign/${id}`,
-          {
-            hostelId: hostelId,
-          }
-        );
-        if (res.status === 200) {
-          alert("Hostel assigned successfully");
-          navigate(0);
-        }
-      } catch (error) {
-        console.error("Error assigning ", error);
-        alert("Failed to assign hostel");
-      }
-    } else {
-      try {
-        const res = await axios.post(
-          `https://hab.codingclub.in/api/mess/change-hostel/${id}`,
-          {
-            hostelId: hostelId,
-            oldHostelId: mess.hostelId,
-          }
-        );
-        if (res.status === 200) {
-          alert("Hostel assigned successfully");
-          navigate(0);
-        }
-      } catch (error) {
-        console.error("Error assigning ", error);
-        alert("Failed to assign hostel");
-      }
+    try {
+      await deleteMess(id);
+      navigate("/caterers/");
+    } catch (error) {
+      console.error("Error deleting mess:", error);
+      setError("Failed to delete mess. Please try again.");
     }
-  };
-
-  const handleMenu = () => {
-    navigate(`/mess/menu/${id}`);
   };
 
   const handleGoBack = () => {
     navigate("/caterers/");
   };
 
-  const hostelPage = () => {
-    if (mess.hostelId) {
-      navigate(`/hostel/${mess.hostelId}`);
-    }
+  const handleMenu = () => {
+    navigate(`/mess/menu/${id}`);
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading mess details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-sm p-8 max-w-md w-full">
+          <div className="flex items-center gap-3 mb-4">
+            <AlertCircle className="text-red-500" size={24} />
+            <h2 className="text-lg font-semibold text-gray-900">Error</h2>
+          </div>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={handleGoBack}
+              className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // No mess found
+  if (!mess) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-sm p-8 max-w-md w-full text-center">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Mess Not Found
+          </h2>
+          <p className="text-gray-600 mb-6">
+            The requested mess could not be found.
+          </p>
+          <button
+            onClick={handleGoBack}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Go Back to Caterers
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
+        {/* Error Banner */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="text-red-500 flex-shrink-0" size={20} />
+              <p className="text-red-700">{error}</p>
+              <button
+                onClick={() => setError(null)}
+                className="ml-auto text-red-500 hover:text-red-700"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between">
@@ -154,73 +181,6 @@ export default function MessDetails() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-6">
-            {/* Hostel Assignment */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Building2 size={24} className="text-blue-600" />
-                </div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Hostel Assignment
-                </h2>
-              </div>
-
-              <div className="space-y-4">
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">
-                        Current Hostel
-                      </p>
-                      <p className="text-lg font-medium text-gray-900">
-                        {mess.hostelId ? mess.hostelName : "Not assigned"}
-                      </p>
-                    </div>
-                    {mess.hostelId && (
-                      <button
-                        onClick={hostelPage}
-                        className="flex items-center gap-2 px-3 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-                      >
-                        <Eye size={16} />
-                        <span className="text-sm font-medium">View</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <select
-                    className="flex-1 px-3 py-2 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={hostelId}
-                    onChange={(e) => setHostelId(e.target.value)}
-                  >
-                    <option value="">Select Hostel</option>
-                    {hostels.map((hostel) => (
-                      <option key={hostel._id} value={hostel._id}>
-                        {hostel.hostel_name}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    onClick={handleHostelChange}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                  >
-                    {mess.hostelId ? (
-                      <>
-                        <RotateCcw size={16} />
-                        <span className="font-medium">Change</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle size={16} />
-                        <span className="font-medium">Assign</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-
             {/* Menu Management */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center justify-between">

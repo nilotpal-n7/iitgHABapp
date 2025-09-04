@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { createMessWithoutHostel, createMess } from "../apis/mess";
+import { getAllHostels } from "../apis/hostel";
 
 export default function CreateMess() {
   const [caterer, setCaterer] = useState("");
@@ -12,8 +13,7 @@ export default function CreateMess() {
   useEffect(() => {
     async function fetchHostels() {
       try {
-        const res = await axios.get("https://hab.codingclub.in/api/hostel/all");
-        const hostels = res.data;
+        const hostels = await getAllHostels();
         setHostels(hostels.filter((hostel) => hostel.messId === null));
       } catch (error) {
         console.error("Error fetching hostels :", error);
@@ -26,23 +26,18 @@ export default function CreateMess() {
     e.preventDefault();
     if (!hostelId || hostelId.length === 0) {
       try {
-        const res = await axios.post(
-          "https://hab.codingclub.in/api/mess/create-without-hostel",
-          {
-            name: caterer,
-          }
-        );
-        if (res.status === 201) {
-          alert("Mess created successfully");
-          navigate("/caterers/");
-        }
+        await createMessWithoutHostel({
+          name: caterer,
+        });
+        alert("Mess created successfully");
+        navigate("/caterers/");
       } catch (error) {
         console.error("Error creating mess:", error);
         alert("Failed to create mess");
       }
     } else {
       try {
-        await axios.post("https://hab.codingclub.in/api/mess/create", {
+        await createMess({
           name: caterer,
           hostelId: hostelId,
         });

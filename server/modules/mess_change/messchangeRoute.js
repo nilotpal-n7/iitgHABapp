@@ -4,6 +4,7 @@ const {
   getAllMessChangeRequestsForAllHostels,
   processAllMessChangeRequests,
   getAcceptedStudentsByHostel,
+  getAllAcceptedStudents,
   messChangeRequest,
   messChangeStatus,
   messChangeCancel,
@@ -13,11 +14,12 @@ const {
   rejectAllMessChangeRequests,
 } = require("./messchangeController.js");
 
-const {authenticateJWT} = require("../../middleware/authenticateJWT.js");
+const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
 
 const messChangeRouter = express.Router();
 
 messChangeRouter.get("/all", getAllMessChangeRequestsForAllHostels);
+messChangeRouter.get("/all-accepted", getAllAcceptedStudents);
 messChangeRouter.get("/status", authenticateJWT, messChangeStatus);
 messChangeRouter.post("/reqchange", authenticateJWT, messChangeRequest);
 messChangeRouter.post("/reqcancel", authenticateJWT, messChangeCancel);

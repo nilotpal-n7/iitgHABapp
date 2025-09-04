@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useParams } from "react-router-dom";
+import { getMessMenuByDay } from "../apis/mess";
 
 export default function MessMenu() {
   const { id } = useParams();
@@ -9,12 +9,9 @@ export default function MessMenu() {
   useEffect(() => {
     async function fetchMessMenu() {
       try {
-        const res = await axios.post(
-          `https://hab.codingclub.in/api/mess/hab-menu/${id}`,
-          { day: "Monday" }
-        );
-        setMenu(res.data);
-        console.log(res.data);
+        const data = await getMessMenuByDay(id, "Monday");
+        setMenu(data);
+        console.log(data);
       } catch (error) {
         console.error("Error fetching mess menu:", error);
       }

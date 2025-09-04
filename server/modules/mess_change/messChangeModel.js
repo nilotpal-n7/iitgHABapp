@@ -5,6 +5,11 @@ const messChangeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  rollNumber: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   fromHostel: {
     type: String,
     required: true,
@@ -13,18 +18,20 @@ const messChangeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  year: {
-    type: Number,
-    required: true,
-  },
-  month: {
-    type: Number,
-    required: true,
-  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+// Update the updatedAt field on save
+messChangeSchema.pre("save", function (next) {
+  this.updatedAt = new Date();
+  next();
 });
 
 const MessChange = mongoose.model("MessChange", messChangeSchema);

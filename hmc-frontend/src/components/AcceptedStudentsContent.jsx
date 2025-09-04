@@ -213,7 +213,7 @@ const AcceptedStudentsContent = (props) => {
                     To Hostel
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Applied Month/Year
+                    Processed Date
                   </th>
                 </tr>
               </thead>
@@ -236,7 +236,9 @@ const AcceptedStudentsContent = (props) => {
                       {student.toHostel}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {student.month}/{student.year}
+                      {new Date(
+                        student.updatedAt || student.createdAt
+                      ).toLocaleDateString()}
                     </td>
                   </tr>
                 ))}

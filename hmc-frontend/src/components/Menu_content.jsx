@@ -1,637 +1,370 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
-import { useAuth } from "../context/AuthProvider";
 import { API_BASE_URL } from "../apis";
+import {
+  Plus,
+  Edit3,
+  Trash2,
+  Download,
+  Calendar,
+  Check,
+  X,
+} from "lucide-react";
 
-function Menu_content(props) {
-  const { user } = useAuth();
-  const [menuData, setMenuData] = useState({
-    breakfast: props.breakfast || [],
-    lunch: props.lunch || [],
-    dinner: props.dinner || [],
+const MenuDashboard = ({
+  day,
+  breakfast = [],
+  lunch = [],
+  dinner = [],
+  messId,
+  onSuccessfulItemCreation,
+  click, // callback to open CreateMenuFallback in parent
+  menuExists = true,
+}) => {
+  // active day is provided by parent Dashboard via `day` prop
+  const activeDay = day || "Thursday";
+  const [menus, setMenus] = useState({
+    Monday: { breakfast: [], lunch: [], dinner: [] },
+    Tuesday: { breakfast: [], lunch: [], dinner: [] },
+    Wednesday: { breakfast: [], lunch: [], dinner: [] },
+    Thursday: { breakfast: [], lunch: [], dinner: [] },
+    Friday: { breakfast: [], lunch: [], dinner: [] },
+    Saturday: { breakfast: [], lunch: [], dinner: [] },
+    Sunday: { breakfast: [], lunch: [], dinner: [] },
   });
 
-  const [tempTimeData, setTempTimeData] = useState({
-    startTime:'',
-    endTime:''
-  });
-
-  const [editingTime, setEditingTime] = useState(null);
-
-  const [timeData, setTimeData] = useState({
-    btime_s: props.timeData.btime_s || '',
-    ltime_s: props.timeData.ltime_s || '',
-    dtime_s: props.timeData.dtime_s || '',
-    btime_e: props.timeData.btime_e || '',
-    ltime_e: props.timeData.ltime_e || '',
-    dtime_e: props.timeData.dtime_e || '',
-  });
-
-  const messId = user.messId._id;
-  console.log(menuData);
+  // Sync incoming props into the menus for the active day whenever they change
+  React.useEffect(() => {
+    setMenus((prev) => ({
+      ...prev,
+      [activeDay]: {
+        breakfast: breakfast || [],
+        lunch: lunch || [],
+        dinner: dinner || [],
+      },
+    }));
+  }, [activeDay, breakfast, lunch, dinner]);
 
   const [editingItem, setEditingItem] = useState(null);
   const [editValue, setEditValue] = useState("");
-  const [showDropdown, setShowDropdown] = useState(null);
+  const [addingTo, setAddingTo] = useState({ meal: null, category: null });
+  const [newItemValue, setNewItemValue] = useState("");
 
+  const categories = ["Dish", "Breads and Rice", "Others"];
 
+  const addItem = async (meal, category) => {
+    if (!newItemValue.trim()) return;
 
-  // Update menuData when props change
-  useEffect(() => {
-    setMenuData({
-      breakfast: props.breakfast || [],
-      lunch: props.lunch || [],
-      dinner: props.dinner || [],
-    });
-
-    setTimeData({
-    btime_s: props.timeData.btime_s || '',
-    ltime_s: props.timeData.ltime_s || '',
-    dtime_s: props.timeData.dtime_s || '',
-    btime_e: props.timeData.btime_e || '',
-    ltime_e: props.timeData.ltime_e || '',
-    dtime_e: props.timeData.dtime_e || '',
-  });
-  }, [props.breakfast, props.lunch, props.dinner, props.timeData]);
-
-  // Define all possible categories for each meal
-  const allCategories = {
-    Breakfast: ["Dish", "Breads and Rice", "Others"],
-    Lunch: ["Dish", "Breads and Rice", "Others"],
-    Dinner: ["Dish", "Breads and Rice", "Others"],
-  };
-
-
-  // Function to update meal times via API
-  const updateMealTimes = async (updatedTimes, mealType) => {
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/mess/menu/time/update`,
-        {
-          messId: messId,
-          type: mealType,
-          day: props.day,
-          ...updatedTimes,
-        },
-        {
-          withCredentials: true,
-        }
-      );
-
-      console.log("Times updated successfully:", response.data);
-      // if (props.onSuccessfulTimeUpdate) {
-      //   props.onSuccessfulTimeUpdate();
-      // }
-      return response.data;
-    } catch (error) {
-      console.error("Error updating meal times:", error);
-      throw error;
+    // If the menu for this day doesn't exist, prompt user to create it first
+    if (!menuExists) {
+      alert("Menu for this day doesn't exist. Please create the menu first.");
+      if (click) click();
+      return;
     }
-  };
 
-  // Function to handle time editing
-  const handleEditTime = (mealType) => {
-    const timeKeys = getTimeKeys(mealType);
-    setEditingTime(mealType);
-    setTempTimeData({
-      startTime: timeData[timeKeys.start],
-      endTime: timeData[timeKeys.end]
-    });
-    setShowDropdown(null);
-  };
-
-  // Function to save time changes
-  const handleSaveTime = async (mealType) => {
-    const timeKeys = getTimeKeys(mealType);
-    
     try {
-      const updatedTimes = {
-        [timeKeys.start]: tempTimeData.startTime,
-        [timeKeys.end]: tempTimeData.endTime
+      // Backend expects capitalized meal like 'Breakfast', 'Lunch', 'Dinner'
+      const mealType = meal.charAt(0).toUpperCase() + meal.slice(1);
+
+      const payload = {
+        name: newItemValue,
+        type: category,
+        meal: mealType,
+        day: day,
+        messId: messId,
       };
 
-      await updateMealTimes(updatedTimes, mealType);
-      
-      setTimeData(prev => ({
+      const response = await axios.post(
+        `${API_BASE_URL}/mess/menu/item/create`,
+        payload
+      );
+
+      // Optimistic UI update
+      const created = response.data;
+      setMenus((prev) => ({
         ...prev,
-        ...updatedTimes
+        [activeDay]: {
+          ...prev[activeDay],
+          [meal]: [
+            ...prev[activeDay][meal],
+            {
+              id: created._id || created.id || Date.now(),
+              name: created.name || newItemValue,
+              category,
+            },
+          ],
+        },
       }));
-      
-      setEditingTime(null);
-      setTempTimeData({});
+
+      setNewItemValue("");
+      setAddingTo({ meal: null, category: null });
+
+      if (onSuccessfulItemCreation) onSuccessfulItemCreation();
     } catch (error) {
-      alert("Error saving time. Please try again.");
-      console.error("Time save error:", error);
+      console.error("Failed to create menu item:", error);
+      alert(error.response?.data?.message || "Failed to add item");
     }
   };
 
-  // Function to cancel time editing
-  const handleCancelTimeEdit = () => {
-    setEditingTime(null);
-    setTempTimeData({});
-  };
-
-  // Helper function to get time keys based on meal type
-  const getTimeKeys = (mealType) => {
-    switch (mealType) {
-      case 'Breakfast':
-        return { start: 'btime_s', end: 'btime_e' };
-      case 'Lunch':
-        return { start: 'ltime_s', end: 'ltime_e' };
-      case 'Dinner':
-        return { start: 'dtime_s', end: 'dtime_e' };
-      default:
-        return { start: '', end: '' };
-    }
-  };
-
-  // Function to create new item via API
-  const createMenuItem = async (itemData) => {
+  const removeItem = async (meal, itemId) => {
     try {
-      console.log(props.menuId);
-      console.log("Creating item with data:", itemData);
-      const response = await axios.post(
-        `https://hab.codingclub.in/api/mess/menu/item/create`,
-        {
-          menuId: props.menuId, // Use the menuId from props
-          name: itemData.name,
-          type: itemData.category,
-          meal: itemData.section,
-          day: props.day,
-          messId: messId,
+      await axios.delete(`${API_BASE_URL}/mess/menu/item/delete`, {
+        data: { _Id: itemId },
+      });
+
+      setMenus((prev) => ({
+        ...prev,
+        [activeDay]: {
+          ...prev[activeDay],
+          [meal]: prev[activeDay][meal].filter((item) => item.id !== itemId),
         },
-        {
-          withCredentials: true,
-        }
+      }));
 
-      );
-
-      console.log("Item created successfully:", response.data);
-      if (props.onSuccessfulItemCreation) {
-        props.onSuccessfulItemCreation();
-      }
-      return response.data;
+      if (onSuccessfulItemCreation) onSuccessfulItemCreation();
     } catch (error) {
-      console.error("Error creating menu item:", error);
-      throw error;
+      console.error("Failed to delete menu item:", error);
+      alert(error.response?.data?.message || "Failed to delete item");
     }
   };
 
-  // Function to update existing item via API
-  const updateMenuItem = async (messId, itemData) => {
-    try {
-      const response = await axios.post(
-        `https://hab.codingclub.in/api/mess/menu/modify/${messId}`,
-        {
-          _Id: itemData.id,
-          name: itemData.name,
-        },
-        {
-          withCredentials: true,
-        }
-      );
-
-      console.log("Item updated successfully:", response.data);
-      return response.data;
-    } catch (error) {
-      console.error("Error updating menu item:", error);
-      throw error;
-    }
-  };
-
-  // Function to delete item via API
-  const deleteMenuItem = async (itemData) => {
-    try {
-      console.log("id ", itemData.id);
-      const response = await axios.delete(
-        "https://hab.codingclub.in/api/mess/menu/item/delete",
-        {
-          data: {
-            _Id: itemData.id,
-          },
-          withCredentials: true,
-        }
-      );
-
-      console.log("Item deleted successfully:", response.data);
-      return response.data;
-    } catch (error) {
-      console.error("Error deleting menu item:", error);
-      throw error;
-    }
-  };
-
-  // Function to add new item to a category
-  const handleAddItem = (section, category) => {
-    const newItem = {
-      id: Date.now(),
-      name: "New Item",
-      category: category,
-      section: section,
-      isNew: true,
-    };
-
-    setMenuData((prev) => ({
-      ...prev,
-      [section.toLowerCase()]: [...prev[section.toLowerCase()], newItem],
-    }));
-
-    setEditingItem(newItem.id);
-    setEditValue("New Item");
-  };
-
-  // Function to handle edit
-  const handleEdit = (item) => {
+  const startEditing = (item) => {
     setEditingItem(item.id);
     setEditValue(item.name);
-    setShowDropdown(null);
   };
 
-  // Function to save edited item
-  const handleSaveEdit = async (section) => {
-    const item = menuData[section.toLowerCase()].find(
-      (item) => item.id === editingItem
-    );
-
-    if (!item) return;
+  const saveEdit = async (meal, itemId) => {
+    if (!editValue.trim()) return;
 
     try {
-      if (item.isNew) {
-        const itemData = {
-          id: Date.now(),
-          name: editValue,
-          category: item.category,
-          section: section,
-        };
+      // Modify via admin endpoint
+      await axios.post(`${API_BASE_URL}/mess/menu/modify/${messId}`, {
+        _Id: itemId,
+        name: editValue,
+      });
 
-        const createdItem = await createMenuItem(itemData);
-
-        setMenuData((prev) => ({
-          ...prev,
-          [section.toLowerCase()]: prev[section.toLowerCase()].map((prevItem) =>
-            prevItem.id === editingItem
-              ? {
-                  ...createdItem,
-                  id: createdItem._id || createdItem.id,
-                  name: editValue,
-                  isNew: false,
-                }
-              : prevItem
+      setMenus((prev) => ({
+        ...prev,
+        [activeDay]: {
+          ...prev[activeDay],
+          [meal]: prev[activeDay][meal].map((item) =>
+            item.id === itemId ? { ...item, name: editValue } : item
           ),
-        }));
-      } else {
-        const itemData = {
-          id: item.id,
-          name: editValue,
-          category: item.category,
-        };
-
-        await updateMenuItem(messId, itemData);
-
-        setMenuData((prev) => ({
-          ...prev,
-          [section.toLowerCase()]: prev[section.toLowerCase()].map((prevItem) =>
-            prevItem.id === editingItem
-              ? { ...prevItem, name: editValue }
-              : prevItem
-          ),
-        }));
-      }
+        },
+      }));
 
       setEditingItem(null);
       setEditValue("");
+
+      if (onSuccessfulItemCreation) onSuccessfulItemCreation();
     } catch (error) {
-      alert("Error saving item. Please try again.");
-      console.error("Save error:", error);
+      console.error("Failed to update menu item:", error);
+      alert(error.response?.data?.message || "Failed to update item");
     }
   };
 
-  // Function to cancel edit
-  const handleCancelEdit = (section) => {
-    const itemToCancel = menuData[section.toLowerCase()].find(
-      (item) => item.id === editingItem
-    );
-    if (itemToCancel && itemToCancel.isNew) {
-      handleDelete(editingItem, section, true);
-    }
+  const cancelEdit = () => {
     setEditingItem(null);
     setEditValue("");
   };
 
-  // Function to delete item
-  const handleDelete = async (itemId, section, skipApiCall = false) => {
-    const item = menuData[section.toLowerCase()].find(
-      (item) => item.id === itemId
-    );
-
-    if (!item) return;
-
-    try {
-      if (!item.isNew && !skipApiCall) {
-        const itemData = {
-          id: item.id,
-          name: editValue,
-          category: item.category,
-        };
-        await deleteMenuItem(itemData);
-      }
-
-      setMenuData((prev) => ({
-        ...prev,
-        [section.toLowerCase()]: prev[section.toLowerCase()].filter(
-          (item) => item.id !== itemId
-        ),
-      }));
-
-      setShowDropdown(null);
-    } catch (error) {
-      alert("Error deleting item. Please try again.");
-      console.error("Delete error:", error);
-    }
+  const cancelAdd = () => {
+    setAddingTo({ meal: null, category: null });
+    setNewItemValue("");
   };
 
-  // Function to toggle dropdown
-  const handleMoreClick = (itemId) => {
-    setShowDropdown(showDropdown === itemId ? null : itemId);
+  const getItemsByCategory = (meal, category) => {
+    return menus[activeDay][meal].filter((item) => item.category === category);
   };
 
-  // Group items by category, ensuring all categories are present
-  const groupItemsByCategory = (items, sectionTitle) => {
-    const grouped = {};
-
-    allCategories[sectionTitle].forEach((category) => {
-      grouped[category] = [];
-    });
-
-    items.forEach((item) => {
-      if (grouped[item.category]) {
-        grouped[item.category].push(item);
-      }
-    });
-
-    return grouped;
-  };
-
-  const getSectionColors = (title) => {
-    switch (title) {
-      case "Breakfast":
-        return {
-          bg: "bg-orange-50",
-          border: "border-orange-200",
-          title: "text-orange-800",
-          accent: "text-orange-600",
-        };
-      case "Lunch":
-        return {
-          bg: "bg-yellow-50",
-          border: "border-yellow-200",
-          title: "text-yellow-800",
-          accent: "text-yellow-600",
-        };
-      case "Dinner":
-        return {
-          bg: "bg-purple-50",
-          border: "border-purple-200",
-          title: "text-purple-800",
-          accent: "text-purple-600",
-        };
-      default:
-        return {
-          bg: "bg-gray-50",
-          border: "border-gray-200",
-          title: "text-gray-800",
-          accent: "text-gray-600",
-        };
-    }
-  };
-
-  const renderMenuSection = (title, items, stime, etime) => {
-    const groupedItems = groupItemsByCategory(items, title);
-    const colors = getSectionColors(title);
-
+  // If menu for this day doesn't exist, show a CTA to create it
+  if (!menuExists) {
     return (
-      <div className="mb-8">
-        <div className={`${colors.bg} ${colors.border} border rounded-lg p-6`}>
-          <div className="mb-6">
-          <h3
-            className={`${colors.title} text-2xl font-bold mb-6 text-center border-b ${colors.border} pb-2`}
+      <div className="p-6 bg-white border border-gray-200 rounded-lg text-center">
+        <h3 className="text-lg font-semibold mb-2">No menu for {activeDay}</h3>
+        <p className="text-sm text-gray-600">
+          Create a menu to start adding items for Breakfast, Lunch and Dinner.
+        </p>
+        <div className="mt-4">
+          <button
+            onClick={() => click && click()}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            {title}<br/>
-            {/* <span className="text-base">{stime}-{etime}</span> */}
-          </h3>
+            <Plus className="w-4 h-4" /> Create Menu
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-          {editingTime === title ? (
-              <div className="mt-4 bg-white rounded-lg p-4 border border-gray-200">
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <label className="text-sm font-medium text-gray-700 w-20">Start:</label>
-                    <input
-                      type="time"
-                      value={tempTimeData.startTime}
-                      onChange={(e) => setTempTimeData(prev => ({...prev, startTime: e.target.value}))}
-                      className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <label className="text-sm font-medium text-gray-700 w-20">End:</label>
-                    <input
-                      type="time"
-                      value={tempTimeData.endTime}
-                      onChange={(e) => setTempTimeData(prev => ({...prev, endTime: e.target.value}))}
-                      className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div className="flex space-x-2 pt-2">
-                    <button
-                      className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-sm rounded-md transition-colors duration-200"
-                       onClick={() => handleSaveTime(title)}
-                    >
-                      Save
-                    </button>
-                    <button
-                      className="px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white text-sm rounded-md transition-colors duration-200"
-                       onClick={handleCancelTimeEdit}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="mt-4 text-center">
-                <div className="flex items-center justify-center space-x-2">
-                  <span className="text-base font-medium text-gray-700">
-                    {stime} - {etime}
-                  </span>
-                  <button
-                     onClick={() => handleEditTime(title)}
-                    className="p-1 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors duration-200"
-                    title="Edit time"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      fill="currentColor"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708L14.5 5.207l-8 8L6 14H4a.5.5 0 0 1-.5-.5v-2l8-8L12.146.146zM13 1.854L12.146 1 11 2.146 12.854 4 14 2.854 13 1.854zM10.5 3.5L11.354 4.354 3.854 11.854 3 11v-.854l7.5-7.5z"/>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            )}
+  const MealSection = ({ meal, title }) => (
+    <div className="bg-white border border-gray-200 rounded-lg w-full">
+      <div className="bg-gray-50 border-b border-gray-200 px-4 py-3">
+        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+      </div>
 
-          </div>
-          
+      <div className="p-4">
+        <div className="overflow-x-auto">
+          <table className="w-full table-fixed">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-2 px-3 text-sm font-medium text-gray-700 w-40">
+                  Category
+                </th>
+                <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">
+                  Items
+                </th>
+                <th className="text-right py-2 px-3 text-sm font-medium text-gray-700 w-20">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {categories.map((category) => {
+                const items = getItemsByCategory(meal, category);
+                const isAddingHere =
+                  addingTo.meal === meal && addingTo.category === category;
 
-          <div className="space-y-6">
-            {Object.entries(groupedItems).map(([category, categoryItems]) => (
-              <div
-                key={category}
-                className="bg-white rounded-lg p-4 shadow-sm border border-gray-100"
-              >
-                <div className="flex justify-between items-center mb-4">
-                  <span className={`${colors.accent} text-lg font-semibold`}>
-                    {category} 
-                  </span>
-                  <button
-                    className="flex items-center justify-center w-8 h-8 bg-green-100 hover:bg-green-200 text-green-600 rounded-full transition-colors duration-200"
-                    onClick={() => handleAddItem(title, category)}
-                    title="Add new item"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-                    </svg>
-                  </button>
-                </div>
-
-                <div className="space-y-2">
-                  {categoryItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="bg-gray-50 hover:bg-gray-100 rounded-lg p-3 border border-gray-200 transition-colors duration-200"
-                    >
-                      {editingItem === item.id ? (
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="text"
-                            value={editValue}
-                            onChange={(e) => setEditValue(e.target.value)}
-                            className="flex-1 px-3 py-2 border-2 border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            onKeyPress={(e) => {
-                              if (e.key === "Enter") {
-                                handleSaveEdit(title);
-                              } else if (e.key === "Escape") {
-                                handleCancelEdit(title);
-                              }
-                            }}
-                            autoFocus
-                          />
-                          <div className="flex space-x-1">
-                            <button
-                              className="w-8 h-8 bg-green-500 hover:bg-green-600 text-white rounded-lg flex items-center justify-center transition-colors duration-200"
-                              onClick={() => handleSaveEdit(title)}
-                              title="Save"
-                            >
-                              ✓
-                            </button>
-                            <button
-                              className="w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-lg flex items-center justify-center transition-colors duration-200"
-                              onClick={() => handleCancelEdit(title)}
-                              title="Cancel"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-800 font-medium flex-1">
-                            {item.name}
+                return (
+                  <React.Fragment key={category}>
+                    <tr className="border-b border-gray-100">
+                      <td className="py-3 px-3 font-medium text-gray-800 align-top w-40">
+                        {category}
+                      </td>
+                      <td className="py-3 px-3 w-auto">
+                        {items.length === 0 && !isAddingHere ? (
+                          <span className="text-gray-400 text-sm">
+                            No items yet
                           </span>
-                          <div className="relative">
-                            <button
-                              onClick={() => handleMoreClick(item.id)}
-                              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-colors duration-200"
-                              title="More options"
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                fill="currentColor"
-                                viewBox="0 0 16 16"
+                        ) : (
+                          <div className="space-y-2">
+                            {items.map((item) => (
+                              <div
+                                key={item.id}
+                                className="flex items-center justify-between bg-gray-50 rounded p-2"
                               >
-                                <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
-                              </svg>
-                            </button>
-                            {showDropdown === item.id && (
-                              <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 overflow-hidden min-w-[100px]">
+                                {editingItem === item.id ? (
+                                  <input
+                                    type="text"
+                                    value={editValue}
+                                    onChange={(e) =>
+                                      setEditValue(e.target.value)
+                                    }
+                                    className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-gray-500"
+                                    onKeyPress={(e) => {
+                                      if (e.key === "Enter")
+                                        saveEdit(meal, item.id);
+                                      if (e.key === "Escape") cancelEdit();
+                                    }}
+                                    autoFocus
+                                  />
+                                ) : (
+                                  <span className="text-sm text-gray-700 flex-1">
+                                    {item.name}
+                                  </span>
+                                )}
+
+                                <div className="flex items-center gap-1 ml-2">
+                                  {editingItem === item.id ? (
+                                    <>
+                                      <button
+                                        onClick={() => saveEdit(meal, item.id)}
+                                        className="p-1 text-green-600 hover:bg-green-50 rounded"
+                                      >
+                                        <Check className="w-4 h-4" />
+                                      </button>
+                                      <button
+                                        onClick={cancelEdit}
+                                        className="p-1 text-gray-400 hover:bg-gray-100 rounded"
+                                      >
+                                        <X className="w-4 h-4" />
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <button
+                                        onClick={() => startEditing(item)}
+                                        className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
+                                      >
+                                        <Edit3 className="w-4 h-4" />
+                                      </button>
+                                      <button
+                                        onClick={() =>
+                                          removeItem(meal, item.id)
+                                        }
+                                        className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+
+                            {isAddingHere && (
+                              <div className="flex items-center gap-2 bg-blue-50 rounded p-2">
+                                <input
+                                  type="text"
+                                  value={newItemValue}
+                                  onChange={(e) =>
+                                    setNewItemValue(e.target.value)
+                                  }
+                                  placeholder="Enter item name..."
+                                  className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-gray-500"
+                                  onKeyPress={(e) => {
+                                    if (e.key === "Enter")
+                                      addItem(meal, category);
+                                    if (e.key === "Escape") cancelAdd();
+                                  }}
+                                  autoFocus
+                                />
                                 <button
-                                  className="w-full px-4 py-2 text-left text-blue-600 hover:bg-blue-50 transition-colors duration-200"
-                                  onClick={() => handleEdit(item)}
+                                  onClick={() => addItem(meal, category)}
+                                  className="p-1 text-green-600 hover:bg-green-100 rounded"
                                 >
-                                  Edit
+                                  <Check className="w-4 h-4" />
                                 </button>
                                 <button
-                                  className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 transition-colors duration-200"
-                                  onClick={() => handleDelete(item.id, title)}
+                                  onClick={cancelAdd}
+                                  className="p-1 text-gray-400 hover:bg-gray-100 rounded"
                                 >
-                                  Delete
+                                  <X className="w-4 h-4" />
                                 </button>
                               </div>
                             )}
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-
-                  {categoryItems.length === 0 && (
-                    <div className="text-center py-4 text-gray-500">
-                      No items in this category yet
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="max-w-6xl mx-auto p-6">
-      {/* Click outside to close dropdown */}
-      {showDropdown && (
-        <div
-          className="fixed inset-0 z-0"
-          onClick={() => setShowDropdown(null)}
-        />
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1">
-          {renderMenuSection("Breakfast", menuData.breakfast, timeData.btime_s, timeData.btime_e)}
-        </div>
-        <div className="lg:col-span-1">
-          {renderMenuSection("Lunch", menuData.lunch, timeData.ltime_s, timeData.ltime_e)}
-        </div>
-        <div className="lg:col-span-1">
-          {renderMenuSection("Dinner", menuData.dinner, timeData.dtime_s, timeData.dtime_e)}
+                        )}
+                      </td>
+                      <td className="py-3 px-3 align-top w-20 text-right">
+                        <button
+                          onClick={() => setAddingTo({ meal, category })}
+                          disabled={isAddingHere}
+                          className="text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   );
-}
 
-export default Menu_content;
+  // Dashboard already renders headers and day-tabs; this component only shows the meal sections
+  return (
+    <div className="mt-4 w-full">
+      <div className="space-y-6">
+        <MealSection meal="breakfast" title="Breakfast" />
+        <MealSection meal="lunch" title="Lunch" />
+        <MealSection meal="dinner" title="Dinner" />
+      </div>
+    </div>
+  );
+};
+
+export default MenuDashboard;

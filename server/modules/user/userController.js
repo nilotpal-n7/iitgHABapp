@@ -168,17 +168,42 @@ const clearAllStudents = async (req, res) => {
 const getUsersByHostelForMess = async (req, res) => {
   try {
     const { hostelId } = req.params;
-    
+    const { page = 1, limit = 10 } = req.query;
+
     if (!hostelId) {
       return res.status(400).json({ message: "Hostel ID is required" });
     }
 
-    const users = await User.find({ curr_subscribed_mess: hostelId });
-    
+    // Convert page and limit to numbers
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Query users who are currently subscribed to this mess (curr_subscribed_mess equals hostelId)
+    const query = { curr_subscribed_mess: hostelId };
+
+    // Get total count for pagination
+    const totalCount = await User.countDocuments(query);
+
+    // Get users with pagination and populate hostel information
+    const users = await User.find(query)
+      .populate("hostel", "hostel_name")
+      .populate("curr_subscribed_mess", "hostel_name")
+      .select("name rollNumber email hostel curr_subscribed_mess")
+      .sort({ name: 1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    console.log(`Found ${users.length} users for hostel ${hostelId}`);
+
     res.status(200).json({
       message: "Users fetched successfully",
-      count: users.length,
-      users: users
+      count: totalCount,
+      users: users,
+      currentPage: pageNum,
+      totalPages: Math.ceil(totalCount / limitNum),
+      hasNextPage: pageNum < Math.ceil(totalCount / limitNum),
+      hasPrevPage: pageNum > 1,
     });
   } catch (err) {
     console.error(err);
