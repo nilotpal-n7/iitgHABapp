@@ -1,6 +1,3 @@
-
-import 'package:flutter/material.dart';
-
 String calculateHostel(String objectID) {
 
   switch (objectID) {
@@ -8,13 +5,13 @@ String calculateHostel(String objectID) {
       return "Lohit";
     case "6783b8ee6e40ef5a28b80f15":
       return "Manas";
-    case "6783b9066e40ef5a28b80f17":
+    case "689ef47012652cd838161292":
       return "Umiam";
-    case "67864633a827df8cd5d316b6":
+    case "688bb3571672dc4158c3cfb8":
       return "Kapili";
     case "67864679a827df8cd5d316b8":
       return "Gaurang";
-    case "6826de5181420e896eaf7025":// changed acc to new schema
+    case "689efbed12652cd8381615b9":// changed acc to new schema
       return "Brahmaputra";
     case "67864697a827df8cd5d316bc":
       return "Dihing";
@@ -26,10 +23,12 @@ String calculateHostel(String objectID) {
       return "Dhansiri";
     case "67864733a827df8cd5d316c4":
       return "Subansiri";
-    case "6786475ba827df8cd5d316c6":
+    case "689efa1a12652cd838161508":
       return "Kameng";
-    case "67864898c4df4e222b429fe7":
+    case "689ef3a412652cd8381611ec":
       return "Disang";
+    case "689aa71e12652cd8381608a5":
+      return "Barak";
     default:
       return "Unknown Hostel";
   }

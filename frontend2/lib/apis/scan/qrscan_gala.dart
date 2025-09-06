@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/constants/themes.dart';
-import 'package:frontend1/screen1/qrdetails_gala.dart';
 import 'package:frontend1/widgets/common/snack_bar.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:frontend1/utilities/permission_handler/permission_handler.dart';
@@ -40,7 +38,7 @@ class _QrScanState extends State<QrScangala> {
   }
 
   Future<void> fetchItemBySerialNumber(String qrCode) async {
-    final url = "https://hab.codingclubiitg.in/api/qr/check";
+    const url = "https://hab.codingclubiitg.in/api/qr/check";
 
     try {
       final response = await dio.put(
@@ -61,7 +59,7 @@ class _QrScanState extends State<QrScangala> {
         print("User details: $displayData");
 
         // Reset scan flag for future scans
-        Future.delayed(Duration(seconds: 1), () {
+        Future.delayed(const Duration(seconds: 1), () {
           setState(() {
             displayData = null;
             _hasScanned = false;
@@ -78,7 +76,7 @@ class _QrScanState extends State<QrScangala> {
       showSnackBar('somethink went wrong!',Colors.red, context);
     }
     finally {
-      Future.delayed(Duration(seconds: 1), () {
+      Future.delayed(const Duration(seconds: 1), () {
         setState(() {
           _hasScanned = false; // Reset flag
         });
@@ -124,7 +122,7 @@ class _QrScanState extends State<QrScangala> {
               left: 20,
               right: 20,
               child: Container(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.green,
                   borderRadius: BorderRadius.circular(10),

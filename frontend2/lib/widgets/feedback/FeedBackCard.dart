@@ -24,8 +24,8 @@ class _FeedbackCardState extends State<FeedbackCard> {
           const Text("You can help the mess team serve better meals.",
               style: TextStyle(color: Colors.black54)),
           const SizedBox(height: 8),
-          Row(
-            children: const [
+          const Row(
+            children: [
               Icon(Icons.access_time, color: Colors.red, size: 18),
               SizedBox(width: 4),
               Text('Form closes in 2 Days',
@@ -37,7 +37,7 @@ class _FeedbackCardState extends State<FeedbackCard> {
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF3754DB),
+                backgroundColor: const Color(0xFF3754DB),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24)),

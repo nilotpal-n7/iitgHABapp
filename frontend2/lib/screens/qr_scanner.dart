@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/constants/themes.dart';
 import 'package:frontend1/screens/scan_status.dart';
 import 'package:frontend1/widgets/common/snack_bar.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';

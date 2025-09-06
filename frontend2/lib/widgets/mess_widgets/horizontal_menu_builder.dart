@@ -192,7 +192,7 @@ class _IndividualMealCardState extends State<IndividualMealCard>
                     size: 18, // slightly larger than before
                   ),
                 ),
-              SizedBox(width: 4,),
+              const SizedBox(width: 4,),
               Flexible(child: Text(item.name)),
             ],
           ),

@@ -1,21 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:frontend1/apis/scan/qrscan_old.dart';
-import 'package:frontend1/screens/qr_scanner.dart';
-import 'package:frontend1/widgets/common/DateTimeParser.dart';
 import 'package:frontend1/widgets/common/popmenubutton.dart';
-import 'package:frontend1/screens/mess_feedback/mess_feedback_page.dart';
-import 'package:frontend1/widgets/mess_widgets/MessMenuBuilder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../apis/mess/mess_menu.dart';
-import '../models/mess_menu_model.dart';
-import '../utilities/ComingSoon.dart';
 import '../utilities/startupitem.dart';
-import '../widgets/feedback/FeedBackCard.dart';
 import '../widgets/mess_widgets/horizontal_menu_builder.dart';
-import '../widgets/mess_widgets/messmenu.dart';
 import '../apis/hostel/hostels.dart';
 import 'package:intl/intl.dart';
 

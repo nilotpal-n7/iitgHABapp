@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/utilities/ComingSoon.dart';
+import 'package:frontend1/screens/mess_feedback/mess_feedback_page.dart';
 import 'home_screen.dart';
 import 'mess_screen.dart';
 //import 'complaints_screen.dart';  //for future
@@ -26,8 +26,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget build(BuildContext context) {
     final screens = [
       HomeScreen(onNavigateToTab: _handleNavTap),
-      MessScreen(),
-      ComingSoonScreen(),
+      const MessScreen(),
+      MessFeedbackPage(),
     ];
     return Scaffold(
       body: IndexedStack(
