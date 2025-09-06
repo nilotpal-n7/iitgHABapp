@@ -14,6 +14,8 @@ const MessChangePage = () => {
   const [selectedHostel, setSelectedHostel] = useState("all");
   const [processedRequests, setProcessedRequests] = useState([]);
   const [processedLoading, setProcessedLoading] = useState(false);
+  const [scheduleInfo, setScheduleInfo] = useState(null);
+  const [scheduleLoading, setScheduleLoading] = useState(false);
 
   const buildHostelMap = (list) => {
     const map = {};
@@ -120,6 +122,25 @@ const MessChangePage = () => {
       setProcessedRequests([]);
     } finally {
       setProcessedLoading(false);
+    }
+  };
+
+  const fetchScheduleInfo = async () => {
+    try {
+      setScheduleLoading(true);
+      const response = await fetch(`${BACKEND_URL}/mess-change/schedule`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setScheduleInfo(data.data);
+    } catch (error) {
+      console.error("Error fetching schedule info:", error);
+      setScheduleInfo(null);
+    } finally {
+      setScheduleLoading(false);
     }
   };
 
@@ -236,7 +257,9 @@ const MessChangePage = () => {
       await fetchRequests(hostelMap);
       await fetchMessChangeSettings();
       await fetchProcessedRequests("all");
+      await fetchScheduleInfo();
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -345,6 +368,59 @@ const MessChangePage = () => {
                 {rejecting ? "Rejecting..." : "Reject All Requests"}
               </button>
             </>
+          )}
+        </div>
+      </div>
+      {/* Automatic Schedule Information */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg shadow-sm p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-blue-900 flex items-center gap-2">
+            <Info className="w-5 h-5 text-blue-600" />
+            Automatic Schedule
+          </h2>
+          {scheduleLoading && (
+            <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+          )}
+        </div>
+
+        {scheduleInfo && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white p-4 rounded-lg border border-blue-200">
+              <h3 className="font-semibold text-blue-800 mb-2">
+                🔄 Auto Enable
+              </h3>
+              <p className="text-sm text-blue-700 mb-1">
+                {scheduleInfo.schedule.enablePattern}
+              </p>
+              <p className="text-xs text-blue-600">
+                Next: {scheduleInfo.schedule.nextEnableDateIST}
+              </p>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg border border-blue-200">
+              <h3 className="font-semibold text-blue-800 mb-2">
+                ⏹️ Auto Disable
+              </h3>
+              <p className="text-sm text-blue-700 mb-1">
+                {scheduleInfo.schedule.disablePattern}
+              </p>
+              <p className="text-xs text-blue-600">
+                Next: {scheduleInfo.schedule.nextDisableDateIST}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-4 p-3 bg-blue-100 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <strong>Note:</strong> Mess change is automatically managed by the
+            system. Manual enable/disable buttons are provided for
+            administrative overrides only.
+          </p>
+          {scheduleInfo && (
+            <p className="text-xs text-blue-600 mt-1">
+              Current IST time: {scheduleInfo.currentTimeIST}
+            </p>
           )}
         </div>
       </div>

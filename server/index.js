@@ -1,8 +1,7 @@
 // server/index.js
 //import authRoutes from "./modules/auth/auth.routes.js";
 
-
-require('dotenv').config();
+require("dotenv").config();
 console.log("MONGODB_URI from env:", process.env.MONGODB_URI);
 const authRoutes = require("./modules/auth/auth.routes.js");
 const express = require("express");
@@ -33,6 +32,9 @@ const {
 const {
   feedbackResetScheduler,
 } = require("./modules/feedback/feedbackScheduler.js");
+const {
+  initializeMessChangeScheduler,
+} = require("./modules/mess_change/messChangeScheduler.js");
 const messChangeRouter = require("./modules/mess_change/messchangeRoute.js");
 require("dotenv").config();
 
@@ -114,6 +116,9 @@ mongoose
 
     feedbackScheduler();
     feedbackResetScheduler();
+
+    // Initialize mess change automatic scheduler
+    initializeMessChangeScheduler();
   })
   .catch((err) => console.log(err));
 
@@ -130,8 +135,6 @@ mongoose
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });
-
-
 
 /**
  * @swagger

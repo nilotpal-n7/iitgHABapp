@@ -464,6 +464,90 @@ const getAllAcceptedStudents = async (req, res) => {
   }
 };
 
+// Get mess change schedule information
+const getMessChangeScheduleInfo = async (req, res) => {
+  try {
+    const settings = await MessChangeSettings.findOne();
+
+    // FOR TESTING: Fixed test dates
+    const testEnableDate = new Date("2025-09-07T02:15:00+05:30");
+    const testDisableDate = new Date("2025-09-07T02:30:00+05:30");
+
+    return res.status(200).json({
+      message: "Mess change schedule information (TEST MODE)",
+      data: {
+        currentSettings: settings,
+        schedule: {
+          enablePattern: "TEST: 7 Sept 2025 at 2:15 AM IST",
+          disablePattern: "TEST: 7 Sept 2025 at 2:30 AM IST",
+          nextEnableDate: testEnableDate.toISOString(),
+          nextDisableDate: testDisableDate.toISOString(),
+          nextEnableDateIST: testEnableDate.toLocaleString("en-IN", {
+            timeZone: "Asia/Kolkata",
+          }),
+          nextDisableDateIST: testDisableDate.toLocaleString("en-IN", {
+            timeZone: "Asia/Kolkata",
+          }),
+          isTestMode: true,
+        },
+        currentTimeIST: new Date().toLocaleString("en-IN", {
+          timeZone: "Asia/Kolkata",
+        }),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching mess change schedule info:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Enable mess change function for automatic scheduling (no HTTP response)
+const enableMessChangeAutomatic = async () => {
+  try {
+    let settings = await MessChangeSettings.findOne();
+
+    if (!settings) {
+      settings = new MessChangeSettings({
+        isEnabled: true,
+        enabledAt: new Date(),
+      });
+    } else {
+      settings.isEnabled = true;
+      settings.enabledAt = new Date();
+      settings.disabledAt = null;
+    }
+
+    await settings.save();
+    console.log("✅ Mess change enabled automatically");
+    return { success: true, settings };
+  } catch (error) {
+    console.error("❌ Error enabling mess change automatically:", error);
+    return { success: false, error };
+  }
+};
+
+// Disable mess change function for automatic scheduling (no HTTP response)
+const disableMessChangeAutomatic = async () => {
+  try {
+    let settings = await MessChangeSettings.findOne();
+
+    if (!settings) {
+      console.log("⚠️ No mess change settings found - nothing to disable");
+      return { success: false, message: "No settings found" };
+    }
+
+    settings.isEnabled = false;
+    settings.disabledAt = new Date();
+
+    await settings.save();
+    console.log("✅ Mess change disabled automatically");
+    return { success: true, settings };
+  } catch (error) {
+    console.error("❌ Error disabling mess change automatically:", error);
+    return { success: false, error };
+  }
+};
+
 module.exports = {
   getAllMessChangeRequestsForAllHostels,
   processAllMessChangeRequests,
@@ -476,4 +560,7 @@ module.exports = {
   enableMessChange,
   disableMessChange,
   rejectAllMessChangeRequests,
+  getMessChangeScheduleInfo,
+  enableMessChangeAutomatic,
+  disableMessChangeAutomatic,
 };
