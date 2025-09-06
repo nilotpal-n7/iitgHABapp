@@ -64,7 +64,7 @@ class MenuFutureBuilder extends StatelessWidget {
             color: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
-              side: BorderSide(color: Color(0xC5C5D1), width: 1),
+              side: const BorderSide(color: Color(0xC5C5D1), width: 1),
             ),
             elevation: 0.5,
             child: Padding(

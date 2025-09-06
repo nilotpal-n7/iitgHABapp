@@ -258,10 +258,11 @@ const getAcceptedStudentsByHostel = async (req, res) => {
 
 const messChangeRequest = async (req, res) => {
   try {
-    const user = req.user;
+    const userId = req.user.id;
+    const user = await User.findById(userId);
     const { mess_pref } = req.body;
-    if (!req.user) {
-      return res.status(404).json({ message: "User not Found" });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
     const settings = await MessChangeSettings.findOne();
@@ -291,9 +292,10 @@ const messChangeRequest = async (req, res) => {
 
 const messChangeCancel = async (req, res) => {
   try {
-    const user = req.user;
-    if (!req.user) {
-      return res.status(404).json({ message: "User not Found" });
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Check if mess change is enabled
@@ -321,12 +323,11 @@ const messChangeCancel = async (req, res) => {
 
 const messChangeStatus = async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(403).json({ message: "Not Authenticated" });
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-
-    const user = req.user;
-
     // Get global mess change status
     const settings = await MessChangeSettings.findOne();
     const isMessChangeEnabled = settings ? settings.isEnabled : false;

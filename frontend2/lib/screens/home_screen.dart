@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:frontend1/screens/mess_feedback/mess_feedback_page.dart';
 import 'package:frontend1/screens/profile_screen.dart';
 import 'package:frontend1/screens/qr_scanner.dart';
-import 'package:frontend1/utilities/ComingSoon.dart';
 import 'package:frontend1/widgets/common/name_trimmer.dart';
 import 'package:frontend1/widgets/mess_widgets/MessMenuBuilder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../utilities/startupitem.dart';
 import '../widgets/complaint_dropdown.dart';
 import 'mess_preference.dart';
@@ -98,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const ComingSoonScreen(),
+                    builder: (context) => MessFeedbackPage(),
                   ),
                 );
               },
@@ -330,7 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ProfileScreen()),
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
               );
             },
             child: const CircleAvatar(

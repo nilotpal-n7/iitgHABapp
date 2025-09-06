@@ -160,6 +160,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  isSMC: {
+    type: Boolean,
+    default: false
+  },
 });
 
 userSchema.methods.generateJWT = function () {

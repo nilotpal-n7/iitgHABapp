@@ -83,6 +83,6 @@ const feedbackResetScheduler = () => {
 
 
 module.exports = {
-feedbackResetScheduler,
+  feedbackResetScheduler,
   feedbackScheduler,
 };

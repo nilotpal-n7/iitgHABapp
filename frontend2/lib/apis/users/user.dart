@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 Future<Map<String, String>?> fetchUserDetails() async {
   final header = await getAccessToken();
 
-  print("token is " + header);
+  print("token is $header");
   if (header == 'error') {
     throw ('token not found');
   }
@@ -31,22 +31,21 @@ Future<Map<String, String>?> fetchUserDetails() async {
       final String userId = userData['_id'] ?? "";
       final String degree = userData['degree'] ?? "Not Provided";
       final String mail = userData['email'];
-      prefs.setString('email', mail);
-
       final String roll = userData['rollNumber'] ?? "Not provided";
-      final String CurrSubscribedMess =
-          userData['curr_subscribed_mess'] ?? "Not provided";
-      final String appliedMess =
-          userData['applied_hostel_string'] ?? "Not provided";
-      final hostel = userData['hostel'] ?? "Not provided";
-
+      final String currSubscribedMess = userData['curr_subscribed_mess'] ?? "Not provided";
+      final String appliedMess = userData['applied_hostel_string'] ?? "Not provided";
+      final String hostel = userData['hostel'] ?? "Not provided";
       final bool gotHostel = userData['got_mess_changed'];
+      final bool isSMC = userData['isSMC'] ?? false;
+
+      prefs.setBool('isSMC', isSMC);
       prefs.setBool('gotMess', gotHostel);
+      prefs.setString('email', mail);
       prefs.setString('rollNumber', roll);
       prefs.setString('appliedMess', appliedMess);
       prefs.setString('rollNo', roll);
       prefs.setString('hostel', hostel);
-      prefs.setString('currMess', CurrSubscribedMess);
+      prefs.setString('currMess', currSubscribedMess);
       prefs.setString('name', name);
       prefs.setString('userId', userId);
 
@@ -54,7 +53,7 @@ Future<Map<String, String>?> fetchUserDetails() async {
       print("Degree: $degree");
       print("Email: $mail");
       print("Roll: $roll");
-      print("Curr Mess: $CurrSubscribedMess");
+      print("Curr Mess: $currSubscribedMess");
       print("your mess is $gotHostel");
 
       // Return the data as a map

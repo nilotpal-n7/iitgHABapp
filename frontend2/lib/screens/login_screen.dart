@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:frontend1/apis/authentication/login.dart';
 import 'package:frontend1/screens/MainNavigationScreen.dart';
 import 'package:frontend1/widgets/common/snack_bar.dart';
-import 'package:frontend1/widgets/login screen/googlesignin.dart';
 import 'package:frontend1/widgets/login screen/login_button.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -76,12 +75,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       color: Color(0xFF676767),
                     ),
                   ),
-                  SizedBox(height: 10,),
+                  const SizedBox(height: 10,),
                   Container(
                     height: 48,
                     width: double.infinity,
                     child: Material(
-                      color: Color(0xFF4C4EDB),
+                      color: const Color(0xFF4C4EDB),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(50),
                       ),
@@ -121,8 +120,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                   ),
                    const SizedBox(height: 14,),
-
-
                 ],
               ),
             ),
@@ -217,9 +214,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               Positioned(
                                 left: 20 * scaleFactor,
                                 top: 20 * scaleFactor,
-                                child: FeatureButton(
+                                child: const FeatureButton(
                                   text: 'Feedbacks',
-                                  color: const Color(0xFF1F7157), // Green
+                                  color: Color(0xFF1F7157), // Green
                                   imagePath:
                                       'assets/images/features/feedback.png',
                                 ),
@@ -229,9 +226,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               Positioned(
                                 right: 20 * scaleFactor,
                                 top: 20 * scaleFactor,
-                                child: FeatureButton(
+                                child: const FeatureButton(
                                   text: 'Canteens',
-                                  color: const Color(0xFF4E46B4), // Purple
+                                  color: Color(0xFF4E46B4), // Purple
                                   imagePath:
                                       'assets/images/features/canteens.png',
                                 ),
@@ -241,9 +238,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               Positioned(
                                 left: 50 * scaleFactor,
                                 top: 90 * scaleFactor,
-                                child: FeatureButton(
+                                child: const FeatureButton(
                                   text: 'Mess',
-                                  color: const Color(0xFF4E46B4), // Purple
+                                  color: Color(0xFF4E46B4), // Purple
                                   imagePath: 'assets/images/features/mess.png',
                                 ),
                               ),
@@ -252,9 +249,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               Positioned(
                                 right: 50 * scaleFactor,
                                 top: 100 * scaleFactor,
-                                child: FeatureButton(
+                                child: const FeatureButton(
                                   text: 'Complaints',
-                                  color: const Color(0xFFD14B65), // Red
+                                  color: Color(0xFFD14B65), // Red
                                   imagePath:
                                       'assets/images/features/complaints.png',
                                 ),
@@ -264,10 +261,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               Positioned(
                                 left: 40 * scaleFactor,
                                 top: 160 * scaleFactor,
-                                child: FeatureButton(
+                                child: const FeatureButton(
                                   text: 'Updates',
-                                  color:
-                                      const Color(0xFFB27C38), // Orange/Brown
+                                  color: Color(0xFFB27C38), // Orange/Brown
                                   imagePath:
                                       'assets/images/features/updates.png',
                                 ),
@@ -277,9 +273,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               Positioned(
                                 right: 40 * scaleFactor,
                                 top: 160 * scaleFactor,
-                                child: FeatureButton(
+                                child: const FeatureButton(
                                   text: 'Schedules',
-                                  color: const Color(0xFF1F7157), // Green
+                                  color: Color(0xFF1F7157), // Green
                                   imagePath:
                                       'assets/images/features/schedules.png',
                                 ),
@@ -291,12 +287,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
 
                     //  to handle overflow when testing on different devices
-                     Expanded(
+                    const Expanded(
                       flex: 1,
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
-                            const Text(
+                            Text(
                               'A space built around your hostel life.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
@@ -304,8 +300,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 fontSize: 16,
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            const Text(
+                            SizedBox(height: 8),
+                            Text(
                               'From mess feedback to shared complaints, from schedules to updates, everything you need is now just a tap away.',
                               textAlign: TextAlign.center,
                               style: TextStyle(

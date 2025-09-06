@@ -8,14 +8,9 @@ import 'package:frontend1/providers/feedback_provider.dart';
 import 'package:frontend1/screens/Home_screen.dart';
 import 'package:frontend1/screens/MainNavigationScreen.dart';
 import 'package:frontend1/screens/login_screen.dart';
-
-import 'package:frontend1/screens/mess_feedback/mess_feedback_page.dart';
 import 'package:frontend1/screens/mess_screen.dart';
 import 'package:frontend1/utilities/startupitem.dart';
 import 'package:provider/provider.dart';
-
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:frontend1/screens/profile_screen.dart';
 import 'package:frontend1/utilities/notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
 
