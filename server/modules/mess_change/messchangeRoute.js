@@ -12,6 +12,7 @@ const {
   enableMessChange,
   disableMessChange,
   rejectAllMessChangeRequests,
+  getMessChangeScheduleInfo,
 } = require("./messchangeController.js");
 
 const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
@@ -32,6 +33,7 @@ messChangeRouter.get(
 
 // New routes for mess change settings
 messChangeRouter.get("/settings", getMessChangeStatus);
+messChangeRouter.get("/schedule", getMessChangeScheduleInfo);
 messChangeRouter.post("/enable", enableMessChange);
 messChangeRouter.post("/disable", disableMessChange);
 
