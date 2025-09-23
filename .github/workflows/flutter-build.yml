@@ -1,0 +1,52 @@
+name: Flutter Android Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # Go to frontend2 sub-directory
+    defaults:
+      run:
+        working-directory: frontend2
+
+    steps:
+      # Checkout repo
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # Cache pub dependencies
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('frontend2/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      # Setup Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.3'
+          channel: 'stable'
+
+      # Get packages
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Build APK
+      - name: Build release APK
+        run: flutter build apk --release
+
+      # Upload APK as artifact
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk
+          path: frontend2/build/app/outputs/flutter-apk/app-release.apk
