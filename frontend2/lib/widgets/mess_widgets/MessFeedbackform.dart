@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/screens/mess_feedback/mess_feedback_page.dart';
+import 'package:frontend2/screens/mess_feedback/mess_feedback_page.dart';
 
 
 class FeedbackCard extends StatefulWidget {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/screens/notification.dart';
+import 'package:frontend2/screens/notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../screens/mess_feedback/mess_feedback_page.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';

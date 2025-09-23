@@ -1,6 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:frontend1/constants/endpoint.dart';
-import 'package:frontend1/apis/protected.dart';
+import 'package:frontend2/constants/endpoint.dart';
+import 'package:frontend2/apis/protected.dart';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 
