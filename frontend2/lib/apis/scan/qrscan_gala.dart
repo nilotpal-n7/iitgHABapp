@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/widgets/common/snack_bar.dart';
+import 'package:frontend2/widgets/common/snack_bar.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:frontend1/utilities/permission_handler/permission_handler.dart';
+import 'package:frontend2/utilities/permission_handler/permission_handler.dart';
 import 'package:dio/dio.dart';
 import 'package:vibration/vibration.dart';
-import 'package:frontend1/widgets/common/cornerQR.dart';
+import 'package:frontend2/widgets/common/cornerQR.dart';
 
 final dio = Dio();
 

@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:frontend1/constants/endpoint.dart';
+import 'package:frontend2/constants/endpoint.dart';
 
 Future<void> fetchAllHostels() async {
   try {

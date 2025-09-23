@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:frontend1/screens/MainNavigationScreen.dart';
+import 'package:frontend2/screens/MainNavigationScreen.dart';
 
 class ScanStatusPage extends StatelessWidget {
   final Response response;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/widgets/login screen/googlesignin.dart';
-import 'package:frontend1/apis/scan/qrscan_gala.dart';
+import 'package:frontend2/widgets/login screen/googlesignin.dart';
+import 'package:frontend2/apis/scan/qrscan_gala.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
