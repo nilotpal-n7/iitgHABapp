@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/constants/themes.dart';
+import 'package:frontend2/constants/themes.dart';
 import 'package:provider/provider.dart';
 import '../../providers/feedback_provider.dart';
 import '../../widgets/feedback/custom_option.dart';
