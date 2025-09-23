@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/apis/authentication/login.dart';
-import 'package:frontend1/screens/MainNavigationScreen.dart';
-import 'package:frontend1/widgets/common/snack_bar.dart';
-import 'package:frontend1/widgets/login screen/login_button.dart';
+import 'package:frontend2/apis/authentication/login.dart';
+import 'package:frontend2/screens/MainNavigationScreen.dart';
+import 'package:frontend2/widgets/common/snack_bar.dart';
+import 'package:frontend2/widgets/login screen/login_button.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({Key? key}) : super(key: key);

@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend1/utilities/permission_handler/permission_handler.dart';
-import 'package:frontend1/widgets/common/cornerQR.dart';
-import 'package:frontend1/widgets/common/snack_bar.dart';
+import 'package:frontend2/utilities/permission_handler/permission_handler.dart';
+import 'package:frontend2/widgets/common/cornerQR.dart';
+import 'package:frontend2/widgets/common/snack_bar.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:vibration/vibration.dart';
 
@@ -143,14 +143,14 @@ class _QrScanOldState extends State<QrScanOld> {
 }
 
 // import 'package:flutter/material.dart';
-// import 'package:frontend1/constants/themes.dart';
-// import 'package:frontend1/screen1/qrdetails_gala.dart';
-// import 'package:frontend1/widgets/common/snack_bar.dart';
+// import 'package:frontend2/constants/themes.dart';
+// import 'package:frontend2/screen1/qrdetails_gala.dart';
+// import 'package:frontend2/widgets/common/snack_bar.dart';
 // import 'package:mobile_scanner/mobile_scanner.dart';
-// import 'package:frontend1/utilities/permission_handler/permission_handler.dart';
+// import 'package:frontend2/utilities/permission_handler/permission_handler.dart';
 // import 'package:dio/dio.dart';
 // import 'package:flutter_vibrate/flutter_vibrate.dart';
-// import 'package:frontend1/widgets/common/cornerQR.dart';
+// import 'package:frontend2/widgets/common/cornerQR.dart';
 //
 // final dio = Dio();
 //
