@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:frontend1/utilities/ComingSoon.dart';
-import 'package:frontend1/screens/login_screen.dart';
+import 'package:frontend2/utilities/ComingSoon.dart';
+import 'package:frontend2/screens/login_screen.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/models/mess_menu_model.dart';
+import 'package:frontend2/models/mess_menu_model.dart';
 
 class MessMenuCard extends StatelessWidget {
   final List<MenuModel> menus;

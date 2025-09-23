@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/widgets/mess_widgets/interactive_mess_menu.dart';
+import 'package:frontend2/widgets/mess_widgets/interactive_mess_menu.dart';
 
 import '../../apis/mess/mess_menu.dart';
 import '../../models/mess_menu_model.dart';

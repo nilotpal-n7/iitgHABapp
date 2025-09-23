@@ -1,6 +1,6 @@
 import 'package:http/http.dart' as http;
-import 'package:frontend1/apis/protected.dart';
-import 'package:frontend1/constants/endpoint.dart';
+import 'package:frontend2/apis/protected.dart';
+import 'package:frontend2/constants/endpoint.dart';
 import 'dart:convert';
 
 // Function to fetch hostel data

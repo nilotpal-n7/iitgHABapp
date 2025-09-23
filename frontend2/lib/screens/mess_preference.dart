@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend1/apis/protected.dart';
-import 'package:frontend1/widgets/common/mess_pref_dropdowns.dart';
-import 'package:frontend1/constants/themes.dart';
+import 'package:frontend2/apis/protected.dart';
+import 'package:frontend2/widgets/common/mess_pref_dropdowns.dart';
+import 'package:frontend2/constants/themes.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/endpoint.dart';
