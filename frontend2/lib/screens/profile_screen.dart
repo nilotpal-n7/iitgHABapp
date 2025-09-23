@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/apis/authentication/login.dart';
-import 'package:frontend1/widgets/common/custom_linear_progress.dart';
-import 'package:frontend1/widgets/common/hostel_name.dart';
+import 'package:frontend2/apis/authentication/login.dart';
+import 'package:frontend2/widgets/common/custom_linear_progress.dart';
+import 'package:frontend2/widgets/common/hostel_name.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {

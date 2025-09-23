@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:frontend1/apis/protected.dart';
-import 'package:frontend1/constants/endpoint.dart';
+import 'package:frontend2/apis/protected.dart';
+import 'package:frontend2/constants/endpoint.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 

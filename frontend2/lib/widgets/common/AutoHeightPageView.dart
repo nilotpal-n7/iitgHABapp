@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/models/mess_menu_model.dart';
-import 'package:frontend1/widgets/mess_widgets/menusizeMeasure.dart';
+import 'package:frontend2/models/mess_menu_model.dart';
+import 'package:frontend2/widgets/mess_widgets/menusizeMeasure.dart';
 
 import '../mess_widgets/horizontal_menu_builder.dart'; // import the file you just created
 

@@ -1,5 +1,5 @@
 // import 'package:flutter/material.dart';
-// import 'package:frontend1/utilities/notification_card.dart';
+// import 'package:frontend2/utilities/notification_card.dart';
 
 // class NotificationScreen extends StatefulWidget {
 //   const NotificationScreen({super.key});

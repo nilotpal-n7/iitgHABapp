@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/screens/MainNavigationScreen.dart';
+import 'package:frontend2/screens/MainNavigationScreen.dart';
 
 class ComingSoonScreen extends StatelessWidget {
   const ComingSoonScreen({super.key});

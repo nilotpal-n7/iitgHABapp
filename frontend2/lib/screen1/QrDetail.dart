@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend1/widgets/common/hostel_name.dart';
+import 'package:frontend2/widgets/common/hostel_name.dart';
 import 'dart:convert';
 
 
