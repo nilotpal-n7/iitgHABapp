@@ -89,8 +89,8 @@ class _HorizontalMenuBuilderState extends State<HorizontalMenuBuilder> {
 
         return IndividualMealCard(
           menu: selectedMeal,
-          isSubscribed: true,
-          // isSubscribed: widget.userMessId == widget.messId,
+          // isSubscribed: true,
+          isSubscribed: widget.userMessId == widget.messId,
           parseTime: _parseTime,
         );
       },
@@ -210,7 +210,7 @@ class _IndividualMealCardState extends State<IndividualMealCard>
     if (hour > 12) {
       return "${hour - 12}${s.substring(2)} ${hour == 12 ? "AM" : "PM"}";
     } else {
-      return "${hour}${s.substring(2)} ${hour == 12 ? "PM" : "AM"}";
+      return "$hour${s.substring(2)} ${hour == 12 ? "PM" : "AM"}";
     }
   }
 
