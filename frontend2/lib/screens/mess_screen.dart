@@ -86,7 +86,7 @@ class _MessScreenState extends State<MessScreen> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   minHeight: constraints.maxHeight,
@@ -99,29 +99,29 @@ class _MessScreenState extends State<MessScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          "MESS",
+                          "Mess",
                           style: TextStyle(
                             fontFamily: 'OpenSans_regular',
                             fontSize: 32,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2E2F31),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 18),
                         _MenuSection(),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 24),
                       ],
                     ),
-                    Column(
-                      children: [
-                        _MessInfo(
-                          catererName: caterername,
-                          rating: rating,
-                          rank: rank,
-                        ),
-                        const SizedBox(height: 30),
-                      ],
-                    ),
+                    // Column(
+                    //   children: [
+                    //     _MessInfo(
+                    //       catererName: caterername,
+                    //       rating: rating,
+                    //       rank: rank,
+                    //     ),
+                    //     const SizedBox(height: 30),
+                    //   ],
+                    // ),
                   ],
                 ),
               ),
@@ -187,16 +187,16 @@ class _MenuSectionState extends State<_MenuSection> {
         Row(
           children: [
             const Text(
-              "What’s in Menu",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              "Menu",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF676767)),
             ),
             const Spacer(),
             HostelDrop(onChanged: _updateMessId),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
         SizedBox(
-          height: 40,
+          height: 36,
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: daysOnly.map((day) {
@@ -213,7 +213,15 @@ class _MenuSectionState extends State<_MenuSection> {
           messId: messId,
           day: selectedDay,
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 24),
+        const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.info_outline, size: 16, color: Color(0xFF676767),),
+            SizedBox(width: 2,),
+            Text("Tap on a food item to mark as favourite", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF676767)),),
+          ],
+        ),
       ],
     );
   }
@@ -234,20 +242,25 @@ class _DayChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: ChoiceChip(
-        label: Text(
-          label,
-          style: const TextStyle(
+      child: InkWell(
+        onTap: onTap,
+        focusColor: Colors.transparent,
+        splashColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: selected ? const Color(0xFFEDEDFB) : const Color(0xFFF5F5F5),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          child: Text(label, style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
             fontFamily: 'OpenSans_regular',
-          ),
+            color: selected ? const Color(0xFF4C4EDB) : const Color(0xFF676767),
+          ),),
         ),
-        selected: selected,
-        onSelected: (_) => onTap(),
-        selectedColor: Colors.deepPurple.shade100,
-        labelStyle:
-        TextStyle(color: selected ? const Color(0xFF3754DB) : Colors.black),
       ),
     );
   }

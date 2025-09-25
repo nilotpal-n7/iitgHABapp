@@ -100,6 +100,9 @@ flutter:
     - family: OpenSans_regular
       fonts:
         - asset: assets/fonts/OpenSans-Regular.ttf
+    - family: Manrope_semibold
+      fonts:
+        - asset: assets/fonts/Manrope-SemiBold.ttf
 
 
 
