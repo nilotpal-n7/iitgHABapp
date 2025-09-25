@@ -3,6 +3,7 @@ import 'package:frontend2/apis/authentication/login.dart';
 import 'package:frontend2/widgets/common/custom_linear_progress.dart';
 import 'package:frontend2/widgets/common/hostel_name.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -52,7 +53,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       currMess = mess1 ?? 'Lohit';
       roomNo = '69'; // You can fetch this from SharedPreferences if available
       phone = '6969696969'; // You can fetch this from SharedPreferences if available
-
     });
   }
 
@@ -91,7 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               // Main content with padding
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     // Profile Image
@@ -104,6 +104,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=500",
                         ),
                       ),
+                    ),
+
+                    InkWell(
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        decoration: BoxDecoration(border: Border.all(color: const Color(0xFFC5C5D1)), borderRadius: BorderRadius.circular(6)),
+                        child: const Text("Edit Profile Picture"),
+                      ),
+                      onTap: () async {
+                        print("Pick Image");
+                        final ImagePicker picker = ImagePicker();
+                        final XFile? pfp = await picker.pickImage(source: ImageSource.gallery);
+                        if (pfp != null) {
+                          print("recieved File: $pfp");
+                        } else {
+                          print("err");
+                        }
+                      },
                     ),
 
                     // Name
