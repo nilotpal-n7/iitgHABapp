@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HostelDrop extends StatefulWidget {
   final Function(String) onChanged;
@@ -10,23 +11,40 @@ class HostelDrop extends StatefulWidget {
 }
 
 class _HostelDropState extends State<HostelDrop> {
-  String selectedHostel = 'Barak';
 
-  final List<String> hostels = [
-    'Barak',
-    'Brahmaputra',
-    'Dhansiri',
-    'Dihing',
-    'Disang',
-    'Gaurang',
-    'Kameng',
-    'Kapili',
-    'Lohit',
-    'Manas',
-    'Siang',
-    'Subansiri',
-    'Umiam',
-  ];
+  late List<String> options = ["No Hostels Found"];
+
+  @override
+  void initState() {
+    super.initState();
+    initHostels();
+  }
+
+  void initHostels() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      hostels = prefs.getStringList("hostels") ?? [
+        'Barak',
+        'Brahmaputra',
+        'Dhansiri',
+        'Dihing',
+        'Disang',
+        'Gaurang',
+        'Kameng',
+        'Kapili',
+        'Lohit',
+        'Manas',
+        'Siang',
+        'Subansiri',
+        'Umiam',
+      ];
+    });
+    selectedHostel = 'Barak';
+  }
+
+  late String selectedHostel = '';
+
+  late final List<String> hostels;
 
   final GlobalKey _key = GlobalKey();
 
@@ -93,9 +111,10 @@ class _HostelDropState extends State<HostelDrop> {
             style: const TextStyle(
               color: Color(0xFF3754DB),
               fontWeight: FontWeight.w500,
+              fontSize: 14
             ),
           ),
-          const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF3754DB)),
+          const Icon(Icons.unfold_more, size: 20, color: Color(0xFF3754DB)),
         ],
       ),
     );
