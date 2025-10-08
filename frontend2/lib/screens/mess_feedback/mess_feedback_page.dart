@@ -18,7 +18,10 @@ class MessFeedbackPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(meal, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        Container(
+          margin: const EdgeInsets.only(left: 24),
+          child: Text(meal, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20))
+        ),
         const SizedBox(height: 8),
         ...options.map((option) => customOption(
               text: option,
@@ -51,107 +54,109 @@ class MessFeedbackPage extends StatelessWidget {
     final provider = Provider.of<FeedbackProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        leading: const BackButton(),
-      ),
+      
       body: Container(
         color: Colors.white,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Mess Feedback",
-                style: TextStyle(
-                    fontFamily: 'OpenSans_Bold',
-                    color: Themes.feedbackColor,
-                    fontSize: 32,
-                    fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 32),
-              const Text("Step 1 / 2", style: TextStyle(color: Colors.deepPurple)),
-              const SizedBox(height: 11),
-              const LinearProgressIndicator(value: 0.5, color: Colors.deepPurple),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView(
-                  children: [
-                    const Text(
-                      "How satisfied are you with the respective meals?",
-                      style: TextStyle(
-                          fontFamily: 'OpenSans-Regular',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 20),
-                    ),
-                    const SizedBox(height: 24),
-                    mealBlock("Breakfast", provider.breakfast,
-                        (val) => provider.setMealFeedback('breakfast', val)),
-                    mealBlock("Lunch", provider.lunch,
-                        (val) => provider.setMealFeedback('lunch', val)),
-                    mealBlock("Dinner", provider.dinner,
-                        (val) => provider.setMealFeedback('dinner', val)),
-
-                    // SMC extra fields
-                    if (provider.isSMC) ...[
-                      const SizedBox(height: 24),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                          "Mess Feedback",
+                          style: TextStyle(
+                            fontFamily: 'OpenSans_regular',
+                            fontSize: 32,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2E2F31),
+                          ),
+                        ),
+                const SizedBox(height: 32),
+                const Text("Step 1 / 2", style: TextStyle(color: Colors.deepPurple)),
+                const SizedBox(height: 11),
+                const LinearProgressIndicator(value: 0.5, color: Colors.deepPurple),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: ListView(
+                    children: [
                       const Text(
-                        "Additional SMC Feedback",
+                        "How satisfied are you with the respective meals?",
                         style: TextStyle(
                             fontFamily: 'OpenSans-Regular',
                             fontWeight: FontWeight.w500,
                             fontSize: 20),
                       ),
-                      const SizedBox(height: 16),
-                      smcBlock("Hygiene", provider.hygiene,
-                          (val) => provider.setSMCFeedback('hygiene', val)),
-                      smcBlock("Waste Disposal", provider.wasteDisposal,
-                          (val) => provider.setSMCFeedback('wasteDisposal', val)),
-                      smcBlock("Quality of Ingredients", provider.qualityOfIngredients,
-                          (val) => provider.setSMCFeedback('qualityOfIngredients', val)),
-                      smcBlock("Uniform & Punctuality", provider.uniformAndPunctuality,
-                          (val) => provider.setSMCFeedback('uniformAndPunctuality', val)),
-                    ],
-                  ],
-                ),
-              ),
-              Center(
-                child: GestureDetector(
-                  onTap: provider.isComplete()
-                      ? () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => CommentPage()))
-                      : null,
-                  child: Container(
-                    width: 358,
-                    height: 54,
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-                    decoration: BoxDecoration(
-                      color: const Color.fromRGBO(76, 78, 219, 1),
-                      borderRadius: BorderRadius.circular(9999), // pill shape
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(width: 12),
-                        Text(
-                          'Next',
+                      const SizedBox(height: 24),
+                      mealBlock("Breakfast", provider.breakfast,
+                          (val) => provider.setMealFeedback('breakfast', val)),
+                      const SizedBox(height: 24),
+                      mealBlock("Lunch", provider.lunch,
+                          (val) => provider.setMealFeedback('lunch', val)),
+                      const SizedBox(height: 24),
+                      mealBlock("Dinner", provider.dinner,
+                          (val) => provider.setMealFeedback('dinner', val)),
+          
+                      // SMC extra fields
+                      if (provider.isSMC) ...[
+                        const SizedBox(height: 24),
+                        const Text(
+                          "Additional SMC Feedback",
                           style: TextStyle(
-                            fontFamily: 'OpenSans-Regular',
-                            fontSize: 16,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                          ),
+                              fontFamily: 'OpenSans-Regular',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 20),
                         ),
+                        const SizedBox(height: 16),
+                        smcBlock("Hygiene", provider.hygiene,
+                            (val) => provider.setSMCFeedback('hygiene', val)),
+                        smcBlock("Waste Disposal", provider.wasteDisposal,
+                            (val) => provider.setSMCFeedback('wasteDisposal', val)),
+                        smcBlock("Quality of Ingredients", provider.qualityOfIngredients,
+                            (val) => provider.setSMCFeedback('qualityOfIngredients', val)),
+                        smcBlock("Uniform & Punctuality", provider.uniformAndPunctuality,
+                            (val) => provider.setSMCFeedback('uniformAndPunctuality', val)),
                       ],
+                    ],
+                  ),
+                ),
+                Center(
+                  child: GestureDetector(
+                    onTap: provider.isComplete()
+                        ? () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => CommentPage()))
+                        : null,
+                    child: Container(
+                      width: 358,
+                      height: 54,
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: const Color.fromRGBO(76, 78, 219, 1),
+                        borderRadius: BorderRadius.circular(9999), // pill shape
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(width: 12),
+                          Text(
+                            'Next',
+                            style: TextStyle(
+                              fontFamily: 'OpenSans-Regular',
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

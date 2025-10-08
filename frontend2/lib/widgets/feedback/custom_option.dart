@@ -11,9 +11,9 @@ Widget customOption({
   return GestureDetector(
     onTap: () => onChanged(value),
     child: Container(
-      height: 64,
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      height: 56,
+      margin: const EdgeInsets.symmetric(vertical: 4.5*7/6),
+      padding: const EdgeInsets.symmetric(vertical: 10.5*7/6, horizontal: 16),
       decoration: BoxDecoration(
         color: isSelected ? const Color(0xFFE7ECFF) : Colors.white,
         border: Border.all(
@@ -27,6 +27,7 @@ Widget customOption({
           Icon(
             isSelected ? Icons.check_circle : Icons.circle_outlined,
             color: isSelected ? const Color(0xFF4C4BD9) : Colors.grey,
+            size: 18*7/6,
           ),
 
           const SizedBox(width: 12),
