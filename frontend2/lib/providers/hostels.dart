@@ -1,0 +1,41 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:frontend2/constants/endpoint.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class HostelsNotifier {
+  static var hostelNotifier = ValueNotifier<List<String>>([]);
+  static var hostels = <String>[];
+  static void init() async {
+    final prefs = await SharedPreferences.getInstance();
+    try {
+      final dio = Dio();
+      final response = await dio.get(
+        '$baseUrl/hostel/all', // Match your backend route
+      );
+      hostels = [];
+      for (Map hostel in response.data) {
+        hostels.add(hostel['hostel_name']);
+      }
+    } catch (e) {
+      hostels = [
+        'Barak',
+        'Brahmaputra',
+        'Dhansiri',
+        'Dihing',
+        'Disang',
+        'Gaurang',
+        'Kameng',
+        'Kapili',
+        'Lohit',
+        'Manas',
+        'Siang',
+        'Subansiri',
+        'Umiam',
+      ];
+    } finally {
+      hostelNotifier.value = hostels;
+      prefs.setStringList("hostels", hostels);
+    }
+  }
+}

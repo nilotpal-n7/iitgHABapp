@@ -1,34 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:frontend2/providers/hostels.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class MessChangePrefs extends StatefulWidget {
+class MessDropdown extends StatefulWidget {
   final String? selectedOption;
   final ValueChanged<String?> onChanged;
 
-  const MessChangePrefs(
+  const MessDropdown(
       {super.key, required this.selectedOption, required this.onChanged});
 
   @override
-  State<MessChangePrefs> createState() => _MessChangePrefsState();
+  State<MessDropdown> createState() => _MessDropdownState();
 }
 
-class _MessChangePrefsState extends State<MessChangePrefs> {
-  late List<String> options = ["No Hostels Found"];
+class _MessDropdownState extends State<MessDropdown> {
+  // late List<String> options = ["No Hostels Found"];
+
+  // late String selectedHostel = HostelsNotifier.hostels.isNotEmpty?HostelsNotifier.hostels[0]:"";
+
+  List<String> options = HostelsNotifier.hostels.isNotEmpty?HostelsNotifier.hostels:["No Hostels Found"];
+
 
   @override
   void initState() {
     super.initState();
-    initHostels();
+    // initHostels();
   }
 
-  void initHostels() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      options = prefs.getStringList("hostels")??[];
-    });
-    print(options);
-  }
+  // void initHostels() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   setState(() {
+  //     options = prefs.getStringList("hostels")??[];
+  //   });
+  //   print(options);
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +42,7 @@ class _MessChangePrefsState extends State<MessChangePrefs> {
       child: DropdownButton2<String>(
         isExpanded: true,
         hint: const Padding(
-          padding: EdgeInsets.all(8),
+          padding: EdgeInsets.symmetric(horizontal: 8),
           child: Text(
             'Select',
             style: TextStyle(
@@ -101,7 +107,7 @@ class _MessChangePrefsState extends State<MessChangePrefs> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.grey.shade300, width: 1.0)),
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 16)),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8)),
         menuItemStyleData: const MenuItemStyleData(
             height: 56, padding: EdgeInsets.symmetric(horizontal: 16)),
       ),
@@ -109,12 +115,12 @@ class _MessChangePrefsState extends State<MessChangePrefs> {
   }
 }
 
-// class SecondMessChangePrefs extends StatelessWidget {
+// class SecondMessDropdown extends StatelessWidget {
 //   final String? selectedOption;
 //   final ValueChanged<String?> onChanged;
 //   final String? firstpref;
 //
-//   const SecondMessChangePrefs({
+//   const SecondMessDropdown({
 //     super.key,
 //     required this.selectedOption,
 //     required this.onChanged,

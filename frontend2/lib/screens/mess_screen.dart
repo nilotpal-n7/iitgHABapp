@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utilities/startupitem.dart';
 import '../widgets/mess_widgets/horizontal_menu_builder.dart';
-import '../apis/hostel/hostels.dart';
 import 'package:intl/intl.dart';
 
 class MessApp extends StatefulWidget {
@@ -47,7 +46,6 @@ class _MessScreenState extends State<MessScreen> {
   }
 
   Future<void> _loadData() async {
-    await fetchAllHostels();
     await fetchCurrSubscrMess();
     await fetchMessInfo();
     setState(() {
@@ -85,7 +83,7 @@ class _MessScreenState extends State<MessScreen> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            return SingleChildScrollView(
+            return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
@@ -181,48 +179,51 @@ class _MenuSectionState extends State<_MenuSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Text(
-              "Menu",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF676767)),
-            ),
-            const Spacer(),
-            HostelDrop(onChanged: _updateMessId),
-          ],
-        ),
-        const SizedBox(height: 24),
-        SizedBox(
-          height: 36,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: daysOnly.map((day) {
-              return _DayChip(
-                label: day,
-                selected: selectedDay == day,
-                onTap: () => _updateDay(day),
-              );
-            }).toList(),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text(
+                "Menu",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF676767)),
+              ),
+              const Spacer(),
+              // MessDropdown(selectedOption: "Barak", onChanged: (s) {print(s);},),
+              HostelDrop(onChanged: _updateMessId),
+            ],
           ),
-        ),
-        const SizedBox(height: 16),
-        _MenuCard(
-          messId: messId,
-          day: selectedDay,
-        ),
-        const SizedBox(height: 24),
-        const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.info_outline, size: 16, color: Color(0xFF676767),),
-            SizedBox(width: 2,),
-            Text("Tap on a food item to mark as favourite", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF676767)),),
-          ],
-        ),
-      ],
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 36,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: daysOnly.map((day) {
+                return _DayChip(
+                  label: day,
+                  selected: selectedDay == day,
+                  onTap: () => _updateDay(day),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _MenuCard(
+            messId: messId,
+            day: selectedDay,
+          ),
+          const SizedBox(height: 24),
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.info_outline, size: 16, color: Color(0xFF676767),),
+              SizedBox(width: 2,),
+              Text("Tap on a food item to mark as favourite", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF676767)),),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

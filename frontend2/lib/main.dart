@@ -5,6 +5,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:frontend2/apis/authentication/login.dart';
 import 'package:frontend2/apis/mess/user_mess_info.dart';
 import 'package:frontend2/providers/feedback_provider.dart';
+import 'package:frontend2/providers/hostels.dart';
 import 'package:frontend2/screens/home_screen.dart';
 import 'package:frontend2/screens/MainNavigationScreen.dart';
 import 'package:frontend2/screens/login_screen.dart';
@@ -18,6 +19,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final bool asLoggedIn = await isLoggedIn();
   await Firebase.initializeApp();
+
+  HostelsNotifier.init();
 
   await getUserMessInfo();
 

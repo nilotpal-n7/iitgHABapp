@@ -91,14 +91,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               // Main content with padding
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
                 child: Column(
                   children: [
                     // Profile Image
                     Container(
                       margin: const EdgeInsets.only(bottom: 24),
                       child: CircleAvatar(
-                        radius: 45,
+                        radius: 68,
                         backgroundColor: Colors.blue[100],
                         backgroundImage: const NetworkImage(
                           "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=500",
@@ -131,7 +131,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       label: "Name",
                       value: name,
                     ),
-                    const SizedBox(height: 20),
+
+                    const Divider(height: 24, color: Color(0xFFE2E2E2),),
+
+                    // const SizedBox(height: 20),
 
                     // Current Mess
                     _buildField(
@@ -139,7 +142,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       label: "Current Mess",
                       value: currMess,
                     ),
-                    const SizedBox(height: 20),
+
+                    const Divider(height: 24, color: Color(0xFFE2E2E2),),
+
+                    // const SizedBox(height: 20),
 
                     // Hostel and Room No. in same row
                     Row(
@@ -148,12 +154,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         // Hostel
                         Expanded(
                           child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Icon(
                                 Icons.home_outlined,
                                 color: Colors.grey[600],
-                                size: 20,
+                                size: 28,
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -185,40 +191,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         // Room No.
                         Expanded(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(width: 40),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Room No.",
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.w400,
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              border: Border(left: BorderSide(width: 1, color: Color(0xFFE2E2E2)))
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Room No.",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                          fontWeight: FontWeight.w400,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      roomNo,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.w500,
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        roomNo,
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+
+                    const Divider(height: 24, color: Color(0xFFE2E2E2),),
+
+                    // const SizedBox(height: 20),
 
                     // Phone
                     _buildField(
@@ -226,7 +240,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       label: "Phone",
                       value: phone,
                     ),
-                    const SizedBox(height: 20),
+
+                    const Divider(height: 24, color: Color(0xFFE2E2E2),),
+
+
+                    // const SizedBox(height: 20),
 
                     // Outlook ID
                     _buildField(
@@ -289,12 +307,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String value,
   }) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Icon(
           icon,
           color: Colors.grey[600],
-          size: 20,
+          size: 28,
         ),
         const SizedBox(width: 12),
         Expanded(
