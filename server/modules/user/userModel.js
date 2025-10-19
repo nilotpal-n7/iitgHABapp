@@ -125,10 +125,18 @@ const userSchema = new mongoose.Schema({
       return this.hostel;
     },
   },
-  next_mess: {
+  next_mess1: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Hostel",
   },
+  next_mess2: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Hostel",
+},
+next_mess3: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Hostel",
+},
   applied_hostel_timestamp: {
     type: Date,
   },
