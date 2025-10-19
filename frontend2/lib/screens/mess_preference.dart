@@ -19,6 +19,8 @@ class _MessChangePreferenceScreenState
     extends State<MessChangePreferenceScreen> {
   bool first = true;
   String? firstpref;
+  String? secondpref;
+  String? thirdpref;
   bool alreadyApplied = false;
   String? appliedHostel;
   String? defaultMess;
@@ -94,10 +96,20 @@ class _MessChangePreferenceScreenState
   }
 
   Future<void> handleSubmit(String? firstpref) async {
-    if (firstpref == null) {
-      _showMessage("Error", "Please select a mess preference");
-      return;
-    }
+   if (firstpref == null || secondpref == null || thirdpref == null) {
+  _showMessage("Error", "Please select all three mess preferences");
+  return;
+}
+
+if ([firstpref, secondpref, thirdpref].toSet().length < 3) {
+  _showMessage("Error", "Preferences must be unique");
+  return;
+}
+
+if ([firstpref, secondpref, thirdpref].contains(defaultMess)) {
+  _showMessage("Error", "Please select messes different from your current mess");
+  return;
+}
 
     if (firstpref == defaultMess) {
       _showMessage("Error", "Please select a different mess");
@@ -115,9 +127,12 @@ class _MessChangePreferenceScreenState
             'Authorization': 'Bearer $token',
           },
         ),
-        data: {
-          "mess_pref": firstpref,
+       data: {
+         "mess_pref_1": firstpref,
+         "mess_pref_2": secondpref,
+         "mess_pref_3": thirdpref,
         },
+
       );
 
       if (res.statusCode == 202) {
@@ -276,6 +291,24 @@ class _MessChangePreferenceScreenState
                       onChanged: (value) => setState(() {
                         firstpref = value;
                       }),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                      MessChangePrefs(
+                        selectedOption: secondpref,
+                       onChanged: (value) => setState(() {
+                        secondpref = value;
+                           }),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                       MessChangePrefs(
+                       selectedOption: thirdpref,
+                        onChanged: (value) => setState(() {
+                          thirdpref = value;
+                           }),
                     ),
 
                     if (firstpref == null && !first)
