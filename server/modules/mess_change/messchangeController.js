@@ -58,36 +58,35 @@ const processUsersInIterations = (users, capacityTracker) => {
 
     const sortedUsers = sortUsersByPriority(users);
     for (const user of sortedUsers) {
-      const targetHostelId = user.next_mess?.toString();
-      console.log("targetHostelId", targetHostelId);
-      if (!targetHostelId || !capacityTracker[targetHostelId]) {
-        // Skip invalid requests - they remain unprocessed
-        remainingUsers.push(user);
-        continue;
+      const preferences = [
+        user.next_mess1?.toString(),
+        user.next_mess2?.toString(),
+        user.next_mess3?.toString(),
+      ] // remove nulls
+
+      let assigned = false;
+      for (const messId of preferences) {
+        if (capacityTracker[messId]?.available > 0) {
+          acceptedUsers.push({
+            id: user._id,
+            name: user.name,
+            rollNumber: user.rollNumber,
+            fromHostelId: user.hostel,
+            toHostelId: messId,
+          });
+          capacityTracker[messId].available--;
+          assigned = true;
+          processedInThisIteration++;
+          break;
+        }
       }
-      console.log(
-        "capacityTracker[targetHostelId].available",
-        capacityTracker[targetHostelId].available
-      );
-      if (capacityTracker[targetHostelId].available > 0) {
-        console.log("accepted");
-        acceptedUsers.push({
-          id: user._id,
-          name: user.name,
-          rollNumber: user.rollNumber,
-          fromHostelId: user.hostel, // Use user's actual hostel for HAB processed requests
-          toHostelId: user.next_mess,
-        });
-        capacityTracker[targetHostelId].available--;
-        processedInThisIteration++;
-      } else {
-        // Keep for next iteration - don't mark as waitlisted during processing
+
+      if (!assigned) {
         remainingUsers.push(user);
       }
     }
 
     users = remainingUsers;
-    console.log("users", users);
     if (processedInThisIteration === 0) break;
   }
 
@@ -95,12 +94,38 @@ const processUsersInIterations = (users, capacityTracker) => {
     id: user._id,
     name: user.name,
     rollNumber: user.rollNumber,
-    fromHostelId: user.hostel, // Use user's actual hostel for HAB processed requests
-    toHostelId: user.next_mess,
+    fromHostelId: user.hostel,
+    toHostelId: null,
   }));
 
   return { acceptedUsers, rejectedUsers };
 };
+
+const reallocateImprovedMessChoices = async (acceptedUsers, capacityTracker) => {
+  for (const userData of acceptedUsers) {
+    const user = await User.findById(userData.id);
+    const preferences = [
+      user.next_mess1?.toString(),
+      user.next_mess2?.toString(),
+      user.next_mess3?.toString(),
+    ].filter(Boolean);
+
+    const currentMess = user.curr_subscribed_mess?.toString();
+
+    for (const preferredMess of preferences) {
+      if (preferredMess === currentMess) break; // already best option
+      if (capacityTracker[preferredMess]?.available > 0) {
+        // Reassign to better mess
+        user.curr_subscribed_mess = preferredMess;
+        capacityTracker[preferredMess].available--;
+        capacityTracker[currentMess].available++;
+        await user.save();
+        break;
+      }
+    }
+  }
+};
+
 
 // Database update function for accepted users
 const updateAcceptedUsers = async (acceptedUsers) => {
@@ -112,7 +137,9 @@ const updateAcceptedUsers = async (acceptedUsers) => {
     user.applied_for_mess_changed = false;
     user.got_mess_changed = true;
     user.applied_hostel_string = "";
-    user.next_mess = null;
+    user.next_mess1 = null;
+    user.next_mess2=null;
+    user.next_mess3 = null;
     user.applied_hostel_timestamp = null;
     console.log("user", user);
     await user.save();
@@ -218,6 +245,7 @@ const processAllMessChangeRequests = async (req, res) => {
 
     // Update database for all user categories
     await updateAcceptedUsers(acceptedUsers);
+    await reallocateImprovedMessChoices(acceptedUsers, capacityTracker);
     await updateRejectedUsers(rejectedUsers);
 
     // Automatically disable mess change after processing and update timestamp
