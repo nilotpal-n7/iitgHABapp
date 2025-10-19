@@ -4,8 +4,10 @@ import 'package:frontend2/constants/endpoint.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HostelsNotifier {
+  static String userHostel = "";
   static var hostelNotifier = ValueNotifier<List<String>>([]);
   static var hostels = <String>[];
+  static var onHostelChanged = <void Function()>[];
   static void init() async {
     final prefs = await SharedPreferences.getInstance();
     try {
@@ -36,6 +38,18 @@ class HostelsNotifier {
     } finally {
       hostelNotifier.value = hostels;
       prefs.setStringList("hostels", hostels);
+      if (prefs.getString('hostelID') != null && hostels.contains(prefs.getString('hostelID'))) {
+        userHostel = prefs.getString('hostelID')!;
+      } else {
+        userHostel = hostels[0];
+      }
+      for (var onChange in onHostelChanged) {
+        onChange();
+      }
     }
+  }
+  static void addOnChange(void Function() func) {
+    func();
+    onHostelChanged.add(func);
   }
 }

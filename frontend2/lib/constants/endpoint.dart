@@ -64,4 +64,7 @@ class messInfo {
   static const getUserMessInfo ="$baseUrl/mess/get";
 }
 
-
+class ProfilePicture {
+  static const changeUserProfilePicture = "$baseUrl/profile/picture/set";
+  static const getUserProfilePicture = "$baseUrl/profile/picture/get";
+}

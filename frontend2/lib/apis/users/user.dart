@@ -26,6 +26,8 @@ Future<Map<String, String>?> fetchUserDetails() async {
       final prefs = await SharedPreferences.getInstance();
       final Map<String, dynamic> userData = json.decode(resp.body);
 
+      print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!UserData: $userData");
+
       // Extract user details
       final String name = userData['name'] ?? "User";
       final String userId = userData['_id'] ?? "";

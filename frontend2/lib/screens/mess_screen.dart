@@ -85,10 +85,10 @@ class _MessScreenState extends State<MessScreen> {
           builder: (context, constraints) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
+              child: SingleChildScrollView(
+                // constraints: BoxConstraints(
+                //   minHeight: constraints.maxHeight,
+                // ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,7 +107,7 @@ class _MessScreenState extends State<MessScreen> {
                         ),
                         const SizedBox(height: 18),
                         _MenuSection(),
-                        const SizedBox(height: 24),
+                        // const SizedBox(height: 24),
                       ],
                     ),
                     // Column(
@@ -208,20 +208,33 @@ class _MenuSectionState extends State<_MenuSection> {
               }).toList(),
             ),
           ),
-          const SizedBox(height: 16),
-          _MenuCard(
-            messId: messId,
-            day: selectedDay,
-          ),
-          const SizedBox(height: 24),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.info_outline, size: 16, color: Color(0xFF676767),),
-              SizedBox(width: 2,),
-              Text("Tap on a food item to mark as favourite", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF676767)),),
-            ],
-          ),
+          SingleChildScrollView(
+            child: SizedBox(
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  // _MenuCard(
+                  //   messId: messId,
+                  //   day: selectedDay,
+                  // ),
+                  
+                  _MealWrapper(meal: 'Breakfast', messId: messId, day: selectedDay),
+                  _MealWrapper(meal: 'Lunch', messId: messId, day: selectedDay),
+                  _MealWrapper(meal: 'Dinner', messId: messId, day: selectedDay),
+              
+                  const SizedBox(height: 24),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.info_outline, size: 16, color: Color(0xFF676767),),
+                      SizedBox(width: 2,),
+                      Text("Tap on a food item to mark as favourite", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF676767)),),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          )
         ],
       ),
     );

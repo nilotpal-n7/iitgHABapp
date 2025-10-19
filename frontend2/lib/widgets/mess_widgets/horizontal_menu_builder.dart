@@ -176,7 +176,7 @@ class _IndividualMealCardState extends State<IndividualMealCard>
         margin: const EdgeInsets.only(top: 8),
         padding: EdgeInsets.symmetric(vertical: widget.isSubscribed ? 4 : 0),
         child: Container(
-          height: widget.isSubscribed ? 30 : 16,
+          height: widget.isSubscribed ? 30 : 20,
           padding: widget.isSubscribed ? const EdgeInsets.symmetric(horizontal: 8, vertical: 2) : const EdgeInsets.all(0),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),

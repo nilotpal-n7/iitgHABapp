@@ -10,6 +10,7 @@ import 'package:frontend2/screens/home_screen.dart';
 import 'package:frontend2/screens/MainNavigationScreen.dart';
 import 'package:frontend2/screens/login_screen.dart';
 import 'package:frontend2/screens/mess_screen.dart';
+import 'package:frontend2/screens/profile_picture_screen.dart';
 import 'package:frontend2/utilities/startupitem.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend2/utilities/notifications.dart';
@@ -21,6 +22,7 @@ Future<void> main() async {
   await Firebase.initializeApp();
 
   HostelsNotifier.init();
+  ProfilePictureProvider.init();
 
   await getUserMessInfo();
 
@@ -117,8 +119,8 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
 
-      // home: widget.isLoggedIn ? const MainNavigationScreen() : const LoginScreen(),
-      home: const MainNavigationScreen(),
+      home: widget.isLoggedIn ? const MainNavigationScreen() : const LoginScreen(),
+      // home: const MainNavigationScreen(),
 
       //home:  ProfileScreen(),
       builder: EasyLoading.init(),
