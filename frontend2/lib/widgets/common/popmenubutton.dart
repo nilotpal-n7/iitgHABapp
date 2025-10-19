@@ -180,13 +180,13 @@ class _HostelDropState extends State<HostelDrop> {
             return hostels.map((String item) {
               return Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 9),
+                      horizontal: 8, vertical: 6),
                   child: Text(item,
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.right,
                       style: const TextStyle(
                         fontWeight: FontWeight.w500,
                         fontSize: 13,
-                        color: Color(0xFF676767),
+                        color: Color(0xFF4C4EDB),
                         decoration: TextDecoration.none,
                       )));
             }).toList();
@@ -198,16 +198,18 @@ class _HostelDropState extends State<HostelDrop> {
             }
           },
           buttonStyleData: ButtonStyleData(
-              height: 56,
-              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+              height: 40,
+              padding: const EdgeInsets.only(top: 4, bottom: 4),
               decoration: BoxDecoration(
                   color: selectedHostel == ""
                       ? const Color(0xFFF5F5F5)
                       : Colors.transparent,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(8),
                   border: selectedHostel == ""
-                      ? Border.all(color: const Color(0xFFC5C5D1), width: 1)
-                      : Border.all(color: const Color(0xFFC5C5D1), width: 2))),
+                      ? Border.all(color: const Color(0xFFC5C5D1), width: 0)
+                      : Border.all(color: const Color(0xFFC5C5D1), width: 0)
+              ),
+            ),
           dropdownStyleData: DropdownStyleData(
               maxHeight: MediaQuery.of(context).size.height * 0.6,
               width: 125,

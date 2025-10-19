@@ -146,6 +146,7 @@ class _IndividualMealCardState extends State<IndividualMealCard>
     super.initState();
     _menu = widget.menu;
     print("🥳🥳 is mess subscribes??: ${widget.isSubscribed}");
+    _expanded = _statusText().startsWith("Ongoing");
   }
 
   /// Calculates total likes for the meal

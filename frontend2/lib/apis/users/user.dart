@@ -40,6 +40,8 @@ Future<Map<String, String>?> fetchUserDetails() async {
       final bool gotHostel = userData['got_mess_changed'];
       final bool isSMC = userData['isSMC'] ?? false;
 
+      // print("IS SMCCCC: ${userData['isSMC']}, $isSMC");
+
       prefs.setBool('isSMC', isSMC);
       prefs.setBool('gotMess', gotHostel);
       prefs.setString('email', mail);

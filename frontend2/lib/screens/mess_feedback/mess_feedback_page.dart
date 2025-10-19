@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:frontend2/constants/themes.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/feedback_provider.dart';
 import '../../widgets/feedback/custom_option.dart';
 import 'comment_page.dart';
 
-class MessFeedbackPage extends StatelessWidget {
+class MessFeedbackPage extends StatefulWidget {
+  @override
+  State<MessFeedbackPage> createState() => _MessFeedbackPageState();
+}
+
+class _MessFeedbackPageState extends State<MessFeedbackPage> {
   final List<String> options = [
     'Very Poor',
     'Poor',
@@ -49,9 +55,20 @@ class MessFeedbackPage extends StatelessWidget {
     );
   }
 
+  var loading = true;
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<FeedbackProvider>(context);
+    if (loading) {
+      (SharedPreferences.getInstance()).then((instance) {
+        provider.isSMC = instance.getBool('isSMC') ?? false;
+        setState(() {
+          loading = false;
+        });
+      });
+    }
+
 
     return Scaffold(
       
