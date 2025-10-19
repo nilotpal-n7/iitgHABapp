@@ -52,7 +52,7 @@ dependencies:
   sign_in_with_apple: ^6.1.4
 
   permission_handler: ^11.3.1
-  mobile_scanner: ^6.0.4
+  mobile_scanner: ^7.1.2
   qr_flutter: ^4.1.0
   dio: ^5.8.0+1
   vibration: ^3.1.3
