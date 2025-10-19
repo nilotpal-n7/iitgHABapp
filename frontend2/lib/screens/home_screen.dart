@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:frontend2/screens/mess_feedback/mess_feedback_page.dart';
+import 'package:frontend2/screens/profile_picture_screen.dart';
 import 'package:frontend2/screens/profile_screen.dart';
 import 'package:frontend2/screens/qr_scanner.dart';
 import 'package:frontend2/widgets/common/name_trimmer.dart';
@@ -326,15 +329,23 @@ class _HomeScreenState extends State<HomeScreen> {
         leading: Padding(
           padding: const EdgeInsets.only(left: 15.0),
           child: InkWell(
+            focusColor: Colors.transparent,
+            hoverColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const ProfileScreen()),
               );
             },
-            child: const CircleAvatar(
-              backgroundColor: Color(0xFFEFEFEF),
-              radius: 18,
+            child: ValueListenableBuilder(
+              valueListenable: ProfilePictureProvider.profilePictureString,
+              builder: (context, value, child) => CircleAvatar(
+                          radius: 16,
+                          backgroundColor: Colors.blue[100],
+                          backgroundImage: MemoryImage(base64Decode(value))
+                        ),
             ),
           ),
         ),

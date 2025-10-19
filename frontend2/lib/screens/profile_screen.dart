@@ -1,5 +1,10 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend2/apis/authentication/login.dart';
+import 'package:frontend2/constants/endpoint.dart';
+import 'package:frontend2/screens/profile_picture_screen.dart';
 import 'package:frontend2/widgets/common/custom_linear_progress.dart';
 import 'package:frontend2/widgets/common/hostel_name.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -97,33 +102,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     // Profile Image
                     Container(
                       margin: const EdgeInsets.only(bottom: 24),
-                      child: CircleAvatar(
-                        radius: 68,
-                        backgroundColor: Colors.blue[100],
-                        backgroundImage: const NetworkImage(
-                          "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=500",
+                      child: ValueListenableBuilder(
+                        valueListenable: ProfilePictureProvider.profilePictureString,
+                        builder: (context, value, child) => CircleAvatar(
+                          radius: 68,
+                          backgroundColor: Colors.blue[100],
+                          backgroundImage: MemoryImage(base64Decode(value))
                         ),
                       ),
                     ),
 
-                    InkWell(
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                        decoration: BoxDecoration(border: Border.all(color: const Color(0xFFC5C5D1)), borderRadius: BorderRadius.circular(6)),
-                        child: const Text("Edit Profile Picture"),
-                      ),
-                      onTap: () async {
-                        print("Pick Image");
-                        final ImagePicker picker = ImagePicker();
-                        final XFile? pfp = await picker.pickImage(source: ImageSource.gallery);
-                        if (pfp != null) {
-                          print("recieved File: $pfp");
-                        } else {
-                          print("err");
-                        }
-                      },
-                    ),
+                    // InkWell(
+                    //   child: Container(
+                    //     margin: const EdgeInsets.only(bottom: 16),
+                    //     padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    //     decoration: BoxDecoration(border: Border.all(color: const Color(0xFFC5C5D1)), borderRadius: BorderRadius.circular(6)),
+                    //     child: const Text("Set Profile Picture"),
+                    //   ),
+                    //   onTap: () async {
+                    //     print("Pick Image");
+                    //     final ImagePicker picker = ImagePicker();
+                    //     final XFile? pfp = await picker.pickImage(source: ImageSource.gallery);
+                    //     if (pfp != null) {
+                    //       print("recieved File: $pfp");
+                    //       final formData = FormData.fromMap({
+                    //         // 'file' is the field name the server expects; change as needed
+                    //         'file': await MultipartFile.fromFile(
+                    //           pfp.path,
+                    //           filename: pfp.name, // XFile has a 'name' getter
+                    //         ),
+                    //       });
+                    //       final token = (await SharedPreferences.getInstance()).getString('access_token');
+                    //       final dio = Dio();
+                    //       final response = await dio.post(
+                    //         ProfilePicture.changeUserProfilePicture,
+                    //         data: formData,
+                    //         options: Options(
+                    //           headers: {
+                    //             'Authorization': 'Bearer $token',
+                    //           },
+                    //           contentType: 'multipart/form-data',
+                    //         ),
+                    //       );
+                    //       print("Uploading File Online: $response");
+                    //     } else {
+                    //       print("err");
+                    //     }
+                    //   },
+                    // ),
 
                     // Name
                     _buildField(
