@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:frontend2/screens/complaints_screen.dart';
 import 'package:frontend2/screens/mess_feedback/mess_feedback_page.dart';
 import 'package:frontend2/screens/profile_picture_screen.dart';
 import 'package:frontend2/screens/profile_screen.dart';
+import 'package:frontend2/utilities/ComingSoon.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home_screen.dart';
 import 'mess_screen.dart';
@@ -36,7 +38,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final screens = [
       HomeScreen(onNavigateToTab: _handleNavTap),
       const MessScreen(),
-      MessFeedbackPage(),
+      const ComingSoonScreen(),
     ];
     return ValueListenableBuilder(
       valueListenable: ProfilePictureProvider.profilePictureString,

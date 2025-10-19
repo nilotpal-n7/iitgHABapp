@@ -6,7 +6,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 class HostelDrop extends StatefulWidget {
   final Function(String) onChanged;
 
-  const HostelDrop({super.key, required this.onChanged});
+  const HostelDrop({super.key, required this.onChanged, required this.selectedHostel});
+
+  final String selectedHostel;
 
   @override
   _HostelDropState createState() => _HostelDropState();
@@ -19,12 +21,23 @@ class _HostelDropState extends State<HostelDrop> {
   @override
   void initState() {
     super.initState();
+    selectedHostel = widget.selectedHostel;
     // initHostels();
     HostelsNotifier.addOnChange(() {
-      hostels = HostelsNotifier.hostels;
-      selectedHostel = HostelsNotifier.userHostel.isNotEmpty?HostelsNotifier.userHostel:(HostelsNotifier.hostels.isNotEmpty?HostelsNotifier.hostels[0]:"");
+      setState(() {
+        hostels = HostelsNotifier.hostels;
+      });
       print("hostels: $hostels\nselected hostel: $selectedHostel");
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant HostelDrop oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+      selectedHostel = widget.selectedHostel;
+    });
+    // widget.onChanged(selectedHostel);
   }
 
   void initHostels() async {
@@ -49,7 +62,7 @@ class _HostelDropState extends State<HostelDrop> {
     // selectedHostel = 'Barak';
   }
 
-  String selectedHostel = "";
+  String selectedHostel = '';
 
   List<String> hostels = [];
 
@@ -181,9 +194,6 @@ class _HostelDropState extends State<HostelDrop> {
           value: selectedHostel,
           onChanged: (selected) {
             if (selected != null) {
-              setState(() {
-                selectedHostel = selected;
-              });
               widget.onChanged(selected);
             }
           },

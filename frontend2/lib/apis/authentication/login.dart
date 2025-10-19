@@ -34,7 +34,7 @@ Future<void> authenticate() async {
     await fetchUserDetails();
     await getUserMessInfo();
     await registerFcmToken();
-    HostelsNotifier.init();
+    await HostelsNotifier.init();
     ProfilePictureProvider.init();
   } on PlatformException catch (_) {
     rethrow;

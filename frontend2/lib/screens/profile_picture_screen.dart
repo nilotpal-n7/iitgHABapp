@@ -119,7 +119,7 @@ class _ProfilePictureScreenState extends State<ProfilePictureScreen> {
                               //   ),
                               // );
                               // print("Uploading File Online: $response");
-                              print("Done with picture");
+                              // print("Done with picture");
                               var image = base64Encode(File(final_path).readAsBytesSync());
                               ProfilePictureProvider.profilePictureString.value = image;
                               (await SharedPreferences.getInstance()).setString("profilePicture", image);
@@ -129,7 +129,7 @@ class _ProfilePictureScreenState extends State<ProfilePictureScreen> {
                           },
                         ),
                         const SizedBox(height: 8,),
-                        Container(padding: EdgeInsets.symmetric(horizontal: 32), child: const Text("Please set your Profile Picture before continuing further", textAlign: TextAlign.center, )),
+                        Container(padding: const EdgeInsets.symmetric(horizontal: 32), child: const Text("Please set your Profile Picture before continuing further", textAlign: TextAlign.center, )),
                         const SizedBox(height: 160,),
                       ]
                     )

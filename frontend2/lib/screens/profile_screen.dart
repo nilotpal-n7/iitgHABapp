@@ -25,8 +25,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String roomNo = '';
   String phone = '';
   String currMess = '';
-
   bool _isloading = true;
+  bool canChangeProfilePic = false;
 
   @override
   void initState() {
@@ -46,10 +46,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> getAllocatedHostel() async {
     final prefs = await SharedPreferences.getInstance();
-    final hostel1 = prefs.getString('hostelID');
+    final hostel1 = prefs.getString('hostel');
     final email1 = prefs.getString('email');
     final name1 = prefs.getString('name');
-    final mess1 = prefs.getString('messName');
+    final mess1 = prefs.getString('currMess');
 
     setState(() {
       hostel = hostel1 ?? 'Siang';
@@ -112,44 +112,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
 
-                    // InkWell(
-                    //   child: Container(
-                    //     margin: const EdgeInsets.only(bottom: 16),
-                    //     padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    //     decoration: BoxDecoration(border: Border.all(color: const Color(0xFFC5C5D1)), borderRadius: BorderRadius.circular(6)),
-                    //     child: const Text("Set Profile Picture"),
-                    //   ),
-                    //   onTap: () async {
-                    //     print("Pick Image");
-                    //     final ImagePicker picker = ImagePicker();
-                    //     final XFile? pfp = await picker.pickImage(source: ImageSource.gallery);
-                    //     if (pfp != null) {
-                    //       print("recieved File: $pfp");
-                    //       final formData = FormData.fromMap({
-                    //         // 'file' is the field name the server expects; change as needed
-                    //         'file': await MultipartFile.fromFile(
-                    //           pfp.path,
-                    //           filename: pfp.name, // XFile has a 'name' getter
-                    //         ),
-                    //       });
-                    //       final token = (await SharedPreferences.getInstance()).getString('access_token');
-                    //       final dio = Dio();
-                    //       final response = await dio.post(
-                    //         ProfilePicture.changeUserProfilePicture,
-                    //         data: formData,
-                    //         options: Options(
-                    //           headers: {
-                    //             'Authorization': 'Bearer $token',
-                    //           },
-                    //           contentType: 'multipart/form-data',
-                    //         ),
-                    //       );
-                    //       print("Uploading File Online: $response");
-                    //     } else {
-                    //       print("err");
-                    //     }
-                    //   },
-                    // ),
+                    InkWell(
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        decoration: BoxDecoration(border: Border.all(color: const Color(0xFFC5C5D1)), borderRadius: BorderRadius.circular(6), color: Colors.grey[200]),
+                        child: const Text("Change Profile Picture"),
+                      ),
+                      onTap: () async {
+                        print("ToDo: Pick Image");
+                      },
+                    ),
 
                     // Name
                     _buildField(
@@ -166,7 +139,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _buildField(
                       icon: Icons.restaurant_menu_outlined,
                       label: "Current Mess",
-                      value: currMess,
+                      value: calculateHostel(currMess),
                     ),
 
                     const Divider(height: 24, color: Color(0xFFE2E2E2),),
