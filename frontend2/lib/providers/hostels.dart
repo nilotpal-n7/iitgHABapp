@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend2/constants/endpoint.dart';
+import 'package:frontend2/screens/mess_screen.dart';
+import 'package:frontend2/widgets/common/hostel_name.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HostelsNotifier {
@@ -8,7 +10,7 @@ class HostelsNotifier {
   static var hostelNotifier = ValueNotifier<List<String>>([]);
   static var hostels = <String>[];
   static var onHostelChanged = <void Function()>[];
-  static void init() async {
+  static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     try {
       final dio = Dio();
@@ -37,9 +39,15 @@ class HostelsNotifier {
       ];
     } finally {
       hostelNotifier.value = hostels;
+      
       prefs.setStringList("hostels", hostels);
-      if (prefs.getString('hostelID') != null && hostels.contains(prefs.getString('hostelID'))) {
-        userHostel = prefs.getString('hostelID')!;
+
+      if (prefs.getString('hostelID') != null) {
+        currSubscribedMess = calculateHostel(prefs.getString('hostelID') ?? "");     
+        if (hostels.contains(currSubscribedMess)) {
+          userHostel = currSubscribedMess;
+          prefs.setString("curr_subscribed_mess", currSubscribedMess);
+        }
       } else {
         userHostel = hostels[0];
       }

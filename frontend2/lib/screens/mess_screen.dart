@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend2/providers/hostels.dart';
 import 'package:frontend2/widgets/common/popmenubutton.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -152,19 +153,38 @@ class _MenuSectionState extends State<_MenuSection> {
   late String messId;
   late String selectedDay;
 
+  late final hostelMap;
+
+  String selectedHostel = HostelsNotifier.userHostel.isNotEmpty?HostelsNotifier.userHostel:(HostelsNotifier.hostels.isNotEmpty?HostelsNotifier.hostels[0]:"");
+
   @override
   void initState() {
+    hostelMap = Provider.of<MessInfoProvider>(context, listen: false).hostelMap;
+    print("Selected Hostel rn: $selectedHostel");
+    // HostelsNotifier.init();
+    HostelsNotifier.addOnChange(
+      () {
+        setState(() {
+          selectedHostel = HostelsNotifier.userHostel;
+        //   messId = hostelMap.values.isNotEmpty
+        // ? hostelMap.values.first.messid
+        // : '68552b70491f1303d2c4dbcc'; 
+        });
+      },
+    );
     super.initState();
     selectedDay = DateFormat('EEEE').format(DateTime.now()); // default to today
     // default messId from provider
-    final hostelMap = Provider.of<MessInfoProvider>(context, listen: false).hostelMap;
     messId = hostelMap.values.isNotEmpty
         ? hostelMap.values.first.messid
         : '68552b70491f1303d2c4dbcc';
   }
 
   void _updateMessId(String hostelName) {
-    final hostelMap = Provider.of<MessInfoProvider>(context, listen: false).hostelMap;
+    print(hostelName);
+    setState(() {
+      selectedHostel = hostelName;
+    });
     final id = hostelMap[hostelName]?.messid ?? '6826dfda8493bb0870b10cbf';
     setState(() {
       messId = id;
@@ -191,7 +211,7 @@ class _MenuSectionState extends State<_MenuSection> {
               ),
               const Spacer(),
               // MessDropdown(selectedOption: "Barak", onChanged: (s) {print(s);},),
-              HostelDrop(onChanged: _updateMessId),
+              HostelDrop(selectedHostel: selectedHostel, onChanged: _updateMessId),
             ],
           ),
           const SizedBox(height: 24),

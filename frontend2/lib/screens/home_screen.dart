@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:frontend2/screens/complaints_screen.dart';
 import 'package:frontend2/screens/mess_feedback/mess_feedback_page.dart';
 import 'package:frontend2/screens/profile_picture_screen.dart';
 import 'package:frontend2/screens/profile_screen.dart';
 import 'package:frontend2/screens/qr_scanner.dart';
+import 'package:frontend2/utilities/ComingSoon.dart';
 import 'package:frontend2/widgets/common/name_trimmer.dart';
 import 'package:frontend2/widgets/mess_widgets/MessMenuBuilder.dart';
 import 'package:provider/provider.dart';
@@ -100,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => MessFeedbackPage(),
+                    builder: (context) => const ComingSoonScreen(),
                   ),
                 );
               },

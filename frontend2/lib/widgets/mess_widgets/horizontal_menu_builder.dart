@@ -64,7 +64,24 @@ class _HorizontalMenuBuilderState extends State<HorizontalMenuBuilder> {
           );
         }
         if (snapshot.hasError) {
-          return Text("Error: ${snapshot.error}");
+          return Container(
+            width: double.infinity,
+            child: Card(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+                side: const BorderSide(color: Color(0xC5C5D1), width: 1),
+              ),
+              elevation: 0.5,
+              child: const Padding(
+                padding: EdgeInsets.all(18.0),
+                child: Text(
+                  'Unable to fetch menu',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+            ),
+          );
         }
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Padding(
@@ -92,6 +109,7 @@ class _HorizontalMenuBuilderState extends State<HorizontalMenuBuilder> {
           // isSubscribed: true,
           isSubscribed: widget.userMessId == widget.messId,
           parseTime: _parseTime,
+          statusDisplay: {"monday": 1, "tuesday": 2, "wednesday": 3, "thursday": 4, "friday": 5, "saturday": 6, "sunday": 7}[widget.day.toLowerCase()] == DateTime.now().weekday,
         );
       },
     );
@@ -103,6 +121,7 @@ class IndividualMealCard extends StatefulWidget {
   final bool isSubscribed;
   final DateTime Function(String) parseTime;
   final VoidCallback? onExpandedChanged;
+  final bool? statusDisplay;
 
   const IndividualMealCard({
     super.key,
@@ -110,6 +129,7 @@ class IndividualMealCard extends StatefulWidget {
     required this.isSubscribed,
     required this.parseTime,
     this.onExpandedChanged,
+    this.statusDisplay,
   });
 
   @override
@@ -280,10 +300,11 @@ class _IndividualMealCardState extends State<IndividualMealCard>
                             ),
                           ] else ...[
                             const SizedBox(width: 4,),
-                            Text(
-                              status,
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _statusColor(status)),
-                            )
+                            if (widget.statusDisplay??false)
+                              Text(
+                                status,
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _statusColor(status)),
+                              )
                           ]
                         ],
                       ),
