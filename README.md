@@ -1,5 +1,4 @@
 # 🏘️ Hostel Affairs Board
-# Hi
 
 **Official IIT Guwahati Resident Portal**
 
