@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend2/providers/hostels.dart';
 import 'package:frontend2/widgets/common/popmenubutton.dart';
+import 'package:frontend2/widgets/feedback/FeedBackCard.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utilities/startupitem.dart';
@@ -166,9 +167,7 @@ class _MenuSectionState extends State<_MenuSection> {
       () {
         setState(() {
           selectedHostel = HostelsNotifier.userHostel;
-        //   messId = hostelMap.values.isNotEmpty
-        // ? hostelMap.values.first.messid
-        // : '68552b70491f1303d2c4dbcc'; 
+          messId = hostelMap[selectedHostel]?.messid ?? '6826dfda8493bb0870b10cbf';
         });
       },
     );
@@ -181,12 +180,10 @@ class _MenuSectionState extends State<_MenuSection> {
   }
 
   void _updateMessId(String hostelName) {
-    print(hostelName);
-    setState(() {
-      selectedHostel = hostelName;
-    });
+    // print(hostelName);
     final id = hostelMap[hostelName]?.messid ?? '6826dfda8493bb0870b10cbf';
     setState(() {
+      selectedHostel = hostelName;
       messId = id;
     });
   }
@@ -203,11 +200,13 @@ class _MenuSectionState extends State<_MenuSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          FeedbackCard(),
+          const SizedBox(height: 24),
           Row(
             children: [
               const Text(
-                "Menu",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF676767)),
+                "What's in Menu",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Color(0xFF676767)),
               ),
               const Spacer(),
               // MessDropdown(selectedOption: "Barak", onChanged: (s) {print(s);},),
