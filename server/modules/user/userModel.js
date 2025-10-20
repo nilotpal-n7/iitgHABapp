@@ -93,6 +93,14 @@ const JWT_SECRET_KEY = process.env.JWT_SECRET;
  *           description: Whether user has submitted feedback
  *           default: false
  *           example: false
+ *         profilePictureUrl:
+ *           type: string
+ *           description: Public URL to the user's profile picture
+ *           example: "https://..."
+ *         profilePictureItemId:
+ *           type: string
+ *           description: OneDrive item id for the user's profile picture
+ *           example: "01ABCDEF1234567!987"
  */
 const userSchema = new mongoose.Schema({
   name: {
@@ -130,13 +138,13 @@ const userSchema = new mongoose.Schema({
     ref: "Hostel",
   },
   next_mess2: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "Hostel",
-},
-next_mess3: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "Hostel",
-},
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Hostel",
+  },
+  next_mess3: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Hostel",
+  },
   applied_hostel_timestamp: {
     type: Date,
   },
@@ -170,7 +178,13 @@ next_mess3: {
   },
   isSMC: {
     type: Boolean,
-    default: false
+    default: false,
+  },
+  profilePictureUrl: {
+    type: String,
+  },
+  profilePictureItemId: {
+    type: String,
   },
 });
 

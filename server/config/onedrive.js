@@ -1,10 +1,13 @@
 const settings = {
-	clientId: "ef3696d9-2ab2-423c-a494-fb0a193e0446",
-	clientSecret: "KmD8Q~xCY8cR6RNrCJlUJBCzTbWqx3dKdFVTLajR",
-	tenantId: "850aa78d-94e1-4bc6-9cf3-8c11b530701c",
-	authTenant: "850aa78d-94e1-4bc6-9cf3-8c11b530701c",
-	graphUserScopes: ["user.read", "offline_access", "files.readwrite"],//omitted devicecode since not needed as of now
-	
+  clientId: process.env.CLIENT_ID,
+  clientSecret: process.env.CLIENT_SECRET,
+  tenantId: process.env.TENANT_ID, // add to .env
+  authTenant: process.env.TENANT_ID,
+  graphUserScopes: ["user.read", "offline_access", "files.readwrite"],
+  // Additional required values for uploads
+  driveId: process.env.ONEDRIVE_DRIVE_ID, // add to .env
+  profilePicsFolderId: process.env.ONEDRIVE_PROFILE_PICS_FOLDER_ID, // add to .env
+  storageUserUPN: process.env.ONEDRIVE_STORAGE_USER_UPN, // add to .env
 };
 
 module.exports = settings;
