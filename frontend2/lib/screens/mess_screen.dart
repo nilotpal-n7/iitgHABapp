@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:frontend2/providers/hostels.dart';
 import 'package:frontend2/widgets/common/popmenubutton.dart';
+import 'package:frontend2/widgets/feedback/FeedBackCard.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utilities/startupitem.dart';
 import '../widgets/mess_widgets/horizontal_menu_builder.dart';
-import '../apis/hostel/hostels.dart';
 import 'package:intl/intl.dart';
 
 class MessApp extends StatefulWidget {
@@ -47,7 +48,6 @@ class _MessScreenState extends State<MessScreen> {
   }
 
   Future<void> _loadData() async {
-    await fetchAllHostels();
     await fetchCurrSubscrMess();
     await fetchMessInfo();
     setState(() {
@@ -85,12 +85,12 @@ class _MessScreenState extends State<MessScreen> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            return SingleChildScrollView(
+            return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
+              child: SingleChildScrollView(
+                // constraints: BoxConstraints(
+                //   minHeight: constraints.maxHeight,
+                // ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,7 +109,7 @@ class _MessScreenState extends State<MessScreen> {
                         ),
                         const SizedBox(height: 18),
                         _MenuSection(),
-                        const SizedBox(height: 24),
+                        // const SizedBox(height: 24),
                       ],
                     ),
                     // Column(
@@ -154,21 +154,36 @@ class _MenuSectionState extends State<_MenuSection> {
   late String messId;
   late String selectedDay;
 
+  late final hostelMap;
+
+  String selectedHostel = HostelsNotifier.userHostel.isNotEmpty?HostelsNotifier.userHostel:(HostelsNotifier.hostels.isNotEmpty?HostelsNotifier.hostels[0]:"");
+
   @override
   void initState() {
+    hostelMap = Provider.of<MessInfoProvider>(context, listen: false).hostelMap;
+    print("Selected Hostel rn: $selectedHostel");
+    // HostelsNotifier.init();
+    HostelsNotifier.addOnChange(
+      () {
+        setState(() {
+          selectedHostel = HostelsNotifier.userHostel;
+          messId = hostelMap[selectedHostel]?.messid ?? '6826dfda8493bb0870b10cbf';
+        });
+      },
+    );
     super.initState();
     selectedDay = DateFormat('EEEE').format(DateTime.now()); // default to today
     // default messId from provider
-    final hostelMap = Provider.of<MessInfoProvider>(context, listen: false).hostelMap;
     messId = hostelMap.values.isNotEmpty
         ? hostelMap.values.first.messid
         : '68552b70491f1303d2c4dbcc';
   }
 
   void _updateMessId(String hostelName) {
-    final hostelMap = Provider.of<MessInfoProvider>(context, listen: false).hostelMap;
+    // print(hostelName);
     final id = hostelMap[hostelName]?.messid ?? '6826dfda8493bb0870b10cbf';
     setState(() {
+      selectedHostel = hostelName;
       messId = id;
     });
   }
@@ -181,48 +196,66 @@ class _MenuSectionState extends State<_MenuSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Text(
-              "Menu",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF676767)),
-            ),
-            const Spacer(),
-            HostelDrop(onChanged: _updateMessId),
-          ],
-        ),
-        const SizedBox(height: 24),
-        SizedBox(
-          height: 36,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: daysOnly.map((day) {
-              return _DayChip(
-                label: day,
-                selected: selectedDay == day,
-                onTap: () => _updateDay(day),
-              );
-            }).toList(),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FeedbackCard(),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              const Text(
+                "What's in Menu",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Color(0xFF676767)),
+              ),
+              const Spacer(),
+              // MessDropdown(selectedOption: "Barak", onChanged: (s) {print(s);},),
+              HostelDrop(selectedHostel: selectedHostel, onChanged: _updateMessId),
+            ],
           ),
-        ),
-        const SizedBox(height: 16),
-        _MenuCard(
-          messId: messId,
-          day: selectedDay,
-        ),
-        const SizedBox(height: 24),
-        const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.info_outline, size: 16, color: Color(0xFF676767),),
-            SizedBox(width: 2,),
-            Text("Tap on a food item to mark as favourite", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF676767)),),
-          ],
-        ),
-      ],
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 36,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: daysOnly.map((day) {
+                return _DayChip(
+                  label: day,
+                  selected: selectedDay == day,
+                  onTap: () => _updateDay(day),
+                );
+              }).toList(),
+            ),
+          ),
+          SingleChildScrollView(
+            child: SizedBox(
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  // _MenuCard(
+                  //   messId: messId,
+                  //   day: selectedDay,
+                  // ),
+                  
+                  _MealWrapper(meal: 'Breakfast', messId: messId, day: selectedDay),
+                  _MealWrapper(meal: 'Lunch', messId: messId, day: selectedDay),
+                  _MealWrapper(meal: 'Dinner', messId: messId, day: selectedDay),
+              
+                  const SizedBox(height: 24),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.info_outline, size: 16, color: Color(0xFF676767),),
+                      SizedBox(width: 2,),
+                      Text("Tap on a food item to mark as favourite", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF676767)),),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          )
+        ],
+      ),
     );
   }
 }

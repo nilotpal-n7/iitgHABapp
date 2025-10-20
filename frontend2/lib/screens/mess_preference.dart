@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend2/apis/protected.dart';
-import 'package:frontend2/widgets/common/mess_pref_dropdowns.dart';
+import 'package:frontend2/widgets/common/mess_dropdowns.dart';
 import 'package:frontend2/constants/themes.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -287,7 +287,7 @@ class _MessChangePreferenceScreenState
                     ),
                     const SizedBox(height: 8),
 
-                    MessChangePrefs(
+                    MessDropdown(
                       selectedOption: firstpref,
                       onChanged: (value) => setState(() {
                         firstpref = value;

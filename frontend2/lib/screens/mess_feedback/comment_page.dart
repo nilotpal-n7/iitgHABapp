@@ -21,6 +21,10 @@ class _CommentPageState extends State<CommentPage> {
       print('submitFeedback triggered');
       final provider = Provider.of<FeedbackProvider>(context, listen: false);
 
+      final isSMC = (await SharedPreferences.getInstance()).getBool('isSMC') ?? false;
+
+      provider.isSMC = isSMC;
+
       // Set comment in provider
       provider.setComment(commentController.text);
 
@@ -49,7 +53,7 @@ class _CommentPageState extends State<CommentPage> {
       };
 
       // Add SMC fields if applicable
-      if (provider.isSMC) {
+      if (isSMC) {
         payload['smcFields'] = {
           'hygiene': provider.hygiene,
           'wasteDisposal': provider.wasteDisposal,
@@ -57,6 +61,8 @@ class _CommentPageState extends State<CommentPage> {
           'uniformAndPunctuality': provider.uniformAndPunctuality,
         };
       }
+
+      print("Payload: : : ${jsonEncode(payload)}");
 
       final url = Uri.parse(messFeedback.feedbackSubmit);
       final response = await http.post(
