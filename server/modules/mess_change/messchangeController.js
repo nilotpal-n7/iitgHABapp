@@ -434,12 +434,31 @@ const messChangeStatus = async (req, res) => {
     const settings = await MessChangeSettings.findOne();
     const isMessChangeEnabled = settings ? settings.isEnabled : false;
 
+    // Resolve preference names
+    const [h1, h2, h3] = await Promise.all([
+      user.next_mess1 ? Hostel.findById(user.next_mess1) : null,
+      user.next_mess2 ? Hostel.findById(user.next_mess2) : null,
+      user.next_mess3 ? Hostel.findById(user.next_mess3) : null,
+    ]);
+
+    const prefNames = {
+      first: h1 ? h1.hostel_name : null,
+      second: h2 ? h2.hostel_name : null,
+      third: h3 ? h3.hostel_name : null,
+    };
+
     return res.status(200).json({
       message: "User mess change status fetched successfully",
       applied: user.applied_for_mess_changed || false,
       hostel: user.applied_hostel_string || "",
       default: user.hostel || "",
       isMessChangeEnabled,
+      preferences: prefNames,
+      appliedHostels: [
+        prefNames.first,
+        prefNames.second,
+        prefNames.third,
+      ].filter(Boolean),
     });
   } catch (err) {
     console.error("Error in messChangeStatus:", err);

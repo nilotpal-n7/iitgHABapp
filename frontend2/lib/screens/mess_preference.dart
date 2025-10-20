@@ -78,12 +78,22 @@ class _MessChangePreferenceScreenState
       );
 
       if (res.statusCode == 200) {
+        final prefs = res.data['preferences'];
+        final appliedList = (res.data['appliedHostels'] as List?)
+                ?.whereType<String>()
+                .toList() ??
+            [];
         setState(() {
           alreadyApplied = res.data['applied'] ?? false;
-          appliedHostel = res.data['hostel'];
+          appliedHostel = appliedList.isNotEmpty
+              ? appliedList.join(', ')
+              : res.data['hostel'];
           defaultMess = res.data['default'];
           isMessChangeEnabled = res.data['isMessChangeEnabled'];
-          firstpref = null; // reset selection to avoid stale values
+          // prefill dropdowns with server values when available
+          firstpref = prefs != null ? (prefs['first'] as String?) : null;
+          secondpref = prefs != null ? (prefs['second'] as String?) : null;
+          thirdpref = prefs != null ? (prefs['third'] as String?) : null;
           first = true;
         });
       }
@@ -103,7 +113,8 @@ class _MessChangePreferenceScreenState
     }
 
     // Collect provided (non-null) preferences
-    final provided = [firstpref, secondpref, thirdpref].whereType<String>().toList();
+    final provided =
+        [firstpref, secondpref, thirdpref].whereType<String>().toList();
 
     // Ensure uniqueness among provided preferences
     if (provided.toSet().length != provided.length) {
@@ -272,7 +283,9 @@ class _MessChangePreferenceScreenState
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          'You have already applied for $appliedHostel',
+                          appliedHostel != null && appliedHostel!.isNotEmpty
+                              ? 'You have already applied for $appliedHostel'
+                              : 'You have already applied',
                           style: const TextStyle(color: Colors.black87),
                         ),
                       ),
@@ -289,27 +302,36 @@ class _MessChangePreferenceScreenState
 
                     MessDropdown(
                       selectedOption: firstpref,
-                      onChanged: (value) => setState(() {
-                        firstpref = value;
-                      }),
+                      enabled: !alreadyApplied,
+                      onChanged: !alreadyApplied
+                          ? (value) => setState(() {
+                                firstpref = value;
+                              })
+                          : null,
                     ),
 
                     const SizedBox(height: 8),
 
-                      MessChangePrefs(
-                        selectedOption: secondpref,
-                       onChanged: (value) => setState(() {
-                        secondpref = value;
-                           }),
-                        ),
+                    MessDropdown(
+                      selectedOption: secondpref,
+                      enabled: !alreadyApplied,
+                      onChanged: !alreadyApplied
+                          ? (value) => setState(() {
+                                secondpref = value;
+                              })
+                          : null,
+                    ),
 
-                        const SizedBox(height: 8),
+                    const SizedBox(height: 8),
 
-                       MessChangePrefs(
-                       selectedOption: thirdpref,
-                        onChanged: (value) => setState(() {
-                          thirdpref = value;
-                           }),
+                    MessDropdown(
+                      selectedOption: thirdpref,
+                      enabled: !alreadyApplied,
+                      onChanged: !alreadyApplied
+                          ? (value) => setState(() {
+                                thirdpref = value;
+                              })
+                          : null,
                     ),
 
                     if (firstpref == null && !first)
@@ -318,8 +340,7 @@ class _MessChangePreferenceScreenState
                         child: Row(
                           children: [
                             Padding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(12, 0, 8, 0),
+                              padding: const EdgeInsets.fromLTRB(12, 0, 8, 0),
                               child: SvgPicture.asset(
                                 'assets/icon/information-line.svg',
                                 height: 16,
@@ -342,35 +363,32 @@ class _MessChangePreferenceScreenState
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16),
-        height: 85,
+        height: alreadyApplied ? 16 : 85,
         decoration: const BoxDecoration(
-          //border: Border(top: BorderSide(width: 1, color: Color(0xFFE5E5E5))),
-        ),
+            //border: Border(top: BorderSide(width: 1, color: Color(0xFFE5E5E5))),
+            ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ElevatedButton(
-              onPressed: (loadingStatus || alreadyApplied)
-                  ? null
-                  : () {
-                      handleSubmit(firstpref);
-                      setState(() => first = false);
-                    },
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(
-                  (loadingStatus || alreadyApplied)
-                      ? Colors.grey
-                      : const Color(0xFF4C4EDB),
+            if (!alreadyApplied)
+              ElevatedButton(
+                onPressed: (loadingStatus)
+                    ? null
+                    : () {
+                        handleSubmit(firstpref);
+                        setState(() => first = false);
+                      },
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(
+                    (loadingStatus) ? Colors.grey : const Color(0xFF4C4EDB),
+                  ),
+                  elevation: WidgetStateProperty.all(0),
                 ),
-                elevation: WidgetStateProperty.all(0),
+                child: const Text(
+                  'Submit',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
               ),
-              child: Text(
-                alreadyApplied
-                    ? 'Request already sent to $appliedHostel'
-                    : 'Submit',
-                style: const TextStyle(fontSize: 16, color: Colors.white),
-              ),
-            ),
           ],
         ),
       ),

@@ -5,22 +5,24 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class MessDropdown extends StatefulWidget {
   final String? selectedOption;
-  final ValueChanged<String?> onChanged;
+  final ValueChanged<String?>? onChanged;
+  final bool enabled;
 
-  const MessDropdown(
-      {super.key, required this.selectedOption, required this.onChanged});
+  const MessDropdown({
+    super.key,
+    required this.selectedOption,
+    required this.onChanged,
+    this.enabled = true,
+  });
 
   @override
   State<MessDropdown> createState() => _MessDropdownState();
 }
 
 class _MessDropdownState extends State<MessDropdown> {
-  // late List<String> options = ["No Hostels Found"];
-
-  // late String selectedHostel = HostelsNotifier.hostels.isNotEmpty?HostelsNotifier.hostels[0]:"";
-
-  List<String> options = HostelsNotifier.hostels.isNotEmpty?HostelsNotifier.hostels:["No Hostels Found"];
-
+  List<String> options = HostelsNotifier.hostels.isNotEmpty
+      ? HostelsNotifier.hostels
+      : ["No Hostels Found"];
 
   @override
   void initState() {
@@ -41,54 +43,60 @@ class _MessDropdownState extends State<MessDropdown> {
     return DropdownButtonHideUnderline(
       child: DropdownButton2<String>(
         isExpanded: true,
-        hint: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8),
+        hint: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Text(
             'Select',
             style: TextStyle(
                 fontWeight: FontWeight.w500,
                 fontSize: 16,
-                color: Color(0xFF676767),
+                color: widget.enabled
+                    ? const Color(0xFF676767)
+                    : Colors.grey.shade400,
                 fontFamily: 'General Sans Variable'),
           ),
         ),
         items: options
             .map((String item) => DropdownMenuItem(
-          value: item,
-          child: Container(
-            decoration: BoxDecoration(
-                border: (item == options.last
-                    ? null
-                    : Border(
-                    bottom: BorderSide(
-                        color: Colors.grey.shade300, width: 1.0)))),
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text(item,
-                style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 16,
-                    height: 1.5,
-                    color: Color(0xFF2E2F31))),
-          ),
-        ))
+                  value: item,
+                  enabled: widget.enabled,
+                  child: Container(
+                    decoration: BoxDecoration(
+                        border: (item == options.last
+                            ? null
+                            : Border(
+                                bottom: BorderSide(
+                                    color: Colors.grey.shade300, width: 1.0)))),
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(item,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                            height: 1.5,
+                            color: widget.enabled
+                                ? const Color(0xFF2E2F31)
+                                : Colors.grey.shade400)),
+                  ),
+                ))
             .toList(),
         selectedItemBuilder: (context) {
           return options.map((String item) {
             return Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 child: Text(item,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w500,
                       fontSize: 16,
-                      color: Color(0xFF4C4EDB),
+                      color: widget.enabled
+                          ? const Color(0xFF4C4EDB)
+                          : Colors.grey.shade400,
                       decoration: TextDecoration.none,
                     )));
           }).toList();
         },
         value: widget.selectedOption,
-        onChanged: widget.onChanged,
+        onChanged: widget.enabled ? widget.onChanged : null,
         buttonStyleData: ButtonStyleData(
             height: 56,
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -97,9 +105,11 @@ class _MessDropdownState extends State<MessDropdown> {
                     ? const Color(0xFFF5F5F5)
                     : const Color(0xFFEDEDFB),
                 borderRadius: BorderRadius.circular(16),
-                border: widget.selectedOption == null
-                    ? Border.all(color: const Color(0xFFC5C5D1), width: 1)
-                    : Border.all(color: const Color(0xFF4C4EDB), width: 2))),
+                border: widget.enabled
+                    ? (widget.selectedOption == null
+                        ? Border.all(color: const Color(0xFFC5C5D1), width: 1)
+                        : Border.all(color: const Color(0xFF4C4EDB), width: 2))
+                    : Border.all(color: const Color(0xFFC5C5D1), width: 1))),
         dropdownStyleData: DropdownStyleData(
             maxHeight: MediaQuery.of(context).size.height * 0.5,
             width: MediaQuery.of(context).size.width * 0.9,
