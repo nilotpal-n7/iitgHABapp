@@ -97,7 +97,7 @@ app.get("/api/swagger.json", (req, res) => {
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5173", // your frontend port
+    origin: ["http://localhost:5174", "http://localhost:5173"], // your frontend port
     credentials: true, // allow cookies
   })
 );

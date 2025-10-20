@@ -29,12 +29,11 @@ const getAllMessChangeRequestsForAllHostels = async (req, res) => {
 const initializeCapacityTracker = async (hostels) => {
   const capacityTracker = {};
   for (const hostel of hostels) {
-    console.log("hostel", hostel);
     const currentCount = await User.countDocuments({
       curr_subscribed_mess: hostel._id,
     });
     capacityTracker[hostel._id.toString()] = {
-      available: (hostel.curr_cap || 0) - currentCount,
+      available: (hostel.curr_cap || 200) - currentCount,
     };
   }
   console.log("capacityTracker", capacityTracker);
@@ -48,84 +47,120 @@ const sortUsersByPriority = (users) => {
   );
 };
 
-// Core processing function for N² iterations
+// Core processing function: strictly FCFS with rounds per preference and cascading waitlists
 const processUsersInIterations = (users, capacityTracker) => {
+  // Build user state with current mess and preferences
+  const state = new Map();
+  const queueOrder = sortUsersByPriority(users);
+  for (const u of queueOrder) {
+    state.set(u._id.toString(), {
+      id: u._id.toString(),
+      name: u.name,
+      rollNumber: u.rollNumber,
+      currentMess: u.curr_subscribed_mess?.toString() || u.hostel?.toString(),
+      prefs: [
+        u.next_mess1?.toString() || null,
+        u.next_mess2?.toString() || null,
+        u.next_mess3?.toString() || null,
+      ],
+    });
+  }
+
   const acceptedUsers = [];
+  const acceptedSet = new Set();
 
-  while (users.length > 0) {
-    let processedInThisIteration = 0;
-    const remainingUsers = [];
+  const performMove = (userId, toMess, roundAcceptedUsers, waitlists) => {
+    const st = state.get(userId);
+    if (!st) return;
+    const from = st.currentMess;
 
-    const sortedUsers = sortUsersByPriority(users);
-    for (const user of sortedUsers) {
-      const preferences = [
-        user.next_mess1?.toString(),
-        user.next_mess2?.toString(),
-        user.next_mess3?.toString(),
-      ] // remove nulls
+    // apply move
+    capacityTracker[toMess].available -= 1;
+    if (from) capacityTracker[from].available += 1;
 
-      let assigned = false;
-      for (const messId of preferences) {
-        if (capacityTracker[messId]?.available > 0) {
-          acceptedUsers.push({
-            id: user._id,
-            name: user.name,
-            rollNumber: user.rollNumber,
-            fromHostelId: user.hostel,
-            toHostelId: messId,
-          });
-          capacityTracker[messId].available--;
-          assigned = true;
-          processedInThisIteration++;
-          break;
-        }
-      }
-
-      if (!assigned) {
-        remainingUsers.push(user);
+    // record acceptance only once per user (on the round they get allocated)
+    if (!acceptedSet.has(userId)) {
+      roundAcceptedUsers.push({
+        id: st.id,
+        name: st.name,
+        rollNumber: st.rollNumber,
+        fromHostelId: from,
+        toHostelId: toMess,
+      });
+      acceptedSet.add(userId);
+    } else {
+      // If somehow re-moving same user in cascade of same round, ensure the top-level record reflects final toMess
+      const idx = roundAcceptedUsers.findIndex((r) => r.id === userId);
+      if (idx >= 0) {
+        roundAcceptedUsers[idx].toHostelId = toMess;
       }
     }
 
-    users = remainingUsers;
-    if (processedInThisIteration === 0) break;
-  }
+    st.currentMess = toMess;
 
-  const rejectedUsers = users.map((user) => ({
-    id: user._id,
-    name: user.name,
-    rollNumber: user.rollNumber,
-    fromHostelId: user.hostel,
-    toHostelId: null,
-  }));
+    // After freeing a seat in 'from', immediately satisfy earliest waitlist for 'from'
+    if (from && capacityTracker[from].available > 0) {
+      const wl = waitlists.get(from);
+      while (capacityTracker[from].available > 0 && wl && wl.length > 0) {
+        const nextUserId = wl.shift();
+        // Skip if already accepted in this or previous cascade (defensive)
+        const nextState = state.get(nextUserId);
+        if (!nextState || nextState.currentMess === from) continue;
+        if (capacityTracker[from].available <= 0) break;
+        performMove(nextUserId, from, roundAcceptedUsers, waitlists);
+      }
+    }
+  };
+
+  const processRound = (prefIndex) => {
+    const roundAcceptedUsers = [];
+    const waitlists = new Map(); // messId -> [userIds]
+
+    for (const user of queueOrder) {
+      const id = user._id.toString();
+      if (acceptedSet.has(id)) continue; // already got a better (earlier) preference
+      const st = state.get(id);
+      if (!st) continue;
+      const toMess = st.prefs[prefIndex];
+      const from = st.currentMess;
+      if (!toMess || toMess === from) continue;
+
+      // if capacity available allocate, else enqueue to waitlist
+      if (capacityTracker[toMess]?.available > 0) {
+        performMove(id, toMess, roundAcceptedUsers, waitlists);
+      } else {
+        if (!waitlists.has(toMess)) waitlists.set(toMess, []);
+        waitlists.get(toMess).push(id);
+      }
+    }
+
+    // Nothing more to do; any cascades are handled immediately inside performMove
+    return roundAcceptedUsers;
+  };
+
+  // Round 1: first preferences
+  const r1 = processRound(0);
+  for (const a of r1) acceptedUsers.push(a);
+  // Round 2: second preferences for remaining users
+  const r2 = processRound(1);
+  for (const a of r2) acceptedUsers.push(a);
+  // Round 3: third preferences for remaining users
+  const r3 = processRound(2);
+  for (const a of r3) acceptedUsers.push(a);
+
+  // Remaining users are rejected
+  const rejectedUsers = queueOrder
+    .filter((u) => !acceptedSet.has(u._id.toString()))
+    .map((user) => ({
+      id: user._id,
+      name: user.name,
+      rollNumber: user.rollNumber,
+      fromHostelId: user.hostel,
+      toHostelId: null,
+    }));
 
   return { acceptedUsers, rejectedUsers };
 };
-
-const reallocateImprovedMessChoices = async (acceptedUsers, capacityTracker) => {
-  for (const userData of acceptedUsers) {
-    const user = await User.findById(userData.id);
-    const preferences = [
-      user.next_mess1?.toString(),
-      user.next_mess2?.toString(),
-      user.next_mess3?.toString(),
-    ].filter(Boolean);
-
-    const currentMess = user.curr_subscribed_mess?.toString();
-
-    for (const preferredMess of preferences) {
-      if (preferredMess === currentMess) break; // already best option
-      if (capacityTracker[preferredMess]?.available > 0) {
-        // Reassign to better mess
-        user.curr_subscribed_mess = preferredMess;
-        capacityTracker[preferredMess].available--;
-        capacityTracker[currentMess].available++;
-        await user.save();
-        break;
-      }
-    }
-  }
-};
-
 
 // Database update function for accepted users
 const updateAcceptedUsers = async (acceptedUsers) => {
@@ -138,7 +173,7 @@ const updateAcceptedUsers = async (acceptedUsers) => {
     user.got_mess_changed = true;
     user.applied_hostel_string = "";
     user.next_mess1 = null;
-    user.next_mess2=null;
+    user.next_mess2 = null;
     user.next_mess3 = null;
     user.applied_hostel_timestamp = null;
     console.log("user", user);
@@ -215,7 +250,9 @@ const updateRejectedUsers = async (rejectedUsers) => {
 
     user.applied_for_mess_changed = false;
     user.applied_hostel_string = "";
-    user.next_mess = user.curr_subscribed_mess;
+    user.next_mess1 = null;
+    user.next_mess2 = null;
+    user.next_mess3 = null;
     user.got_mess_changed = false;
     await user.save();
   }
@@ -237,7 +274,7 @@ const processAllMessChangeRequests = async (req, res) => {
     // Initialize capacity tracker
     const capacityTracker = await initializeCapacityTracker(hostels);
 
-    // Process users using N² algorithm
+    // Process users using strict FCFS rounds
     const { acceptedUsers, rejectedUsers } = processUsersInIterations(
       users,
       capacityTracker
@@ -245,7 +282,7 @@ const processAllMessChangeRequests = async (req, res) => {
 
     // Update database for all user categories
     await updateAcceptedUsers(acceptedUsers);
-    await reallocateImprovedMessChoices(acceptedUsers, capacityTracker);
+    // Removed reallocateImprovedMessChoices to preserve FCFS fairness
     await updateRejectedUsers(rejectedUsers);
 
     // Automatically disable mess change after processing and update timestamp
@@ -288,7 +325,6 @@ const messChangeRequest = async (req, res) => {
   try {
     const userId = req.user.id;
     const user = await User.findById(userId);
-    const { mess_pref } = req.body;
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -300,21 +336,59 @@ const messChangeRequest = async (req, res) => {
       });
     }
 
-    const next_hostel = await Hostel.findOne({ hostel_name: mess_pref });
-    if (!next_hostel) {
-      return res.status(404).json({ message: "Hostel not found" });
+    const { mess_pref_1, mess_pref_2, mess_pref_3 } = req.body || {};
+
+    if (!mess_pref_1) {
+      return res.status(400).json({ message: "First preference is required" });
+    }
+
+    const resolveHostel = async (name) => {
+      if (!name || typeof name !== "string" || !name.trim()) return null;
+      return Hostel.findOne({ hostel_name: name.trim() });
+    };
+
+    const [h1, h2, h3] = await Promise.all([
+      resolveHostel(mess_pref_1),
+      resolveHostel(mess_pref_2),
+      resolveHostel(mess_pref_3),
+    ]);
+
+    if (!h1) {
+      return res
+        .status(404)
+        .json({ message: "First preference hostel not found" });
+    }
+
+    const ids = [
+      h1?._id?.toString(),
+      h2?._id?.toString(),
+      h3?._id?.toString(),
+    ].filter(Boolean);
+    if (new Set(ids).size !== ids.length) {
+      return res.status(400).json({ message: "Preferences must be unique" });
+    }
+
+    const currentMessId = (
+      user.curr_subscribed_mess || user.hostel
+    )?.toString();
+    if (ids.includes(currentMessId)) {
+      return res.status(400).json({
+        message: "Please select messes different from your current mess",
+      });
     }
 
     user.applied_for_mess_changed = true;
-    user.applied_hostel_string = mess_pref;
+    user.applied_hostel_string = mess_pref_1;
     user.applied_hostel_timestamp = Date.now();
-    user.next_mess = next_hostel._id;
+    user.next_mess1 = h1?._id || null;
+    user.next_mess2 = h2?._id || null;
+    user.next_mess3 = h3?._id || null;
     await user.save();
 
-    res.status(200).json({ message: "Request Sent" });
+    return res.status(200).json({ message: "Request Sent" });
   } catch (e) {
     console.log(`Error: ${e}`);
-    res.status(500).json("Internal Server Error");
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -326,7 +400,6 @@ const messChangeCancel = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Check if mess change is enabled
     const settings = await MessChangeSettings.findOne();
     if (!settings || !settings.isEnabled) {
       return res.status(403).json({
@@ -337,15 +410,17 @@ const messChangeCancel = async (req, res) => {
     if (user.applied_for_mess_changed) {
       user.applied_for_mess_changed = false;
       user.applied_hostel_string = "";
-      user.applied_hostel_timestamp = new Date(2025, 8, 1);
-      user.next_mess = null;
+      user.applied_hostel_timestamp = null;
+      user.next_mess1 = null;
+      user.next_mess2 = null;
+      user.next_mess3 = null;
       await user.save();
     }
 
-    res.status(200).json({ message: "Request Sent" });
+    return res.status(200).json({ message: "Request Sent" });
   } catch (e) {
     console.log(`Error: ${e}`);
-    res.status(500).json("Internal Server Error");
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -356,7 +431,6 @@ const messChangeStatus = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    // Get global mess change status
     const settings = await MessChangeSettings.findOne();
     const isMessChangeEnabled = settings ? settings.isEnabled : false;
 
@@ -373,13 +447,11 @@ const messChangeStatus = async (req, res) => {
   }
 };
 
-// Get current mess change status
 const getMessChangeStatus = async (req, res) => {
   try {
     let settings = await MessChangeSettings.findOne();
 
     if (!settings) {
-      // Create default settings if none exist
       settings = new MessChangeSettings({
         isEnabled: false,
         enabledAt: null,
@@ -399,7 +471,6 @@ const getMessChangeStatus = async (req, res) => {
   }
 };
 
-// Enable mess change
 const enableMessChange = async (req, res) => {
   try {
     let settings = await MessChangeSettings.findOne();
@@ -427,7 +498,6 @@ const enableMessChange = async (req, res) => {
   }
 };
 
-// Disable mess change
 const disableMessChange = async (req, res) => {
   try {
     let settings = await MessChangeSettings.findOne();
@@ -453,7 +523,6 @@ const disableMessChange = async (req, res) => {
   }
 };
 
-// Update last processed timestamp after processing requests
 const updateLastProcessedTimestamp = async () => {
   try {
     let settings = await MessChangeSettings.findOne();
@@ -492,12 +561,10 @@ const getAllAcceptedStudents = async (req, res) => {
   }
 };
 
-// Get mess change schedule information
 const getMessChangeScheduleInfo = async (req, res) => {
   try {
     const settings = await MessChangeSettings.findOne();
 
-    // FOR TESTING: Fixed test dates
     const testEnableDate = new Date("2025-09-07T02:15:00+05:30");
     const testDisableDate = new Date("2025-09-07T02:30:00+05:30");
 
@@ -529,7 +596,6 @@ const getMessChangeScheduleInfo = async (req, res) => {
   }
 };
 
-// Enable mess change function for automatic scheduling (no HTTP response)
 const enableMessChangeAutomatic = async () => {
   try {
     let settings = await MessChangeSettings.findOne();
@@ -554,7 +620,6 @@ const enableMessChangeAutomatic = async () => {
   }
 };
 
-// Disable mess change function for automatic scheduling (no HTTP response)
 const disableMessChangeAutomatic = async () => {
   try {
     let settings = await MessChangeSettings.findOne();
