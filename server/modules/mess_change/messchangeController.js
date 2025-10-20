@@ -168,6 +168,30 @@ const updateAcceptedUsers = async (acceptedUsers) => {
     const user = await User.findById(acceptedUser.id);
     if (!user) continue;
 
+    // Resolve from/to hostel names first
+    const [fromHostel, toHostel] = await Promise.all([
+      Hostel.findById(acceptedUser.fromHostelId),
+      Hostel.findById(acceptedUser.toHostelId),
+    ]);
+
+    // Resolve preference hostel names BEFORE clearing them on user
+    const [pref1, pref2, pref3] = await Promise.all([
+      user.next_mess1
+        ? Hostel.findById(user.next_mess1)
+        : Promise.resolve(null),
+      user.next_mess2
+        ? Hostel.findById(user.next_mess2)
+        : Promise.resolve(null),
+      user.next_mess3
+        ? Hostel.findById(user.next_mess3)
+        : Promise.resolve(null),
+    ]);
+
+    const pref1Name = pref1 ? pref1.hostel_name : undefined;
+    const pref2Name = pref2 ? pref2.hostel_name : undefined;
+    const pref3Name = pref3 ? pref3.hostel_name : undefined;
+
+    // Update user state
     user.curr_subscribed_mess = acceptedUser.toHostelId;
     user.applied_for_mess_changed = false;
     user.got_mess_changed = true;
@@ -179,30 +203,37 @@ const updateAcceptedUsers = async (acceptedUsers) => {
     console.log("user", user);
     await user.save();
 
-    const fromHostel = await Hostel.findById(acceptedUser.fromHostelId);
-    const toHostel = await Hostel.findById(acceptedUser.toHostelId);
-
     // Check if a MessChange record already exists for this user
     const existingRecord = await MessChange.findOne({
       rollNumber: user.rollNumber,
     });
 
+    const payload = {
+      userName: user.name,
+      rollNumber: user.rollNumber,
+      fromHostel: fromHostel ? fromHostel.hostel_name : "Unknown",
+      toHostel: toHostel ? toHostel.hostel_name : "Unknown",
+      // toHostel1 is compulsory; fallback to final allocated if preference missing
+      toHostel1: pref1Name || (toHostel ? toHostel.hostel_name : "Unknown"),
+      // Optional preferences
+      ...(pref2Name ? { toHostel2: pref2Name } : {}),
+      ...(pref3Name ? { toHostel3: pref3Name } : {}),
+    };
+
     if (existingRecord) {
       // Update existing record
-      existingRecord.userName = user.name;
-      existingRecord.fromHostel = fromHostel
-        ? fromHostel.hostel_name
-        : "Unknown";
-      existingRecord.toHostel = toHostel ? toHostel.hostel_name : "Unknown";
+      existingRecord.userName = payload.userName;
+      existingRecord.fromHostel = payload.fromHostel;
+      existingRecord.toHostel = payload.toHostel;
+      existingRecord.toHostel1 = payload.toHostel1;
+      if (pref2Name) existingRecord.toHostel2 = pref2Name;
+      else existingRecord.toHostel2 = undefined;
+      if (pref3Name) existingRecord.toHostel3 = pref3Name;
+      else existingRecord.toHostel3 = undefined;
       await existingRecord.save();
     } else {
       // Create new record
-      const messChangeRecord = new MessChange({
-        userName: user.name,
-        rollNumber: user.rollNumber,
-        fromHostel: fromHostel ? fromHostel.hostel_name : "Unknown",
-        toHostel: toHostel ? toHostel.hostel_name : "Unknown",
-      });
+      const messChangeRecord = new MessChange(payload);
       await messChangeRecord.save();
     }
 
