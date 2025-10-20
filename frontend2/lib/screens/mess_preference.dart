@@ -96,23 +96,25 @@ class _MessChangePreferenceScreenState
   }
 
   Future<void> handleSubmit(String? firstpref) async {
-   if (firstpref == null || secondpref == null || thirdpref == null) {
-  _showMessage("Error", "Please select all three mess preferences");
-  return;
-}
+    // First preference mandatory; second and third optional
+    if (firstpref == null) {
+      _showMessage("Error", "Please select your first mess preference");
+      return;
+    }
 
-if ([firstpref, secondpref, thirdpref].toSet().length < 3) {
-  _showMessage("Error", "Preferences must be unique");
-  return;
-}
+    // Collect provided (non-null) preferences
+    final provided = [firstpref, secondpref, thirdpref].whereType<String>().toList();
 
-if ([firstpref, secondpref, thirdpref].contains(defaultMess)) {
-  _showMessage("Error", "Please select messes different from your current mess");
-  return;
-}
+    // Ensure uniqueness among provided preferences
+    if (provided.toSet().length != provided.length) {
+      _showMessage("Error", "Preferences must be unique");
+      return;
+    }
 
-    if (firstpref == defaultMess) {
-      _showMessage("Error", "Please select a different mess");
+    // Ensure none of the provided preferences equals current mess
+    if (defaultMess != null && provided.contains(defaultMess)) {
+      _showMessage(
+          "Error", "Please select messes different from your current mess");
       return;
     }
 
@@ -127,12 +129,11 @@ if ([firstpref, secondpref, thirdpref].contains(defaultMess)) {
             'Authorization': 'Bearer $token',
           },
         ),
-       data: {
-         "mess_pref_1": firstpref,
-         "mess_pref_2": secondpref,
-         "mess_pref_3": thirdpref,
+        data: {
+          "mess_pref_1": firstpref,
+          "mess_pref_2": secondpref,
+          "mess_pref_3": thirdpref,
         },
-
       );
 
       if (res.statusCode == 202) {
@@ -370,25 +371,6 @@ if ([firstpref, secondpref, thirdpref].contains(defaultMess)) {
                 style: const TextStyle(fontSize: 16, color: Colors.white),
               ),
             ),
-            // ElevatedButton(
-            //   onPressed: (alreadyApplied)
-            //       ? () {
-            //           handleCancel();
-            //         }
-            //       : null,
-            //   style: ButtonStyle(
-            //     backgroundColor: WidgetStateProperty.all(
-            //       (alreadyApplied)
-            //           ? const Color.fromARGB(255, 255, 0, 0)
-            //           : Colors.grey,
-            //     ),
-            //     elevation: WidgetStateProperty.all(0),
-            //   ),
-            //   child: const Text(
-            //     'Cancel Mess Request',
-            //     style: TextStyle(fontSize: 16, color: Colors.white),
-            //   ),
-            // ),
           ],
         ),
       ),
