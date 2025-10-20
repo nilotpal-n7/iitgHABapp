@@ -180,6 +180,10 @@ app.use("/api/mess", messRoute);
 //mess change route
 app.use("/api/mess-change", messChangeRouter);
 
+// profile route
+const profileRouter = require("./modules/profile/profileRoute.js");
+app.use("/api/profile", profileRouter);
+
 //scanlogs route
 app.use("/api/logs", logsRoute);
 

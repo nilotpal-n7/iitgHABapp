@@ -10,7 +10,7 @@ import 'package:frontend2/screens/home_screen.dart';
 import 'package:frontend2/screens/MainNavigationScreen.dart';
 import 'package:frontend2/screens/login_screen.dart';
 import 'package:frontend2/screens/mess_screen.dart';
-import 'package:frontend2/screens/profile_picture_screen.dart';
+import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/utilities/startupitem.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend2/utilities/notifications.dart';
