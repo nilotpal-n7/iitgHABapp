@@ -60,6 +60,7 @@
 //   }
 // }
 import 'package:flutter/material.dart';
+import 'package:frontend2/providers/notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend2/utilities/notification_card.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -72,45 +73,9 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  List<String> storedNotifications = [];
-
   @override
   void initState() {
     super.initState();
-    SharedPreferences.getInstance().then((prefs) => {setState(() {
-      storedNotifications = prefs.getStringList('notifications') ?? [];
-      // Firebase Messaging setup
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-          print('📩 Foreground Notification');
-          String? title = message.notification?.title ?? 'No Title';
-          String? body = message.notification?.body ?? 'No Body';
-
-          List<String> storedNotifications =
-              prefs.getStringList('notifications') ?? [];
-
-          storedNotifications.add('$title: $body');
-          await prefs.setStringList('notifications', storedNotifications);
-          setState(() {
-            storedNotifications = prefs.getStringList('notifications') ?? [];
-            //storedNotifications = stored;
-          });
-        });
-      }
-    )});
-  }
-
-  Future<void> _loadNotifications() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    // 🔧 Only add if empty, so you don't duplicate on hot reload
-    // List<String> stored = prefs.getStringList('notifications') ?? [];
-    // if (stored.isEmpty) {
-    //   stored.addAll([
-    //     'Mess: August mess menu is live',
-    //     'Update: New version of the app is available',
-    //   ]);
-    //   await prefs.setStringList('notifications', stored);
-    // }
   }
 
   @override
@@ -159,39 +124,42 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 ),
 
                 // List of notifications
-                Expanded(
-                  child: storedNotifications.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'No notifications yet.',
-                            style: TextStyle(color: Colors.grey),
+                ValueListenableBuilder(
+                  valueListenable: NotificationProvider.notificationProvider,
+                  builder: (context, storedNotifications, child) => Expanded(
+                    child: storedNotifications.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'No notifications yet.',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          )
+                        : ListView.builder(
+                            controller: controller,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: storedNotifications.length,
+                            itemBuilder: (context, index) {
+                              final notif = storedNotifications.reversed
+                                  .toList()[index]; // recent first
+                              final parts = notif.split(':');
+                              final title = parts.first.trim();
+                              final subtitle = parts.length > 1
+                                  ? parts.sublist(1).join(':').trim()
+                                  : 'No details';
+                  
+                              return Column(
+                                children: [
+                                  NotificationCard(
+                                    title: title,
+                                    subtitle: subtitle,
+                                    description: 'Tap to view details',
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
+                              );
+                            },
                           ),
-                        )
-                      : ListView.builder(
-                          controller: controller,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: storedNotifications.length,
-                          itemBuilder: (context, index) {
-                            final notif = storedNotifications.reversed
-                                .toList()[index]; // recent first
-                            final parts = notif.split(':');
-                            final title = parts.first.trim();
-                            final subtitle = parts.length > 1
-                                ? parts.sublist(1).join(':').trim()
-                                : 'No details';
-
-                            return Column(
-                              children: [
-                                NotificationCard(
-                                  title: title,
-                                  subtitle: subtitle,
-                                  description: 'Tap to view details',
-                                ),
-                                const SizedBox(height: 12),
-                              ],
-                            );
-                          },
-                        ),
+                  ),
                 ),
               ],
             ),

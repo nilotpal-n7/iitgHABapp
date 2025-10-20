@@ -5,10 +5,12 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:frontend2/apis/authentication/login.dart';
 import 'package:frontend2/apis/mess/user_mess_info.dart';
 import 'package:frontend2/providers/feedback_provider.dart';
+import 'package:frontend2/providers/hostels.dart';
 import 'package:frontend2/screens/home_screen.dart';
 import 'package:frontend2/screens/MainNavigationScreen.dart';
 import 'package:frontend2/screens/login_screen.dart';
 import 'package:frontend2/screens/mess_screen.dart';
+import 'package:frontend2/screens/profile_picture_screen.dart';
 import 'package:frontend2/utilities/startupitem.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend2/utilities/notifications.dart';
@@ -18,6 +20,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final bool asLoggedIn = await isLoggedIn();
   await Firebase.initializeApp();
+
+  HostelsNotifier.init();
+  ProfilePictureProvider.init();
 
   await getUserMessInfo();
 
@@ -114,8 +119,8 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
 
-      // home: widget.isLoggedIn ? const MainNavigationScreen() : const LoginScreen(),
-      home: const MainNavigationScreen(),
+      home: widget.isLoggedIn ? const MainNavigationScreen() : const LoginScreen(),
+      // home: const MainNavigationScreen(),
 
       //home:  ProfileScreen(),
       builder: EasyLoading.init(),

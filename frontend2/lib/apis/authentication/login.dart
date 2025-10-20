@@ -5,6 +5,11 @@ import 'package:frontend2/apis/mess/user_mess_info.dart';
 import 'package:frontend2/apis/protected.dart';
 import 'package:frontend2/apis/users/user.dart';
 import 'package:frontend2/constants/endpoint.dart';
+import 'package:frontend2/main.dart';
+import 'package:frontend2/providers/feedback_provider.dart';
+import 'package:frontend2/providers/hostels.dart';
+import 'package:frontend2/screens/profile_picture_screen.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:frontend2/utilities/notifications.dart';
@@ -14,7 +19,8 @@ Future<void> authenticate() async {
   try {
     final result = await FlutterWebAuth2.authenticate(
         url: AuthEndpoints.getAccess, callbackUrlScheme: "iitgcomplain");
-    print(result);
+    
+    print("result: $result");
 
     final accessToken = Uri.parse(result).queryParameters['token'];
     print("access token is");
@@ -26,10 +32,13 @@ Future<void> authenticate() async {
     if (accessToken == null) {
       throw ('access token not found');
     }
+
     prefs.setString('access_token', accessToken);
     await fetchUserDetails();
     await getUserMessInfo();
     await registerFcmToken();
+    await HostelsNotifier.init();
+    ProfilePictureProvider.init();
   } on PlatformException catch (_) {
     rethrow;
   } catch (e) {

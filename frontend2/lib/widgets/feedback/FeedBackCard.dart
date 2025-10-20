@@ -13,7 +13,7 @@ class _FeedbackCardState extends State<FeedbackCard> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -29,7 +29,7 @@ class _FeedbackCardState extends State<FeedbackCard> {
               Icon(Icons.access_time, color: Colors.red, size: 18),
               SizedBox(width: 4),
               Text('Form closes in 2 Days',
-                  style: TextStyle(color: Colors.red)),
+                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.w500)),
             ],
           ),
           const SizedBox(height: 12),

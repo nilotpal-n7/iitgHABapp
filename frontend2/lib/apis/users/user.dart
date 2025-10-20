@@ -26,6 +26,8 @@ Future<Map<String, String>?> fetchUserDetails() async {
       final prefs = await SharedPreferences.getInstance();
       final Map<String, dynamic> userData = json.decode(resp.body);
 
+      print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!UserData: $userData");
+
       // Extract user details
       final String name = userData['name'] ?? "User";
       final String userId = userData['_id'] ?? "";
@@ -37,6 +39,8 @@ Future<Map<String, String>?> fetchUserDetails() async {
       final String hostel = userData['hostel'] ?? "Not provided";
       final bool gotHostel = userData['got_mess_changed'];
       final bool isSMC = userData['isSMC'] ?? false;
+
+      // print("IS SMCCCC: ${userData['isSMC']}, $isSMC");
 
       prefs.setBool('isSMC', isSMC);
       prefs.setBool('gotMess', gotHostel);

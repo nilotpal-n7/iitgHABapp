@@ -30,6 +30,6 @@ String calculateHostel(String objectID) {
     case "689aa71e12652cd8381608a5":
       return "Barak";
     default:
-      return "Unknown Hostel";
+      return "Unknown";
   }
 }
