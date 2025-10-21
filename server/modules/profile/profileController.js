@@ -1,62 +1,144 @@
 const axios = require("axios");
 const { User } = require("../user/userModel.js");
 const onedrive = require("../../config/onedrive.js");
+const { getAppOnlyAccessToken } = require("../../utils/graphAuth.js");
+const {
+  getDelegatedAccessToken,
+} = require("../../utils/delegatedGraphAuth.js");
 
 const TENANT_ID = onedrive.tenantId; // from onedrive config
 const CLIENT_ID = onedrive.clientId; // from onedrive config
 const CLIENT_SECRET = onedrive.clientSecret; // from onedrive config
 const STORAGE_USER_UPN = onedrive.storageUserUPN; // optional discovery
 const DRIVE_ID = onedrive.driveId; // from onedrive config
-const PROFILE_FOLDER_ID = onedrive.profilePicsFolderId; // from onedrive config
+const PROFILE_FOLDER_ID = onedrive.profilePicsFolderId; // parent folder itemId from .env
 
-async function getAppOnlyAccessToken() {
-  const params = new URLSearchParams();
-  params.append("client_id", CLIENT_ID);
-  params.append("client_secret", CLIENT_SECRET);
-  params.append("grant_type", "client_credentials");
-  params.append("scope", "https://graph.microsoft.com/.default");
-  const url = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`;
-  const { data } = await axios.post(url, params, {
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  });
-  return data.access_token;
-}
-
-async function uploadToOneDrive(buffer, fileName, mimeType) {
-  if (!DRIVE_ID || !PROFILE_FOLDER_ID) {
+// Helper: require delegated token (we're using /me/drive semantics like the reference code)
+async function requireDelegatedToken() {
+  const tok = await getDelegatedAccessToken();
+  if (!tok) {
     throw new Error(
-      "OneDrive configuration missing (DRIVE_ID or PROFILE_FOLDER_ID)"
+      "Delegated token not available. Login as storage user and seed access+refresh tokens via /api/_debug/graph/delegated-token."
     );
   }
-  const token = await getAppOnlyAccessToken();
-  // Simple upload for <4MB files
-  const url = `https://graph.microsoft.com/v1.0/drives/${DRIVE_ID}/items/${PROFILE_FOLDER_ID}:/${encodeURIComponent(
-    fileName
-  )}:/content`;
-  const { data } = await axios.put(url, buffer, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": mimeType || "application/octet-stream",
-    },
+  return tok;
+}
+
+// Debug helpers (no secrets)
+function logStep(label, details) {
+  try {
+    console.log(`[ProfilePic] ${label}`, details ?? "");
+  } catch (_) {
+    console.log(`[ProfilePic] ${label}`);
+  }
+}
+
+async function graphGET(url, token, config = {}) {
+  logStep("GET", { url });
+  const { data } = await axios.get(url, {
+    ...config,
+    headers: { ...(config.headers || {}), Authorization: `Bearer ${token}` },
+  });
+  return data;
+}
+
+async function graphPUT(url, token, body, headers = {}) {
+  logStep("PUT", { url });
+  const { data } = await axios.put(url, body, {
+    headers: { Authorization: `Bearer ${token}`, ...headers },
     maxContentLength: Infinity,
     maxBodyLength: Infinity,
+  });
+  return data;
+}
+
+async function graphPOST(url, token, body, headers = {}) {
+  logStep("POST", { url });
+  const { data } = await axios.post(url, body, {
+    headers: { Authorization: `Bearer ${token}`, ...headers },
+  });
+  return data;
+}
+
+function extFromMime(mime) {
+  if (!mime) return ".jpg";
+  if (mime.includes("png")) return ".png";
+  if (mime.includes("jpeg")) return ".jpg";
+  if (mime.includes("jpg")) return ".jpg";
+  if (mime.includes("webp")) return ".webp";
+  return ".jpg";
+}
+
+async function getMe(token) {
+  return graphGET("https://graph.microsoft.com/v1.0/me", token);
+}
+
+async function getMyDrive(token) {
+  return graphGET("https://graph.microsoft.com/v1.0/me/drive", token);
+}
+
+async function getItemById(token, itemId) {
+  const url = `https://graph.microsoft.com/v1.0/me/drive/items/${itemId}?$select=id,name,parentReference,webUrl`;
+  return graphGET(url, token);
+}
+
+async function findChildByName(token, parentId, name) {
+  const url = `https://graph.microsoft.com/v1.0/me/drive/items/${parentId}/children?$select=id,name`;
+  const data = await graphGET(url, token);
+  const all = data?.value || [];
+  const matches = all.filter((x) => x.name === name);
+  logStep("Children lookup", {
+    parentId,
+    total: all.length,
+    lookingFor: name,
+    matches: matches.length,
+  });
+  return matches; // array (could be empty)
+}
+
+async function deleteItemById(token, itemId) {
+  const url = `https://graph.microsoft.com/v1.0/me/drive/items/${itemId}`;
+  logStep("DELETE", { url });
+  await axios.delete(url, { headers: { Authorization: `Bearer ${token}` } });
+}
+
+async function uploadToParentByName(
+  token,
+  parentId,
+  filename,
+  buffer,
+  mimeType
+) {
+  const url = `https://graph.microsoft.com/v1.0/me/drive/items/${parentId}:/${encodeURIComponent(
+    filename
+  )}:/content`;
+  logStep("Upload start", {
+    parentId,
+    filename,
+    size: buffer?.length,
+    mimeType,
+  });
+  const data = await graphPUT(url, token, buffer, {
+    "Content-Type": mimeType || "application/octet-stream",
+  });
+  logStep("Upload done", {
+    uploadedId: data?.id,
+    name: data?.name,
+    size: data?.size,
+    webUrl: data?.webUrl,
   });
   return data; // driveItem
 }
 
-async function createAnonymousViewLink(itemId) {
-  const token = await getAppOnlyAccessToken();
-  const url = `https://graph.microsoft.com/v1.0/drives/${DRIVE_ID}/items/${itemId}/createLink`;
-  const { data } = await axios.post(
+async function createOrganizationViewLink(token, itemId) {
+  const url = `https://graph.microsoft.com/v1.0/me/drive/items/${itemId}/createLink`;
+  const data = await graphPOST(
     url,
-    { type: "view", scope: "anonymous" },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    }
+    token,
+    { type: "view", scope: "organization" },
+    { "Content-Type": "application/json" }
   );
+  logStep("createLink", { itemId, link: data?.link?.webUrl });
   return data?.link?.webUrl;
 }
 
@@ -64,36 +146,154 @@ async function createAnonymousViewLink(itemId) {
 async function setProfilePicture(req, res) {
   try {
     const file = req.file;
+    logStep("Incoming upload", {
+      hasFile: !!file,
+      mime: file?.mimetype,
+      size: file?.size || file?.buffer?.length,
+      PROFILE_FOLDER_ID,
+    });
     if (!file) return res.status(400).json({ message: "No file uploaded" });
+    if (!PROFILE_FOLDER_ID) {
+      return res
+        .status(400)
+        .json({ message: "ONEDRIVE_PROFILE_PICS_FOLDER_ID is not configured" });
+    }
 
     const user = req.user; // from authenticateJWT
-    const originalName = file.originalname || `avatar-${user._id}.jpg`;
-    const uploaded = await uploadToOneDrive(
+    const roll = user.rollNumber || user.roll || String(user._id);
+    const ext = extFromMime(file.mimetype);
+    const targetName = `${roll}${ext}`;
+    logStep("User & naming", { userId: user?._id, roll, targetName });
+
+    // Delegated token required to use /me/drive
+    const token = await requireDelegatedToken();
+
+    // Sanity checks: who am I? which drive? does folder exist?
+    let me, drive, parentItem;
+    try {
+      me = await getMe(token);
+      logStep("Token user", {
+        id: me?.id,
+        upn: me?.userPrincipalName,
+        displayName: me?.displayName,
+      });
+    } catch (e) {
+      logStep("/me failed", {
+        status: e.response?.status,
+        data: e.response?.data,
+      });
+    }
+
+    try {
+      drive = await getMyDrive(token);
+      logStep("My drive", { driveId: drive?.id, driveType: drive?.driveType });
+    } catch (e) {
+      logStep("/me/drive failed", {
+        status: e.response?.status,
+        data: e.response?.data,
+      });
+    }
+
+    try {
+      parentItem = await getItemById(token, PROFILE_FOLDER_ID);
+      logStep("Parent folder", {
+        id: parentItem?.id,
+        name: parentItem?.name,
+        parentDriveId: parentItem?.parentReference?.driveId,
+        webUrl: parentItem?.webUrl,
+      });
+      if (
+        drive?.id &&
+        parentItem?.parentReference?.driveId &&
+        drive.id !== parentItem.parentReference.driveId
+      ) {
+        logStep("Drive mismatch", {
+          myDriveId: drive.id,
+          folderDriveId: parentItem.parentReference.driveId,
+        });
+        return res.status(400).json({
+          message:
+            "Configured folder belongs to a different drive than the token user's drive.",
+        });
+      }
+    } catch (e) {
+      logStep("Parent folder lookup failed", {
+        status: e.response?.status,
+        data: e.response?.data,
+        folderId: PROFILE_FOLDER_ID,
+      });
+      return res.status(400).json({
+        message:
+          "Configured ONEDRIVE_PROFILE_PICS_FOLDER_ID not found or not accessible for this account.",
+        hint: "Fetch it with GET /v1.0/me/drive/root:/HAB%20App/profile-pics and use the returned id.",
+      });
+    }
+
+    // If a file with the same roll number exists under the parent folder, delete it
+    const existing = await findChildByName(
+      token,
+      PROFILE_FOLDER_ID,
+      targetName
+    );
+    if (existing.length > 0) {
+      for (const it of existing) {
+        try {
+          logStep("Deleting existing", { itemId: it.id, name: it.name });
+          await deleteItemById(token, it.id);
+        } catch (e) {
+          logStep("Delete failed (ignored)", {
+            itemId: it.id,
+            status: e.response?.status,
+            data: e.response?.data,
+          });
+        }
+      }
+    } else {
+      logStep("No existing file with same name", { targetName });
+    }
+
+    // Upload new content to the parent folder with file name = roll.ext
+    const uploaded = await uploadToParentByName(
+      token,
+      PROFILE_FOLDER_ID,
+      targetName,
       file.buffer,
-      `${user._id}-${Date.now()}-${originalName}`,
       file.mimetype
     );
 
-    // Try to create a public view link (depends on tenant policy). If fails, still save itemId.
+    // Create org-scoped view link (tenant must allow it)
     let publicUrl = null;
     try {
-      publicUrl = await createAnonymousViewLink(uploaded.id);
-    } catch (_) {}
+      publicUrl = await createOrganizationViewLink(token, uploaded.id);
+    } catch (e) {
+      logStep("createLink failed (non-fatal)", {
+        status: e.response?.status,
+        data: e.response?.data,
+      });
+    }
 
     user.profilePictureItemId = uploaded.id;
     if (publicUrl) user.profilePictureUrl = publicUrl;
     await user.save();
+    logStep("User updated", {
+      userId: user?._id,
+      itemId: uploaded.id,
+      url: publicUrl,
+    });
 
     return res.status(200).json({
       message: "Profile picture updated",
       itemId: uploaded.id,
       url: publicUrl,
+      name: targetName,
     });
   } catch (err) {
+    const status = err.response?.status;
+    const msg = err.response?.data?.error?.message || err.message;
     console.error("setProfilePicture error", err.response?.data || err.message);
     return res
-      .status(500)
-      .json({ message: "Failed to set profile picture", error: err.message });
+      .status(status === 403 ? 403 : 500)
+      .json({ message: "Failed to set profile picture", error: msg, status });
   }
 }
 
@@ -106,12 +306,17 @@ async function getProfilePicture(req, res) {
     }
 
     if (user.profilePictureUrl) {
+      logStep("Returning stored URL", { url: user.profilePictureUrl });
       return res.status(200).json({ url: user.profilePictureUrl });
     }
 
-    // Fallback: stream from Graph using app-only token
-    const token = await getAppOnlyAccessToken();
-    const contentUrl = `https://graph.microsoft.com/v1.0/drives/${DRIVE_ID}/items/${user.profilePictureItemId}/content`;
+    // Stream via delegated token for /me/drive
+    const token = await requireDelegatedToken();
+    const contentUrl = `https://graph.microsoft.com/v1.0/me/drive/items/${user.profilePictureItemId}/content`;
+    logStep("Fetching content", {
+      itemId: user.profilePictureItemId,
+      contentUrl,
+    });
     const resp = await axios.get(contentUrl, {
       responseType: "arraybuffer",
       headers: { Authorization: `Bearer ${token}` },
@@ -125,7 +330,11 @@ async function getProfilePicture(req, res) {
     console.error("getProfilePicture error", err.response?.data || err.message);
     return res
       .status(500)
-      .json({ message: "Failed to fetch profile picture", error: err.message });
+      .json({
+        message: "Failed to fetch profile picture",
+        error: err.message,
+        status: err.response?.status,
+      });
   }
 }
 

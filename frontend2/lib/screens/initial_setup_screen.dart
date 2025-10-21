@@ -7,6 +7,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:frontend2/widgets/common/hostel_name.dart';
+import 'package:dio/dio.dart';
+import 'package:frontend2/constants/endpoint.dart';
+import 'package:frontend2/apis/protected.dart';
 
 class ProfilePictureProvider {
   static var profilePictureString = ValueNotifier<String>("");
@@ -36,6 +39,7 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
   final TextEditingController _roomController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   bool _saving = false;
+  bool _uploading = false;
 
   @override
   void initState() {
@@ -78,6 +82,66 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString("profilePicture", imageB64);
     setState(() {});
+
+    await _uploadProfileImage(File(finalPath), pfp.name);
+  }
+
+  Future<void> _uploadProfileImage(File file, String filename) async {
+    if (_uploading) return;
+    setState(() => _uploading = true);
+    try {
+      final token = await getAccessToken();
+      if (token == 'error') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Not authenticated. Please login again.')),
+        );
+        return;
+      }
+
+      final dio = Dio();
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          file.path,
+          filename: filename,
+        ),
+      });
+
+      final res = await dio.post(
+        ProfilePicture.changeUserProfilePicture,
+        data: formData,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (res.statusCode == 200) {
+        final data = res.data as Map;
+        final url = data['url'] as String?;
+        final prefs = await SharedPreferences.getInstance();
+        if (url != null && url.isNotEmpty) {
+          await prefs.setString('profilePictureUrl', url);
+        }
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile picture uploaded')),
+        );
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Upload failed (${res.statusCode})')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Upload error: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
   }
 
   Future<void> _handleSave() async {
@@ -148,8 +212,9 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
                 ),
                 const SizedBox(height: 16),
                 OutlinedButton(
-                  onPressed: _pickAndSetProfileImage,
-                  child: const Text("Change Profile Picture"),
+                  onPressed: _uploading ? null : _pickAndSetProfileImage,
+                  child: Text(
+                      _uploading ? "Uploading..." : "Change Profile Picture"),
                 ),
                 const SizedBox(height: 24),
                 const Text(
