@@ -19,7 +19,7 @@ class ProfilePictureProvider {
     // Do NOT overwrite existing stored picture
     profilePictureString.value = prefs.getString("profilePicture") ?? "";
     // Read persisted setup flag
-    isSetupDone.value = false;
+    isSetupDone.value = prefs.getBool("isSetupDone") ?? false;
   }
 }
 
@@ -78,15 +78,15 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
     );
 
     final imageB64 = base64Encode(File(finalPath).readAsBytesSync());
+    // Update in-memory preview only. Do not persist until upload succeeds.
     ProfilePictureProvider.profilePictureString.value = imageB64;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString("profilePicture", imageB64);
     setState(() {});
 
-    await _uploadProfileImage(File(finalPath), pfp.name);
+    await _uploadProfileImage(File(finalPath), pfp.name, imageB64);
   }
 
-  Future<void> _uploadProfileImage(File file, String filename) async {
+  Future<void> _uploadProfileImage(
+      File file, String filename, String imageB64) async {
     if (_uploading) return;
     setState(() => _uploading = true);
     try {
@@ -121,6 +121,8 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
         final data = res.data as Map;
         final url = data['url'] as String?;
         final prefs = await SharedPreferences.getInstance();
+        // Persist only after successful upload
+        await prefs.setString('profilePicture', imageB64);
         if (url != null && url.isNotEmpty) {
           await prefs.setString('profilePictureUrl', url);
         }
@@ -229,7 +231,21 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
                 _readonlyTile(Icons.restaurant_menu_outlined, 'Current Mess',
                     currMessName),
                 const Divider(height: 24, color: Color(0xFFE2E2E2)),
-                const SizedBox(height: 8),
+                // Info: other fields are read-only
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Icon(Icons.info_outline, size: 16, color: Colors.grey),
+                    SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Other profile details are read-only. Please contact the HAB Admin if you want to change them.',
+                        style: TextStyle(fontSize: 12, color: Colors.black54),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
                 const Text(
                   'Additional info',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
