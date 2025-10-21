@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend2/providers/notifications.dart';
 import 'package:frontend2/screens/notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../screens/mess_feedback/mess_feedback_page.dart';
@@ -17,30 +18,30 @@ class ComplaintsCard extends StatefulWidget {
 class _ComplaintsCardState extends State<ComplaintsCard> {
   int expandedSection = 2;
 
-  int num_notification = 0;
+  // int num_notification = 0;
 
-  Future<void> _loadNotificationCount() async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String> stored = prefs.getStringList('notifications') ?? [];
-    setState(() {
-      num_notification = stored.length;
-    });
-  }
+  // Future<void> _loadNotificationCount() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final List<String> stored = prefs.getStringList('notifications') ?? [];
+  //   setState(() {
+  //     num_notification = stored.length;
+  //   });
+  // }
 
   @override
   void initState() {
     super.initState();
-    SharedPreferences.getInstance().then((prefs) => {setState(() {
-      num_notification = (prefs.getStringList('notifications') ?? []).length;
-      // Firebase Messaging setup
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-          setState(() {
-            num_notification += 1;
-            // storedNotifications = stored;
-          });
-        });
-      }
-    )});
+    // SharedPreferences.getInstance().then((prefs) => {setState(() {
+    //   num_notification = (prefs.getStringList('notifications') ?? []).length;
+    //   // Firebase Messaging setup
+    //   FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+    //       setState(() {
+    //         num_notification += 1;
+    //         //storedNotifications = stored;
+    //       });
+    //     });
+    //   }
+    // )});
   }
 
   @override
@@ -281,13 +282,16 @@ class _ComplaintsCardState extends State<ComplaintsCard> {
                           fontSize: 16,
                         ),
                   ),
-                  Text(
-                    " ($num_notification)",
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
-                        ),
+                  ValueListenableBuilder(
+                    valueListenable: NotificationProvider.notificationProvider,
+                    builder: (context, storedNotifications, child) => Text(
+                      " (${storedNotifications.length})",
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                          ),
+                    ),
                   ),
                 ],
               ),

@@ -1,4 +1,4 @@
-const String baseUrl = "https://hab.codingclub.in/api";
+const String baseUrl = "http://localhost:3000/api";
 
 class NotificationEndpoints {
   static const String registerToken = '$baseUrl/notification/register-token';
@@ -34,13 +34,12 @@ class tokenendpoint {
 
 class AuthEndpoints {
   static const String getAccess =
-      'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize?client_id=7326b1dd-5e6b-4f88-bd73-938e264c7f27&response_type=code&redirect_uri=https://hab.codingclub.in/api/auth/login/redirect/mobile&scope=offline_access%20user.read&state=12345&prompt=consent';
+      'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize?client_id=2cdac4f3-1fda-4348-a057-9bb2e3d184a1&response_type=code&redirect_uri=https://hab.codingclub.in/api/auth/login/redirect/mobile&scope=offline_access%20user.read&state=12345&prompt=consent';
 }
 
 class Userendpoints {
   static const getdetails = 'https://graph.microsoft.com/v1.0/me';
 }
-
 
 class tokenlink {
   static const Tokenlink =
@@ -48,20 +47,19 @@ class tokenlink {
 }
 
 class redirecturi {
-  static const Redirecturi =
-      '${baseUrl}/auth/login/redirect/mobile';
+  static const Redirecturi = '${baseUrl}/auth/login/redirect/mobile';
 }
 
-
-
 class messFeedback {
-  static const feedbackSubmit =
-      "$baseUrl/feedback/submit";
+  static const feedbackSubmit = "$baseUrl/feedback/submit";
 }
 
 class messInfo {
   static const getMessInfo = "$baseUrl/mess/all";
-  static const getUserMessInfo ="$baseUrl/mess/get";
+  static const getUserMessInfo = "$baseUrl/mess/get";
 }
 
-
+class ProfilePicture {
+  static const changeUserProfilePicture = "$baseUrl/profile/picture/set";
+  static const getUserProfilePicture = "$baseUrl/profile/picture/get";
+}

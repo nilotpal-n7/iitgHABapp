@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:frontend2/providers/hostels.dart';
 import 'package:frontend2/widgets/common/popmenubutton.dart';
+import 'package:frontend2/widgets/feedback/FeedBackCard.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utilities/startupitem.dart';
 import '../widgets/mess_widgets/horizontal_menu_builder.dart';
-import '../apis/hostel/hostels.dart';
 import 'package:intl/intl.dart';
 
 class MessApp extends StatefulWidget {
@@ -47,7 +48,6 @@ class _MessScreenState extends State<MessScreen> {
   }
 
   Future<void> _loadData() async {
-    await fetchAllHostels();
     await fetchCurrSubscrMess();
     await fetchMessInfo();
     setState(() {
@@ -85,12 +85,12 @@ class _MessScreenState extends State<MessScreen> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: SingleChildScrollView(
+                // constraints: BoxConstraints(
+                //   minHeight: constraints.maxHeight,
+                // ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,29 +99,29 @@ class _MessScreenState extends State<MessScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          "MESS",
+                          "Mess",
                           style: TextStyle(
                             fontFamily: 'OpenSans_regular',
                             fontSize: 32,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2E2F31),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 18),
                         _MenuSection(),
-                        const SizedBox(height: 20),
+                        // const SizedBox(height: 24),
                       ],
                     ),
-                    Column(
-                      children: [
-                        _MessInfo(
-                          catererName: caterername,
-                          rating: rating,
-                          rank: rank,
-                        ),
-                        const SizedBox(height: 30),
-                      ],
-                    ),
+                    // Column(
+                    //   children: [
+                    //     _MessInfo(
+                    //       catererName: caterername,
+                    //       rating: rating,
+                    //       rank: rank,
+                    //     ),
+                    //     const SizedBox(height: 30),
+                    //   ],
+                    // ),
                   ],
                 ),
               ),
@@ -154,21 +154,36 @@ class _MenuSectionState extends State<_MenuSection> {
   late String messId;
   late String selectedDay;
 
+  late final hostelMap;
+
+  String selectedHostel = HostelsNotifier.userHostel.isNotEmpty?HostelsNotifier.userHostel:(HostelsNotifier.hostels.isNotEmpty?HostelsNotifier.hostels[0]:"");
+
   @override
   void initState() {
+    hostelMap = Provider.of<MessInfoProvider>(context, listen: false).hostelMap;
+    print("Selected Hostel rn: $selectedHostel");
+    // HostelsNotifier.init();
+    HostelsNotifier.addOnChange(
+      () {
+        setState(() {
+          selectedHostel = HostelsNotifier.userHostel;
+          messId = hostelMap[selectedHostel]?.messid ?? '6826dfda8493bb0870b10cbf';
+        });
+      },
+    );
     super.initState();
     selectedDay = DateFormat('EEEE').format(DateTime.now()); // default to today
     // default messId from provider
-    final hostelMap = Provider.of<MessInfoProvider>(context, listen: false).hostelMap;
     messId = hostelMap.values.isNotEmpty
         ? hostelMap.values.first.messid
         : '68552b70491f1303d2c4dbcc';
   }
 
   void _updateMessId(String hostelName) {
-    final hostelMap = Provider.of<MessInfoProvider>(context, listen: false).hostelMap;
+    // print(hostelName);
     final id = hostelMap[hostelName]?.messid ?? '6826dfda8493bb0870b10cbf';
     setState(() {
+      selectedHostel = hostelName;
       messId = id;
     });
   }
@@ -181,40 +196,66 @@ class _MenuSectionState extends State<_MenuSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Text(
-              "What’s in Menu",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const Spacer(),
-            HostelDrop(onChanged: _updateMessId),
-          ],
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 40,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: daysOnly.map((day) {
-              return _DayChip(
-                label: day,
-                selected: selectedDay == day,
-                onTap: () => _updateDay(day),
-              );
-            }).toList(),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FeedbackCard(),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              const Text(
+                "What's in Menu",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Color(0xFF676767)),
+              ),
+              const Spacer(),
+              // MessDropdown(selectedOption: "Barak", onChanged: (s) {print(s);},),
+              HostelDrop(selectedHostel: selectedHostel, onChanged: _updateMessId),
+            ],
           ),
-        ),
-        const SizedBox(height: 16),
-        _MenuCard(
-          messId: messId,
-          day: selectedDay,
-        ),
-        const SizedBox(height: 10),
-      ],
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 36,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: daysOnly.map((day) {
+                return _DayChip(
+                  label: day,
+                  selected: selectedDay == day,
+                  onTap: () => _updateDay(day),
+                );
+              }).toList(),
+            ),
+          ),
+          SingleChildScrollView(
+            child: SizedBox(
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  // _MenuCard(
+                  //   messId: messId,
+                  //   day: selectedDay,
+                  // ),
+                  
+                  _MealWrapper(meal: 'Breakfast', messId: messId, day: selectedDay),
+                  _MealWrapper(meal: 'Lunch', messId: messId, day: selectedDay),
+                  _MealWrapper(meal: 'Dinner', messId: messId, day: selectedDay),
+              
+                  const SizedBox(height: 24),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.info_outline, size: 16, color: Color(0xFF676767),),
+                      SizedBox(width: 2,),
+                      Text("Tap on a food item to mark as favourite", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF676767)),),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          )
+        ],
+      ),
     );
   }
 }
@@ -234,20 +275,25 @@ class _DayChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: ChoiceChip(
-        label: Text(
-          label,
-          style: const TextStyle(
+      child: InkWell(
+        onTap: onTap,
+        focusColor: Colors.transparent,
+        splashColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: selected ? const Color(0xFFEDEDFB) : const Color(0xFFF5F5F5),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          child: Text(label, style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
             fontFamily: 'OpenSans_regular',
-          ),
+            color: selected ? const Color(0xFF4C4EDB) : const Color(0xFF676767),
+          ),),
         ),
-        selected: selected,
-        onSelected: (_) => onTap(),
-        selectedColor: Colors.deepPurple.shade100,
-        labelStyle:
-        TextStyle(color: selected ? const Color(0xFF3754DB) : Colors.black),
       ),
     );
   }
