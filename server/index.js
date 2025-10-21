@@ -17,6 +17,31 @@ const qrRoute = require("./modules/qr/qrRoute.js");
 const messRoute = require("./modules/mess/messRoute.js");
 const logsRoute = require("./modules/mess/ScanLogsRoute.js");
 const cors = require("cors");
+const bodyParser = require("body-parser");
+const {
+  setDelegatedTokens,
+  tokenFilePath,
+} = require("./utils/delegatedGraphAuth.js");
+
+// New: build delegated auth URLs for starting consent
+const onedrive = require("./config/onedrive.js");
+function buildAuthorizeUrl() {
+  const params = new URLSearchParams({
+    client_id: onedrive.clientId,
+    response_type: "code",
+    redirect_uri:
+      onedrive.redirectUri ||
+      `${
+        process.env.PUBLIC_BASE_URL || "https://hab.codingclub.in"
+      }/api/_debug/graph/callback`,
+    scope:
+      (onedrive.graphUserScopes || []).join(" ") ||
+      "offline_access Files.ReadWrite User.Read",
+    prompt: "consent",
+  });
+  const tenant = onedrive.authTenant || onedrive.tenantId || "common";
+  return `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize?${params.toString()}`;
+}
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
@@ -39,6 +64,8 @@ const messChangeRouter = require("./modules/mess_change/messchangeRoute.js");
 require("dotenv").config();
 
 const app = express();
+app.use(bodyParser.json({ limit: "1mb" }));
+
 const MONGOdb_uri = process.env.MONGODB_URI;
 const PORT = process.env.PORT || 3000;
 
@@ -187,6 +214,86 @@ app.use("/api/profile", profileRouter);
 //scanlogs route
 app.use("/api/logs", logsRoute);
 
+// Debug route: accept delegated tokens and save to disk for server use
+// WARNING: Protect this route in production (e.g., require admin auth, restrict IPs)
+app.post("/api/_debug/graph/delegated-token", async (req, res) => {
+  try {
+    const { access_token, refresh_token, expires_at } = req.body || {};
+    if (!access_token || !refresh_token || !expires_at) {
+      return res.status(400).json({
+        message: "access_token, refresh_token, expires_at (epoch ms) required",
+      });
+    }
+    await setDelegatedTokens({ access_token, refresh_token, expires_at });
+    return res
+      .status(200)
+      .json({ message: "Delegated tokens saved", path: tokenFilePath });
+  } catch (e) {
+    return res.status(500).json({
+      message: "Failed to save delegated tokens",
+      error: String(e.message || e),
+    });
+  }
+});
+
+// Debug route: start delegated auth (prints URL)
+app.get("/api/_debug/graph/start", (req, res) => {
+  if (!onedrive.clientId) {
+    return res.status(400).json({ message: "CLIENT_ID missing" });
+  }
+  const url = buildAuthorizeUrl();
+  return res.status(200).json({ authorizeUrl: url });
+});
+
+// Debug route: delegated auth callback (exchange code -> tokens)
+app.get("/api/_debug/graph/callback", async (req, res) => {
+  try {
+    const code = req.query.code;
+    if (!code) return res.status(400).send("Missing code");
+    const tokenUrl = `https://login.microsoftonline.com/${
+      onedrive.authTenant || onedrive.tenantId || "common"
+    }/oauth2/v2.0/token`;
+    const params = new URLSearchParams();
+    params.append("client_id", onedrive.clientId);
+    if (onedrive.clientSecret)
+      params.append("client_secret", onedrive.clientSecret);
+    params.append("grant_type", "authorization_code");
+    params.append("code", code);
+    params.append(
+      "redirect_uri",
+      onedrive.redirectUri ||
+        `${
+          process.env.PUBLIC_BASE_URL || "https://hab.codingclub.in"
+        }/api/_debug/graph/callback`
+    );
+    params.append(
+      "scope",
+      (onedrive.graphUserScopes || []).join(" ") ||
+        "offline_access Files.ReadWrite User.Read"
+    );
+
+    const axios = require("axios");
+    const { data } = await axios.post(tokenUrl, params, {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+    const expiresAt = Date.now() + Number(data.expires_in || 3600) * 1000;
+    await setDelegatedTokens({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      expires_at: expiresAt,
+    });
+    res
+      .status(200)
+      .send(
+        `Delegated tokens saved at ${tokenFilePath}. You can close this window.`
+      );
+  } catch (e) {
+    res.status(500).send(`Failed to exchange code: ${e.message}`);
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+module.exports = app;
