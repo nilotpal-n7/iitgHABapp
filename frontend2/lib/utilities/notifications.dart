@@ -79,24 +79,11 @@ Future<void> registerFcmToken() async {
 
 Future<void> listenNotifications() async {
   await FirebaseMessaging.instance.requestPermission();
-
-  // App opened via notification (terminated)
-  FirebaseMessaging.instance.getInitialMessage().then((message) {
-    if (message != null) {
-      print('🔁 App opened from terminated via notification');
-    }
-  });
-
-  // App opened via notification (background)
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    print('🔁 App opened from background via notification');
-  });
-
-  FirebaseMessaging.instance.getToken().then((token) {
-    print('FCM Token: $token');
-  }).catchError((error) {
-    print('Error getting FCM token: $error');
-  });
+  // FirebaseMessaging.instance.getToken().then((token) {
+  //   print('FCM Token: $token');
+  // }).catchError((error) {
+  //   print('Error getting FCM token: $error');
+  // });
 }
 
 /*

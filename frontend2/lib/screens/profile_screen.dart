@@ -1,8 +1,14 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend2/apis/authentication/login.dart';
+import 'package:frontend2/constants/endpoint.dart';
+import 'package:frontend2/screens/profile_picture_screen.dart';
 import 'package:frontend2/widgets/common/custom_linear_progress.dart';
 import 'package:frontend2/widgets/common/hostel_name.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -19,8 +25,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String roomNo = '';
   String phone = '';
   String currMess = '';
-
   bool _isloading = true;
+  bool canChangeProfilePic = false;
 
   @override
   void initState() {
@@ -40,10 +46,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> getAllocatedHostel() async {
     final prefs = await SharedPreferences.getInstance();
-    final hostel1 = prefs.getString('hostelID');
+    final hostel1 = prefs.getString('hostel');
     final email1 = prefs.getString('email');
     final name1 = prefs.getString('name');
-    final mess1 = prefs.getString('messName');
+    final mess1 = prefs.getString('currMess');
 
     setState(() {
       hostel = hostel1 ?? 'Siang';
@@ -52,7 +58,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       currMess = mess1 ?? 'Lohit';
       roomNo = '69'; // You can fetch this from SharedPreferences if available
       phone = '6969696969'; // You can fetch this from SharedPreferences if available
-
     });
   }
 
@@ -91,19 +96,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               // Main content with padding
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
                 child: Column(
                   children: [
                     // Profile Image
                     Container(
                       margin: const EdgeInsets.only(bottom: 24),
-                      child: CircleAvatar(
-                        radius: 45,
-                        backgroundColor: Colors.blue[100],
-                        backgroundImage: const NetworkImage(
-                          "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=500",
+                      child: ValueListenableBuilder(
+                        valueListenable: ProfilePictureProvider.profilePictureString,
+                        builder: (context, value, child) => CircleAvatar(
+                          radius: 68,
+                          backgroundColor: Colors.blue[100],
+                          backgroundImage: MemoryImage(base64Decode(value))
                         ),
                       ),
+                    ),
+
+                    InkWell(
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        decoration: BoxDecoration(border: Border.all(color: const Color(0xFFC5C5D1)), borderRadius: BorderRadius.circular(6), color: Colors.grey[200]),
+                        child: const Text("Change Profile Picture"),
+                      ),
+                      onTap: () async {
+                        print("ToDo: Pick Image");
+                      },
                     ),
 
                     // Name
@@ -112,15 +130,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       label: "Name",
                       value: name,
                     ),
-                    const SizedBox(height: 20),
+
+                    const Divider(height: 24, color: Color(0xFFE2E2E2),),
+
+                    // const SizedBox(height: 20),
 
                     // Current Mess
                     _buildField(
                       icon: Icons.restaurant_menu_outlined,
                       label: "Current Mess",
-                      value: currMess,
+                      value: calculateHostel(currMess),
                     ),
-                    const SizedBox(height: 20),
+
+                    const Divider(height: 24, color: Color(0xFFE2E2E2),),
+
+                    // const SizedBox(height: 20),
 
                     // Hostel and Room No. in same row
                     Row(
@@ -129,12 +153,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         // Hostel
                         Expanded(
                           child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Icon(
                                 Icons.home_outlined,
                                 color: Colors.grey[600],
-                                size: 20,
+                                size: 28,
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -166,40 +190,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         // Room No.
                         Expanded(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(width: 40),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Room No.",
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.w400,
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              border: Border(left: BorderSide(width: 1, color: Color(0xFFE2E2E2)))
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Room No.",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                          fontWeight: FontWeight.w400,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      roomNo,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.w500,
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        roomNo,
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+
+                    const Divider(height: 24, color: Color(0xFFE2E2E2),),
+
+                    // const SizedBox(height: 20),
 
                     // Phone
                     _buildField(
@@ -207,7 +239,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       label: "Phone",
                       value: phone,
                     ),
-                    const SizedBox(height: 20),
+
+                    const Divider(height: 24, color: Color(0xFFE2E2E2),),
+
+
+                    // const SizedBox(height: 20),
 
                     // Outlook ID
                     _buildField(
@@ -270,12 +306,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String value,
   }) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Icon(
           icon,
           color: Colors.grey[600],
-          size: 20,
+          size: 28,
         ),
         const SizedBox(width: 12),
         Expanded(

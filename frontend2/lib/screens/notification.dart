@@ -60,6 +60,8 @@
 //   }
 // }
 import 'package:flutter/material.dart';
+import 'package:frontend2/providers/notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend2/utilities/notification_card.dart';
 import 'package:frontend2/utilities/Notifier.dart';
 
@@ -71,7 +73,6 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-
   @override
   void initState() {
     super.initState();
@@ -124,8 +125,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     ),
                   ),
 
-                  // List of notifications
-                  Expanded(
+                // List of notifications
+                ValueListenableBuilder(
+                  valueListenable: NotificationProvider.notificationProvider,
+                  builder: (context, storedNotifications, child) => Expanded(
                     child: storedNotifications.isEmpty
                         ? const Center(
                             child: Text(
@@ -145,7 +148,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               final subtitle = parts.length > 1
                                   ? parts.sublist(1).join(':').trim()
                                   : 'No details';
-
+                  
                               return Column(
                                 children: [
                                   NotificationCard(
@@ -159,11 +162,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             },
                           ),
                   ),
-                ],
-              ),
-            );
-          },
-        ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

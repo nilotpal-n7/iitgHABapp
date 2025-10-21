@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend2/apis/protected.dart';
-import 'package:frontend2/widgets/common/mess_pref_dropdowns.dart';
+import 'package:frontend2/widgets/common/mess_dropdowns.dart';
 import 'package:frontend2/constants/themes.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,6 +19,8 @@ class _MessChangePreferenceScreenState
     extends State<MessChangePreferenceScreen> {
   bool first = true;
   String? firstpref;
+  String? secondpref;
+  String? thirdpref;
   bool alreadyApplied = false;
   String? appliedHostel;
   String? defaultMess;
@@ -76,12 +78,22 @@ class _MessChangePreferenceScreenState
       );
 
       if (res.statusCode == 200) {
+        final prefs = res.data['preferences'];
+        final appliedList = (res.data['appliedHostels'] as List?)
+                ?.whereType<String>()
+                .toList() ??
+            [];
         setState(() {
           alreadyApplied = res.data['applied'] ?? false;
-          appliedHostel = res.data['hostel'];
+          appliedHostel = appliedList.isNotEmpty
+              ? appliedList.join(', ')
+              : res.data['hostel'];
           defaultMess = res.data['default'];
           isMessChangeEnabled = res.data['isMessChangeEnabled'];
-          firstpref = null; // reset selection to avoid stale values
+          // prefill dropdowns with server values when available
+          firstpref = prefs != null ? (prefs['first'] as String?) : null;
+          secondpref = prefs != null ? (prefs['second'] as String?) : null;
+          thirdpref = prefs != null ? (prefs['third'] as String?) : null;
           first = true;
         });
       }
@@ -94,13 +106,26 @@ class _MessChangePreferenceScreenState
   }
 
   Future<void> handleSubmit(String? firstpref) async {
+    // First preference mandatory; second and third optional
     if (firstpref == null) {
-      _showMessage("Error", "Please select a mess preference");
+      _showMessage("Error", "Please select your first mess preference");
       return;
     }
 
-    if (firstpref == defaultMess) {
-      _showMessage("Error", "Please select a different mess");
+    // Collect provided (non-null) preferences
+    final provided =
+        [firstpref, secondpref, thirdpref].whereType<String>().toList();
+
+    // Ensure uniqueness among provided preferences
+    if (provided.toSet().length != provided.length) {
+      _showMessage("Error", "Preferences must be unique");
+      return;
+    }
+
+    // Ensure none of the provided preferences equals current mess
+    if (defaultMess != null && provided.contains(defaultMess)) {
+      _showMessage(
+          "Error", "Please select messes different from your current mess");
       return;
     }
 
@@ -116,7 +141,9 @@ class _MessChangePreferenceScreenState
           },
         ),
         data: {
-          "mess_pref": firstpref,
+          "mess_pref_1": firstpref,
+          "mess_pref_2": secondpref,
+          "mess_pref_3": thirdpref,
         },
       );
 
@@ -256,7 +283,9 @@ class _MessChangePreferenceScreenState
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          'You have already applied for $appliedHostel',
+                          appliedHostel != null && appliedHostel!.isNotEmpty
+                              ? 'You have already applied for $appliedHostel'
+                              : 'You have already applied',
                           style: const TextStyle(color: Colors.black87),
                         ),
                       ),
@@ -271,11 +300,38 @@ class _MessChangePreferenceScreenState
                     ),
                     const SizedBox(height: 8),
 
-                    MessChangePrefs(
+                    MessDropdown(
                       selectedOption: firstpref,
-                      onChanged: (value) => setState(() {
-                        firstpref = value;
-                      }),
+                      enabled: !alreadyApplied,
+                      onChanged: !alreadyApplied
+                          ? (value) => setState(() {
+                                firstpref = value;
+                              })
+                          : null,
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    MessDropdown(
+                      selectedOption: secondpref,
+                      enabled: !alreadyApplied,
+                      onChanged: !alreadyApplied
+                          ? (value) => setState(() {
+                                secondpref = value;
+                              })
+                          : null,
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    MessDropdown(
+                      selectedOption: thirdpref,
+                      enabled: !alreadyApplied,
+                      onChanged: !alreadyApplied
+                          ? (value) => setState(() {
+                                thirdpref = value;
+                              })
+                          : null,
                     ),
 
                     if (firstpref == null && !first)
@@ -284,8 +340,7 @@ class _MessChangePreferenceScreenState
                         child: Row(
                           children: [
                             Padding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(12, 0, 8, 0),
+                              padding: const EdgeInsets.fromLTRB(12, 0, 8, 0),
                               child: SvgPicture.asset(
                                 'assets/icon/information-line.svg',
                                 height: 16,
@@ -308,54 +363,32 @@ class _MessChangePreferenceScreenState
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16),
-        height: 85,
+        height: alreadyApplied ? 16 : 85,
         decoration: const BoxDecoration(
-          //border: Border(top: BorderSide(width: 1, color: Color(0xFFE5E5E5))),
-        ),
+            //border: Border(top: BorderSide(width: 1, color: Color(0xFFE5E5E5))),
+            ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ElevatedButton(
-              onPressed: (loadingStatus || alreadyApplied)
-                  ? null
-                  : () {
-                      handleSubmit(firstpref);
-                      setState(() => first = false);
-                    },
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(
-                  (loadingStatus || alreadyApplied)
-                      ? Colors.grey
-                      : const Color(0xFF4C4EDB),
+            if (!alreadyApplied)
+              ElevatedButton(
+                onPressed: (loadingStatus)
+                    ? null
+                    : () {
+                        handleSubmit(firstpref);
+                        setState(() => first = false);
+                      },
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(
+                    (loadingStatus) ? Colors.grey : const Color(0xFF4C4EDB),
+                  ),
+                  elevation: WidgetStateProperty.all(0),
                 ),
-                elevation: WidgetStateProperty.all(0),
+                child: const Text(
+                  'Submit',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
               ),
-              child: Text(
-                alreadyApplied
-                    ? 'Request already sent to $appliedHostel'
-                    : 'Submit',
-                style: const TextStyle(fontSize: 16, color: Colors.white),
-              ),
-            ),
-            // ElevatedButton(
-            //   onPressed: (alreadyApplied)
-            //       ? () {
-            //           handleCancel();
-            //         }
-            //       : null,
-            //   style: ButtonStyle(
-            //     backgroundColor: WidgetStateProperty.all(
-            //       (alreadyApplied)
-            //           ? const Color.fromARGB(255, 255, 0, 0)
-            //           : Colors.grey,
-            //     ),
-            //     elevation: WidgetStateProperty.all(0),
-            //   ),
-            //   child: const Text(
-            //     'Cancel Mess Request',
-            //     style: TextStyle(fontSize: 16, color: Colors.white),
-            //   ),
-            // ),
           ],
         ),
       ),

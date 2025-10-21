@@ -60,18 +60,21 @@ class MenuFutureBuilder extends StatelessWidget {
             ),
           );
         } else if (snapshot.hasError) {
-          return Card(
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
-              side: const BorderSide(color: Color(0xC5C5D1), width: 1),
-            ),
-            elevation: 0.5,
-            child: Padding(
-              padding: const EdgeInsets.all(18.0),
-              child: Text(
-                'Error loading menu: ${snapshot.error}',
-                style: const TextStyle(color: Colors.red),
+          return Container(
+            width: double.infinity,
+            child: Card(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+                side: const BorderSide(color: Color(0xC5C5D1), width: 1),
+              ),
+              elevation: 0.5,
+              child: const Padding(
+                padding: EdgeInsets.all(18.0),
+                child: Text(
+                  'Unable to fetch menu',
+                  style: const TextStyle(color: Colors.red),
+                ),
               ),
             ),
           );

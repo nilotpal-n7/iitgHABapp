@@ -14,7 +14,15 @@ const messChangeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  toHostel: {
+  toHostel1: {
+    type: String,
+    required: true,
+  },
+   toHostel2: {
+    type: String,
+    required: true,
+  },
+   toHostel3: {
     type: String,
     required: true,
   },

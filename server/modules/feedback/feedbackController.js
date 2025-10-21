@@ -1,18 +1,16 @@
-const {User}  = require('../user/userModel');
-const {Hostel} =require('../hostel/hostelModel');
-const Feedback = require('./feedbackModel');
-const xlsx = require('xlsx');
-const path = require('path');
-const fs = require('fs');
-
-
-const feedbackFilePath = path.join(__dirname, '../output', 'Feedback_Report.xlsx');
+const { User } = require("../user/userModel");
+const { Hostel } = require("../hostel/hostelModel");
+const Feedback = require("./feedbackModel");
+const xlsx = require("xlsx");
+const path = require("path");
+const fs = require("fs");
 
 const submitFeedback = async (req, res) => {
   console.log("request received");
   try {
-    const { name, rollNumber, breakfast, lunch, dinner, comment, smcFields } = req.body;
-     console.log('Received feedback:', req.body);
+    const { name, rollNumber, breakfast, lunch, dinner, comment, smcFields } =
+      req.body;
+    console.log("Received feedback:", req.body);
     if (!name || !rollNumber || !breakfast || !lunch || !dinner) {
       return res.status(400).send("Incomplete feedback data");
     }
@@ -68,7 +66,7 @@ const submitFeedback = async (req, res) => {
     // fs.mkdirSync(path.dirname(feedbackFilePath), { recursive: true });
     // xlsx.writeFile(workbook, feedbackFilePath);
 
-    // 5. Prepare to upload data in form of schema 
+    // 5. Prepare to upload data in form of schema
     const feedbackData = {
       user: user._id,
       breakfast,
@@ -78,11 +76,12 @@ const submitFeedback = async (req, res) => {
       timestamp: new Date(),
     };
 
-
     // 6. Include SMC fields only if user.isSMC === true
     if (user.isSMC) {
       if (!smcFields) {
-        return res.status(400).send("SMC users must provide extra feedback fields");
+        return res
+          .status(400)
+          .send("SMC users must provide extra feedback fields");
       }
       feedbackData.smcFields = smcFields;
     }
@@ -90,21 +89,16 @@ const submitFeedback = async (req, res) => {
     const feedback = new Feedback(feedbackData);
     await feedback.save();
 
-
     // 7. Mark feedback as submitted
     user.feedbackSubmitted = true;
     await user.save();
 
     res.status(200).send("Feedback submitted successfully");
-
   } catch (err) {
     console.error(err);
     res.status(500).send("Error saving feedback");
   }
 };
-
-
-
 
 const removeFeedback = async (req, res) => {
   try {
@@ -122,8 +116,6 @@ const removeFeedback = async (req, res) => {
     if (!user.feedbackSubmitted) {
       return res.status(400).send("No feedback submitted by this user");
     }
-
-    
 
     // // 2. Update user document
     // user.feedbackSubmitted = false;
@@ -154,12 +146,11 @@ const removeFeedback = async (req, res) => {
     await user.save();
 
     res.status(200).send("Feedback removed successfully");
-
   } catch (err) {
     console.error(err);
     res.status(500).send("Error removing feedback");
-  }}
-
+  }
+};
 
 //just for testing no use in frontend
 
@@ -184,9 +175,6 @@ const removeFeedback = async (req, res) => {
 //};
 //
 
-
-
-
 // Sends the saved Excel in system (for testing)
 
 //const downloadFeedbackSheet = (req, res) => {
@@ -208,29 +196,27 @@ const removeFeedback = async (req, res) => {
 const getAllFeedback = async (req, res) => {
   try {
     const feedbacks = await Feedback.find()
-      .populate('user', 'name rollNumber isSMC') // get only needed user fields
+      .populate("user", "name rollNumber isSMC") // get only needed user fields
       .sort({ date: -1 }) // latest first
       .lean(); // optional: returns plain JS objects instead of Mongoose docs
 
     // Format the response for frontend
-    const formatted = feedbacks.map(fb => ({
+    const formatted = feedbacks.map((fb) => ({
       user: fb.user,
       breakfast: fb.breakfast,
       lunch: fb.lunch,
       dinner: fb.dinner,
       comment: fb.comment,
       smcFields: fb.user.isSMC ? fb.smcFields : undefined, // only include smcFields if SMC
-      date: fb.date
+      date: fb.date,
     }));
 
     res.status(200).json(formatted);
-
   } catch (err) {
     console.error(err);
     res.status(500).send("Error fetching feedbacks");
   }
 };
-
 
 module.exports = {
   submitFeedback,
@@ -239,5 +225,3 @@ module.exports = {
   // removeAllFeedbacks,
   getAllFeedback,
 };
-
-
