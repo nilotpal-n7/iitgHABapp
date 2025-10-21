@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:frontend2/apis/users/user.dart';
-import 'package:frontend2/widgets/common/hostel_details.dart';
 import 'package:frontend2/widgets/common/hostel_name.dart';
 import 'package:frontend2/widgets/confirmation_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,6 +7,7 @@ import 'package:frontend2/widgets/common/name_trimmer.dart';
 import 'package:frontend2/widgets/common/snack_bar.dart';
 import 'package:frontend2/widgets/common/custom_linear_progress.dart';
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
+import 'package:frontend2/providers/hostels.dart';
 
 class MessChangeScreen extends StatefulWidget {
   const MessChangeScreen({super.key});
@@ -30,21 +30,8 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
   bool gotMess = false;
   bool _isloading = false;
 
-  final List<String> hostels = [
-    'Lohit',
-    'Kapili',
-    'Umiam',
-    'Gaurang',
-    'Manas',
-    'Brahmaputra',
-    'Dihing',
-    'MSH',
-    'Dhansiri',
-    'Kameng',
-    'Subansiri',
-    'Siang',
-    'Disang',
-  ];
+  // Replace hardcoded hostels with dynamic list from HostelsNotifier
+  List<String> hostels = HostelsNotifier.hostels;
 
   final SingleSelectController<String> hostelController =
       SingleSelectController<String>(null);
@@ -55,6 +42,12 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
 
     fetchUserData();
     getAllocatedHostel();
+    // Listen for hostel list updates
+    HostelsNotifier.addOnChange(() {
+      setState(() {
+        hostels = HostelsNotifier.hostels;
+      });
+    });
     // Reset state if it's a new week (Monday)
     _checkAllowedDays();
   }
@@ -71,8 +64,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
     // Update the state based on the condition
 
     setState(() {
-      correctDate =
-          (now.day >= 25 && now.day <= 28);
+      correctDate = (now.day >= 25 && now.day <= 28);
       isSubmitted = clicked;
       gotMess = gotMess1;
     });
@@ -110,9 +102,10 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
     } else {
       print("Failed to load user details.");
       setState(() {
-        _isloading = false; // Hide the loading indicator if data fetching fails need to keep track of stuff
+        _isloading =
+            false; // Hide the loading indicator if data fetching fails need to keep track of stuff
       });
-      showSnackBar('Something Went Wrong',Colors.black, context);
+      showSnackBar('Something Went Wrong', Colors.black, context);
     }
   }
 
@@ -260,24 +253,25 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                               fontWeight: FontWeight.w400),
                         ),
                         const SizedBox(height: 8),
-                        CustomDropdown<String>(
-                          controller: hostelController,
-                          items: hostels
-                              .where((hostelName) =>
-                                  hostelName !=
-                                  calculateHostel(
-                                      hostel)) // Exclude the current hostel
-                              .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              newSelectedHostelfromList = value;
-                              selectedHostel =
-                                  newSelectedHostelfromList; // Update the selected hostel
-                            });
-                          },
-                          hintText:
-                              "Change Mess to: ${newSelectedHostelfromList ?? ''}",
-                        ),
+                        if (hostels.isEmpty) ...[
+                          const Center(child: CircularProgressIndicator()),
+                        ] else ...[
+                          CustomDropdown<String>(
+                            controller: hostelController,
+                            items: hostels
+                                .where((hostelName) =>
+                                    hostelName != calculateHostel(hostel))
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                newSelectedHostelfromList = value;
+                                selectedHostel = newSelectedHostelfromList;
+                              });
+                            },
+                            hintText:
+                                "Change Mess to: ${newSelectedHostelfromList ?? ''}",
+                          ),
+                        ],
                         const SizedBox(height: 24),
                         const Text(
                           "Reason for changing",
@@ -469,24 +463,26 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
                       if (!isSubmitted && correctDate)
                         Center(
                           child: ElevatedButton(
-                            onPressed: newSelectedHostelfromList == null || calculateHostel(hostel) != hostels
-                                ? null // Disable the button if no hostel is selected
+                            onPressed: newSelectedHostelfromList == null ||
+                                    newSelectedHostelfromList ==
+                                        calculateHostel(hostel)
+                                ? null // Disable if none or same as current
                                 : () async {
                                     setState(() {
                                       isSubmitted = true; // Mark as submitted
                                     });
                                     selectedHostel = newSelectedHostelfromList;
-                                    await fetchHostelData(
-                                        selectedHostel!, roll);
+                                    // Removed invalid fetchHostelData() call (no such backend route)
                                     await fetchUserDetails();
                                     _showConfirmationDialog();
                                   },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: newSelectedHostelfromList == null || calculateHostel(hostel) != hostels
-                                  ? Colors
-                                      .grey // Grey out the button if disabled
-                                  : const Color.fromRGBO(57, 77, 198,
-                                      1), // Enable button when selected
+                              backgroundColor:
+                                  newSelectedHostelfromList == null ||
+                                          newSelectedHostelfromList ==
+                                              calculateHostel(hostel)
+                                      ? Colors.grey
+                                      : const Color.fromRGBO(57, 77, 198, 1),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 40,
                                 vertical: 16,
