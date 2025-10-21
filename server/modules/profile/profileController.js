@@ -1,7 +1,6 @@
 const axios = require("axios");
 const { User } = require("../user/userModel.js");
 const onedrive = require("../../config/onedrive.js");
-const { getAppOnlyAccessToken } = require("../../utils/graphAuth.js");
 const {
   getDelegatedAccessToken,
 } = require("../../utils/delegatedGraphAuth.js");
