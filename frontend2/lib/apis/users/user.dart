@@ -34,11 +34,14 @@ Future<Map<String, String>?> fetchUserDetails() async {
       final String degree = userData['degree'] ?? "Not Provided";
       final String mail = userData['email'];
       final String roll = userData['rollNumber'] ?? "Not provided";
-      final String currSubscribedMess = userData['curr_subscribed_mess'] ?? "Not provided";
-      final String appliedMess = userData['applied_hostel_string'] ?? "Not provided";
+      final String currSubscribedMess =
+          userData['curr_subscribed_mess'] ?? "Not provided";
+      final String appliedMess =
+          userData['applied_hostel_string'] ?? "Not provided";
       final String hostel = userData['hostel'] ?? "Not provided";
       final bool gotHostel = userData['got_mess_changed'];
       final bool isSMC = userData['isSMC'] ?? false;
+      final bool isSetupDone = userData['isSetupDone'] == true;
 
       // print("IS SMCCCC: ${userData['isSMC']}, $isSMC");
 
@@ -52,6 +55,8 @@ Future<Map<String, String>?> fetchUserDetails() async {
       prefs.setString('currMess', currSubscribedMess);
       prefs.setString('name', name);
       prefs.setString('userId', userId);
+      // Persist server-side setup flag
+      await prefs.setBool('isSetupDone', isSetupDone);
 
       print("Name: $name");
       print("Degree: $degree");

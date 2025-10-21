@@ -32,6 +32,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String currMess = '';
   bool _isloading = true;
   bool canChangeProfilePic = false;
+  bool _canChangePhoto = true; // default to true until fetched
   // Controllers
   final TextEditingController _roomController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -42,6 +43,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _initializeData();
+    _fetchProfileSettings();
   }
 
   @override
@@ -80,6 +82,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _roomController.text = roomSaved ?? '';
       _phoneController.text = phoneSaved ?? '';
     });
+  }
+
+  Future<void> _fetchProfileSettings() async {
+    try {
+      final token = await getAccessToken();
+      if (token == 'error') return;
+      final dio = Dio();
+      final res = await dio.get(
+        '${baseUrl}/profile/settings',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      if (res.statusCode == 200) {
+        final data = res.data as Map;
+        setState(() {
+          _canChangePhoto = (data['allowProfilePhotoChange'] == true);
+        });
+      }
+    } catch (_) {}
   }
 
   // Pick and upload profile image
@@ -254,6 +274,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _handleChangePhotoTap() {
+    if (_canChangePhoto) {
+      _pickAndSetProfileImage();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Changing profile photo is not allowed now. Please contact the HAB Admin.'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -313,7 +346,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           OutlinedButton(
                             onPressed:
-                                _uploading ? null : _pickAndSetProfileImage,
+                                _uploading ? null : _handleChangePhotoTap,
                             child: Text(_uploading
                                 ? 'Uploading...'
                                 : 'Change Profile Picture'),
