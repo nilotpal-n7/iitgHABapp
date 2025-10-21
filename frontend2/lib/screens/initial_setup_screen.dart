@@ -126,6 +126,9 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
         if (url != null && url.isNotEmpty) {
           await prefs.setString('profilePictureUrl', url);
         }
+        // Backend marks isSetupDone=true on success; mirror locally
+        await prefs.setBool('isSetupDone', true);
+        ProfilePictureProvider.isSetupDone.value = true;
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile picture uploaded')),
@@ -153,7 +156,19 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('roomNumber', _roomController.text.trim());
       await prefs.setString('phoneNumber', _phoneController.text.trim());
-      await prefs.setBool('profileSetupDone', true);
+
+      // Mark setup complete on backend
+      final token = await getAccessToken();
+      if (token != 'error') {
+        final dio = Dio();
+        await dio.post(
+          '$baseUrl/profile/setup/complete',
+          options: Options(headers: {'Authorization': 'Bearer $token'}),
+        );
+      }
+
+      // Persist locally after backend success
+      await prefs.setBool('isSetupDone', true);
       ProfilePictureProvider.isSetupDone.value = true;
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -165,8 +180,7 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
   }
 
   Future<void> _handleSkip() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('profileSetupDone', true);
+    // Do not persist; allow proceeding just for this session
     ProfilePictureProvider.isSetupDone.value = true;
   }
 

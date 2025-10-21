@@ -1,10 +1,16 @@
 const express = require("express");
 const multer = require("multer");
-const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
 const {
   setProfilePicture,
   getProfilePicture,
+  markSetupComplete,
 } = require("./profileController.js");
+const {
+  getSettings,
+  enablePhotoChange,
+  disablePhotoChange,
+} = require("./profileSettingsController.js");
+const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
 
 const router = express.Router();
 
@@ -14,14 +20,17 @@ const upload = multer({
   limits: { fileSize: 4 * 1024 * 1024 },
 }); // 4MB limit for simple upload
 
+// Settings routes
+router.get("/settings", getSettings);
+router.post("/settings/enable-photo-change", enablePhotoChange);
+router.post("/settings/disable-photo-change", disablePhotoChange);
+
 /**
  * @swagger
  * /api/profile/picture/set:
  *   post:
  *     summary: Upload user's profile picture
  *     tags: [Profile]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -38,8 +47,8 @@ const upload = multer({
  */
 router.post(
   "/picture/set",
-  authenticateJWT,
   upload.single("file"),
+  authenticateJWT,
   setProfilePicture
 );
 
@@ -49,12 +58,13 @@ router.post(
  *   get:
  *     summary: Get user's profile picture URL or stream
  *     tags: [Profile]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Returns URL or image bytes
  */
 router.get("/picture/get", authenticateJWT, getProfilePicture);
+
+/** Mark setup complete */
+router.post("/setup/complete", authenticateJWT, markSetupComplete);
 
 module.exports = router;

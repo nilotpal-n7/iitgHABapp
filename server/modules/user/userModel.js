@@ -93,6 +93,11 @@ const JWT_SECRET_KEY = process.env.JWT_SECRET;
  *           description: Whether user has submitted feedback
  *           default: false
  *           example: false
+ *         isSetupDone:
+ *           type: boolean
+ *           description: Whether the user completed initial setup (profile picture flow)
+ *           default: true
+ *           example: true
  *         profilePictureUrl:
  *           type: string
  *           description: Public URL to the user's profile picture
@@ -179,6 +184,10 @@ const userSchema = new mongoose.Schema({
   isSMC: {
     type: Boolean,
     default: false,
+  },
+  isSetupDone: {
+    type: Boolean,
+    default: true,
   },
   profilePictureUrl: {
     type: String,

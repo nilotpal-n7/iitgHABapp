@@ -5,6 +5,7 @@ const { getAppOnlyAccessToken } = require("../../utils/graphAuth.js");
 const {
   getDelegatedAccessToken,
 } = require("../../utils/delegatedGraphAuth.js");
+const { ProfileSettings } = require("./profileSettingsModel.js");
 
 const TENANT_ID = onedrive.tenantId; // from onedrive config
 const CLIENT_ID = onedrive.clientId; // from onedrive config
@@ -145,6 +146,41 @@ async function createOrganizationViewLink(token, itemId) {
 // POST /api/profile/picture/set
 async function setProfilePicture(req, res) {
   try {
+    // Resolve user + roll (supports both authenticated and unauthenticated calls)
+    let user = req.user;
+    let roll = null;
+    if (user) {
+      roll = user.rollNumber || user.roll || String(user._id);
+    } else {
+      roll =
+        req.body?.rollNumber ||
+        req.body?.roll ||
+        req.query?.rollNumber ||
+        req.query?.roll;
+      if (!roll) {
+        return res.status(400).json({
+          message:
+            "Missing rollNumber. Provide JWT auth or include 'rollNumber' field in form/query.",
+        });
+      }
+      user = await User.findOne({ $or: [{ rollNumber: roll }, { roll }] });
+      if (!user) {
+        return res
+          .status(404)
+          .json({ message: `User not found for roll '${roll}'` });
+      }
+    }
+
+    // Feature flag: allow if (user.isSetupDone == false) OR (global toggle is enabled)
+    const settings = await ProfileSettings.findOne();
+    const allowPhotoChange = Boolean(settings?.allowProfilePhotoChange);
+    if (user.isSetupDone === true && !allowPhotoChange) {
+      return res.status(403).json({
+        message:
+          "Changing profile photo is not allowed now. Please contact the HAB Admin.",
+      });
+    }
+
     const file = req.file;
     logStep("Incoming upload", {
       hasFile: !!file,
@@ -159,11 +195,14 @@ async function setProfilePicture(req, res) {
         .json({ message: "ONEDRIVE_PROFILE_PICS_FOLDER_ID is not configured" });
     }
 
-    const user = req.user; // from authenticateJWT
-    const roll = user.rollNumber || user.roll || String(user._id);
     const ext = extFromMime(file.mimetype);
     const targetName = `${roll}${ext}`;
-    logStep("User & naming", { userId: user?._id, roll, targetName });
+    logStep("User & naming", {
+      userId: user?._id,
+      roll,
+      targetName,
+      isSetupDone: user.isSetupDone,
+    });
 
     // Delegated token required to use /me/drive
     const token = await requireDelegatedToken();
@@ -274,11 +313,13 @@ async function setProfilePicture(req, res) {
 
     user.profilePictureItemId = uploaded.id;
     if (publicUrl) user.profilePictureUrl = publicUrl;
+    // Do NOT mark isSetupDone here; it will be set on explicit save action
     await user.save();
     logStep("User updated", {
       userId: user?._id,
       itemId: uploaded.id,
       url: publicUrl,
+      isSetupDone: user.isSetupDone,
     });
 
     return res.status(200).json({
@@ -328,14 +369,30 @@ async function getProfilePicture(req, res) {
     return res.send(Buffer.from(resp.data));
   } catch (err) {
     console.error("getProfilePicture error", err.response?.data || err.message);
-    return res
-      .status(500)
-      .json({
-        message: "Failed to fetch profile picture",
-        error: err.message,
-        status: err.response?.status,
-      });
+    return res.status(500).json({
+      message: "Failed to fetch profile picture",
+      error: err.message,
+      status: err.response?.status,
+    });
   }
 }
 
-module.exports = { setProfilePicture, getProfilePicture };
+// Mark setup complete for current user
+async function markSetupComplete(req, res) {
+  try {
+    const user = req.user;
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+    user.isSetupDone = true;
+    await user.save();
+    return res
+      .status(200)
+      .json({ message: "Setup marked complete", isSetupDone: true });
+  } catch (e) {
+    return res.status(500).json({
+      message: "Failed to mark setup complete",
+      error: String(e.message || e),
+    });
+  }
+}
+
+module.exports = { setProfilePicture, getProfilePicture, markSetupComplete };
