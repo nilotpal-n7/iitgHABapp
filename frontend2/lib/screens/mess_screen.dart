@@ -31,9 +31,6 @@ class MessScreen extends StatefulWidget {
 
 String currSubscribedMess = '';
 
-
-
-
 class _MessScreenState extends State<MessScreen> {
   bool _isLoading = true;
 
@@ -133,8 +130,6 @@ class _MessScreenState extends State<MessScreen> {
   }
 }
 
-
-
 class _MenuSection extends StatefulWidget {
   @override
   State<_MenuSection> createState() => _MenuSectionState();
@@ -151,41 +146,59 @@ class _MenuSectionState extends State<_MenuSection> {
     'Sunday',
   ];
 
-  late String messId;
+  String? messId;
   late String selectedDay;
+  bool _initializedFromProvider = false;
+  String?
+      _preferredMessName; // from SharedPreferences (curr_subscribed_mess or messName)
+  // We'll read hostelMap reactively from provider in build.
 
-  late final hostelMap;
-
-  String selectedHostel = HostelsNotifier.userHostel.isNotEmpty?HostelsNotifier.userHostel:(HostelsNotifier.hostels.isNotEmpty?HostelsNotifier.hostels[0]:"");
+  String selectedHostel = HostelsNotifier.userHostel.isNotEmpty
+      ? HostelsNotifier.userHostel
+      : (HostelsNotifier.hostels.isNotEmpty ? HostelsNotifier.hostels[0] : "");
 
   @override
   void initState() {
-    hostelMap = Provider.of<MessInfoProvider>(context, listen: false).hostelMap;
+    // Load preferred mess name from prefs to match against provider map once ready
+    SharedPreferences.getInstance().then((prefs) {
+      final byCurrSub = prefs.getString('curr_subscribed_mess');
+      final byMessName = prefs.getString('messName');
+      setState(() {
+        _preferredMessName = byCurrSub?.isNotEmpty == true
+            ? byCurrSub
+            : (byMessName?.isNotEmpty == true ? byMessName : null);
+      });
+    });
+
     print("Selected Hostel rn: $selectedHostel");
-    // HostelsNotifier.init();
     HostelsNotifier.addOnChange(
       () {
-        setState(() {
-          selectedHostel = HostelsNotifier.userHostel;
-          messId = hostelMap[selectedHostel]?.messid ?? '6826dfda8493bb0870b10cbf';
-        });
+        // When userHostel changes, update only if we have that hostel in the map.
+        final map =
+            Provider.of<MessInfoProvider>(context, listen: false).hostelMap;
+        final newHostel = HostelsNotifier.userHostel;
+        if (newHostel.isNotEmpty && map.containsKey(newHostel)) {
+          setState(() {
+            selectedHostel = newHostel;
+            messId = map[newHostel]?.messid;
+          });
+        }
       },
     );
     super.initState();
     selectedDay = DateFormat('EEEE').format(DateTime.now()); // default to today
-    // default messId from provider
-    messId = hostelMap.values.isNotEmpty
-        ? hostelMap.values.first.messid
-        : '68552b70491f1303d2c4dbcc';
+    // No hardcoded fallback; wait for provider data in build.
   }
 
   void _updateMessId(String hostelName) {
-    // print(hostelName);
-    final id = hostelMap[hostelName]?.messid ?? '6826dfda8493bb0870b10cbf';
-    setState(() {
-      selectedHostel = hostelName;
-      messId = id;
-    });
+    final map = Provider.of<MessInfoProvider>(context, listen: false).hostelMap;
+    final id = map[hostelName]?.messid; // no hardcoded fallback
+    if (id != null) {
+      setState(() {
+        selectedHostel = hostelName;
+        messId = id;
+      });
+    }
   }
 
   void _updateDay(String day) {
@@ -196,6 +209,33 @@ class _MenuSectionState extends State<_MenuSection> {
 
   @override
   Widget build(BuildContext context) {
+    final hostelMap = context.watch<MessInfoProvider>().hostelMap;
+
+    // Initialize once when provider data is ready
+    if (!_initializedFromProvider && hostelMap.isNotEmpty) {
+      // Prefer mapping by subscribed mess name if available
+      String? byMessNameKey;
+      if (_preferredMessName != null && _preferredMessName!.isNotEmpty) {
+        try {
+          byMessNameKey = hostelMap.entries
+              .firstWhere((e) => e.value.messname == _preferredMessName)
+              .key;
+        } catch (_) {
+          byMessNameKey = null;
+        }
+      }
+
+      final preferred = HostelsNotifier.userHostel;
+      final initialHostel = byMessNameKey ??
+          ((preferred.isNotEmpty && hostelMap.containsKey(preferred))
+              ? preferred
+              : hostelMap.keys.first);
+
+      selectedHostel = initialHostel;
+      messId = hostelMap[initialHostel]?.messid;
+      _initializedFromProvider = true;
+    }
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,11 +246,14 @@ class _MenuSectionState extends State<_MenuSection> {
             children: [
               const Text(
                 "What's in Menu",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Color(0xFF676767)),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF676767)),
               ),
               const Spacer(),
-              // MessDropdown(selectedOption: "Barak", onChanged: (s) {print(s);},),
-              HostelDrop(selectedHostel: selectedHostel, onChanged: _updateMessId),
+              HostelDrop(
+                  selectedHostel: selectedHostel, onChanged: _updateMessId),
             ],
           ),
           const SizedBox(height: 24),
@@ -232,24 +275,41 @@ class _MenuSectionState extends State<_MenuSection> {
               child: Column(
                 children: [
                   const SizedBox(height: 12),
-                  // _MenuCard(
-                  //   messId: messId,
-                  //   day: selectedDay,
-                  // ),
-                  
-                  _MealWrapper(meal: 'Breakfast', messId: messId, day: selectedDay),
-                  _MealWrapper(meal: 'Lunch', messId: messId, day: selectedDay),
-                  _MealWrapper(meal: 'Dinner', messId: messId, day: selectedDay),
-              
-                  const SizedBox(height: 24),
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.info_outline, size: 16, color: Color(0xFF676767),),
-                      SizedBox(width: 2,),
-                      Text("Tap on a food item to mark as favourite", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF676767)),),
-                    ],
-                  ),
+                  if (messId == null) ...[
+                    const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: Center(
+                          child: CircularProgressIndicator(strokeWidth: 2)),
+                    )
+                  ] else ...[
+                    _MealWrapper(
+                        meal: 'Breakfast', messId: messId!, day: selectedDay),
+                    _MealWrapper(
+                        meal: 'Lunch', messId: messId!, day: selectedDay),
+                    _MealWrapper(
+                        meal: 'Dinner', messId: messId!, day: selectedDay),
+                    const SizedBox(height: 24),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          size: 16,
+                          color: Color(0xFF676767),
+                        ),
+                        SizedBox(
+                          width: 2,
+                        ),
+                        Text(
+                          "Tap on a food item to mark as favourite",
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF676767)),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -287,32 +347,18 @@ class _DayChip extends StatelessWidget {
             color: selected ? const Color(0xFFEDEDFB) : const Color(0xFFF5F5F5),
           ),
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-          child: Text(label, style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            fontFamily: 'OpenSans_regular',
-            color: selected ? const Color(0xFF4C4EDB) : const Color(0xFF676767),
-          ),),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              fontFamily: 'OpenSans_regular',
+              color:
+                  selected ? const Color(0xFF4C4EDB) : const Color(0xFF676767),
+            ),
+          ),
         ),
       ),
-    );
-  }
-}
-
-class _MenuCard extends StatelessWidget {
-  final String messId;
-  final String day;
-
-  const _MenuCard({required this.messId, required this.day});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _MealWrapper(meal: 'Breakfast', messId: messId, day: day),
-        _MealWrapper(meal: 'Lunch', messId: messId, day: day),
-        _MealWrapper(meal: 'Dinner', messId: messId, day: day),
-      ],
     );
   }
 }
@@ -352,92 +398,6 @@ class _MealWrapper extends StatelessWidget {
           mealType: meal,
         );
       },
-    );
-  }
-}
-
-
-
-
-
-
-
-class _MessInfo extends StatelessWidget {
-  final String catererName;
-  final int? rating;
-  final int? rank;
-
-  const _MessInfo({
-    required this.catererName,
-    required this.rating,
-    required this.rank,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Mess Info",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            "Caterer Name",
-            style: TextStyle(fontSize: 12, color: Colors.black54),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            catererName,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-          ),
-          const Divider(height: 32),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  children: [
-                    Text(
-                      rating?.toString() ?? "N/A",
-                      style: const TextStyle(
-                        fontSize: 24,
-                        color: Color(0xFF3754DB),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text("Rating", style: TextStyle(fontSize: 12)),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  children: [
-                    Text(
-                      rank?.toString() ?? "N/A",
-                      style: const TextStyle(
-                        fontSize: 24,
-                        color: Color(0xFF3754DB),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text("Rank", style: TextStyle(fontSize: 12)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }
