@@ -10,11 +10,12 @@ import 'package:frontend2/screens/home_screen.dart';
 import 'package:frontend2/screens/MainNavigationScreen.dart';
 import 'package:frontend2/screens/login_screen.dart';
 import 'package:frontend2/screens/mess_screen.dart';
-import 'package:frontend2/screens/profile_picture_screen.dart';
+import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/utilities/startupitem.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend2/utilities/notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:frontend2/apis/users/user.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,12 @@ Future<void> main() async {
   await Firebase.initializeApp();
 
   HostelsNotifier.init();
+  // Ensure prefs have latest isSetupDone from server before initializing provider
+  if (asLoggedIn) {
+    try {
+      await fetchUserDetails();
+    } catch (_) {}
+  }
   ProfilePictureProvider.init();
 
   await getUserMessInfo();
@@ -36,8 +43,6 @@ Future<void> main() async {
     ),
   );
 }
-
-
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -119,7 +124,9 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
 
-      home: widget.isLoggedIn ? const MainNavigationScreen() : const LoginScreen(),
+      home: widget.isLoggedIn
+          ? const MainNavigationScreen()
+          : const LoginScreen(),
       // home: const MainNavigationScreen(),
 
       //home:  ProfileScreen(),

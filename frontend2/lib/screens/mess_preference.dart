@@ -291,48 +291,84 @@ class _MessChangePreferenceScreenState
                       ),
 
                     const SizedBox(height: 24),
+                    // Replaced single 'Preferences' heading with labels per dropdown
+
+                    // 1st Preference
                     const Text(
-                      'Preferences',
+                      '1st Preference',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 8),
-
                     MessDropdown(
                       selectedOption: firstpref,
-                      enabled: !alreadyApplied,
-                      onChanged: !alreadyApplied
-                          ? (value) => setState(() {
-                                firstpref = value;
-                              })
-                          : null,
+                      enabled: (isMessChangeEnabled == true) && !alreadyApplied,
+                      onChanged:
+                          (isMessChangeEnabled == true) && !alreadyApplied
+                              ? (value) => setState(() {
+                                    firstpref = value;
+                                  })
+                              : null,
                     ),
 
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
 
+                    // 2nd Preference (Optional)
+                    const Text(
+                      '2nd Preference (Optional)',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     MessDropdown(
                       selectedOption: secondpref,
-                      enabled: !alreadyApplied,
-                      onChanged: !alreadyApplied
-                          ? (value) => setState(() {
-                                secondpref = value;
-                              })
-                          : null,
+                      enabled: (isMessChangeEnabled == true) && !alreadyApplied,
+                      onChanged:
+                          (isMessChangeEnabled == true) && !alreadyApplied
+                              ? (value) => setState(() {
+                                    secondpref = value;
+                                  })
+                              : null,
                     ),
 
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
 
+                    // 3rd Preference (Optional)
+                    const Text(
+                      '3rd Preference (Optional)',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     MessDropdown(
                       selectedOption: thirdpref,
-                      enabled: !alreadyApplied,
-                      onChanged: !alreadyApplied
-                          ? (value) => setState(() {
-                                thirdpref = value;
-                              })
-                          : null,
+                      enabled: (isMessChangeEnabled == true) && !alreadyApplied,
+                      onChanged:
+                          (isMessChangeEnabled == true) && !alreadyApplied
+                              ? (value) => setState(() {
+                                    thirdpref = value;
+                                  })
+                              : null,
                     ),
+
+                    // Red info text when mess change is disabled
+                    if (isMessChangeEnabled == false)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(
+                          'Mess change is currently disabled, you will be notified when it opens.',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFFC40205),
+                          ),
+                        ),
+                      ),
 
                     if (firstpref == null && !first)
                       Padding(
@@ -363,14 +399,14 @@ class _MessChangePreferenceScreenState
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16),
-        height: alreadyApplied ? 16 : 85,
+        height: ((isMessChangeEnabled == true) && !alreadyApplied) ? 85 : 16,
         decoration: const BoxDecoration(
             //border: Border(top: BorderSide(width: 1, color: Color(0xFFE5E5E5))),
             ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (!alreadyApplied)
+            if ((isMessChangeEnabled == true) && !alreadyApplied)
               ElevatedButton(
                 onPressed: (loadingStatus)
                     ? null

@@ -8,7 +8,7 @@ import 'package:frontend2/constants/endpoint.dart';
 import 'package:frontend2/main.dart';
 import 'package:frontend2/providers/feedback_provider.dart';
 import 'package:frontend2/providers/hostels.dart';
-import 'package:frontend2/screens/profile_picture_screen.dart';
+import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';

@@ -1,4 +1,4 @@
-const String baseUrl = "http://localhost:3000/api";
+const String baseUrl = "https://hab.codingclub.in/api";
 
 class NotificationEndpoints {
   static const String registerToken = '$baseUrl/notification/register-token';
@@ -34,7 +34,7 @@ class tokenendpoint {
 
 class AuthEndpoints {
   static const String getAccess =
-      'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize?client_id=2cdac4f3-1fda-4348-a057-9bb2e3d184a1&response_type=code&redirect_uri=https://hab.codingclub.in/api/auth/login/redirect/mobile&scope=offline_access%20user.read&state=12345&prompt=consent';
+      'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize?client_id=2cdac4f3-1fda-4348-a057-9bb2e3d184a1&response_type=code&redirect_uri=https://hab.codingclub.in/api/auth/login/redirect/mobile&scope=offline_access%20Files.ReadWrite%20User.Read&state=12345&prompt=consent';
 }
 
 class Userendpoints {

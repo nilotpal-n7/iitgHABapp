@@ -8,6 +8,7 @@ import {
   BookOutlined,
   BarChartOutlined,
   UploadOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 
@@ -49,16 +50,29 @@ const Sidebar = () => {
       key: "6",
       name: "Mess Change Applications",
       path: "/mess/changeapplication",
-      icon: <BarChartOutlined />
-    }
+      icon: <BarChartOutlined />,
+    },
+    {
+      key: "7",
+      name: "Profile Settings",
+      path: "/profile-settings",
+      icon: <SettingOutlined />,
+    },
   ];
 
   useEffect(() => {
     const currentPath = window.location.pathname;
-    const currentItem = navItems.find((item) => item.path === currentPath);
-    if (currentItem) {
-      setSelectedKey(currentItem.key);
-    }
+    // derive from static list without capturing navItems
+    const mapping = {
+      "/": "1",
+      "/hostels": "2",
+      "/caterers": "3",
+      "/students": "4",
+      "/allocate-hostel": "5",
+      "/mess/changeapplication": "6",
+      "/profile-settings": "7",
+    };
+    setSelectedKey(mapping[currentPath] || "1");
   }, []);
 
   const handleMenuClick = (item) => {

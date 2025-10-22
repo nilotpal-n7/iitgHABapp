@@ -14,6 +14,7 @@ import HostelPage from "./pages/HostelPage";
 
 import MessChangePage from "./pages/MessChangePage.jsx";
 import AllocateHostel from "./pages/AllocateHostel.jsx";
+import ProfileSettings from "./pages/ProfileSettings.jsx";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
               }
             />
             <Route path="/allocate-hostel" element={<AllocateHostel />} />
+            <Route path="/profile-settings" element={<ProfileSettings />} />
           </Routes>
         </div>
       </div>

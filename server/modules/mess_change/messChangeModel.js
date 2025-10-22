@@ -14,17 +14,21 @@ const messChangeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  // Final allocated hostel
+  toHostel: {
+    type: String,
+    required: true,
+  },
+  // Preference fields: 1 is compulsory, 2 and 3 are optional
   toHostel1: {
     type: String,
     required: true,
   },
-   toHostel2: {
+  toHostel2: {
     type: String,
-    required: true,
   },
-   toHostel3: {
+  toHostel3: {
     type: String,
-    required: true,
   },
   createdAt: {
     type: Date,

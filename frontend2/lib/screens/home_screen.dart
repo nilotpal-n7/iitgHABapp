@@ -5,7 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:frontend2/providers/feedback_provider.dart';
 import 'package:frontend2/screens/complaints_screen.dart';
 import 'package:frontend2/screens/mess_feedback/mess_feedback_page.dart';
-import 'package:frontend2/screens/profile_picture_screen.dart';
+import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/screens/profile_screen.dart';
 import 'package:frontend2/screens/qr_scanner.dart';
 import 'package:frontend2/utilities/ComingSoon.dart';
@@ -345,10 +345,9 @@ class _HomeScreenState extends State<HomeScreen> {
             child: ValueListenableBuilder(
               valueListenable: ProfilePictureProvider.profilePictureString,
               builder: (context, value, child) => CircleAvatar(
-                          radius: 16,
-                          backgroundColor: Colors.blue[100],
-                          backgroundImage: MemoryImage(base64Decode(value))
-                        ),
+                  radius: 16,
+                  backgroundColor: Colors.blue[100],
+                  backgroundImage: MemoryImage(base64Decode(value))),
             ),
           ),
         ),
