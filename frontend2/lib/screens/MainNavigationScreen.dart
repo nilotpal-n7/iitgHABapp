@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend2/providers/feedback_provider.dart';
 import 'package:frontend2/screens/complaints_screen.dart';
 import 'package:frontend2/screens/mess_feedback/mess_feedback_page.dart';
-import 'package:frontend2/screens/profile_picture_screen.dart';
+import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/screens/profile_screen.dart';
 import 'package:frontend2/utilities/ComingSoon.dart';
 import 'package:provider/provider.dart';
@@ -43,17 +43,20 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       const ComingSoonScreen(),
     ];
     return ValueListenableBuilder(
-      valueListenable: ProfilePictureProvider.profilePictureString,
-      builder: (context, value, child) => Scaffold(
-        body: value.isEmpty ? ProfilePictureScreen() : 
-        IndexedStack(
-          index: _selectedIndex,
-          children: screens,
-        ),
-        bottomNavigationBar: value.isEmpty ? SizedBox() : BottomNavBar(
-          currentIndex: _selectedIndex,
-          onTap: _handleNavTap,
-        ),
+      valueListenable: ProfilePictureProvider.isSetupDone,
+      builder: (context, setupDone, child) => Scaffold(
+        body: (setupDone == true)
+            ? IndexedStack(
+                index: _selectedIndex,
+                children: screens,
+              )
+            : const InitialSetupScreen(),
+        bottomNavigationBar: (setupDone == true)
+            ? BottomNavBar(
+                currentIndex: _selectedIndex,
+                onTap: _handleNavTap,
+              )
+            : const SizedBox(),
       ),
     );
   }

@@ -1,10 +1,20 @@
 const settings = {
-	clientId: "ef3696d9-2ab2-423c-a494-fb0a193e0446",
-	clientSecret: "KmD8Q~xCY8cR6RNrCJlUJBCzTbWqx3dKdFVTLajR",
-	tenantId: "850aa78d-94e1-4bc6-9cf3-8c11b530701c",
-	authTenant: "850aa78d-94e1-4bc6-9cf3-8c11b530701c",
-	graphUserScopes: ["user.read", "offline_access", "files.readwrite"],//omitted devicecode since not needed as of now
-	
+  clientId: process.env.CLIENT_ID,
+  clientSecret: process.env.CLIENT_SECRET,
+  tenantId: process.env.TENANT_ID, // Resource tenant (your org tenant)
+  authTenant: process.env.AUTH_TENANT || process.env.TENANT_ID || "common", // Authority to use for auth flows
+  // Delegated scopes (configurable via env). Default to minimum required for /me/drive uploads.
+  graphUserScopes: (
+    process.env.GRAPH_SCOPES || "User.Read offline_access Files.ReadWrite"
+  )
+    .split(/\s+/)
+    .filter(Boolean),
+  // OAuth redirect URI for delegated consent (must match app registration)
+  redirectUri: process.env.REDIRECT_URI,
+  // Additional required values for uploads
+  driveId: process.env.ONEDRIVE_DRIVE_ID, // optional, not used with /me/drive
+  profilePicsFolderId: process.env.ONEDRIVE_PROFILE_PICS_FOLDER_ID, // parent folder itemId
+  storageUserUPN: process.env.ONEDRIVE_STORAGE_USER_UPN, // storage account UPN (optional)
 };
 
 module.exports = settings;
