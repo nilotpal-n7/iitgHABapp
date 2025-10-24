@@ -15,6 +15,8 @@ import HostelPage from "./pages/HostelPage";
 import MessChangePage from "./pages/MessChangePage.jsx";
 import AllocateHostel from "./pages/AllocateHostel.jsx";
 import ProfileSettings from "./pages/ProfileSettings.jsx";
+import FeedbackControl from "./pages/FeedbackControl.jsx";
+import FeedbackLeaderboard from "./pages/FeedbackLeaderboard.jsx";
 
 function App() {
   return (
@@ -42,6 +44,11 @@ function App() {
             />
             <Route path="/allocate-hostel" element={<AllocateHostel />} />
             <Route path="/profile-settings" element={<ProfileSettings />} />
+            <Route path="/feedback-control" element={<FeedbackControl />} />
+            <Route
+              path="/feedback-leaderboard"
+              element={<FeedbackLeaderboard />}
+            />
           </Routes>
         </div>
       </div>
