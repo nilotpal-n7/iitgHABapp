@@ -1,21 +1,21 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:frontend2/apis/authentication/login.dart';
 import 'package:frontend2/apis/mess/user_mess_info.dart';
+import 'package:frontend2/apis/users/user.dart';
 import 'package:frontend2/providers/feedback_provider.dart';
 import 'package:frontend2/providers/hostels.dart';
-import 'package:frontend2/screens/home_screen.dart';
 import 'package:frontend2/screens/MainNavigationScreen.dart';
+import 'package:frontend2/screens/home_screen.dart';
+import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/screens/login_screen.dart';
 import 'package:frontend2/screens/mess_screen.dart';
-import 'package:frontend2/screens/initial_setup_screen.dart';
+import 'package:frontend2/utilities/notifications.dart';
 import 'package:frontend2/utilities/startupitem.dart';
 import 'package:provider/provider.dart';
-import 'package:frontend2/utilities/notifications.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:frontend2/apis/users/user.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -127,7 +127,6 @@ class _MyAppState extends State<MyApp> {
       home: widget.isLoggedIn
           ? const MainNavigationScreen()
           : const LoginScreen(),
-      // home: const MainNavigationScreen(),
 
       //home:  ProfileScreen(),
       builder: EasyLoading.init(),
