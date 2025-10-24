@@ -4,6 +4,15 @@ const Feedback = require("./feedbackModel");
 const xlsx = require("xlsx");
 const path = require("path");
 const fs = require("fs");
+const { FeedbackSettings } = require("./feedbackSettingsModel");
+
+const ratingMap = {
+  "Very Poor": 1,
+  Poor: 2,
+  Average: 3,
+  Good: 4,
+  "Very Good": 5,
+};
 
 const submitFeedback = async (req, res) => {
   console.log("request received");
@@ -15,56 +24,40 @@ const submitFeedback = async (req, res) => {
       return res.status(400).send("Incomplete feedback data");
     }
 
+    // Enforce feedback window
+    let settings = await FeedbackSettings.findOne();
+    if (!settings || !settings.isEnabled) {
+      return res.status(403).send("Mess feedback is currently closed by HAB.");
+    }
+
+    // Auto close after 2 days
+    if (settings.enabledAt) {
+      const enabledAt = new Date(settings.enabledAt);
+      const expiresAt = new Date(enabledAt.getTime() + 2 * 24 * 60 * 60 * 1000);
+      const now = new Date();
+      if (now > expiresAt) {
+        settings.isEnabled = false;
+        settings.disabledAt = now;
+        await settings.save();
+        return res.status(403).send("Mess feedback window has ended.");
+      }
+    }
+
     // 1. Find user by name and rollNumber
     const user = await User.findOne({ name, rollNumber });
     if (!user) return res.status(404).send("User not found");
 
-    // 2. Reject if already submitted
-    if (user.feedbackSubmitted) {
-      return res.status(400).send("Feedback already submitted by this user");
+    // Check if feedback for this user and month already exists
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const existingFeedback = await Feedback.findOne({
+      user: user._id,
+      timestamp: { $gte: monthStart, $lt: monthEnd },
+    });
+    if (existingFeedback) {
+      return res.status(400).send("Feedback already submitted for this month");
     }
-
-    // 3. Get hostel name
-    // let hostelName = 'Unknown';
-    // if (user.hostel) {
-    //   const hostelDoc = await Hostel.findById(user.hostel);
-    //   hostelName = hostelDoc?.hostel_name || 'Unknown';
-    // }
-
-    // 4. Get current mess name
-    // let currentMessName = 'Unknown';
-    // if (user.curr_subscribed_mess) {
-    //   const currMessDoc = await Hostel.findById(user.curr_subscribed_mess);
-    //   currentMessName = currMessDoc?.hostel_name || 'Unknown';
-    // }
-
-    // 5. Prepare Excel entry
-    // const newEntry = {
-    //   User: user.name,
-    //   RollNumber: user.rollNumber,
-    //   Hostel: hostelName,
-    //   CurrentMess: currentMessName,
-    //   Breakfast: breakfast,
-    //   Lunch: lunch,
-    //   Dinner: dinner,
-    //   Comment: comment || 'No comment',
-    //   Date: new Date().toLocaleDateString(),
-    // };
-
-    // let data = [];
-    // if (fs.existsSync(feedbackFilePath)) {
-    //   const workbook = xlsx.readFile(feedbackFilePath);
-    //   const worksheet = workbook.Sheets['Feedback'];
-    //   data = xlsx.utils.sheet_to_json(worksheet);
-    // }
-
-    // data.push(newEntry);
-
-    // const worksheet = xlsx.utils.json_to_sheet(data);
-    // const workbook = xlsx.utils.book_new();
-    // xlsx.utils.book_append_sheet(workbook, worksheet, 'Feedback');
-    // fs.mkdirSync(path.dirname(feedbackFilePath), { recursive: true });
-    // xlsx.writeFile(workbook, feedbackFilePath);
 
     // 5. Prepare to upload data in form of schema
     const feedbackData = {
@@ -75,6 +68,15 @@ const submitFeedback = async (req, res) => {
       comment,
       timestamp: new Date(),
     };
+
+    // Resolve caterer (mess) id from user's current subscribed mess (hostel)
+    // We have user.curr_subscribed_mess referencing Hostel. Need Hostel.messId
+    let catererId = null;
+    if (user.curr_subscribed_mess) {
+      const hostelDoc = await Hostel.findById(user.curr_subscribed_mess).lean();
+      catererId = hostelDoc?.messId || null;
+    }
+    feedbackData.caterer = catererId;
 
     // 6. Include SMC fields only if user.isSMC === true
     if (user.isSMC) {
@@ -124,23 +126,6 @@ const removeFeedback = async (req, res) => {
     // 1. Delete feedback from MongoDB
     await Feedback.deleteOne({ user: user._id });
 
-    // 3. Remove entry from Excel file (if exists)
-    // if (fs.existsSync(feedbackFilePath)) {
-    //   const workbook = xlsx.readFile(feedbackFilePath);
-    //   const worksheet = workbook.Sheets['Feedback'];
-    //   let data = xlsx.utils.sheet_to_json(worksheet);
-
-    //   // Filter out feedback of the user
-    //   data = data.filter(entry =>
-    //     entry.RollNumber !== rollNumber || entry.User !== name
-    //   );
-
-    //   const newSheet = xlsx.utils.json_to_sheet(data);
-    //   const newWorkbook = xlsx.utils.book_new();
-    //   xlsx.utils.book_append_sheet(newWorkbook, newSheet, 'Feedback');
-    //   xlsx.writeFile(newWorkbook, feedbackFilePath);
-    // }
-
     // 2. Update user document
     user.feedbackSubmitted = false;
     await user.save();
@@ -152,76 +137,347 @@ const removeFeedback = async (req, res) => {
   }
 };
 
-//just for testing no use in frontend
-
-//const removeAllFeedbacks = async (req, res) => {
-//  try {
-//    // update users
-//    await User.updateMany({}, { $set: { feedbackSubmitted: false } });
-//
-//    // update the sheet and reset it
-//    if (fs.existsSync(feedbackFilePath)) {
-//      const workbook = xlsx.utils.book_new();
-//      const emptySheet = xlsx.utils.json_to_sheet([]);
-//      xlsx.utils.book_append_sheet(workbook, emptySheet, 'Feedback');
-//      xlsx.writeFile(workbook, feedbackFilePath);
-//    }
-//
-//    res.status(200).send("All feedbacks removed successfully");
-//  } catch (err) {
-//    console.error(err);
-//    res.status(500).send("Error removing all feedbacks");
-//  }
-//};
-//
-
-// Sends the saved Excel in system (for testing)
-
-//const downloadFeedbackSheet = (req, res) => {
-//  if (!fs.existsSync(feedbackFilePath)) {
-//    return res.status(404).send("No feedback report found");
-//  }
-// console.log("Looking for file at:", feedbackFilePath);
-//
-//  res.download(feedbackFilePath, 'Feedback_Report.xlsx', (err) => {
-//    if (err) {
-//      console.error("Download error:", err);
-//      res.status(500).send("Could not download feedback report");
-//    }
-//  });
-//};
-//
-
 // Fetch all feedbacks (or you can filter by user/hostel if needed)
 const getAllFeedback = async (req, res) => {
   try {
     const feedbacks = await Feedback.find()
-      .populate("user", "name rollNumber isSMC") // get only needed user fields
-      .sort({ date: -1 }) // latest first
-      .lean(); // optional: returns plain JS objects instead of Mongoose docs
+      .populate("user", "name rollNumber isSMC") // user may be null if deleted
+      .populate("caterer", "name")
+      .sort({ date: -1 })
+      .lean();
 
-    // Format the response for frontend
     const formatted = feedbacks.map((fb) => ({
-      user: fb.user,
+      user: fb.user || null,
+      caterer: fb.caterer || null,
       breakfast: fb.breakfast,
       lunch: fb.lunch,
       dinner: fb.dinner,
       comment: fb.comment,
-      smcFields: fb.user.isSMC ? fb.smcFields : undefined, // only include smcFields if SMC
+      smcFields: fb.user?.isSMC ? fb.smcFields : undefined,
       date: fb.date,
     }));
 
-    res.status(200).json(formatted);
+    return res.status(200).json(formatted);
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error fetching feedbacks");
+    console.error("getAllFeedback error:", err);
+    return res.status(500).json({
+      message: "Error fetching feedbacks",
+      error: String(err?.message || err),
+    });
+  }
+};
+
+// Enable/Disable feedback window
+const enableFeedback = async (req, res) => {
+  try {
+    let s = await FeedbackSettings.findOne();
+    if (!s) s = new FeedbackSettings();
+    s.isEnabled = true;
+    s.enabledAt = new Date();
+    s.disabledAt = null;
+    await s.save();
+    return res.status(200).json({ message: "Feedback enabled", data: s });
+  } catch (e) {
+    return res
+      .status(500)
+      .json({ message: "Failed to enable", error: String(e.message || e) });
+  }
+};
+
+const disableFeedback = async (req, res) => {
+  try {
+    let s = await FeedbackSettings.findOne();
+    if (!s) return res.status(404).json({ message: "Settings not found" });
+    s.isEnabled = false;
+    s.disabledAt = new Date();
+    await s.save();
+    return res.status(200).json({ message: "Feedback disabled", data: s });
+  } catch (e) {
+    return res
+      .status(500)
+      .json({ message: "Failed to disable", error: String(e.message || e) });
+  }
+};
+
+const getFeedbackSettings = async (req, res) => {
+  try {
+    let s = await FeedbackSettings.findOne();
+    // Auto-close if expired
+    if (s?.isEnabled && s.enabledAt) {
+      const expiresAt = new Date(
+        new Date(s.enabledAt).getTime() + 2 * 24 * 60 * 60 * 1000
+      );
+      if (new Date() > expiresAt) {
+        s.isEnabled = false;
+        s.disabledAt = new Date();
+        await s.save();
+      }
+    }
+    return res
+      .status(200)
+      .json(s || { isEnabled: false, enabledAt: null, disabledAt: null });
+  } catch (e) {
+    return res.status(500).json({
+      message: "Failed to fetch settings",
+      error: String(e.message || e),
+    });
+  }
+};
+
+// Leaderboard aggregation
+const getFeedbackLeaderboard = async (req, res) => {
+  try {
+    const feedbacks = await Feedback.find({ caterer: { $ne: null } })
+      .populate("user", "isSMC")
+      .populate("caterer", "name")
+      .lean();
+
+    const toScore = (label) => ratingMap[label] ?? null;
+
+    const groups = new Map();
+    for (const fb of feedbacks) {
+      const key = String(fb.caterer._id);
+      if (!groups.has(key)) {
+        groups.set(key, {
+          catererId: key,
+          catererName: fb.caterer.name,
+          totalUsers: 0,
+          smcUsers: 0,
+          // sums
+          breakfastSum: 0,
+          lunchSum: 0,
+          dinnerSum: 0,
+          smc: {
+            hygieneSum: 0,
+            wasteDisposalSum: 0,
+            qualitySum: 0,
+            uniformSum: 0,
+            count: 0,
+          },
+        });
+      }
+      const g = groups.get(key);
+      g.totalUsers += 1;
+      if (fb.user?.isSMC) g.smcUsers += 1;
+
+      // non-SMC fields always present
+      g.breakfastSum += toScore(fb.breakfast) || 0;
+      g.lunchSum += toScore(fb.lunch) || 0;
+      g.dinnerSum += toScore(fb.dinner) || 0;
+
+      if (fb.user?.isSMC && fb.smcFields) {
+        g.smc.hygieneSum += toScore(fb.smcFields.hygiene) || 0;
+        g.smc.wasteDisposalSum += toScore(fb.smcFields.wasteDisposal) || 0;
+        g.smc.qualitySum += toScore(fb.smcFields.qualityOfIngredients) || 0;
+        g.smc.uniformSum += toScore(fb.smcFields.uniformAndPunctuality) || 0;
+        g.smc.count += 1;
+      }
+    }
+
+    const rows = [];
+    for (const [, g] of groups) {
+      const nonSmcAvg =
+        g.totalUsers > 0
+          ? (g.breakfastSum + g.lunchSum + g.dinnerSum) / (3 * g.totalUsers)
+          : 0;
+
+      const smcAvg =
+        g.smc.count > 0
+          ? (g.smc.hygieneSum +
+              g.smc.wasteDisposalSum +
+              g.smc.qualitySum +
+              g.smc.uniformSum) /
+            (4 * g.smc.count)
+          : 0;
+
+      const overall = nonSmcAvg * 0.6 + smcAvg * 0.4;
+
+      rows.push({
+        catererId: g.catererId,
+        catererName: g.catererName,
+        totalUsers: g.totalUsers,
+        smcUsers: g.smcUsers,
+        avgBreakfast: g.totalUsers ? g.breakfastSum / g.totalUsers : 0,
+        avgLunch: g.totalUsers ? g.lunchSum / g.totalUsers : 0,
+        avgDinner: g.totalUsers ? g.dinnerSum / g.totalUsers : 0,
+        avgHygiene: g.smc.count ? g.smc.hygieneSum / g.smc.count : null,
+        avgWasteDisposal: g.smc.count
+          ? g.smc.wasteDisposalSum / g.smc.count
+          : null,
+        avgQualityOfIngredients: g.smc.count
+          ? g.smc.qualitySum / g.smc.count
+          : null,
+        avgUniformAndPunctuality: g.smc.count
+          ? g.smc.uniformSum / g.smc.count
+          : null,
+        overall,
+      });
+    }
+
+    rows.sort((a, b) => b.overall - a.overall);
+    rows.forEach((r, i) => (r.rank = i + 1));
+
+    return res.status(200).json(rows);
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({
+      message: "Failed to build leaderboard",
+      error: String(e.message || e),
+    });
+  }
+};
+
+// ==========================================
+// NEW: Get available feedback months
+// ==========================================
+const getAvailableMonths = async (req, res) => {
+  try {
+    const feedbacks = await Feedback.find({}, { date: 1 }).lean();
+
+    const monthsSet = new Set();
+    feedbacks.forEach((fb) => {
+      if (fb.date) {
+        const d = new Date(fb.date);
+        const monthStr = `${d.getFullYear()}-${String(
+          d.getMonth() + 1
+        ).padStart(2, "0")}`;
+        monthsSet.add(monthStr);
+      }
+    });
+
+    const months = Array.from(monthsSet).sort();
+    return res.status(200).json(months);
+  } catch (e) {
+    console.error("getAvailableMonths error:", e);
+    return res.status(500).json({ message: "Failed to fetch months" });
+  }
+};
+
+// ==========================================
+// NEW: Month-based leaderboard
+// ==========================================
+const getFeedbackLeaderboardByMonth = async (req, res) => {
+  try {
+    const { month, year } = req.query;
+
+    if (!month || !year) {
+      return res.status(400).json({ message: "Month and year required" });
+    }
+
+    const monthNum = parseInt(month) - 1; // 0-based index
+    const startDate = new Date(year, monthNum, 1);
+    const endDate = new Date(year, monthNum + 1, 1);
+
+    const feedbacks = await Feedback.find({
+      caterer: { $ne: null },
+      date: { $gte: startDate, $lt: endDate },
+    })
+      .populate("user", "isSMC")
+      .populate("caterer", "name")
+      .lean();
+
+    const toScore = (label) => ratingMap[label] ?? null;
+    const groups = new Map();
+
+    for (const fb of feedbacks) {
+      const key = String(fb.caterer._id);
+      if (!groups.has(key)) {
+        groups.set(key, {
+          catererId: key,
+          catererName: fb.caterer.name,
+          totalUsers: 0,
+          smcUsers: 0,
+          breakfastSum: 0,
+          lunchSum: 0,
+          dinnerSum: 0,
+          smc: {
+            hygieneSum: 0,
+            wasteDisposalSum: 0,
+            qualitySum: 0,
+            uniformSum: 0,
+            count: 0,
+          },
+        });
+      }
+
+      const g = groups.get(key);
+      g.totalUsers += 1;
+      if (fb.user?.isSMC) g.smcUsers += 1;
+
+      g.breakfastSum += toScore(fb.breakfast) || 0;
+      g.lunchSum += toScore(fb.lunch) || 0;
+      g.dinnerSum += toScore(fb.dinner) || 0;
+
+      if (fb.user?.isSMC && fb.smcFields) {
+        g.smc.hygieneSum += toScore(fb.smcFields.hygiene) || 0;
+        g.smc.wasteDisposalSum += toScore(fb.smcFields.wasteDisposal) || 0;
+        g.smc.qualitySum += toScore(fb.smcFields.qualityOfIngredients) || 0;
+        g.smc.uniformSum += toScore(fb.smcFields.uniformAndPunctuality) || 0;
+        g.smc.count += 1;
+      }
+    }
+
+    const rows = [];
+    for (const [, g] of groups) {
+      const nonSmcAvg =
+        g.totalUsers > 0
+          ? (g.breakfastSum + g.lunchSum + g.dinnerSum) / (3 * g.totalUsers)
+          : 0;
+
+      const smcAvg =
+        g.smc.count > 0
+          ? (g.smc.hygieneSum +
+              g.smc.wasteDisposalSum +
+              g.smc.qualitySum +
+              g.smc.uniformSum) /
+            (4 * g.smc.count)
+          : 0;
+
+      const overall = nonSmcAvg * 0.6 + smcAvg * 0.4;
+
+      rows.push({
+        catererId: g.catererId,
+        catererName: g.catererName,
+        totalUsers: g.totalUsers,
+        smcUsers: g.smcUsers,
+        avgBreakfast: g.totalUsers ? g.breakfastSum / g.totalUsers : 0,
+        avgLunch: g.totalUsers ? g.lunchSum / g.totalUsers : 0,
+        avgDinner: g.totalUsers ? g.dinnerSum / g.totalUsers : 0,
+        avgHygiene: g.smc.count ? g.smc.hygieneSum / g.smc.count : null,
+        avgWasteDisposal: g.smc.count
+          ? g.smc.wasteDisposalSum / g.smc.count
+          : null,
+        avgQualityOfIngredients: g.smc.count
+          ? g.smc.qualitySum / g.smc.count
+          : null,
+        avgUniformAndPunctuality: g.smc.count
+          ? g.smc.uniformSum / g.smc.count
+          : null,
+        overall,
+      });
+    }
+
+    rows.sort((a, b) => b.overall - a.overall);
+    rows.forEach((r, i) => (r.rank = i + 1));
+
+    return res.status(200).json(rows);
+  } catch (e) {
+    console.error("getFeedbackLeaderboardByMonth error:", e);
+    return res.status(500).json({
+      message: "Failed to fetch month-based leaderboard",
+      error: String(e.message || e),
+    });
   }
 };
 
 module.exports = {
   submitFeedback,
   removeFeedback,
-  // downloadFeedbackSheet,
-  // removeAllFeedbacks,
   getAllFeedback,
+  enableFeedback,
+  disableFeedback,
+  getFeedbackSettings,
+  getFeedbackLeaderboard,
+  getFeedbackLeaderboardByMonth,
+  getAvailableMonths,
 };

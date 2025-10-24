@@ -58,11 +58,22 @@ const Sidebar = () => {
       path: "/profile-settings",
       icon: <SettingOutlined />,
     },
+    {
+      key: "8",
+      name: "Feedback Control",
+      path: "/feedback-control",
+      icon: <BookOutlined />,
+    },
+    {
+      key: "9",
+      name: "Feedback Leaderboard",
+      path: "/feedback-leaderboard",
+      icon: <BarChartOutlined />,
+    },
   ];
 
   useEffect(() => {
     const currentPath = window.location.pathname;
-    // derive from static list without capturing navItems
     const mapping = {
       "/": "1",
       "/hostels": "2",
@@ -71,6 +82,8 @@ const Sidebar = () => {
       "/allocate-hostel": "5",
       "/mess/changeapplication": "6",
       "/profile-settings": "7",
+      "/feedback-control": "8",
+      "/feedback-leaderboard": "9",
     };
     setSelectedKey(mapping[currentPath] || "1");
   }, []);
