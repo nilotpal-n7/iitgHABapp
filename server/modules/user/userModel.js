@@ -88,9 +88,9 @@ const JWT_SECRET_KEY = process.env.JWT_SECRET;
  *           type: string
  *           description: Room number in hostel
  *           example: "A-101"
- *         feedbackSubmitted:
+ *         isSMC:
  *           type: boolean
- *           description: Whether user has submitted feedback
+ *           description: Whether the user is a part of the SMC (Student Mess Committee)
  *           default: false
  *           example: false
  *         isSetupDone:
@@ -176,10 +176,6 @@ const userSchema = new mongoose.Schema({
   },
   roomNumber: {
     type: String,
-  },
-  feedbackSubmitted: {
-    type: Boolean,
-    default: false,
   },
   isSMC: {
     type: Boolean,
