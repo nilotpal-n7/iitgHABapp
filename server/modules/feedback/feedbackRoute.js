@@ -1,25 +1,34 @@
 // routes/feedbackRoutes.js
 
-
-
 const express = require("express");
 const feedbackRouter = express.Router();
 const {
   submitFeedback,
   removeFeedback,
-  // downloadFeedbackSheet,
-  // removeAllFeedbacks,
   getAllFeedback,
+  enableFeedback,
+  disableFeedback,
+  getFeedbackSettings,
+  getFeedbackLeaderboard,
+  getFeedbackLeaderboardByMonth, // ✅ NEW
+  getAvailableMonths, // ✅ NEW
 } = require("./feedbackController");
 const { authenticateJWT } = require("../../middleware/authenticateJWT");
 
-// Route to generate and download the feedback report
+// Student routes
 feedbackRouter.post("/submit", authenticateJWT, submitFeedback);
 feedbackRouter.post("/remove", authenticateJWT, removeFeedback);
 feedbackRouter.get("/all", authenticateJWT, getAllFeedback);
 
-// GET Excel file of all feedback for testing
-//feedbackRouter.get('/download', downloadFeedbackSheet);
-//feedbackRouter.delete('/removeAll', removeAllFeedbacks);
+// HAB routes
+feedbackRouter.get("/settings", getFeedbackSettings);
+feedbackRouter.post("/enable", enableFeedback);
+feedbackRouter.post("/disable", disableFeedback);
+feedbackRouter.get("/leaderboard", getFeedbackLeaderboard);
+feedbackRouter.get("/leaderboard-by-month", getFeedbackLeaderboardByMonth); // ✅ NEW
+feedbackRouter.get("/months", getAvailableMonths); // ✅ NEW
+
+// Debug route
+feedbackRouter.get("/all-admin", getAllFeedback);
 
 module.exports = feedbackRouter;
