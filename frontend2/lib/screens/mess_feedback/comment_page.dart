@@ -21,7 +21,8 @@ class _CommentPageState extends State<CommentPage> {
       print('submitFeedback triggered');
       final provider = Provider.of<FeedbackProvider>(context, listen: false);
 
-      final isSMC = (await SharedPreferences.getInstance()).getBool('isSMC') ?? false;
+      final isSMC =
+          (await SharedPreferences.getInstance()).getBool('isSMC') ?? false;
 
       provider.isSMC = isSMC;
 
@@ -31,11 +32,13 @@ class _CommentPageState extends State<CommentPage> {
       final prefs = await SharedPreferences.getInstance();
       final name = prefs.getString('name');
       final roll = prefs.getString('rollNumber');
+
       final token = await getAccessToken();
 
       if (token == 'error') {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Access token not found. Please login again.')),
+          const SnackBar(
+              content: Text('Access token not found. Please login again.')),
         );
         return;
       }
@@ -65,6 +68,7 @@ class _CommentPageState extends State<CommentPage> {
       print("Payload: : : ${jsonEncode(payload)}");
 
       final url = Uri.parse(messFeedback.feedbackSubmit);
+
       final response = await http.post(
         url,
         headers: {
@@ -157,7 +161,8 @@ class _CommentPageState extends State<CommentPage> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 10),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16.0, horizontal: 10),
                 child: ElevatedButton(
                   onPressed: () => submitFeedback(context),
                   style: ElevatedButton.styleFrom(
