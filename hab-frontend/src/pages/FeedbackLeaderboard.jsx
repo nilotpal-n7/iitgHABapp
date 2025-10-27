@@ -3,39 +3,39 @@ import { BACKEND_URL } from "../apis/server";
 
 export default function FeedbackLeaderboard() {
   const [rows, setRows] = useState([]);
-  const [availableMonths, setAvailableMonths] = useState([]);
-  const [selectedMonth, setSelectedMonth] = useState("");
+  const [availableWindows, setAvailableWindows] = useState([]);
+  const [selectedWindow, setSelectedWindow] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const token = localStorage.getItem("admin_token");
 
-  // Fetch available months on mount
+  // Fetch available windows on mount
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/feedback/months`, {
+        const res = await fetch(`${BACKEND_URL}/feedback/windows`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const text = await res.text();
         const data = JSON.parse(text);
         if (Array.isArray(data) && data.length > 0) {
-          setAvailableMonths(data);
-          setSelectedMonth(data[data.length - 1]); // select latest by default
+          setAvailableWindows(data);
+          setSelectedWindow(data[0]); // select latest (first in descending order)
         }
       } catch (e) {
-        console.error("[Leaderboard] Fetch months error:", e);
+        console.error("[Leaderboard] Fetch windows error:", e);
       }
     })();
   }, [token]);
 
-  // Fetch leaderboard data whenever month changes
+  // Fetch leaderboard data whenever window changes
   useEffect(() => {
-    if (!selectedMonth) return;
+    if (!selectedWindow) return;
     (async () => {
       setLoading(true);
       setError("");
       try {
-        const leaderUrl = `${BACKEND_URL}/feedback/leaderboard?month=${selectedMonth}`;
+        const leaderUrl = `${BACKEND_URL}/feedback/leaderboard-by-window?windowNumber=${selectedWindow}`;
         console.log("[Leaderboard] Fetching:", leaderUrl);
 
         const res = await fetch(leaderUrl, {
@@ -68,7 +68,7 @@ export default function FeedbackLeaderboard() {
         setLoading(false);
       }
     })();
-  }, [selectedMonth, token]);
+  }, [selectedWindow, token]);
 
   return (
     <div className="p-6">
@@ -78,15 +78,15 @@ export default function FeedbackLeaderboard() {
           <div className="text-sm text-gray-500">
             Overall = 60% non-SMC + 40% SMC
           </div>
-          {availableMonths.length > 0 && (
+          {availableWindows.length > 0 && (
             <select
               className="border rounded px-3 py-1 text-sm"
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
+              value={selectedWindow}
+              onChange={(e) => setSelectedWindow(e.target.value)}
             >
-              {availableMonths.map((m) => (
-                <option key={m} value={m}>
-                  {m}
+              {availableWindows.map((w) => (
+                <option key={w} value={w}>
+                  Window #{w}
                 </option>
               ))}
             </select>
@@ -102,9 +102,10 @@ export default function FeedbackLeaderboard() {
       )}
       {!loading && !error && rows.length === 0 && (
         <div className="p-3 mb-4 rounded bg-yellow-50 text-yellow-800 text-sm">
-          No leaderboard data for {selectedMonth || "selected month"}. Ensure:
+          No leaderboard data for Window #{selectedWindow || "selected window"}.
+          Ensure:
           <ul className="list-disc ml-5 mt-1">
-            <li>Feedbacks were submitted during that month.</li>
+            <li>Feedbacks were submitted during that window.</li>
             <li>Each feedback has a caterer assigned.</li>
             <li>You are logged in as HAB (admin_token present).</li>
           </ul>

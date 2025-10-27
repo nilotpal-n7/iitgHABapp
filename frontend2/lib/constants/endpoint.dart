@@ -52,6 +52,8 @@ class redirecturi {
 
 class messFeedback {
   static const feedbackSubmit = "$baseUrl/feedback/submit";
+  static const feedbackSubmitted = "$baseUrl/feedback/submitted";
+  static const feedbackSettings = "$baseUrl/feedback/settings";
 }
 
 class messInfo {
