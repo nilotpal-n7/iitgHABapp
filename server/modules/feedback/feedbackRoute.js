@@ -9,9 +9,12 @@ const {
   enableFeedback,
   disableFeedback,
   getFeedbackSettings,
+  getFeedbackSettingsPublic,
   getFeedbackLeaderboard,
-  getFeedbackLeaderboardByMonth, // ✅ NEW
-  getAvailableMonths, // ✅ NEW
+  getFeedbackLeaderboardByWindow,
+  getAvailableWindows,
+  checkFeedbackSubmitted,
+  migrateFeedbackFields,
 } = require("./feedbackController");
 const { authenticateJWT } = require("../../middleware/authenticateJWT");
 
@@ -19,16 +22,25 @@ const { authenticateJWT } = require("../../middleware/authenticateJWT");
 feedbackRouter.post("/submit", authenticateJWT, submitFeedback);
 feedbackRouter.post("/remove", authenticateJWT, removeFeedback);
 feedbackRouter.get("/all", authenticateJWT, getAllFeedback);
+feedbackRouter.get("/submitted", authenticateJWT, checkFeedbackSubmitted);
+feedbackRouter.get("/settings-public", getFeedbackSettingsPublic); // Public endpoint for mobile app
 
 // HAB routes
 feedbackRouter.get("/settings", getFeedbackSettings);
 feedbackRouter.post("/enable", enableFeedback);
 feedbackRouter.post("/disable", disableFeedback);
-feedbackRouter.get("/leaderboard", getFeedbackLeaderboard);
-feedbackRouter.get("/leaderboard-by-month", getFeedbackLeaderboardByMonth); // ✅ NEW
-feedbackRouter.get("/months", getAvailableMonths); // ✅ NEW
+feedbackRouter.get("/leaderboard", authenticateJWT, getFeedbackLeaderboard);
+feedbackRouter.get(
+  "/leaderboard-by-window",
+  authenticateJWT,
+  getFeedbackLeaderboardByWindow
+);
+feedbackRouter.get("/windows", authenticateJWT, getAvailableWindows);
 
 // Debug route
 feedbackRouter.get("/all-admin", getAllFeedback);
+
+// Migration route
+feedbackRouter.post("/migrate-fields", migrateFeedbackFields);
 
 module.exports = feedbackRouter;

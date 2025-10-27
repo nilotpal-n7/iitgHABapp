@@ -52,11 +52,9 @@ const {
 } = require("./modules/hostel/hostelScheduler.js");
 const {
   feedbackScheduler,
+  feedbackAutoScheduler,
 } = require("./modules/feedback/feedbackScheduler.js");
 
-const {
-  feedbackResetScheduler,
-} = require("./modules/feedback/feedbackScheduler.js");
 const {
   initializeMessChangeScheduler,
 } = require("./modules/mess_change/messChangeScheduler.js");
@@ -142,7 +140,7 @@ mongoose
     sundayScheduler();
 
     feedbackScheduler();
-    feedbackResetScheduler();
+    feedbackAutoScheduler();
 
     // Initialize mess change automatic scheduler
     initializeMessChangeScheduler();

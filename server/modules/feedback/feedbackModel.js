@@ -49,6 +49,12 @@ const feedbackSchema = new mongoose.Schema({
     },
     default: null,
   },
+
+  // Feedback window number
+  feedbackWindowNumber: {
+    type: Number,
+    required: true,
+  },
 });
 
 const Feedback = mongoose.model("Feedback", feedbackSchema);
