@@ -119,13 +119,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final imageB64 = base64Encode(File(finalPath).readAsBytesSync());
     ProfilePictureProvider.profilePictureString.value = imageB64;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('profilePicture', imageB64);
     if (!mounted) return;
-    await _uploadProfileImage(File(finalPath), pfp.name);
+    await _uploadProfileImage(File(finalPath), pfp.name, imageB64);
   }
 
-  Future<void> _uploadProfileImage(File file, String filename) async {
+  Future<void> _uploadProfileImage(
+      File file, String filename, String imageB64) async {
     if (_uploading) return;
     setState(() => _uploading = true);
     try {
@@ -159,6 +158,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final prefs = await SharedPreferences.getInstance();
         if (url != null && url.isNotEmpty) {
           await prefs.setString('profilePictureUrl', url);
+          await prefs.setString('profilePicture', imageB64);
         }
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
