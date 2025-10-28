@@ -538,29 +538,6 @@ const checkFeedbackSubmitted = async (req, res) => {
   }
 };
 
-// ==========================================
-// Migrate old feedbackSubmitted field to new isFeedbackSubmitted field
-// ==========================================
-const migrateFeedbackFields = async (req, res) => {
-  try {
-    // Update all users who have feedbackSubmitted: true to isFeedbackSubmitted: true
-    const result = await User.updateMany(
-      { feedbackSubmitted: true },
-      { $set: { isFeedbackSubmitted: true } }
-    );
-
-    return res.status(200).json({
-      message: "Migration completed",
-      modifiedCount: result.modifiedCount,
-    });
-  } catch (e) {
-    return res.status(500).json({
-      message: "Migration failed",
-      error: String(e.message || e),
-    });
-  }
-};
-
 module.exports = {
   submitFeedback,
   removeFeedback,
@@ -573,5 +550,4 @@ module.exports = {
   getFeedbackLeaderboardByWindow,
   getAvailableWindows,
   checkFeedbackSubmitted,
-  migrateFeedbackFields,
 };
