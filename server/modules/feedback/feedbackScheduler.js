@@ -20,10 +20,8 @@ const feedbackFilePath = path.join(
 // Schedule to send feedback report email ( on 1st of every month at 12 PM) -
 const feedbackScheduler = () => {
   schedule.scheduleJob("0 12 1 * *", async () => {
-    console.log("time approach");
     try {
       if (!fs.existsSync(feedbackFilePath)) {
-        console.log("Feedback file not found. Skipping email.");
         return;
       }
 
@@ -50,8 +48,7 @@ const feedbackScheduler = () => {
         ],
       };
 
-      const info = await transporter.sendMail(mailOptions); // generate message id
-      console.log(`Feedback report email sent: ${info.messageId}`);
+      const info = await transporter.sendMail(mailOptions); // generate messag id
     } catch (err) {
       console.error("Failed to send feedback report:", err);
     }
@@ -81,9 +78,6 @@ const feedbackAutoScheduler = () => {
       await User.updateMany({}, { $set: { isFeedbackSubmitted: false } });
 
       await settings.save();
-      console.log(
-        `Feedback window ${settings.currentWindowNumber} automatically opened on 25th.`
-      );
     } catch (error) {
       console.error("Error in automatic feedback scheduling:", error);
     }

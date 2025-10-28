@@ -109,21 +109,14 @@ hostelSchema.methods.generateJWT = function () {
     expiresIn: "2h",
   });
 
-  console.log("Generated token:", token);
-  console.log(token.length);
   return token;
 };
 
 hostelSchema.statics.findByJWT = async function (token) {
   try {
-    console.log("Verifying token:", token);
-    console.log(token.length);
     let hostel = this;
-    console.log("Verifying token with secret:", adminjwtsecret);
     var decoded = jwt.verify(token, adminjwtsecret);
-    //console.log("Decoded token:", decoded);
     const id = decoded.hostel;
-    console.log("Decoded hostel ID:", id);
     const fetchedHostel = await hostel.findOne({ _id: id }).populate("messId");
     if (!fetchedHostel) return false;
     return fetchedHostel;

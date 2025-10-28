@@ -87,12 +87,8 @@ const getHostelbyId = async (req, res) => {
     const users = await User.find({ hostel: hostelId }).select(
       "name rollNumber email degree curr_subscribed_mess"
     );
-    console.log(`Found ${users.length} users for hostel ${hostelId}:`, users);
-
     // Fetch all hostels with their mess information to map curr_subscribed_mess
     const hostelsWithMess = await Hostel.find().populate("messId", "name");
-    console.log("All hostels with mess mapping:", hostelsWithMess);
-
     // Format users to match the expected structure (with user wrapper)
     const formattedUsers = users.map((user) => ({
       user: {
@@ -110,7 +106,6 @@ const getHostelbyId = async (req, res) => {
         })(),
       },
     }));
-    console.log("Formatted users:", formattedUsers);
     const hostelWithUsers = {
       ...hostel.toObject(),
       users: formattedUsers,
