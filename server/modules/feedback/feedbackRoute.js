@@ -14,6 +14,7 @@ const {
   getFeedbackLeaderboardByWindow,
   getAvailableWindows,
   checkFeedbackSubmitted,
+  getFeedbackWindowTimeLeft,
 } = require("./feedbackController");
 const { authenticateJWT } = require("../../middleware/authenticateJWT");
 
@@ -31,6 +32,7 @@ feedbackRouter.post("/disable", disableFeedback);
 feedbackRouter.get("/leaderboard", authenticateJWT, getFeedbackLeaderboard);
 feedbackRouter.get("/leaderboard-by-window", getFeedbackLeaderboardByWindow);
 feedbackRouter.get("/windows", getAvailableWindows);
+feedbackRouter.get("/window-time-left", getFeedbackWindowTimeLeft);
 
 // Debug route
 feedbackRouter.get("/all-admin", getAllFeedback);

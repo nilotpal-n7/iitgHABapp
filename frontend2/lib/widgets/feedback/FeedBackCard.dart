@@ -13,11 +13,13 @@ class _FeedbackCardState extends State<FeedbackCard> {
   bool _submitted = false;
   bool _windowOpen = false;
   bool _loading = true;
+  String _windowTimeLeft = '';
 
   @override
   void initState() {
     super.initState();
     _checkFeedbackStatus();
+    _fetchWindowTimeLeft();
   }
 
   Future<void> _checkFeedbackStatus() async {
@@ -69,6 +71,26 @@ class _FeedbackCardState extends State<FeedbackCard> {
     }
   }
 
+  Future<void> _fetchWindowTimeLeft() async {
+    try {
+      final dio = Dio();
+      final res = await dio.get(messFeedback.windowTimeLeft);
+      if (res.data != null && res.data['formatted'] != null) {
+        setState(() {
+          _windowTimeLeft = res.data['formatted'];
+        });
+      } else {
+        setState(() {
+          _windowTimeLeft = '';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _windowTimeLeft = '';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Don't show the card if feedback window is closed
@@ -91,13 +113,17 @@ class _FeedbackCardState extends State<FeedbackCard> {
           const Text("You can help the mess team serve better meals.",
               style: TextStyle(color: Colors.black54)),
           const SizedBox(height: 8),
-          const Row(
+          Row(
             children: [
-              Icon(Icons.access_time, color: Colors.red, size: 18),
-              SizedBox(width: 4),
-              Text('Form closes in 2 Days',
-                  style: TextStyle(
-                      color: Colors.red, fontWeight: FontWeight.w500)),
+              const Icon(Icons.access_time, color: Colors.red, size: 18),
+              const SizedBox(width: 4),
+              Text(
+                _windowTimeLeft.isNotEmpty
+                    ? 'Form closes in $_windowTimeLeft'
+                    : 'Form closes soon',
+                style: const TextStyle(
+                    color: Colors.red, fontWeight: FontWeight.w500),
+              ),
             ],
           ),
           const SizedBox(height: 12),

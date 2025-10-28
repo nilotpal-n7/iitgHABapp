@@ -25,9 +25,10 @@ class _MessFeedbackPageState extends State<MessFeedbackPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          margin: const EdgeInsets.only(left: 24),
-          child: Text(meal, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20))
-        ),
+            margin: const EdgeInsets.only(left: 24),
+            child: Text(meal,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 20))),
         const SizedBox(height: 8),
         ...options.map((option) => customOption(
               text: option,
@@ -43,7 +44,8 @@ class _MessFeedbackPageState extends State<MessFeedbackPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        Text(label,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         const SizedBox(height: 8),
         ...options.map((option) => customOption(
               text: option,
@@ -69,9 +71,12 @@ class _MessFeedbackPageState extends State<MessFeedbackPage> {
       });
     }
 
-
     return Scaffold(
-      
+      appBar: AppBar(
+        leading: const BackButton(),
+        backgroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: Container(
         color: Colors.white,
         child: SafeArea(
@@ -81,18 +86,20 @@ class _MessFeedbackPageState extends State<MessFeedbackPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                          "Mess Feedback",
-                          style: TextStyle(
-                            fontFamily: 'OpenSans_regular',
-                            fontSize: 32,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF2E2F31),
-                          ),
-                        ),
+                  "Mess Feedback",
+                  style: TextStyle(
+                    fontFamily: 'OpenSans_regular',
+                    fontSize: 32,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2E2F31),
+                  ),
+                ),
                 const SizedBox(height: 32),
-                const Text("Step 1 / 2", style: TextStyle(color: Colors.deepPurple)),
+                const Text("Step 1 / 2",
+                    style: TextStyle(color: Colors.deepPurple)),
                 const SizedBox(height: 11),
-                const LinearProgressIndicator(value: 0.5, color: Colors.deepPurple),
+                const LinearProgressIndicator(
+                    value: 0.5, color: Colors.deepPurple),
                 const SizedBox(height: 16),
                 Expanded(
                   child: ListView(
@@ -113,7 +120,7 @@ class _MessFeedbackPageState extends State<MessFeedbackPage> {
                       const SizedBox(height: 24),
                       mealBlock("Dinner", provider.dinner,
                           (val) => provider.setMealFeedback('dinner', val)),
-          
+
                       // SMC extra fields
                       if (provider.isSMC) ...[
                         const SizedBox(height: 24),
@@ -127,12 +134,21 @@ class _MessFeedbackPageState extends State<MessFeedbackPage> {
                         const SizedBox(height: 16),
                         smcBlock("Hygiene", provider.hygiene,
                             (val) => provider.setSMCFeedback('hygiene', val)),
-                        smcBlock("Waste Disposal", provider.wasteDisposal,
-                            (val) => provider.setSMCFeedback('wasteDisposal', val)),
-                        smcBlock("Quality of Ingredients", provider.qualityOfIngredients,
-                            (val) => provider.setSMCFeedback('qualityOfIngredients', val)),
-                        smcBlock("Uniform & Punctuality", provider.uniformAndPunctuality,
-                            (val) => provider.setSMCFeedback('uniformAndPunctuality', val)),
+                        smcBlock(
+                            "Waste Disposal",
+                            provider.wasteDisposal,
+                            (val) =>
+                                provider.setSMCFeedback('wasteDisposal', val)),
+                        smcBlock(
+                            "Quality of Ingredients",
+                            provider.qualityOfIngredients,
+                            (val) => provider.setSMCFeedback(
+                                'qualityOfIngredients', val)),
+                        smcBlock(
+                            "Uniform & Punctuality",
+                            provider.uniformAndPunctuality,
+                            (val) => provider.setSMCFeedback(
+                                'uniformAndPunctuality', val)),
                       ],
                     ],
                   ),
@@ -140,16 +156,15 @@ class _MessFeedbackPageState extends State<MessFeedbackPage> {
                 Center(
                   child: GestureDetector(
                     onTap: provider.isComplete()
-                        ? () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => CommentPage()))
+                        ? () => Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => CommentPage()))
                         : null,
                     child: Container(
                       width: 358,
                       height: 54,
                       margin: const EdgeInsets.symmetric(vertical: 4),
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 10),
                       decoration: BoxDecoration(
                         color: const Color.fromRGBO(76, 78, 219, 1),
                         borderRadius: BorderRadius.circular(9999), // pill shape
