@@ -538,6 +538,53 @@ const checkFeedbackSubmitted = async (req, res) => {
   }
 };
 
+// ==========================================
+// Get feedback window closing time and time left
+// ==========================================
+const getFeedbackWindowTimeLeft = async (req, res) => {
+  try {
+    let s = await FeedbackSettings.findOne();
+    if (!s || !s.isEnabled || !s.currentWindowClosingTime) {
+      return res.status(404).json({ message: "No active feedback window" });
+    }
+    const now = new Date();
+    const closing = new Date(s.currentWindowClosingTime);
+    let diffMs = closing - now;
+    if (diffMs <= 0) {
+      return res
+        .status(200)
+        .json({ timeLeft: 0, unit: "minutes", formatted: "Closed" });
+    }
+    const minutes = Math.floor(diffMs / 60000);
+    const hours = Math.floor(diffMs / (60 * 60000));
+    const days = Math.floor(diffMs / (24 * 60 * 60000));
+    let formatted = "";
+    let unit = "minutes";
+    if (days >= 1) {
+      formatted = `${days} day${days > 1 ? "s" : ""} ${hours % 24} hour${
+        hours % 24 !== 1 ? "s" : ""
+      }`;
+      unit = "days";
+    } else if (hours >= 1) {
+      formatted = `${hours} hour${hours !== 1 ? "s" : ""} ${
+        minutes % 60
+      } minute${minutes % 60 !== 1 ? "s" : ""}`;
+      unit = "hours";
+    } else {
+      formatted = `${minutes} minute${minutes !== 1 ? "s" : ""}`;
+      unit = "minutes";
+    }
+    return res.status(200).json({ timeLeft: diffMs, unit, formatted });
+  } catch (e) {
+    return res
+      .status(500)
+      .json({
+        message: "Failed to fetch window time left",
+        error: String(e.message || e),
+      });
+  }
+};
+
 module.exports = {
   submitFeedback,
   removeFeedback,
@@ -550,4 +597,5 @@ module.exports = {
   getFeedbackLeaderboardByWindow,
   getAvailableWindows,
   checkFeedbackSubmitted,
+  getFeedbackWindowTimeLeft,
 };

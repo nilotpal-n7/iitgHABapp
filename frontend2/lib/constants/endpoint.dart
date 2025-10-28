@@ -54,6 +54,7 @@ class messFeedback {
   static const feedbackSubmit = "$baseUrl/feedback/submit";
   static const feedbackSubmitted = "$baseUrl/feedback/submitted";
   static const feedbackSettings = "$baseUrl/feedback/settings";
+  static const windowTimeLeft = "$baseUrl/feedback/window-time-left";
 }
 
 class messInfo {
