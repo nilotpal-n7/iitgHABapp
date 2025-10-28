@@ -120,9 +120,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final imageB64 = base64Encode(File(finalPath).readAsBytesSync());
     ProfilePictureProvider.profilePictureString.value = imageB64;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('profilePicture', imageB64);
     if (!mounted) return;
     await _uploadProfileImage(File(finalPath), pfp.name);
+    await prefs.setString('profilePicture', imageB64);
   }
 
   Future<void> _uploadProfileImage(File file, String filename) async {

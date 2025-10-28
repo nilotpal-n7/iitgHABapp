@@ -126,9 +126,6 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
         if (url != null && url.isNotEmpty) {
           await prefs.setString('profilePictureUrl', url);
         }
-        // Backend marks isSetupDone=true on success; mirror locally
-        await prefs.setBool('isSetupDone', true);
-        ProfilePictureProvider.isSetupDone.value = true;
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile picture uploaded')),
