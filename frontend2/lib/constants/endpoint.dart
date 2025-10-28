@@ -1,4 +1,4 @@
-const String baseUrl = "http://localhost:3000/api";
+const String baseUrl = "https://hab.codingclub.in/api";
 
 class NotificationEndpoints {
   static const String registerToken = '$baseUrl/notification/register-token';
@@ -52,6 +52,9 @@ class redirecturi {
 
 class messFeedback {
   static const feedbackSubmit = "$baseUrl/feedback/submit";
+  static const feedbackSubmitted = "$baseUrl/feedback/submitted";
+  static const feedbackSettings = "$baseUrl/feedback/settings";
+  static const windowTimeLeft = "$baseUrl/feedback/window-time-left";
 }
 
 class messInfo {

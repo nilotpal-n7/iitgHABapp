@@ -191,6 +191,10 @@ const userSchema = new mongoose.Schema({
   profilePictureItemId: {
     type: String,
   },
+  isFeedbackSubmitted: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 userSchema.methods.generateJWT = function () {

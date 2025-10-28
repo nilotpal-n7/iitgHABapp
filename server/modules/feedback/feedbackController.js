@@ -1,9 +1,6 @@
 const { User } = require("../user/userModel");
 const { Hostel } = require("../hostel/hostelModel");
 const Feedback = require("./feedbackModel");
-const xlsx = require("xlsx");
-const path = require("path");
-const fs = require("fs");
 const { FeedbackSettings } = require("./feedbackSettingsModel");
 
 const ratingMap = {
@@ -14,12 +11,13 @@ const ratingMap = {
   "Very Good": 5,
 };
 
+// ==========================================
+// Submit feedback
+// ==========================================
 const submitFeedback = async (req, res) => {
-  console.log("request received");
   try {
     const { name, rollNumber, breakfast, lunch, dinner, comment, smcFields } =
       req.body;
-    console.log("Received feedback:", req.body);
     if (!name || !rollNumber || !breakfast || !lunch || !dinner) {
       return res.status(400).send("Incomplete feedback data");
     }
@@ -43,34 +41,27 @@ const submitFeedback = async (req, res) => {
       }
     }
 
-    // 1. Find user by name and rollNumber
+    // Find user
     const user = await User.findOne({ name, rollNumber });
     if (!user) return res.status(404).send("User not found");
 
-    // Check if feedback for this user and month already exists
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    const existingFeedback = await Feedback.findOne({
-      user: user._id,
-      timestamp: { $gte: monthStart, $lt: monthEnd },
-    });
-    if (existingFeedback) {
-      return res.status(400).send("Feedback already submitted for this month");
+    // Check if feedback for this user and current window already exists
+    if (user.isFeedbackSubmitted) {
+      return res.status(400).send("Feedback already submitted for this window");
     }
 
-    // 5. Prepare to upload data in form of schema
+    // Prepare feedback data
     const feedbackData = {
       user: user._id,
       breakfast,
       lunch,
       dinner,
       comment,
-      timestamp: new Date(),
+      date: new Date(),
+      feedbackWindowNumber: settings.currentWindowNumber,
     };
 
-    // Resolve caterer (mess) id from user's current subscribed mess (hostel)
-    // We have user.curr_subscribed_mess referencing Hostel. Need Hostel.messId
+    // Resolve caterer (mess) ID from user's subscribed mess (hostel)
     let catererId = null;
     if (user.curr_subscribed_mess) {
       const hostelDoc = await Hostel.findById(user.curr_subscribed_mess).lean();
@@ -78,7 +69,7 @@ const submitFeedback = async (req, res) => {
     }
     feedbackData.caterer = catererId;
 
-    // 6. Include SMC fields only if user.isSMC === true
+    // Include SMC fields only for SMC members
     if (user.isSMC) {
       if (!smcFields) {
         return res
@@ -91,8 +82,8 @@ const submitFeedback = async (req, res) => {
     const feedback = new Feedback(feedbackData);
     await feedback.save();
 
-    // 7. Mark feedback as submitted
-    user.feedbackSubmitted = true;
+    // Mark feedback as submitted for this window
+    user.isFeedbackSubmitted = true;
     await user.save();
 
     res.status(200).send("Feedback submitted successfully");
@@ -102,6 +93,9 @@ const submitFeedback = async (req, res) => {
   }
 };
 
+// ==========================================
+// Remove feedback
+// ==========================================
 const removeFeedback = async (req, res) => {
   try {
     const { name, rollNumber } = req.body;
@@ -109,25 +103,22 @@ const removeFeedback = async (req, res) => {
       return res.status(400).send("Name and Roll Number required");
     }
 
-    // 1. Find the user
     const user = await User.findOne({ name, rollNumber });
-    if (!user) {
-      return res.status(404).send("User not found");
-    }
+    if (!user) return res.status(404).send("User not found");
 
-    if (!user.feedbackSubmitted) {
+    if (!user.isFeedbackSubmitted) {
       return res.status(400).send("No feedback submitted by this user");
     }
 
-    // // 2. Update user document
-    // user.feedbackSubmitted = false;
-    // await user.save();
+    // Get current window number
+    const settings = await FeedbackSettings.findOne();
+    const currentWindowNumber = settings?.currentWindowNumber || 1;
 
-    // 1. Delete feedback from MongoDB
-    await Feedback.deleteOne({ user: user._id });
-
-    // 2. Update user document
-    user.feedbackSubmitted = false;
+    await Feedback.deleteOne({
+      user: user._id,
+      feedbackWindowNumber: currentWindowNumber,
+    });
+    user.isFeedbackSubmitted = false;
     await user.save();
 
     res.status(200).send("Feedback removed successfully");
@@ -137,11 +128,13 @@ const removeFeedback = async (req, res) => {
   }
 };
 
-// Fetch all feedbacks (or you can filter by user/hostel if needed)
+// ==========================================
+// Get all feedbacks
+// ==========================================
 const getAllFeedback = async (req, res) => {
   try {
     const feedbacks = await Feedback.find()
-      .populate("user", "name rollNumber isSMC") // user may be null if deleted
+      .populate("user", "name rollNumber isSMC")
       .populate("caterer", "name")
       .sort({ date: -1 })
       .lean();
@@ -167,11 +160,24 @@ const getAllFeedback = async (req, res) => {
   }
 };
 
-// Enable/Disable feedback window
+// ==========================================
+// Enable / Disable Feedback Window
+// ==========================================
 const enableFeedback = async (req, res) => {
   try {
     let s = await FeedbackSettings.findOne();
-    if (!s) s = new FeedbackSettings();
+    if (!s) {
+      s = new FeedbackSettings();
+      s.currentWindowNumber = 1;
+    }
+
+    // If enabling a new window, increment window number and reset user submission flags
+    if (!s.isEnabled) {
+      s.currentWindowNumber += 1;
+      // Reset all users' feedback submission flags for the new window
+      await User.updateMany({}, { $set: { isFeedbackSubmitted: false } });
+    }
+
     s.isEnabled = true;
     s.enabledAt = new Date();
     s.disabledAt = null;
@@ -199,10 +205,12 @@ const disableFeedback = async (req, res) => {
   }
 };
 
+// ==========================================
+// Get feedback settings
+// ==========================================
 const getFeedbackSettings = async (req, res) => {
   try {
     let s = await FeedbackSettings.findOne();
-    // Auto-close if expired
     if (s?.isEnabled && s.enabledAt) {
       const expiresAt = new Date(
         new Date(s.enabledAt).getTime() + 2 * 24 * 60 * 60 * 1000
@@ -213,9 +221,14 @@ const getFeedbackSettings = async (req, res) => {
         await s.save();
       }
     }
-    return res
-      .status(200)
-      .json(s || { isEnabled: false, enabledAt: null, disabledAt: null });
+    return res.status(200).json(
+      s || {
+        isEnabled: false,
+        enabledAt: null,
+        disabledAt: null,
+        currentWindowNumber: 1,
+      }
+    );
   } catch (e) {
     return res.status(500).json({
       message: "Failed to fetch settings",
@@ -224,7 +237,41 @@ const getFeedbackSettings = async (req, res) => {
   }
 };
 
-// Leaderboard aggregation
+// ==========================================
+// Get feedback settings (Public - for mobile app)
+// ==========================================
+const getFeedbackSettingsPublic = async (req, res) => {
+  try {
+    let s = await FeedbackSettings.findOne();
+    if (s?.isEnabled && s.enabledAt) {
+      const expiresAt = new Date(
+        new Date(s.enabledAt).getTime() + 2 * 24 * 60 * 60 * 1000
+      );
+      if (new Date() > expiresAt) {
+        s.isEnabled = false;
+        s.disabledAt = new Date();
+        await s.save();
+      }
+    }
+    return res.status(200).json(
+      s || {
+        isEnabled: false,
+        enabledAt: null,
+        disabledAt: null,
+        currentWindowNumber: 1,
+      }
+    );
+  } catch (e) {
+    return res.status(500).json({
+      message: "Failed to fetch settings",
+      error: String(e.message || e),
+    });
+  }
+};
+
+// ==========================================
+// Leaderboard (All-time)
+// ==========================================
 const getFeedbackLeaderboard = async (req, res) => {
   try {
     const feedbacks = await Feedback.find({ caterer: { $ne: null } })
@@ -233,8 +280,8 @@ const getFeedbackLeaderboard = async (req, res) => {
       .lean();
 
     const toScore = (label) => ratingMap[label] ?? null;
-
     const groups = new Map();
+
     for (const fb of feedbacks) {
       const key = String(fb.caterer._id);
       if (!groups.has(key)) {
@@ -243,7 +290,6 @@ const getFeedbackLeaderboard = async (req, res) => {
           catererName: fb.caterer.name,
           totalUsers: 0,
           smcUsers: 0,
-          // sums
           breakfastSum: 0,
           lunchSum: 0,
           dinnerSum: 0,
@@ -256,11 +302,11 @@ const getFeedbackLeaderboard = async (req, res) => {
           },
         });
       }
+
       const g = groups.get(key);
       g.totalUsers += 1;
       if (fb.user?.isSMC) g.smcUsers += 1;
 
-      // non-SMC fields always present
       g.breakfastSum += toScore(fb.breakfast) || 0;
       g.lunchSum += toScore(fb.lunch) || 0;
       g.dinnerSum += toScore(fb.dinner) || 0;
@@ -328,49 +374,44 @@ const getFeedbackLeaderboard = async (req, res) => {
 };
 
 // ==========================================
-// NEW: Get available feedback months
+// Available feedback windows
 // ==========================================
-const getAvailableMonths = async (req, res) => {
+const getAvailableWindows = async (req, res) => {
   try {
-    const feedbacks = await Feedback.find({}, { date: 1 }).lean();
+    const feedbacks = await Feedback.find(
+      {},
+      { feedbackWindowNumber: 1 }
+    ).lean();
 
-    const monthsSet = new Set();
+    const windowsSet = new Set();
     feedbacks.forEach((fb) => {
-      if (fb.date) {
-        const d = new Date(fb.date);
-        const monthStr = `${d.getFullYear()}-${String(
-          d.getMonth() + 1
-        ).padStart(2, "0")}`;
-        monthsSet.add(monthStr);
+      if (fb.feedbackWindowNumber) {
+        windowsSet.add(fb.feedbackWindowNumber);
       }
     });
 
-    const months = Array.from(monthsSet).sort();
-    return res.status(200).json(months);
+    const windows = Array.from(windowsSet).sort((a, b) => b - a); // Sort descending (newest first)
+    return res.status(200).json(windows);
   } catch (e) {
-    console.error("getAvailableMonths error:", e);
-    return res.status(500).json({ message: "Failed to fetch months" });
+    console.error("getAvailableWindows error:", e);
+    return res.status(500).json({ message: "Failed to fetch windows" });
   }
 };
 
 // ==========================================
-// NEW: Month-based leaderboard
+// Window-based leaderboard
 // ==========================================
-const getFeedbackLeaderboardByMonth = async (req, res) => {
+const getFeedbackLeaderboardByWindow = async (req, res) => {
   try {
-    const { month, year } = req.query;
+    const { windowNumber } = req.query;
 
-    if (!month || !year) {
-      return res.status(400).json({ message: "Month and year required" });
+    if (!windowNumber) {
+      return res.status(400).json({ message: "Window number required" });
     }
-
-    const monthNum = parseInt(month) - 1; // 0-based index
-    const startDate = new Date(year, monthNum, 1);
-    const endDate = new Date(year, monthNum + 1, 1);
 
     const feedbacks = await Feedback.find({
       caterer: { $ne: null },
-      date: { $gte: startDate, $lt: endDate },
+      feedbackWindowNumber: parseInt(windowNumber),
     })
       .populate("user", "isSMC")
       .populate("caterer", "name")
@@ -462,9 +503,79 @@ const getFeedbackLeaderboardByMonth = async (req, res) => {
 
     return res.status(200).json(rows);
   } catch (e) {
-    console.error("getFeedbackLeaderboardByMonth error:", e);
+    console.error("getFeedbackLeaderboardByWindow error:", e);
     return res.status(500).json({
-      message: "Failed to fetch month-based leaderboard",
+      message: "Failed to fetch window-based leaderboard",
+      error: String(e.message || e),
+    });
+  }
+};
+
+// ==========================================
+// Check if feedback is already submitted for this window
+// ==========================================
+const checkFeedbackSubmitted = async (req, res) => {
+  try {
+    const user = req.user; // set by authenticateJWT
+    if (!user)
+      return res
+        .status(401)
+        .json({ submitted: false, message: "User not authenticated" });
+
+    // Check if user has submitted feedback for current window
+    if (user.isFeedbackSubmitted) {
+      return res.status(200).json({ submitted: true });
+    } else {
+      return res.status(200).json({ submitted: false });
+    }
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({ submitted: false, message: "Error checking feedback status" });
+  }
+};
+
+// ==========================================
+// Get feedback window closing time and time left
+// ==========================================
+const getFeedbackWindowTimeLeft = async (req, res) => {
+  try {
+    let s = await FeedbackSettings.findOne();
+    if (!s || !s.isEnabled || !s.currentWindowClosingTime) {
+      return res.status(404).json({ message: "No active feedback window" });
+    }
+    const now = new Date();
+    const closing = new Date(s.currentWindowClosingTime);
+    let diffMs = closing - now;
+    if (diffMs <= 0) {
+      return res
+        .status(200)
+        .json({ timeLeft: 0, unit: "minutes", formatted: "Closed" });
+    }
+    const minutes = Math.floor(diffMs / 60000);
+    const hours = Math.floor(diffMs / (60 * 60000));
+    const days = Math.floor(diffMs / (24 * 60 * 60000));
+    let formatted = "";
+    let unit = "minutes";
+    if (days >= 1) {
+      formatted = `${days} day${days > 1 ? "s" : ""} ${hours % 24} hour${
+        hours % 24 !== 1 ? "s" : ""
+      }`;
+      unit = "days";
+    } else if (hours >= 1) {
+      formatted = `${hours} hour${hours !== 1 ? "s" : ""} ${
+        minutes % 60
+      } minute${minutes % 60 !== 1 ? "s" : ""}`;
+      unit = "hours";
+    } else {
+      formatted = `${minutes} minute${minutes !== 1 ? "s" : ""}`;
+      unit = "minutes";
+    }
+    return res.status(200).json({ timeLeft: diffMs, unit, formatted });
+  } catch (e) {
+    return res.status(500).json({
+      message: "Failed to fetch window time left",
       error: String(e.message || e),
     });
   }
@@ -477,7 +588,10 @@ module.exports = {
   enableFeedback,
   disableFeedback,
   getFeedbackSettings,
+  getFeedbackSettingsPublic,
   getFeedbackLeaderboard,
-  getFeedbackLeaderboardByMonth,
-  getAvailableMonths,
+  getFeedbackLeaderboardByWindow,
+  getAvailableWindows,
+  checkFeedbackSubmitted,
+  getFeedbackWindowTimeLeft,
 };
