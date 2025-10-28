@@ -14,7 +14,6 @@ const {
   getFeedbackLeaderboardByWindow,
   getAvailableWindows,
   checkFeedbackSubmitted,
-  migrateFeedbackFields,
 } = require("./feedbackController");
 const { authenticateJWT } = require("../../middleware/authenticateJWT");
 
@@ -30,17 +29,10 @@ feedbackRouter.get("/settings", getFeedbackSettings);
 feedbackRouter.post("/enable", enableFeedback);
 feedbackRouter.post("/disable", disableFeedback);
 feedbackRouter.get("/leaderboard", authenticateJWT, getFeedbackLeaderboard);
-feedbackRouter.get(
-  "/leaderboard-by-window",
-  authenticateJWT,
-  getFeedbackLeaderboardByWindow
-);
-feedbackRouter.get("/windows", authenticateJWT, getAvailableWindows);
+feedbackRouter.get("/leaderboard-by-window", getFeedbackLeaderboardByWindow);
+feedbackRouter.get("/windows", getAvailableWindows);
 
 // Debug route
 feedbackRouter.get("/all-admin", getAllFeedback);
-
-// Migration route
-feedbackRouter.post("/migrate-fields", migrateFeedbackFields);
 
 module.exports = feedbackRouter;
