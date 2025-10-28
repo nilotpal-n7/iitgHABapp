@@ -82,7 +82,6 @@ const deleteMess = async (req, res) => {
     if (!deletedMess) {
       return res.status(404).json({ message: "Mess not found" });
     }
-    console.log(deletedMess.hostelId);
     if (deletedMess.hostelId) {
       const hostelRes = await Hostel.findByIdAndUpdate(
         deletedMess.hostelId,
@@ -174,7 +173,6 @@ const createMenuItem = async (req, res) => {
       name,
       type,
     });
-    console.log(req.body);
     const newItem = await newMenuItem.save();
     const menu = await Menu.findOne({ messId: messId, day: day, type: meal });
     if (!menu) {

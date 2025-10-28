@@ -33,27 +33,32 @@ class _FeedbackCardState extends State<FeedbackCard> {
       if (windowOpen) {
         // Get auth token
         final prefs = await SharedPreferences.getInstance();
-        final token = prefs.getString('token');
-
+        final token = prefs.getString('access_token');
+        print("FEEDBACK: Open");
         if (token != null) {
           // Check if user has already submitted feedback
+          print("FEEDBACK: Checking submission status");
           final submittedRes = await dio.get(
             messFeedback.feedbackSubmitted,
             options: Options(
               headers: {"Authorization": "Bearer $token"},
             ),
           );
+          print(
+              "FEEDBACK: Submission status: ${submittedRes.data['submitted']}");
           setState(() {
             _submitted = submittedRes.data['submitted'] == true;
             _windowOpen = true;
             _loading = false;
           });
+          print("FEEDBACK: Submission status checked");
         } else {
           setState(() {
             _submitted = false;
             _windowOpen = true;
             _loading = false;
           });
+          print("FEEDBACK: No token found");
         }
       } else {
         setState(() {
@@ -152,10 +157,10 @@ class _FeedbackCardState extends State<FeedbackCard> {
                             });
                           },
                     child: Text(
-                      _submitted
-                          ? 'You have already filled the feedback for this time'
-                          : 'Give feedback',
-                      style: const TextStyle(color: Colors.white),
+                      _submitted ? 'Already Submitted' : 'Give feedback',
+                      style: (_submitted
+                          ? const TextStyle(color: Colors.black54)
+                          : const TextStyle(color: Colors.white)),
                     ),
                   ),
                 ),

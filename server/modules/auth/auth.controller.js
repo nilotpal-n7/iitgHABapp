@@ -14,7 +14,6 @@ const appConfig = require("../../config/default.js");
 const clientid = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 const redirect_uri = process.env.REDIRECT_URI;
-console.log("Redirect URI:", redirect_uri);
 
 // Not used
 const loginHandler = (req, res) => {
@@ -28,7 +27,9 @@ const loginHandler = (req, res) => {
 //** */
 const getHostelAlloc = async (rollno) => {
   try {
-    const allocation = await UserAllocHostel.findOne({ rollno: rollno }).populate("hostel");
+    const allocation = await UserAllocHostel.findOne({
+      rollno: rollno,
+    }).populate("hostel");
     if (!allocation || !allocation.hostel) {
       return null;
     }
@@ -42,7 +43,6 @@ const getHostelAlloc = async (rollno) => {
 const mobileRedirectHandler = async (req, res, next) => {
   try {
     const { code } = req.query;
-    console.log("Authorization Code:", code);
 
     if (!code) {
       throw new AppError(400, "Authorization code is missing");
@@ -76,9 +76,9 @@ const mobileRedirectHandler = async (req, res, next) => {
     if (!response.data) throw new AppError(500, "Something went wrong");
 
     const AccessToken = response.data.access_token;
-    console.log("access token ", AccessToken);
+    // console.log("access token ", AccessToken);
     const RefreshToken = response.data.refresh_token;
-    console.log("refresh token is: ", RefreshToken);
+    // console.log("refresh token is: ", RefreshToken);
 
     // Get user information from token
     const userFromToken = await getUserFromToken(AccessToken);
@@ -93,7 +93,10 @@ const mobileRedirectHandler = async (req, res, next) => {
     // Ensure hostel allocation exists for this roll number
     const allocatedHostel = await getHostelAlloc(roll);
     if (!allocatedHostel) {
-      throw new AppError(401, "Hostel allocation not found for this roll number");
+      throw new AppError(
+        401,
+        "Hostel allocation not found for this roll number"
+      );
     }
 
     // create an existing user instance with finduserwithemail
@@ -118,7 +121,9 @@ const mobileRedirectHandler = async (req, res, next) => {
     } else {
       // Optionally ensure user's hostel matches allocated hostel
       try {
-        const needsUpdate = !existingUser.hostel || existingUser.hostel.toString() !== allocatedHostel._id.toString();
+        const needsUpdate =
+          !existingUser.hostel ||
+          existingUser.hostel.toString() !== allocatedHostel._id.toString();
         if (needsUpdate) {
           existingUser.hostel = allocatedHostel._id;
           existingUser.curr_subscribed_mess = allocatedHostel._id;

@@ -15,11 +15,9 @@ const ratingMap = {
 // Submit feedback
 // ==========================================
 const submitFeedback = async (req, res) => {
-  console.log("request received");
   try {
     const { name, rollNumber, breakfast, lunch, dinner, comment, smcFields } =
       req.body;
-    console.log("Received feedback:", req.body);
     if (!name || !rollNumber || !breakfast || !lunch || !dinner) {
       return res.status(400).send("Incomplete feedback data");
     }
@@ -576,12 +574,10 @@ const getFeedbackWindowTimeLeft = async (req, res) => {
     }
     return res.status(200).json({ timeLeft: diffMs, unit, formatted });
   } catch (e) {
-    return res
-      .status(500)
-      .json({
-        message: "Failed to fetch window time left",
-        error: String(e.message || e),
-      });
+    return res.status(500).json({
+      message: "Failed to fetch window time left",
+      error: String(e.message || e),
+    });
   }
 };
 

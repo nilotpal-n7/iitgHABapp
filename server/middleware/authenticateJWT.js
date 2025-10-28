@@ -19,7 +19,7 @@ function auth(Schema, param) {
     }
     // Log the source of the token
     if (token) {
-      console.log("Token received from client:", token);
+      // console.log("Token received from client:", token);
     } else {
       console.log("No token provided by the client");
     }
@@ -27,16 +27,12 @@ function auth(Schema, param) {
     // If token is missing, send error response
     if (!token) return next(new AppError(403, "Invalid token"));
 
-    console.log(token);
-
     try {
       // Validate the token and find the element
-      
+
       const found = await Schema.findByJWT(token);
       //console.log("Found user/hostel:", found);
       if (!found) return next(new AppError(403, "Not Authenticated"));
-
-      console.log(found);
 
       // Attach the param to the request object
       req[param] = found;
