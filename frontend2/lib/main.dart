@@ -28,6 +28,13 @@ Future<void> main() async {
   if (asLoggedIn) {
     try {
       await fetchUserDetails();
+      // After fetching user metadata, fetch the profile picture bytes (base64)
+      // from the backend and cache it in SharedPreferences.
+      try {
+        await fetchUserProfilePicture();
+      } catch (_) {
+        // ignore failures here; provider/init or UI will fallback to default
+      }
     } catch (_) {}
   }
   ProfilePictureProvider.init();

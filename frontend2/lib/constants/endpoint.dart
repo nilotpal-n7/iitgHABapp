@@ -12,6 +12,7 @@ class MessChange {
 
 class UserEndpoints {
   static const String currentUser = '$baseUrl/users/';
+  static const String saveUser = '$baseUrl/users/save';
 }
 
 class itemEndpoint {

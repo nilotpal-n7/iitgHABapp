@@ -74,6 +74,37 @@ const updateUser = async (req, res) => {
   }
 };
 
+// Update roomNumber and phoneNumber for the authenticated user
+const saveUserProfile = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+
+    const { roomNumber, phoneNumber } = req.body;
+    let changed = false;
+    if (typeof roomNumber === "string") {
+      user.roomNumber = roomNumber;
+      changed = true;
+    }
+    if (typeof phoneNumber === "string") {
+      user.phoneNumber = phoneNumber;
+      changed = true;
+    }
+
+    if (changed) {
+      await user.save();
+      return res.status(200).json({ message: "Profile saved", user });
+    }
+
+    return res.status(400).json({ message: "No valid fields provided" });
+  } catch (err) {
+    console.error("saveUserProfile error", err);
+    return res
+      .status(500)
+      .json({ message: "Failed to save profile", error: String(err) });
+  }
+};
+
 const getUserComplaints = async (req, res) => {
   const { outlook } = req.params;
   try {
@@ -216,6 +247,7 @@ module.exports = {
   createUser,
   deleteUser,
   updateUser,
+  saveUserProfile,
   // getEmailsOfHABUsers,
   // getEmailsOfSecyUsers,
   getUserComplaints,
