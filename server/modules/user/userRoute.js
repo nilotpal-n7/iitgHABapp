@@ -1,12 +1,12 @@
 const express = require("express");
 const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
 
-
 const {
   getUserData,
   createUser,
   deleteUser,
   updateUser,
+  saveUserProfile,
   getUserComplaints,
   // getEmailsOfHABUsers,
   // getEmailsOfSecyUsers,
@@ -110,6 +110,9 @@ userRouter.delete("/all", clearAllStudents);
 userRouter.delete("/:outlook", authenticateJWT, deleteUser);
 
 userRouter.put("/:outlook", authenticateJWT, updateUser);
+
+// Save roomNumber and phoneNumber for authenticated user
+userRouter.post("/save", authenticateJWT, saveUserProfile);
 
 userRouter.get("/roll/:qr", getUserByRoll); //removed authenticateJWT from here
 

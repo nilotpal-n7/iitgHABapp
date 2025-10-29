@@ -344,10 +344,19 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             child: ValueListenableBuilder(
               valueListenable: ProfilePictureProvider.profilePictureString,
-              builder: (context, value, child) => CircleAvatar(
+              builder: (context, value, child) {
+                final String b64 = value;
+                final ImageProvider backgroundImg = b64.isNotEmpty
+                    ? MemoryImage(base64Decode(b64))
+                    : const NetworkImage(
+                        'https://api.dicebear.com/7.x/initials/svg?seed=User');
+
+                return CircleAvatar(
                   radius: 16,
                   backgroundColor: Colors.blue[100],
-                  backgroundImage: MemoryImage(base64Decode(value))),
+                  backgroundImage: backgroundImg,
+                );
+              },
             ),
           ),
         ),
