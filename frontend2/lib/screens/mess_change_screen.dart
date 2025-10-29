@@ -33,6 +33,8 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
   // Replace hardcoded hostels with dynamic list from HostelsNotifier
   List<String> hostels = HostelsNotifier.hostels;
 
+  late VoidCallback _removeHostelListener;
+
   final SingleSelectController<String> hostelController =
       SingleSelectController<String>(null);
 
@@ -43,13 +45,24 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
     fetchUserData();
     getAllocatedHostel();
     // Listen for hostel list updates
-    HostelsNotifier.addOnChange(() {
+    _removeHostelListener = HostelsNotifier.addOnChange(() {
+      if (!mounted) return;
       setState(() {
         hostels = HostelsNotifier.hostels;
       });
     });
     // Reset state if it's a new week (Monday)
     _checkAllowedDays();
+  }
+
+  @override
+  void dispose() {
+    try {
+      _removeHostelListener();
+    } catch (e) {
+      // ignore
+    }
+    super.dispose();
   }
 
   late String Message = 'You can apply for any Hostel';
