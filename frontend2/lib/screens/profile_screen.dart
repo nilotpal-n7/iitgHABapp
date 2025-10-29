@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:frontend2/apis/authentication/login.dart';
 import 'package:frontend2/apis/protected.dart';
+import 'package:frontend2/apis/users/user.dart';
 import 'package:frontend2/constants/endpoint.dart';
 import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/widgets/common/custom_linear_progress.dart';
@@ -153,13 +154,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
 
       if (res.statusCode == 200) {
-        final data = res.data as Map;
-        final url = data['url'] as String?;
         final prefs = await SharedPreferences.getInstance();
-        if (url != null && url.isNotEmpty) {
-          await prefs.setString('profilePictureUrl', url);
-          await prefs.setString('profilePicture', imageB64);
-        }
+        // Persist only the base64 image locally. Do not store the remote URL in prefs.
+        await prefs.setString('profilePicture', imageB64);
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile picture updated')),
@@ -187,6 +184,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final prefs = await SharedPreferences.getInstance();
       final newRoom = _roomController.text.trim();
       final newPhone = _phoneController.text.trim();
+      // Update server first
+      final success = await saveUserProfileFields(
+          roomNumber: newRoom.isEmpty ? null : newRoom,
+          phoneNumber: newPhone.isEmpty ? null : newPhone);
+
+      if (!success) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to update profile on server')),
+        );
+        return;
+      }
+
+      // Persist locally after success
       await prefs.setString('roomNumber', newRoom);
       await prefs.setString('phoneNumber', newPhone);
       setState(() {

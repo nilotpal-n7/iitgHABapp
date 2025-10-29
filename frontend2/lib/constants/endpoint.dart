@@ -1,4 +1,4 @@
-const String baseUrl = "https://hab.codingclub.in/api";
+const String baseUrl = "http://localhost:3000/api";
 
 class NotificationEndpoints {
   static const String registerToken = '$baseUrl/notification/register-token';
@@ -12,6 +12,7 @@ class MessChange {
 
 class UserEndpoints {
   static const String currentUser = '$baseUrl/users/';
+  static const String saveUser = '$baseUrl/users/save';
 }
 
 class itemEndpoint {

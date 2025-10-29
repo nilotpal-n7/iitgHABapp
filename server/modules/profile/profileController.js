@@ -346,8 +346,27 @@ async function getProfilePicture(req, res) {
     }
 
     if (user.profilePictureUrl) {
-      logStep("Returning stored URL", { url: user.profilePictureUrl });
-      return res.status(200).json({ url: user.profilePictureUrl });
+      logStep("Returning stored URL (fetching bytes server-side)", {
+        url: user.profilePictureUrl,
+      });
+      try {
+        // Try to fetch the URL server-side and stream bytes back to client.
+        const resp = await axios.get(user.profilePictureUrl, {
+          responseType: "arraybuffer",
+        });
+        res.setHeader(
+          "Content-Type",
+          resp.headers["content-type"] || "application/octet-stream"
+        );
+        return res.send(Buffer.from(resp.data));
+      } catch (e) {
+        // If fetching fails (e.g., permissions), return the URL as a JSON fallback.
+        logStep("Fetching stored URL failed, returning URL instead", {
+          status: e.response?.status,
+          data: e.response?.data,
+        });
+        return res.status(200).json({ url: user.profilePictureUrl });
+      }
     }
 
     // Stream via delegated token for /me/drive
