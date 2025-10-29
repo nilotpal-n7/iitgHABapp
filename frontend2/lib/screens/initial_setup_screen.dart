@@ -10,6 +10,7 @@ import 'package:frontend2/widgets/common/hostel_name.dart';
 import 'package:dio/dio.dart';
 import 'package:frontend2/constants/endpoint.dart';
 import 'package:frontend2/apis/protected.dart';
+import 'package:frontend2/apis/users/user.dart';
 
 class ProfilePictureProvider {
   static var profilePictureString = ValueNotifier<String>("");
@@ -118,14 +119,9 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
       );
 
       if (res.statusCode == 200) {
-        final data = res.data as Map;
-        final url = data['url'] as String?;
         final prefs = await SharedPreferences.getInstance();
-        // Persist only after successful upload
+        // Persist only after successful upload. Do not store remote URL in prefs.
         await prefs.setString('profilePicture', imageB64);
-        if (url != null && url.isNotEmpty) {
-          await prefs.setString('profilePictureUrl', url);
-        }
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile picture uploaded')),
@@ -151,20 +147,39 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
     setState(() => _saving = true);
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('roomNumber', _roomController.text.trim());
-      await prefs.setString('phoneNumber', _phoneController.text.trim());
+      final newRoom = _roomController.text.trim();
+      final newPhone = _phoneController.text.trim();
 
-      // Mark setup complete on backend
+      // First, update server with authenticated user
+      final success = await saveUserProfileFields(
+          roomNumber: newRoom.isEmpty ? null : newRoom,
+          phoneNumber: newPhone.isEmpty ? null : newPhone);
+
+      if (!success) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to save profile on server')),
+        );
+        return;
+      }
+
+      // Then mark setup complete on backend (existing behaviour)
       final token = await getAccessToken();
       if (token != 'error') {
         final dio = Dio();
-        await dio.post(
-          '$baseUrl/profile/setup/complete',
-          options: Options(headers: {'Authorization': 'Bearer $token'}),
-        );
+        try {
+          await dio.post(
+            '$baseUrl/profile/setup/complete',
+            options: Options(headers: {'Authorization': 'Bearer $token'}),
+          );
+        } catch (_) {
+          // ignore; we still persist local copy
+        }
       }
 
       // Persist locally after backend success
+      await prefs.setString('roomNumber', newRoom);
+      await prefs.setString('phoneNumber', newPhone);
       await prefs.setBool('isSetupDone', true);
       ProfilePictureProvider.isSetupDone.value = true;
       if (!mounted) return;
