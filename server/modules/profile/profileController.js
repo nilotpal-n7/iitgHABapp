@@ -24,17 +24,8 @@ async function requireDelegatedToken() {
   return tok;
 }
 
-// Debug helpers (no secrets)
-function logStep(label, details) {
-  try {
-    console.log(`[ProfilePic] ${label}`, details ?? "");
-  } catch (_) {
-    console.log(`[ProfilePic] ${label}`);
-  }
-}
-
+// Debug helpers removed
 async function graphGET(url, token, config = {}) {
-  logStep("GET", { url });
   const { data } = await axios.get(url, {
     ...config,
     headers: { ...(config.headers || {}), Authorization: `Bearer ${token}` },
@@ -43,7 +34,6 @@ async function graphGET(url, token, config = {}) {
 }
 
 async function graphPUT(url, token, body, headers = {}) {
-  logStep("PUT", { url });
   const { data } = await axios.put(url, body, {
     headers: { Authorization: `Bearer ${token}`, ...headers },
     maxContentLength: Infinity,
@@ -53,7 +43,6 @@ async function graphPUT(url, token, body, headers = {}) {
 }
 
 async function graphPOST(url, token, body, headers = {}) {
-  logStep("POST", { url });
   const { data } = await axios.post(url, body, {
     headers: { Authorization: `Bearer ${token}`, ...headers },
   });
@@ -87,18 +76,13 @@ async function findChildByName(token, parentId, name) {
   const data = await graphGET(url, token);
   const all = data?.value || [];
   const matches = all.filter((x) => x.name === name);
-  logStep("Children lookup", {
-    parentId,
-    total: all.length,
-    lookingFor: name,
-    matches: matches.length,
-  });
+
   return matches; // array (could be empty)
 }
 
 async function deleteItemById(token, itemId) {
   const url = `https://graph.microsoft.com/v1.0/me/drive/items/${itemId}`;
-  logStep("DELETE", { url });
+
   await axios.delete(url, { headers: { Authorization: `Bearer ${token}` } });
 }
 
@@ -112,21 +96,11 @@ async function uploadToParentByName(
   const url = `https://graph.microsoft.com/v1.0/me/drive/items/${parentId}:/${encodeURIComponent(
     filename
   )}:/content`;
-  logStep("Upload start", {
-    parentId,
-    filename,
-    size: buffer?.length,
-    mimeType,
-  });
+
   const data = await graphPUT(url, token, buffer, {
     "Content-Type": mimeType || "application/octet-stream",
   });
-  logStep("Upload done", {
-    uploadedId: data?.id,
-    name: data?.name,
-    size: data?.size,
-    webUrl: data?.webUrl,
-  });
+
   return data; // driveItem
 }
 
@@ -138,7 +112,7 @@ async function createOrganizationViewLink(token, itemId) {
     { type: "view", scope: "organization" },
     { "Content-Type": "application/json" }
   );
-  logStep("createLink", { itemId, link: data?.link?.webUrl });
+
   return data?.link?.webUrl;
 }
 
@@ -181,12 +155,6 @@ async function setProfilePicture(req, res) {
     }
 
     const file = req.file;
-    logStep("Incoming upload", {
-      hasFile: !!file,
-      mime: file?.mimetype,
-      size: file?.size || file?.buffer?.length,
-      PROFILE_FOLDER_ID,
-    });
     if (!file) return res.status(400).json({ message: "No file uploaded" });
     if (!PROFILE_FOLDER_ID) {
       return res
@@ -196,12 +164,6 @@ async function setProfilePicture(req, res) {
 
     const ext = extFromMime(file.mimetype);
     const targetName = `${roll}${ext}`;
-    logStep("User & naming", {
-      userId: user?._id,
-      roll,
-      targetName,
-      isSetupDone: user.isSetupDone,
-    });
 
     // Delegated token required to use /me/drive
     const token = await requireDelegatedToken();
@@ -210,56 +172,26 @@ async function setProfilePicture(req, res) {
     let me, drive, parentItem;
     try {
       me = await getMe(token);
-      logStep("Token user", {
-        id: me?.id,
-        upn: me?.userPrincipalName,
-        displayName: me?.displayName,
-      });
-    } catch (e) {
-      logStep("/me failed", {
-        status: e.response?.status,
-        data: e.response?.data,
-      });
-    }
+    } catch (e) {}
 
     try {
       drive = await getMyDrive(token);
-      logStep("My drive", { driveId: drive?.id, driveType: drive?.driveType });
-    } catch (e) {
-      logStep("/me/drive failed", {
-        status: e.response?.status,
-        data: e.response?.data,
-      });
-    }
+    } catch (e) {}
 
     try {
       parentItem = await getItemById(token, PROFILE_FOLDER_ID);
-      logStep("Parent folder", {
-        id: parentItem?.id,
-        name: parentItem?.name,
-        parentDriveId: parentItem?.parentReference?.driveId,
-        webUrl: parentItem?.webUrl,
-      });
       if (
         drive?.id &&
         parentItem?.parentReference?.driveId &&
         drive.id !== parentItem.parentReference.driveId
       ) {
-        logStep("Drive mismatch", {
-          myDriveId: drive.id,
-          folderDriveId: parentItem.parentReference.driveId,
-        });
         return res.status(400).json({
           message:
             "Configured folder belongs to a different drive than the token user's drive.",
         });
       }
     } catch (e) {
-      logStep("Parent folder lookup failed", {
-        status: e.response?.status,
-        data: e.response?.data,
-        folderId: PROFILE_FOLDER_ID,
-      });
+      // Parent folder lookup failed
       return res.status(400).json({
         message:
           "Configured ONEDRIVE_PROFILE_PICS_FOLDER_ID not found or not accessible for this account.",
@@ -276,18 +208,10 @@ async function setProfilePicture(req, res) {
     if (existing.length > 0) {
       for (const it of existing) {
         try {
-          logStep("Deleting existing", { itemId: it.id, name: it.name });
           await deleteItemById(token, it.id);
-        } catch (e) {
-          logStep("Delete failed (ignored)", {
-            itemId: it.id,
-            status: e.response?.status,
-            data: e.response?.data,
-          });
-        }
+        } catch (e) {}
       }
     } else {
-      logStep("No existing file with same name", { targetName });
     }
 
     // Upload new content to the parent folder with file name = roll.ext
@@ -303,23 +227,12 @@ async function setProfilePicture(req, res) {
     let publicUrl = null;
     try {
       publicUrl = await createOrganizationViewLink(token, uploaded.id);
-    } catch (e) {
-      logStep("createLink failed (non-fatal)", {
-        status: e.response?.status,
-        data: e.response?.data,
-      });
-    }
+    } catch (e) {}
 
     user.profilePictureItemId = uploaded.id;
     if (publicUrl) user.profilePictureUrl = publicUrl;
     // Do NOT mark isSetupDone here; it will be set on explicit save action
     await user.save();
-    logStep("User updated", {
-      userId: user?._id,
-      itemId: uploaded.id,
-      url: publicUrl,
-      isSetupDone: user.isSetupDone,
-    });
 
     return res.status(200).json({
       message: "Profile picture updated",
@@ -330,7 +243,6 @@ async function setProfilePicture(req, res) {
   } catch (err) {
     const status = err.response?.status;
     const msg = err.response?.data?.error?.message || err.message;
-    console.error("setProfilePicture error", err.response?.data || err.message);
     return res
       .status(status === 403 ? 403 : 500)
       .json({ message: "Failed to set profile picture", error: msg, status });
@@ -346,25 +258,43 @@ async function getProfilePicture(req, res) {
     }
 
     if (user.profilePictureUrl) {
-      logStep("Returning stored URL (fetching bytes server-side)", {
-        url: user.profilePictureUrl,
-      });
       try {
-        // Try to fetch the URL server-side and stream bytes back to client.
+        // Try to fetch the URL server-side and inspect the response even if non-2xx
         const resp = await axios.get(user.profilePictureUrl, {
           responseType: "arraybuffer",
+          validateStatus: () => true,
         });
-        res.setHeader(
-          "Content-Type",
-          resp.headers["content-type"] || "application/octet-stream"
-        );
-        return res.send(Buffer.from(resp.data));
+
+        if (resp.status >= 200 && resp.status < 300) {
+          res.setHeader(
+            "Content-Type",
+            resp.headers["content-type"] || "application/octet-stream"
+          );
+          return res.send(Buffer.from(resp.data));
+        }
+
+        if (user.profilePictureItemId) {
+          try {
+            const token = await requireDelegatedToken();
+            const contentUrl = `https://graph.microsoft.com/v1.0/me/drive/items/${user.profilePictureItemId}/content`;
+            const graphResp = await axios.get(contentUrl, {
+              responseType: "arraybuffer",
+              headers: { Authorization: `Bearer ${token}` },
+              validateStatus: () => true,
+            });
+            if (graphResp.status >= 200 && graphResp.status < 300) {
+              res.setHeader(
+                "Content-Type",
+                graphResp.headers["content-type"] || "application/octet-stream"
+              );
+              return res.send(Buffer.from(graphResp.data));
+            }
+          } catch (ge) {}
+        }
+
+        // If we get here, both stored URL and Graph fallback didn't return bytes — return URL JSON as last resort
+        return res.status(200).json({ url: user.profilePictureUrl });
       } catch (e) {
-        // If fetching fails (e.g., permissions), return the URL as a JSON fallback.
-        logStep("Fetching stored URL failed, returning URL instead", {
-          status: e.response?.status,
-          data: e.response?.data,
-        });
         return res.status(200).json({ url: user.profilePictureUrl });
       }
     }
@@ -372,21 +302,24 @@ async function getProfilePicture(req, res) {
     // Stream via delegated token for /me/drive
     const token = await requireDelegatedToken();
     const contentUrl = `https://graph.microsoft.com/v1.0/me/drive/items/${user.profilePictureItemId}/content`;
-    logStep("Fetching content", {
-      itemId: user.profilePictureItemId,
-      contentUrl,
-    });
     const resp = await axios.get(contentUrl, {
       responseType: "arraybuffer",
       headers: { Authorization: `Bearer ${token}` },
+      validateStatus: () => true,
     });
-    res.setHeader(
-      "Content-Type",
-      resp.headers["content-type"] || "application/octet-stream"
-    );
-    return res.send(Buffer.from(resp.data));
+    if (resp.status >= 200 && resp.status < 300) {
+      res.setHeader(
+        "Content-Type",
+        resp.headers["content-type"] || "application/octet-stream"
+      );
+      return res.send(Buffer.from(resp.data));
+    }
+    // Non-OK from Graph — return a helpful error
+    return res.status(502).json({
+      message: "Failed to fetch profile picture from Graph",
+      status: resp.status,
+    });
   } catch (err) {
-    console.error("getProfilePicture error", err.response?.data || err.message);
     return res.status(500).json({
       message: "Failed to fetch profile picture",
       error: err.message,
