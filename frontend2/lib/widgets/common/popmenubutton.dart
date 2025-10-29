@@ -6,7 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class HostelDrop extends StatefulWidget {
   final Function(String) onChanged;
 
-  const HostelDrop({super.key, required this.onChanged, required this.selectedHostel});
+  const HostelDrop(
+      {super.key, required this.onChanged, required this.selectedHostel});
 
   final String selectedHostel;
 
@@ -15,20 +16,32 @@ class HostelDrop extends StatefulWidget {
 }
 
 class _HostelDropState extends State<HostelDrop> {
-
   late List<String> options = [""];
+  late VoidCallback _removeHostelListener;
 
   @override
   void initState() {
     super.initState();
     selectedHostel = widget.selectedHostel;
     // initHostels();
-    HostelsNotifier.addOnChange(() {
+    _removeHostelListener = HostelsNotifier.addOnChange(() {
+      if (!mounted) return;
       setState(() {
         hostels = HostelsNotifier.hostels;
       });
       print("hostels: $hostels\nselected hostel: $selectedHostel");
     });
+  }
+
+  @override
+  void dispose() {
+    // Deregister listener to avoid callbacks to disposed widgets
+    try {
+      _removeHostelListener();
+    } catch (e) {
+      // ignore
+    }
+    super.dispose();
   }
 
   @override
@@ -138,90 +151,98 @@ class _HostelDropState extends State<HostelDrop> {
     //     ],
     //   ),
     // );
-    return Builder(builder: (context) => hostels.isEmpty || selectedHostel.isEmpty ? SizedBox() :
-    DropdownButtonHideUnderline(
-      child: SizedBox(
-        width: 125,
-        child: DropdownButton2<String>(
-          isExpanded: true,
-          hint: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8),
-            child: Text(
-              'Select',
-              style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 16,
-                  color: Color(0xFF676767),
-                  fontFamily: 'General Sans Variable'),
-            ),
-          ),
-          items: hostels
-              .map((String item) => DropdownMenuItem(
-            value: item,
-            child: Container(
-              decoration: BoxDecoration(
-                  border: (item == hostels.last
-                      ? null
-                      : Border(
-                      bottom: BorderSide(
-                          color: Colors.grey.shade300, width: 1.0)))),
-              alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-              child: Text(item,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 13,
-                      height: 1.5,
-                      color: Color(0xFF2E2F31))),
-            ),
-          ))
-              .toList(),
-          selectedItemBuilder: (context) {
-            return hostels.map((String item) {
-              return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 6),
-                  child: Text(item,
-                      textAlign: TextAlign.right,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 13,
-                        color: Color(0xFF4C4EDB),
-                        decoration: TextDecoration.none,
-                      )));
-            }).toList();
-          },
-          value: selectedHostel,
-          onChanged: (selected) {
-            if (selected != null) {
-              widget.onChanged(selected);
-            }
-          },
-          buttonStyleData: ButtonStyleData(
-              height: 40,
-              padding: const EdgeInsets.only(top: 4, bottom: 4),
-              decoration: BoxDecoration(
-                  color: selectedHostel == ""
-                      ? const Color(0xFFF5F5F5)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
-                  border: selectedHostel == ""
-                      ? Border.all(color: const Color(0xFFC5C5D1), width: 0)
-                      : Border.all(color: const Color(0xFFC5C5D1), width: 0)
+    return Builder(
+      builder: (context) => hostels.isEmpty || selectedHostel.isEmpty
+          ? SizedBox()
+          : DropdownButtonHideUnderline(
+              child: SizedBox(
+                width: 125,
+                child: DropdownButton2<String>(
+                  isExpanded: true,
+                  hint: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      'Select',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                          color: Color(0xFF676767),
+                          fontFamily: 'General Sans Variable'),
+                    ),
+                  ),
+                  items: hostels
+                      .map((String item) => DropdownMenuItem(
+                            value: item,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  border: (item == hostels.last
+                                      ? null
+                                      : Border(
+                                          bottom: BorderSide(
+                                              color: Colors.grey.shade300,
+                                              width: 1.0)))),
+                              alignment: Alignment.centerLeft,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 0, vertical: 8),
+                              child: Text(item,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 13,
+                                      height: 1.5,
+                                      color: Color(0xFF2E2F31))),
+                            ),
+                          ))
+                      .toList(),
+                  selectedItemBuilder: (context) {
+                    return hostels.map((String item) {
+                      return Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 6),
+                          child: Text(item,
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13,
+                                color: Color(0xFF4C4EDB),
+                                decoration: TextDecoration.none,
+                              )));
+                    }).toList();
+                  },
+                  value: selectedHostel,
+                  onChanged: (selected) {
+                    if (selected != null) {
+                      widget.onChanged(selected);
+                    }
+                  },
+                  buttonStyleData: ButtonStyleData(
+                    height: 40,
+                    padding: const EdgeInsets.only(top: 4, bottom: 4),
+                    decoration: BoxDecoration(
+                        color: selectedHostel == ""
+                            ? const Color(0xFFF5F5F5)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                        border: selectedHostel == ""
+                            ? Border.all(
+                                color: const Color(0xFFC5C5D1), width: 0)
+                            : Border.all(
+                                color: const Color(0xFFC5C5D1), width: 0)),
+                  ),
+                  dropdownStyleData: DropdownStyleData(
+                      maxHeight: MediaQuery.of(context).size.height * 0.6,
+                      width: 125,
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                              color: Colors.grey.shade300, width: 1.0)),
+                      padding: const EdgeInsets.fromLTRB(0, 8, 0, 8)),
+                  menuItemStyleData: const MenuItemStyleData(
+                      height: 48,
+                      padding: EdgeInsets.symmetric(horizontal: 12)),
+                ),
               ),
             ),
-          dropdownStyleData: DropdownStyleData(
-              maxHeight: MediaQuery.of(context).size.height * 0.6,
-              width: 125,
-              decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade300, width: 1.0)),
-              padding: const EdgeInsets.fromLTRB(0, 8, 0, 8)),
-          menuItemStyleData: const MenuItemStyleData(
-              height: 48, padding: EdgeInsets.symmetric(horizontal: 12)),
-        ),
-      ),
-    ),);
+    );
   }
 }
