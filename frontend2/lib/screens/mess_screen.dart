@@ -157,8 +157,11 @@ class _MenuSectionState extends State<_MenuSection> {
       ? HostelsNotifier.userHostel
       : (HostelsNotifier.hostels.isNotEmpty ? HostelsNotifier.hostels[0] : "");
 
+  late VoidCallback _removeHostelListener;
+
   @override
   void initState() {
+    super.initState();
     // Load preferred mess name from prefs to match against provider map once ready
     SharedPreferences.getInstance().then((prefs) {
       final byCurrSub = prefs.getString('curr_subscribed_mess');
@@ -169,10 +172,10 @@ class _MenuSectionState extends State<_MenuSection> {
             : (byMessName?.isNotEmpty == true ? byMessName : null);
       });
     });
-
     print("Selected Hostel rn: $selectedHostel");
-    HostelsNotifier.addOnChange(
+    _removeHostelListener = HostelsNotifier.addOnChange(
       () {
+        if (!mounted) return;
         // When userHostel changes, update only if we have that hostel in the map.
         final map =
             Provider.of<MessInfoProvider>(context, listen: false).hostelMap;
@@ -185,9 +188,18 @@ class _MenuSectionState extends State<_MenuSection> {
         }
       },
     );
-    super.initState();
     selectedDay = DateFormat('EEEE').format(DateTime.now()); // default to today
     // No hardcoded fallback; wait for provider data in build.
+  }
+
+  @override
+  void dispose() {
+    try {
+      _removeHostelListener();
+    } catch (e) {
+      // ignore
+    }
+    super.dispose();
   }
 
   void _updateMessId(String hostelName) {
