@@ -2,7 +2,7 @@ const { User } = require("../user/userModel.js");
 const { Hostel } = require("../hostel/hostelModel.js");
 const { MessChange } = require("./messChangeModel.js");
 const { MessChangeSettings } = require("./messChangeSettingsModel.js");
-const { sendNotificationMessage } = require("../notification/notificationController.js");
+const { sendNotificationMessage, sendNotificationToUser } = require("../notification/notificationController.js");
 
 const getAllMessChangeRequestsForAllHostels = async (req, res) => {
   try {
@@ -240,6 +240,17 @@ const updateAcceptedUsers = async (acceptedUsers) => {
 
     acceptedUser.fromHostel = fromHostel ? fromHostel.hostel_name : "Unknown";
     acceptedUser.toHostel = toHostel ? toHostel.hostel_name : "Unknown";
+
+    // Notify user on acceptance
+    try {
+      await sendNotificationToUser(
+        user._id,
+        "Mess Change Accepted",
+        `Your mess change has been approved to ${acceptedUser.toHostel}.`
+      );
+    } catch (e) {
+      console.log("Failed to send acceptance notification", e);
+    }
   }
 };
 
@@ -289,6 +300,17 @@ const updateRejectedUsers = async (rejectedUsers) => {
     user.next_mess3 = null;
     user.got_mess_changed = false;
     await user.save();
+
+    // Notify user on rejection
+    try {
+      await sendNotificationToUser(
+        user._id,
+        "Mess Change Rejected",
+        "Your mess change request was not approved this cycle."
+      );
+    } catch (e) {
+      console.log("Failed to send rejection notification", e);
+    }
   }
 };
 
