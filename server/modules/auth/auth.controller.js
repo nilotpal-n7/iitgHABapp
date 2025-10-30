@@ -7,6 +7,7 @@ const {
 } = require("../user/userModel.js"); // Assuming getUserFromToken is a named export
 const AppError = require("../../utils/appError.js");
 const UserAllocHostel = require("../hostel/hostelAllocModel.js");
+const { sendNotificationToUser } = require("../notification/notificationController.js");
 require("dotenv").config();
 
 const appConfig = require("../../config/default.js");
@@ -103,7 +104,7 @@ const mobileRedirectHandler = async (req, res, next) => {
     let existingUser = await findUserWithEmail(userFromToken.data.mail);
 
     // If the user doesn't exist, create a new user
-
+    let isFirstLogin = false;
     if (!existingUser) {
       const userData = {
         name: userFromToken.data.displayName,
@@ -118,6 +119,7 @@ const mobileRedirectHandler = async (req, res, next) => {
       const user = new User(userData);
       //console.log( "user model is",user);
       existingUser = await user.save();
+      isFirstLogin = true;
     } else {
       // Optionally ensure user's hostel matches allocated hostel
       try {
@@ -137,6 +139,19 @@ const mobileRedirectHandler = async (req, res, next) => {
     // Generate JWT for the existing or new user
     const token = existingUser.generateJWT();
     //console.log(token);
+
+    // Send welcome notification on first login
+    if (isFirstLogin) {
+      try {
+        await sendNotificationToUser(
+          existingUser._id,
+          "Welcome to HAB App",
+          "Thanks for signing in! You will receive updates here."
+        );
+      } catch (e) {
+        console.log("Failed to send welcome notification", e);
+      }
+    }
 
     // Redirect to the success URL with the token
     return res.redirect(

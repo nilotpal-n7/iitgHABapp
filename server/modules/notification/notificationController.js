@@ -44,6 +44,21 @@ async function sendNotificationMessage (title, body, topic) {
     console.log(message);
     await admin.messaging().send(message);
 }
+
+// Send a notification directly to a specific user's FCM token
+const sendNotificationToUser = async (userId, title, body) => {
+  try {
+    const tokenDoc = await FCMToken.findOne({ user: userId });
+    if (!tokenDoc || !tokenDoc.token) return;
+    const message = {
+      token: tokenDoc.token,
+      notification: { title, body },
+    };
+    await admin.messaging().send(message);
+  } catch (e) {
+    console.error("Error sending user notification:", e);
+  }
+};
 // Send notification to all users of this hostel
 const sendNotification = async (req, res) => {
   try {
@@ -98,4 +113,5 @@ module.exports = {
   getUserNotifications,
   markAsRead,
   sendNotificationMessage,
+  sendNotificationToUser,
 };
