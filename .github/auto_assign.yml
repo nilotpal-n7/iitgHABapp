@@ -1,0 +1,8 @@
+# .github/auto_assign.yml
+
+addReviewers: true
+addAssignees: false
+reviewers:
+  - team-backend
+  - team-frontend
+skipDraft: true

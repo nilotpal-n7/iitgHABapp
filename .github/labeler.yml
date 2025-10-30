@@ -1,0 +1,50 @@
+# .github/labeler.yml
+
+# ----------------------------------------------------
+# Area Labels: Based on what part of the app is touched
+# ----------------------------------------------------
+'area: flutter':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'lib/**'
+      - '**/*.dart'
+
+'area: web':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'web/**'
+      - 'frontend/src/**'
+      - 'package.json' # Catches root web dependencies
+
+'area: backend':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'backend/**'
+      - 'server/src/**'
+      - 'go.mod' # Example for Go
+      - 'requirements.txt' # Example for Python
+
+# ----------------------------------------------------
+# Type Labels: Based on the type of change
+# ----------------------------------------------------
+'type: ci/cd':
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/workflows/**'
+      - '.github/auto_assign.yml'
+      - '.github/labeler.yml'
+      - 'mergify.yml'
+
+'type: docs':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'docs/**'
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+
+'type: config':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'scripts/**'
+      - '.firebaserc'
+      - 'firebase.json'

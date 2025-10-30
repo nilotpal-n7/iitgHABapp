@@ -1,0 +1,38 @@
+# .mergify.yml
+
+queue_rules:
+  - name: default
+    merge_method: squash  # can be merge, squash, or rebase
+    allow_inplace_checks: true
+
+pull_request_rules:
+  - name: auto merge into dev
+    conditions:
+      - base=dev
+      - label=ready-for-merge
+      - status-success=CI
+      - "#approved-reviews-by>=1"
+    actions:
+      queue:
+        name: default
+
+  - name: promote dev to master
+    conditions:
+      - base=master
+      - head=dev
+      - label=promote
+      - status-success=CI
+      - "#approved-reviews-by>=1"
+    actions:
+      queue:
+        name: default
+
+  - name: emergency rollback
+    conditions:
+      - base=master
+      - label=rollback
+      - status-success=CI
+      - "#approved-reviews-by>=1"
+    actions:
+      queue:
+        name: default

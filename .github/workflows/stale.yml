@@ -1,0 +1,17 @@
+# .github/workflows/stale.yml
+
+name: Stale
+on:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-stale: 30
+          days-before-close: 7
+          stale-issue-message: '⏳ This PR/issue has been inactive for 30 days.'
