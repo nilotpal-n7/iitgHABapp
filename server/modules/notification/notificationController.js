@@ -36,44 +36,19 @@ const registerToken = async (req, res) => {
     res.sendStatus(500);
   }
 };
-
-// Send notification to all users of this hostel
-const sendNotification = async (req, res) => {
-  try {
-    // if (!req.hostel)
-    //   return res
-    //     .status(403)
-    //     .json({ error: "Only hostel admins can send notifications" });
-
-    const { title, body, topic } = req.body;
-    // const users = await User.find({ hostel: req.hostel._id });
-    // const userIds = users.map((u) => u._id);
-
-    // const tokens = await FCMToken.find({ user: { $in: userIds } });
-    // const fcmTokens = (await FCMToken.find({})).map((t) => t.token);
-
-    // console.log(fcmTokens);
-    // const fcmTokens = ["fKlOwXuIQlKoXNmz3Azir3:APA91bEgK2VmDUasiIJT0Rpmb9emp-aYmuO5w-arzpeaAs9QMK_B9AT8iQlNDPXBm0tLb2wVQHDogj3XmaTn76YORG0iVBZ4zgf1DUMSY7DTfaYLdYZL6LA"];
-
-    // if (fcmTokens.length === 0)
-    //   return res.status(400).json({ error: "No user tokens found" });
-
-    const message = {
+async function sendNotificationMessage (title, body, topic) {
+  const message = {
       notification: { title, body },
       topic: topic
     };
-
     console.log(message);
-
     await admin.messaging().send(message);
-
-    // await Notification.create({
-    //   title,
-    //   body,
-    //   hostel: req.hostel._id,
-    //   recipients: userIds,
-    // });z
-
+}
+// Send notification to all users of this hostel
+const sendNotification = async (req, res) => {
+  try {
+    const { title, body, topic } = req.body;
+    sendNotificationMessage(title, body,topic);
     res.status(200).json({ message: "Notification sent" });
   } catch (err) {
     console.error(err);
@@ -122,4 +97,5 @@ module.exports = {
   sendNotification,
   getUserNotifications,
   markAsRead,
+  sendNotificationMessage,
 };

@@ -2,7 +2,7 @@ const { User } = require("../user/userModel.js");
 const { Hostel } = require("../hostel/hostelModel.js");
 const { MessChange } = require("./messChangeModel.js");
 const { MessChangeSettings } = require("./messChangeSettingsModel.js");
-const { sendCustomNotificationToAllUsers } = require("../notification/notificationManager.js");
+const { sendNotificationMessage } = require("../notification/notificationController.js");
 
 const getAllMessChangeRequestsForAllHostels = async (req, res) => {
   try {
@@ -543,8 +543,8 @@ const enableMessChange = async (req, res) => {
 
     await settings.save();
     
-    sendCustomNotificationToAllUsers("Mess Change is Enabled", "Mess Change is Enabled");
-
+    //sendCustomNotificationToAllUsers("Mess Change is Enabled", "Mess Change is Enabled");
+    sendNotificationMessage("MESS CHANGE","Mess Change for this month has been enabled","All_Hostels");
 
     return res.status(200).json({
       message: "Mess change enabled successfully",
@@ -571,7 +571,8 @@ const disableMessChange = async (req, res) => {
 
     await settings.save();
 
-    sendCustomNotificationToAllUsers("Mess Change is Disabled", "Mess Change is Disabled");
+    //sendCustomNotificationToAllUsers("Mess Change is Disabled", "Mess Change is Disabled");
+    sendNotificationMessage("MESS CHANGE", "Mess Change for this month has been disabled","All_Hostels");
 
     return res.status(200).json({
       message: "Mess change disabled successfully",
