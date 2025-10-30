@@ -1,0 +1,19 @@
+# This file maps directories to their responsible teams
+
+## It is used by GitHub's UI and as a reference
+
+## Automation (review requests & CCs) is handled by .github/workflows/pr.yml
+
+## General
+
+/docs/ @docs-team
+.github/ @team-devops
+
+## Application Areas
+
+*.dart @team-flutter
+lib/ @team-flutter
+web/ @team-frontend
+frontend/ @team-frontend
+backend/ @team-backend
+server/ @team-backend
