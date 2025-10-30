@@ -1,0 +1,6 @@
+addReviewers: true
+addAssignees: false
+reviewers:
+  - team-backend
+  - team-frontend
+skipDraft: true
