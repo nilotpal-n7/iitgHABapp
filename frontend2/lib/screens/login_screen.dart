@@ -3,6 +3,7 @@ import 'package:frontend2/apis/authentication/login.dart';
 import 'package:frontend2/screens/MainNavigationScreen.dart';
 import 'package:frontend2/widgets/common/snack_bar.dart';
 import 'package:frontend2/widgets/login screen/login_button.dart';
+import 'package:lottie/lottie.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -28,102 +29,126 @@ class OnboardingScreen extends StatefulWidget {
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-bool _inprogress = false;
-
 class _OnboardingScreenState extends State<OnboardingScreen> {
+  bool _inprogress = false;
+  
   // Next dbane ke baad GPT kia so yeah
   void _showBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // Makes the bottom sheet taller
-      backgroundColor: Colors.transparent, // Transparent background
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return FractionallySizedBox(
-          heightFactor: 0.3, // 40% of available height
-          child: Container(
-            decoration: const BoxDecoration(
-              color: Colors.white, // white to match figma UI
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Handle indicator at top
-
-                 const Text(
-                    'Sign in',
-                    style: TextStyle(
-                      fontFamily: 'GeneralSans',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 32,
-                    ),
-                  ),
-
-                  const Divider(),
-
-                  const Text(
-                    'For Students',
-                    style: TextStyle(
-                      fontFamily: 'GeneralSans',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 14,
-                      color: Color(0xFF676767),
-                    ),
-                  ),
-                  const SizedBox(height: 10,),
-                  Container(
-                    height: 48,
-                    width: double.infinity,
-                    child: Material(
-                      color: const Color(0xFF4C4EDB),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Stack(
+              children: [
+                FractionallySizedBox(
+                  heightFactor: 0.3,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(24),
+                        topRight: Radius.circular(24),
                       ),
-                      child: InkWell(
-                        // borderRadius: BorderRadius.circular(10), //dk if it works or not
-                        splashColor: Colors.white,
-                        onTap: () async {
-                          try {
-                            setState(() {
-                              _inprogress = true;
-                            });
-                            await authenticate();
-                            setState(() {
-                              _inprogress = false;
-                            });
-                            if (!mounted) return;
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const MainNavigationScreen(),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Sign in',
+                            style: TextStyle(
+                              fontFamily: 'GeneralSans',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 32,
+                            ),
+                          ),
+                          const Divider(),
+                          const Text(
+                            'For Students',
+                            style: TextStyle(
+                              fontFamily: 'GeneralSans',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                              color: Color(0xFF676767),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Container(
+                            height: 48,
+                            width: double.infinity,
+                            child: Material(
+                              color: const Color(0xFF4C4EDB),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50),
                               ),
-                            );
-                            showSnackBar('Successfully Logged In', Colors.black,
-                                context);
-                          } catch (e) {
-                            setState(() {
-                              _inprogress = false;
-                            });
-                            showSnackBar(
-                                'Something Went Wrong', Colors.black, context);
-                          }
-                        },
-                        child: const Padding(
-                            padding: EdgeInsets.all(15), child: LoginButton()),
+                              child: InkWell(
+                                splashColor: Colors.white,
+                                onTap: () async {
+                                  try {
+                                    setModalState(() {
+                                      _inprogress = true;
+                                    });
+                                    await authenticate();
+                                    setModalState(() {
+                                      _inprogress = false;
+                                    });
+                                    if (!mounted) return;
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const MainNavigationScreen(),
+                                      ),
+                                    );
+                                    showSnackBar('Successfully Logged In',
+                                        Colors.black, context);
+                                  } catch (e) {
+                                    setModalState(() {
+                                      _inprogress = false;
+                                    });
+                                    showSnackBar('Something Went Wrong',
+                                        Colors.black, context);
+                                  }
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.all(15),
+                                  child: LoginButton(),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                        ],
                       ),
                     ),
                   ),
-                   const SizedBox(height: 14,),
-                ],
-              ),
-            ),
-          ),
+                ),
+
+                // Lottie loader overlay
+                if (_inprogress)
+                  Positioned.fill(
+                    child: AbsorbPointer(
+                      absorbing: true, // Disable taps when loading
+                      child: Container(
+                        color: Colors.black.withOpacity(0.7),
+                        child: Center(
+                          child: Lottie.asset(
+                            'assets/lottie/loader.json', // your loader path
+                            width: 240,
+                            height: 240,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
         );
       },
     );
