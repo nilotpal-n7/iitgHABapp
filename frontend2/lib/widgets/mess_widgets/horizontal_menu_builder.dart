@@ -279,7 +279,7 @@ class _IndividualMealCardState extends State<IndividualMealCard>
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF676767)),
                           ),
                           //
-                          if (widget.isSubscribed && _statusColor(status) != Colors.green) ...[
+                          if (widget.isSubscribed) ...[
                             const SizedBox(width: 8),
                             Container(
                               height: 28,
