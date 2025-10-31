@@ -1,5 +1,6 @@
 const { ProfileSettings } = require("./profileSettingsModel.js");
 const { User } = require("../user/userModel.js");
+const { sendNotificationMessage } = require("../notification/notificationController.js");
 
 async function getSettings(req, res) {
   try {
@@ -21,13 +22,13 @@ async function enablePhotoChange(req, res) {
     if (!s) s = new ProfileSettings();
     s.allowProfilePhotoChange = true;
     await s.save();
-
+    sendNotificationMessage("PROFILE UPDATE","Profile Pic change is available","All_Hostels");
     // Reset setup status for all users who completed it earlier
     const result = await User.updateMany(
       { isSetupDone: true },
       { $set: { isSetupDone: false } }
     );
-
+    
     return res.status(200).json({
       message: "Enabled",
       allowProfilePhotoChange: true,
@@ -35,7 +36,6 @@ async function enablePhotoChange(req, res) {
     });
   } catch (e) {
     return res
-      .status(500)
       .json({ message: "Failed to enable", error: String(e.message || e) });
   }
 }

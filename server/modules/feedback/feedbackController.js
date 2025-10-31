@@ -2,6 +2,7 @@ const { User } = require("../user/userModel");
 const { Hostel } = require("../hostel/hostelModel");
 const Feedback = require("./feedbackModel");
 const { FeedbackSettings } = require("./feedbackSettingsModel");
+const { sendNotificationMessage } = require("../notification/notificationController");
 
 const ratingMap = {
   "Very Poor": 1,
@@ -182,6 +183,7 @@ const enableFeedback = async (req, res) => {
     s.enabledAt = new Date();
     s.disabledAt = null;
     await s.save();
+    sendNotificationMessage("MESS FEEDBACK","Mess Feedback for this month is enabled","All_Hostels");
     return res.status(200).json({ message: "Feedback enabled", data: s });
   } catch (e) {
     return res
@@ -197,6 +199,7 @@ const disableFeedback = async (req, res) => {
     s.isEnabled = false;
     s.disabledAt = new Date();
     await s.save();
+    sendNotificationMessage("MESS FEEDBACK","Mess Feedback for this month is disabled","All_Hostels");
     return res.status(200).json({ message: "Feedback disabled", data: s });
   } catch (e) {
     return res
