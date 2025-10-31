@@ -39,11 +39,11 @@ class HostelsNotifier {
       ];
     } finally {
       hostelNotifier.value = hostels;
-      
+
       prefs.setStringList("hostels", hostels);
 
       if (prefs.getString('hostelID') != null) {
-        currSubscribedMess = calculateHostel(prefs.getString('hostelID') ?? "");     
+        currSubscribedMess = calculateHostel(prefs.getString('hostelID') ?? "");
         if (hostels.contains(currSubscribedMess)) {
           userHostel = currSubscribedMess;
           prefs.setString("curr_subscribed_mess", currSubscribedMess);
@@ -56,8 +56,24 @@ class HostelsNotifier {
       }
     }
   }
-  static void addOnChange(void Function() func) {
-    func();
+
+  // Registers a callback and invokes it immediately. Returns a function that
+  // when called will deregister the callback. Example usage:
+  // final remove = HostelsNotifier.addOnChange(() { ... });
+  // remove(); // to deregister
+  static VoidCallback addOnChange(void Function() func) {
+    try {
+      func();
+    } catch (e, st) {
+      // If the callback fails (for example, because the widget that added it
+      // is no longer mounted), swallow the error here — callers should still
+      // receive the callback registration and can remove it later.
+      print('HostelsNotifier.addOnChange initial call failed: $e');
+      print(st);
+    }
     onHostelChanged.add(func);
+    return () {
+      onHostelChanged.remove(func);
+    };
   }
 }
