@@ -1,5 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -22,6 +24,15 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final bool asLoggedIn = await isLoggedIn();
   await Firebase.initializeApp();
+
+  // initialize listeners & local notifications
+  //await listenNotifications();
+
+  // register token with backend (will also attach the refresh listener)
+  await registerFcmToken();
+
+  // Initialize Firebase Analytics
+  await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
 
   HostelsNotifier.init();
   // Ensure prefs have latest isSetupDone from server before initializing provider
