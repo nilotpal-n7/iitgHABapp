@@ -15,6 +15,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   void initState() {
     super.initState();
+    // Don't mark as read when opening - only when user interacts with them
   }
 
   @override
@@ -88,8 +89,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                       horizontal: 16),
                                   itemCount: notifications.length,
                                   itemBuilder: (context, index) {
-                                    final notif = notifications.reversed
-                                        .toList()[index]; // recent first
+                                    // Reverse to show most recent first
+                                    final reversedNotifications =
+                                        notifications.reversed.toList();
+                                    final notif = reversedNotifications[index];
+
+                                    // Calculate actual index in original list
+                                    final actualIndex =
+                                        notifications.length - 1 - index;
 
                                     return Column(
                                       children: [
@@ -98,6 +105,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                           subtitle: notif.body,
                                           description: notif.formattedDateTime,
                                           redirectType: notif.redirectType,
+                                          notificationIndex: actualIndex,
+                                          isRead: notif.isRead,
                                         ),
                                         const SizedBox(height: 12),
                                       ],

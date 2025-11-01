@@ -57,20 +57,26 @@ Future<void> setupNotificationChannel() async {
 
 // ✅ Helper function to save notification to SharedPreferences for history
 Future<void> _saveNotificationToHistory(String title, String body,
-    {String? redirectType}) async {
+    {String? redirectType, bool isAlert = false}) async {
   try {
     _sharedPrefs ??= await SharedPreferences.getInstance();
 
     // Create notification model
+    // Non-redirect notifications are marked as read by default
+    // Redirect notifications are unread until user clicks "View →"
     final notification = NotificationModel(
       title: title,
       body: body,
       redirectType: redirectType,
       timestamp: DateTime.now(),
+      isAlert: isAlert,
+      isRead: redirectType ==
+          null, // Non-redirect notifications are read by default
     );
 
-    // Load existing notifications
+    // Load existing notifications and cleanup expired ones
     List<NotificationModel> notifications = _loadNotificationsFromPrefs();
+    notifications = _cleanupExpiredNotifications(notifications);
     notifications.add(notification);
 
     // Save as JSON
@@ -79,7 +85,7 @@ Future<void> _saveNotificationToHistory(String title, String body,
 
     // Update the ValueNotifier to notify listeners
     notificationHistoryNotifier.value = notifications;
-    print('✅ Saved notification to history: $title: $body');
+    print('✅ Saved notification to history: $title: $body (isAlert: $isAlert)');
   } catch (e) {
     print('❌ Error saving notification to history: $e');
   }
@@ -112,6 +118,76 @@ List<NotificationModel> _loadNotificationsFromPrefs() {
   }
 }
 
+// ✅ Cleanup expired notifications (older than 7 days)
+List<NotificationModel> _cleanupExpiredNotifications(
+    List<NotificationModel> notifications) {
+  final now = DateTime.now();
+  final filtered = notifications.where((notif) {
+    final daysDiff = now.difference(notif.timestamp).inDays;
+    return daysDiff <= 7;
+  }).toList();
+
+  // If items were removed, save back to SharedPreferences
+  if (filtered.length != notifications.length) {
+    _sharedPrefs?.setStringList(
+        'notifications', filtered.map((n) => jsonEncode(n.toJson())).toList());
+    print(
+        '🧹 Cleaned up ${notifications.length - filtered.length} expired notifications');
+  }
+
+  return filtered;
+}
+
+// ✅ Helper to update notifications in SharedPreferences
+Future<void> _updateNotificationsInPrefs(
+    List<NotificationModel> notifications) async {
+  try {
+    final jsonList = notifications.map((n) => jsonEncode(n.toJson())).toList();
+    await _sharedPrefs?.setStringList('notifications', jsonList);
+    notificationHistoryNotifier.value = notifications;
+  } catch (e) {
+    print('❌ Error updating notifications: $e');
+  }
+}
+
+// ✅ Mark notification as read by index
+Future<void> markNotificationAsRead(int index) async {
+  try {
+    List<NotificationModel> notifications = _loadNotificationsFromPrefs();
+    if (index >= 0 && index < notifications.length) {
+      notifications[index] = notifications[index].copyWith(isRead: true);
+      await _updateNotificationsInPrefs(notifications);
+      print('✅ Marked notification $index as read');
+    }
+  } catch (e) {
+    print('❌ Error marking notification as read: $e');
+  }
+}
+
+// ✅ Mark all notifications as read
+Future<void> markAllNotificationsAsRead() async {
+  try {
+    List<NotificationModel> notifications = _loadNotificationsFromPrefs();
+    notifications = notifications.map((n) => n.copyWith(isRead: true)).toList();
+    await _updateNotificationsInPrefs(notifications);
+    print('✅ Marked all notifications as read');
+  } catch (e) {
+    print('❌ Error marking all notifications as read: $e');
+  }
+}
+
+// ✅ Get unread notifications count
+int getUnreadNotificationsCount() {
+  final notifications = _loadNotificationsFromPrefs();
+  return notifications.where((n) => !n.isRead).length;
+}
+
+// ✅ Get active alerts (less than 2 hours old)
+List<NotificationModel> getActiveAlerts() {
+  final notifications = _loadNotificationsFromPrefs();
+  return notifications.where((n) => n.isAlertActive).toList();
+}
+
 // ✅ Background message handler (must be top-level function)
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('💤 Handling background message: ${message.messageId}');
@@ -119,30 +195,39 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (message.notification != null) {
     print('💤 Message also contained a notification: ${message.notification}');
     final redirectType = message.data['redirectType'];
+    final isAlert =
+        message.data['isAlert'] == 'true' || message.data['isAlert'] == true;
     await _saveNotificationToHistory(
       message.notification!.title ?? 'No Title',
       message.notification!.body ?? 'No Body',
       redirectType: redirectType,
+      isAlert: isAlert,
     );
   }
 }
 
 // ✅ Initialize local notifications and message listeners
 Future<void> initializeFcm() async {
-  // Initialize local notifications
+  // Initialize local notifications with tap handler
   const AndroidInitializationSettings androidInit =
       AndroidInitializationSettings('@mipmap/hab_icon');
-  const InitializationSettings initSettings =
-      InitializationSettings(android: androidInit);
-  await flutterLocalNotificationsPlugin.initialize(initSettings);
+  const InitializationSettings initSettings = InitializationSettings(
+    android: androidInit,
+  );
+  await flutterLocalNotificationsPlugin.initialize(
+    initSettings,
+    onDidReceiveNotificationResponse: _onNotificationTap,
+  );
 
   // Register background message handler
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // Initialize SharedPreferences for notification history
   _sharedPrefs = await SharedPreferences.getInstance();
-  // Load existing notifications into the ValueNotifier
-  notificationHistoryNotifier.value = _loadNotificationsFromPrefs();
+  // Load existing notifications into the ValueNotifier and cleanup expired ones
+  var notifications = _loadNotificationsFromPrefs();
+  notifications = _cleanupExpiredNotifications(notifications);
+  notificationHistoryNotifier.value = notifications;
 
   // ✅ Foreground message handler
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -150,14 +235,18 @@ Future<void> initializeFcm() async {
     if (message.notification != null) {
       print(
           '📩 Notification: ${message.notification!.title} - ${message.notification!.body}');
-      _showLocalNotification(message.notification!);
       // Save to notification history (this also updates the ValueNotifier)
       final redirectType = message.data['redirectType'];
+      final isAlert =
+          message.data['isAlert'] == 'true' || message.data['isAlert'] == true;
       _saveNotificationToHistory(
         message.notification!.title ?? 'No Title',
         message.notification!.body ?? 'No Body',
         redirectType: redirectType,
+        isAlert: isAlert,
       );
+      // Show local notification with redirect data
+      _showLocalNotification(message.notification!, redirectType);
     }
   });
 
@@ -166,10 +255,13 @@ Future<void> initializeFcm() async {
     print('🚀 Notification opened: ${message.data}');
     if (message.notification != null) {
       final redirectType = message.data['redirectType'];
+      final isAlert =
+          message.data['isAlert'] == 'true' || message.data['isAlert'] == true;
       _saveNotificationToHistory(
         message.notification!.title ?? 'No Title',
         message.notification!.body ?? 'No Body',
         redirectType: redirectType,
+        isAlert: isAlert,
       );
     }
     // Handle navigation based on data
@@ -181,10 +273,13 @@ Future<void> initializeFcm() async {
     if (message != null && message.notification != null) {
       print('🔁 App opened from terminated via notification');
       final redirectType = message.data['redirectType'];
+      final isAlert =
+          message.data['isAlert'] == 'true' || message.data['isAlert'] == true;
       _saveNotificationToHistory(
         message.notification!.title ?? 'No Title',
         message.notification!.body ?? 'No Body',
         redirectType: redirectType,
+        isAlert: isAlert,
       );
       // Handle navigation based on data
       _handleNotificationNavigation(message.data);
@@ -225,7 +320,8 @@ void _handleNotificationNavigation(Map<String, dynamic> data) {
 }
 
 // ✅ Helper function to display local notification in foreground
-void _showLocalNotification(RemoteNotification notification) {
+void _showLocalNotification(
+    RemoteNotification notification, String? redirectType) {
   const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
     'high_importance_channel', // ✅ match manifest + setupNotificationChannel()
     'High Importance Notifications',
@@ -237,12 +333,24 @@ void _showLocalNotification(RemoteNotification notification) {
   const NotificationDetails notificationDetails =
       NotificationDetails(android: androidDetails);
 
+  // Use redirect type as payload for tap handling
   flutterLocalNotificationsPlugin.show(
-    0,
+    redirectType != null ? redirectType.hashCode : 0,
     notification.title,
     notification.body,
     notificationDetails,
+    payload: redirectType,
   );
+}
+
+// ✅ Handler for local notification taps
+@pragma('vm:entry-point')
+void _onNotificationTap(NotificationResponse response) {
+  print('🔔 Local notification tapped: ${response.payload}');
+  if (response.payload != null && response.payload!.isNotEmpty) {
+    final redirectType = response.payload!;
+    _handleNotificationNavigation({'redirectType': redirectType});
+  }
 }
 
 // ✅ Registers or updates the device FCM token on your backend
@@ -320,9 +428,14 @@ Future<void> listenNotifications() async {
 Future<List<NotificationModel>> getNotificationHistory() async {
   try {
     _sharedPrefs ??= await SharedPreferences.getInstance();
-    return _loadNotificationsFromPrefs();
+    var notifications = _loadNotificationsFromPrefs();
+    notifications = _cleanupExpiredNotifications(notifications);
+    return notifications;
   } catch (e) {
     print('❌ Error getting notification history: $e');
     return [];
   }
 }
+
+// ✅ Exposed helper functions for UI access
+// These are already accessible through the module, but keeping for explicit access

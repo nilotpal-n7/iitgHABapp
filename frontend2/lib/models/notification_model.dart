@@ -3,12 +3,16 @@ class NotificationModel {
   final String body;
   final String? redirectType;
   final DateTime timestamp;
+  final bool isAlert;
+  final bool isRead;
 
   NotificationModel({
     required this.title,
     required this.body,
     this.redirectType,
     required this.timestamp,
+    this.isAlert = false,
+    this.isRead = false,
   });
 
   // Convert to JSON for storage
@@ -18,6 +22,8 @@ class NotificationModel {
       'body': body,
       'redirectType': redirectType,
       'timestamp': timestamp.toIso8601String(),
+      'isAlert': isAlert,
+      'isRead': isRead,
     };
   }
 
@@ -28,6 +34,8 @@ class NotificationModel {
       body: json['body'] ?? '',
       redirectType: json['redirectType'],
       timestamp: DateTime.parse(json['timestamp']),
+      isAlert: json['isAlert'] ?? false,
+      isRead: json['isRead'] ?? false,
     );
   }
 
@@ -45,6 +53,27 @@ class NotificationModel {
       body: parts.length > 1 ? parts.sublist(1).join(':').trim() : '',
       redirectType: null,
       timestamp: timestamp ?? DateTime.now(),
+      isAlert: false,
+      isRead: false,
+    );
+  }
+
+  // Create a copy with updated fields
+  NotificationModel copyWith({
+    String? title,
+    String? body,
+    String? redirectType,
+    DateTime? timestamp,
+    bool? isAlert,
+    bool? isRead,
+  }) {
+    return NotificationModel(
+      title: title ?? this.title,
+      body: body ?? this.body,
+      redirectType: redirectType ?? this.redirectType,
+      timestamp: timestamp ?? this.timestamp,
+      isAlert: isAlert ?? this.isAlert,
+      isRead: isRead ?? this.isRead,
     );
   }
 
@@ -92,5 +121,18 @@ class NotificationModel {
   // Check if redirect is available
   bool get hasRedirect {
     return redirectType != null;
+  }
+
+  // Check if notification is expired (older than 7 days)
+  bool get isExpired {
+    final diff = DateTime.now().difference(timestamp);
+    return diff.inDays > 7;
+  }
+
+  // Check if alert is still active (less than 2 hours old)
+  bool get isAlertActive {
+    if (!isAlert) return false;
+    final diff = DateTime.now().difference(timestamp);
+    return diff.inHours < 2;
   }
 }

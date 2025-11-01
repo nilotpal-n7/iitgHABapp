@@ -28,7 +28,7 @@ async function enablePhotoChange(req, res) {
       "PROFILE UPDATE",
       "Profile Pic change is available",
       "All_Hostels",
-      { redirectType: "profile" }
+      { redirectType: "profile", isAlert: "true" }
     );
     // Reset setup status for all users who completed it earlier
     const result = await User.updateMany(
@@ -55,6 +55,12 @@ async function disablePhotoChange(req, res) {
     if (!s) return res.status(404).json({ message: "Settings not found" });
     s.allowProfilePhotoChange = false;
     await s.save();
+    sendNotificationMessage(
+      "PROFILE UPDATE",
+      "Profile Pic change is no longer available",
+      "All_Hostels",
+      { redirectType: "profile" }
+    );
     return res
       .status(200)
       .json({ message: "Disabled", allowProfilePhotoChange: false });

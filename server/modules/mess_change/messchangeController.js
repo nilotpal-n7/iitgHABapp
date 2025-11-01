@@ -579,7 +579,7 @@ const enableMessChange = async (req, res) => {
       "MESS CHANGE",
       "Mess Change for this month has been enabled",
       "All_Hostels",
-      { redirectType: "mess_change" }
+      { redirectType: "mess_change", isAlert: "true" }
     );
 
     return res.status(200).json({
@@ -606,14 +606,6 @@ const disableMessChange = async (req, res) => {
     settings.disabledAt = new Date();
 
     await settings.save();
-
-    //sendCustomNotificationToAllUsers("Mess Change is Disabled", "Mess Change is Disabled");
-    sendNotificationMessage(
-      "MESS CHANGE",
-      "Mess Change for this month has been disabled",
-      "All_Hostels",
-      { redirectType: "mess_change" }
-    );
 
     return res.status(200).json({
       message: "Mess change disabled successfully",

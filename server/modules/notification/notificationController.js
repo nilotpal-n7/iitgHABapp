@@ -1,5 +1,4 @@
 const admin = require("./firebase.js");
-const Notification = require("./notificationModel.js");
 const FCMToken = require("./FCMToken.js");
 const User = require("../user/userModel.js");
 const { Hostel } = require("../hostel/hostelModel.js");
@@ -71,47 +70,9 @@ const sendNotification = async (req, res) => {
   }
 };
 
-// Get notifications for user
-const getUserNotifications = async (req, res) => {
-  try {
-    const { user } = req;
-    const notifs = await Notification.find({ recipients: user._id })
-      .sort({ createdAt: -1 })
-      .lean();
-
-    const response = notifs.map((n) => ({
-      ...n,
-      isRead: n.readBy?.includes(user._id),
-    }));
-
-    res.json(response);
-  } catch {
-    res.sendStatus(500);
-  }
-};
-
-// Mark a notification as read
-const markAsRead = async (req, res) => {
-  try {
-    const notif = await Notification.findById(req.params.id);
-    if (!notif) return res.sendStatus(404);
-
-    if (!notif.readBy.includes(req.user._id)) {
-      notif.readBy.push(req.user._id);
-      await notif.save();
-    }
-
-    res.json({ message: "Marked as read" });
-  } catch {
-    res.sendStatus(500);
-  }
-};
-
 module.exports = {
   registerToken,
   sendNotification,
-  getUserNotifications,
-  markAsRead,
   sendNotificationMessage,
   sendNotificationToUser,
 };
