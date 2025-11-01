@@ -189,7 +189,7 @@ const enableFeedback = async (req, res) => {
       "MESS FEEDBACK",
       "Mess Feedback for this month is enabled",
       "All_Hostels",
-      { redirectType: "mess_screen" }
+      { redirectType: "mess_screen", isAlert: "true" }
     );
     return res.status(200).json({ message: "Feedback enabled", data: s });
   } catch (e) {
@@ -206,11 +206,6 @@ const disableFeedback = async (req, res) => {
     s.isEnabled = false;
     s.disabledAt = new Date();
     await s.save();
-    sendNotificationMessage(
-      "MESS FEEDBACK",
-      "Mess Feedback for this month is disabled",
-      "All_Hostels"
-    );
     return res.status(200).json({ message: "Feedback disabled", data: s });
   } catch (e) {
     return res
