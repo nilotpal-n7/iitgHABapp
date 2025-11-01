@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/endpoint.dart';
 import '../../screens/mess_feedback/mess_feedback_page.dart';
+import '../../utilities/notifications.dart';
 
 class FeedbackCard extends StatefulWidget {
   @override
@@ -20,6 +21,21 @@ class _FeedbackCardState extends State<FeedbackCard> {
     super.initState();
     _checkFeedbackStatus();
     _fetchWindowTimeLeft();
+
+    // Listen to feedback refresh notifier
+    feedbackRefreshNotifier.addListener(_onRefreshNotified);
+  }
+
+  void _onRefreshNotified() {
+    print("🔄 FeedbackCard refresh triggered");
+    _checkFeedbackStatus();
+    _fetchWindowTimeLeft();
+  }
+
+  @override
+  void dispose() {
+    feedbackRefreshNotifier.removeListener(_onRefreshNotified);
+    super.dispose();
   }
 
   Future<void> _checkFeedbackStatus() async {

@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:frontend2/providers/feedback_provider.dart';
-import 'package:frontend2/screens/complaints_screen.dart';
-import 'package:frontend2/screens/mess_feedback/mess_feedback_page.dart';
 import 'package:frontend2/screens/initial_setup_screen.dart';
+import 'package:frontend2/screens/mess_preference.dart';
 import 'package:frontend2/screens/profile_screen.dart';
 import 'package:frontend2/utilities/ComingSoon.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'home_screen.dart';
 import 'mess_screen.dart';
-//import 'complaints_screen.dart';  //for future
+import '../utilities/notifications.dart';
 
 import '../widgets/common/bottom_nav_bar.dart';
 
@@ -31,8 +27,60 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    // Listen for navigation from notifications
+    tabNavigationNotifier.addListener(_onTabNavigationRequested);
+    deepNavigationNotifier.addListener(_onDeepNavigationRequested);
+  }
+
+  void _onTabNavigationRequested() {
+    final targetTab = tabNavigationNotifier.value;
+    if (targetTab != null && targetTab != _selectedIndex) {
+      setState(() {
+        _selectedIndex = targetTab;
+      });
+      // Clear the navigation request
+      tabNavigationNotifier.value = null;
+    }
+  }
+
+  void _onDeepNavigationRequested() {
+    final screenName = deepNavigationNotifier.value;
+    if (screenName != null && context.mounted) {
+      // Wait for tab navigation to complete
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (!context.mounted) return;
+
+        switch (screenName) {
+          case 'mess_change_screen':
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const MessChangePreferenceScreen(),
+              ),
+            );
+            break;
+          case 'profile_screen':
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ProfileScreen(),
+              ),
+            );
+            break;
+        }
+
+        // Clear the navigation request
+        deepNavigationNotifier.value = null;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    tabNavigationNotifier.removeListener(_onTabNavigationRequested);
+    deepNavigationNotifier.removeListener(_onDeepNavigationRequested);
+    super.dispose();
   }
 
   @override
