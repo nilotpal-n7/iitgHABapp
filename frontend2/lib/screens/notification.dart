@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:frontend2/providers/notifications.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend2/utilities/notification_card.dart';
 import 'package:frontend2/utilities/Notifier.dart';
+import 'package:frontend2/models/notification_model.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -56,11 +56,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 .headlineMedium
                                 ?.copyWith(color: Colors.black, fontSize: 20),
                           ),
-                          const Spacer(),
-                          IconButton(
-                            icon: const Icon(Icons.close, size: 26),
-                            onPressed: () => Navigator.pop(context),
-                          ),
                         ],
                       ),
                     ),
@@ -70,8 +65,17 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       valueListenable:
                           NotificationProvider.notificationProvider,
                       builder: (context, storedNotifications, child) {
+                        // Cast to List<NotificationModel>
+                        final List<NotificationModel> notifications =
+                            storedNotifications.map((item) {
+                          if (item is NotificationModel) return item;
+                          // Handle backward compatibility
+                          return NotificationModel.fromLegacyString(
+                              item.toString());
+                        }).toList();
+
                         return Expanded(
-                          child: storedNotifications.isEmpty
+                          child: notifications.isEmpty
                               ? const Center(
                                   child: Text(
                                     'No notifications yet.',
@@ -82,22 +86,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                   controller: controller,
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16),
-                                  itemCount: storedNotifications.length,
+                                  itemCount: notifications.length,
                                   itemBuilder: (context, index) {
-                                    final notif = storedNotifications.reversed
+                                    final notif = notifications.reversed
                                         .toList()[index]; // recent first
-                                    final parts = notif.split(':');
-                                    final title = parts.first.trim();
-                                    final subtitle = parts.length > 1
-                                        ? parts.sublist(1).join(':').trim()
-                                        : 'No details';
 
                                     return Column(
                                       children: [
                                         NotificationCard(
-                                          title: title,
-                                          subtitle: subtitle,
-                                          description: 'Tap to view details',
+                                          title: notif.title,
+                                          subtitle: notif.body,
+                                          description: notif.formattedDateTime,
+                                          redirectType: notif.redirectType,
                                         ),
                                         const SizedBox(height: 12),
                                       ],

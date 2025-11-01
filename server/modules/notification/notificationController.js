@@ -10,15 +10,16 @@ const registerToken = async (req, res) => {
     if (!req.user)
       return res.status(403).json({ error: "Only users can register tokens" });
 
-    const curr_sub_mess_name = (await Hostel.findById((await req.user.curr_subscribed_mess)._id))['hostel_name'].replaceAll(' ', '_');
+    const curr_sub_mess_name = (
+      await Hostel.findById((await req.user.curr_subscribed_mess)._id)
+    )["hostel_name"].replaceAll(" ", "_");
 
     console.log(curr_sub_mess_name);
 
-    
     const { fcmToken } = req.body;
     if (!fcmToken)
       return res.status(400).json({ error: "FCM token is required" });
-    
+
     admin.messaging().subscribeToTopic(fcmToken, "All_Hostels");
     admin.messaging().subscribeToTopic(fcmToken, curr_sub_mess_name);
 
@@ -28,21 +29,20 @@ const registerToken = async (req, res) => {
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
-    
-
     res.json({ message: "FCM token registered" });
   } catch (err) {
     console.error(err);
     res.sendStatus(500);
   }
 };
-async function sendNotificationMessage (title, body, topic) {
+async function sendNotificationMessage(title, body, topic, data = {}) {
   const message = {
-      notification: { title, body },
-      topic: topic
-    };
-    console.log(message);
-    await admin.messaging().send(message);
+    notification: { title, body },
+    data: data,
+    topic: topic,
+  };
+  console.log(message);
+  await admin.messaging().send(message);
 }
 
 // Send a notification directly to a specific user's FCM token
@@ -63,7 +63,7 @@ const sendNotificationToUser = async (userId, title, body) => {
 const sendNotification = async (req, res) => {
   try {
     const { title, body, topic } = req.body;
-    sendNotificationMessage(title, body,topic);
+    sendNotificationMessage(title, body, topic);
     res.status(200).json({ message: "Notification sent" });
   } catch (err) {
     console.error(err);
