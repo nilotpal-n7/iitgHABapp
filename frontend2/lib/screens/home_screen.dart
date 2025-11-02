@@ -187,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      "Scan Mess QR",
+                      "Scan QR",
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.w600,

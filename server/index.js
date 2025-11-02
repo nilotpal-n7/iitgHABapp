@@ -51,13 +51,12 @@ const {
   sundayScheduler,
 } = require("./modules/hostel/hostelScheduler.js");
 const {
-  feedbackScheduler,
-  feedbackAutoScheduler,
-} = require("./modules/feedback/feedbackScheduler.js");
+  initializeFeedbackAutoScheduler,
+} = require("./modules/feedback/autoFeedbackScheduler.js");
 
 const {
-  initializeMessChangeScheduler,
-} = require("./modules/mess_change/messChangeScheduler.js");
+  initializeMessChangeAutoScheduler,
+} = require("./modules/mess_change/autoMessChangeScheduler.js");
 const messChangeRouter = require("./modules/mess_change/messchangeRoute.js");
 require("dotenv").config();
 
@@ -139,11 +138,9 @@ mongoose
 
     sundayScheduler();
 
-    feedbackScheduler();
-    feedbackAutoScheduler();
-
-    // Initialize mess change automatic scheduler
-    initializeMessChangeScheduler();
+    // Initialize automatic schedulers for feedback and mess change
+    initializeFeedbackAutoScheduler();
+    initializeMessChangeAutoScheduler();
   })
   .catch((err) => console.log(err));
 
