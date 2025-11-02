@@ -1,38 +1,37 @@
 const express = require("express");
 
+// Import from modular controllers
 const {
-  getAllMessChangeRequestsForAllHostels,
-  processAllMessChangeRequests,
-  getAcceptedStudentsByHostel,
-  getAllAcceptedStudents,
   messChangeRequest,
   messChangeStatus,
-  messChangeCancel,
-  getMessChangeStatus,
+} = require("./controllers/requestController.js");
+
+const {
+  processAllMessChangeRequests,
+  rejectAllMessChangeRequests,
+} = require("./controllers/processingController.js");
+
+const {
+  getAllMessChangeRequestsForAllHostels,
+  messChangeStatusForAdmin,
   enableMessChange,
   disableMessChange,
-  rejectAllMessChangeRequests,
   getMessChangeScheduleInfo,
-} = require("./messchangeController.js");
+} = require("./controllers/adminController.js");
 
 const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
 
 const messChangeRouter = express.Router();
 
-messChangeRouter.get("/all", getAllMessChangeRequestsForAllHostels);
-messChangeRouter.get("/all-accepted", getAllAcceptedStudents);
+// User routes
 messChangeRouter.get("/status", authenticateJWT, messChangeStatus);
 messChangeRouter.post("/reqchange", authenticateJWT, messChangeRequest);
-messChangeRouter.post("/reqcancel", authenticateJWT, messChangeCancel);
+
+// Admin routes
+messChangeRouter.get("/all", getAllMessChangeRequestsForAllHostels);
 messChangeRouter.post("/process-all", processAllMessChangeRequests);
 messChangeRouter.post("/reject-all", rejectAllMessChangeRequests);
-messChangeRouter.get(
-  "/accepted-students/:hostelName",
-  getAcceptedStudentsByHostel
-);
-
-// New routes for mess change settings
-messChangeRouter.get("/settings", getMessChangeStatus);
+messChangeRouter.get("/settings", messChangeStatusForAdmin);
 messChangeRouter.get("/schedule", getMessChangeScheduleInfo);
 messChangeRouter.post("/enable", enableMessChange);
 messChangeRouter.post("/disable", disableMessChange);
