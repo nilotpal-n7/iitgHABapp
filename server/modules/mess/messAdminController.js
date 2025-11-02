@@ -19,7 +19,7 @@ const getMessMenuByDayForAdmin = async (req, res) => {
       return res.status(400).json({ message: "Mess ID and day are required" });
     }
     const allMenus = await Menu.find({});
-    const menu = await Menu.find({messId:messId,day:day}); //FIX THIS! PUT MESS ID AS WELL
+    const menu = await Menu.find({ messId: messId, day: day }); //FIX THIS! PUT MESS ID AS WELL
     if (!menu || menu.length === 0) {
       return res.status(200).json("DoesntExist");
     }
@@ -54,14 +54,14 @@ const modifyMenuItem = async (req, res) => {
     const _Id = req.body._Id;
     const name = req.body.name;
 
-   // const hostelId = req.user.id; //use hostelID
+    // const hostelId = req.user.id; //use hostelID
 
     const menuItem = await MenuItem.findById(_Id);
     if (!menuItem) {
       return res.status(404).json({ message: "Menu item not found" });
     }
     menuItem.name = name || menuItem.name;
-    
+
     await menuItem.save();
 
     return res
@@ -73,8 +73,8 @@ const modifyMenuItem = async (req, res) => {
   }
 };
 
-const updateTime = async(req,res)=>{
-  try{
+const updateTime = async (req, res) => {
+  try {
     const messId = req.body.messId;
     const type = req.body.type;
     const day = req.body.day;
@@ -86,21 +86,19 @@ const updateTime = async(req,res)=>{
     var start;
     var end;
 
-    if(type==='Breakfast'){
+    if (type === "Breakfast") {
       start = req.body.btime_s;
       end = req.body.btime_e;
-    }
-    else if(type==='lunch'){
+    } else if (type === "lunch") {
       start = req.body.ltime_s;
       end = req.body.ltime_e;
-    }
-    else if(type==='Dinner'){
+    } else if (type === "Dinner") {
       start = req.body.dtime_s;
       end = req.body.dtime_e;
+    } else {
     }
-    else{}
 
-    const menu = await Menu.findOne({messId: messId, day: day});
+    const menu = await Menu.findOne({ messId: messId, day: day });
     if (!menu || menu.length === 0) {
       return res.status(200).json("DoesntExist");
     }
@@ -113,16 +111,93 @@ const updateTime = async(req,res)=>{
     return res
       .status(200)
       .json({ message: "Menu timing updated successfully", menu });
-
-  }
-  catch(error){
+  } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
+
+// SMC-specific version that uses user authentication
+const getMessMenuByDayForSMC = async (req, res) => {
+  try {
+    const messId = req.params.messId;
+    const day = req.body.day;
+    const user = req.user; // From authenticateJWT
+
+    if (!messId || !day) {
+      return res.status(400).json({ message: "Mess ID and day are required" });
+    }
+
+    // Verify user is SMC
+    if (!user.isSMC) {
+      return res.status(403).json({
+        message: "Unauthorized: User is not an SMC member",
+      });
+    }
+
+    const menu = await Menu.find({ messId: messId, day: day });
+    if (!menu || menu.length === 0) {
+      return res.status(200).json("DoesntExist");
+    }
+
+    const populatedMenus = [];
+
+    for (let i = 0; i < menu.length; i++) {
+      const menuObj = menu[i].toObject();
+      const menuItems = menuObj.items;
+      const menuItemDetails = await MenuItem.find({ _id: { $in: menuItems } });
+
+      const updatedMenuItems = menuItemDetails.map((item) => {
+        const itemObj = item.toObject();
+        return itemObj;
+      });
+
+      menuObj.items = updatedMenuItems;
+      populatedMenus.push(menuObj);
+    }
+
+    return res.status(200).json(populatedMenus);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// SMC version of modifyMenuItem
+const modifyMenuItemSMC = async (req, res) => {
+  try {
+    const _Id = req.body._Id;
+    const name = req.body.name;
+    const user = req.user; // From authenticateJWT
+
+    // Verify user is SMC
+    if (!user.isSMC) {
+      return res.status(403).json({
+        message: "Unauthorized: User is not an SMC member",
+      });
+    }
+
+    const menuItem = await MenuItem.findById(_Id);
+    if (!menuItem) {
+      return res.status(404).json({ message: "Menu item not found" });
+    }
+    menuItem.name = name || menuItem.name;
+
+    await menuItem.save();
+
+    return res
+      .status(200)
+      .json({ message: "Menu item updated successfully", menuItem });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 module.exports = {
-  modifyMenuItem, //to modify menu item
+  modifyMenuItem, //to modify menu item (hostel admin)
+  modifyMenuItemSMC, //to modify menu item (SMC)
   getMessMenuByDayForAdmin,
+  getMessMenuByDayForSMC,
   updateTime,
 };

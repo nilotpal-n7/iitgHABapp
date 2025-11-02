@@ -13,13 +13,40 @@ const registerToken = async (req, res) => {
       await Hostel.findById((await req.user.curr_subscribed_mess)._id)
     )["hostel_name"].replaceAll(" ", "_");
 
-    console.log(curr_sub_mess_name);
+    // Get user's current hostel name for Boarders_Their_Hostel topic
+    const userHostel = await Hostel.findById(req.user.hostel);
+    const userHostelName = userHostel
+      ? userHostel.hostel_name.replaceAll(" ", "_")
+      : null;
+
+    console.log("Subscribing to topics:", {
+      curr_sub_mess_name,
+      userHostelName,
+    });
 
     const { fcmToken } = req.body;
     if (!fcmToken)
       return res.status(400).json({ error: "FCM token is required" });
 
+    // Subscribe to generic topics for all hostels
     admin.messaging().subscribeToTopic(fcmToken, "All_Hostels");
+
+    // Subscribe based on user's CURRENT HOSTEL (where they live)
+    if (userHostelName) {
+      // For boarders of this hostel
+      admin
+        .messaging()
+        .subscribeToTopic(fcmToken, `Boarders_${userHostelName}`);
+    }
+
+    // Subscribe based on user's SUBSCRIBED MESS (hostel where their mess is)
+    // Note: curr_sub_mess_name is the hostel name where their subscribed mess is located
+    admin
+      .messaging()
+      .subscribeToTopic(fcmToken, `Subscribers_${curr_sub_mess_name}`);
+
+    // Legacy: Subscribe to the hostel name directly (for backward compatibility)
+    // This is the same as the mess hostel name
     admin.messaging().subscribeToTopic(fcmToken, curr_sub_mess_name);
 
     await FCMToken.findOneAndUpdate(
@@ -34,12 +61,30 @@ const registerToken = async (req, res) => {
     res.sendStatus(500);
   }
 };
-async function sendNotificationMessage(title, body, topic, data = {}) {
-  const message = {
-    notification: { title, body },
-    data: data,
-    topic: topic,
-  };
+async function sendNotificationMessage(
+  title,
+  body,
+  topic,
+  data = {},
+  isAlert = false
+) {
+  // If it's an alert, don't include notification object (only data)
+  // Otherwise, include notification object
+  const message = isAlert
+    ? {
+        data: {
+          ...data,
+          title: title,
+          body: body,
+          alert: "true",
+        },
+        topic: topic,
+      }
+    : {
+        notification: { title, body },
+        data: data,
+        topic: topic,
+      };
   console.log(message);
   await admin.messaging().send(message);
 }
@@ -58,11 +103,12 @@ const sendNotificationToUser = async (userId, title, body) => {
     console.error("Error sending user notification:", e);
   }
 };
+
 // Send notification to all users of this hostel
 const sendNotification = async (req, res) => {
   try {
-    const { title, body, topic } = req.body;
-    sendNotificationMessage(title, body, topic);
+    const { title, body, topic, isAlert } = req.body;
+    sendNotificationMessage(title, body, topic, {}, isAlert || false);
     res.status(200).json({ message: "Notification sent" });
   } catch (err) {
     console.error(err);

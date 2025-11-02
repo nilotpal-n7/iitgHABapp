@@ -5,10 +5,15 @@ const UserAllocHostel = require("./hostelAllocModel.js");
 
 const createHostel = async (req, res) => {
   try {
-    const { hostel_name, password, curr_cap } = req.body;
+    const { hostel_name, microsoft_email, curr_cap } = req.body;
+
+    if (!microsoft_email) {
+      return res.status(400).json({ message: "Microsoft email is required" });
+    }
+
     const hostel = await Hostel.create({
       hostel_name,
-      password,
+      microsoft_email,
       curr_cap,
     });
 
@@ -17,11 +22,18 @@ const createHostel = async (req, res) => {
       .json({ message: "Hostel created successfully", hostel });
   } catch (err) {
     console.log(err);
+    if (err.code === 11000) {
+      return res
+        .status(400)
+        .json({ message: "Hostel name or email already exists" });
+    }
     return res.status(500).json({ message: "Error occurred" });
   }
 };
 
-const loginHostel = async (req, res) => {
+// Legacy password-based login (for backward compatibility during migration)
+// Note: Web login is now handled by unified webLoginHandler in auth.controller.js
+const loginHostelPassword = async (req, res) => {
   const { hostel_name, password } = req.body;
   try {
     const hostel = await Hostel.findOne({ hostel_name }).populate("messId");
@@ -31,7 +43,6 @@ const loginHostel = async (req, res) => {
     if (!verify) return res.status(401).json({ message: "Incorrect password" });
 
     const token = hostel.generateJWT();
-    //console.log("Generated tokenin cont:", token);
     return res.status(201).json({
       message: "Logged in successfully",
       token,
@@ -161,13 +172,221 @@ const getAllHostelNameAndCaterer = async (req, res) => {
   }
 };
 
+// Get caterer info for the logged-in hostel
+const getCatererInfo = async (req, res) => {
+  try {
+    const hostel = await Hostel.findById(req.hostel._id).populate("messId");
+    if (!hostel || !hostel.messId) {
+      return res
+        .status(404)
+        .json({ message: "Caterer not assigned to this hostel" });
+    }
+
+    const mess = hostel.messId;
+    return res.status(200).json({
+      messId: mess._id,
+      catererName: mess.name,
+      hostelName: hostel.hostel_name,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Error occurred" });
+  }
+};
+
+// Get boarders (users in this hostel) with room numbers
+const getBoarders = async (req, res) => {
+  try {
+    const hostelId = req.hostel._id;
+    const boarders = await User.find({ hostel: hostelId })
+      .select("name rollNumber email roomNumber degree")
+      .sort({ rollNumber: 1 });
+
+    return res.status(200).json({
+      count: boarders.length,
+      boarders: boarders.map((b) => ({
+        _id: b._id,
+        name: b.name,
+        rollNumber: b.rollNumber,
+        email: b.email,
+        roomNumber: b.roomNumber || "N/A",
+        degree: b.degree || "N/A",
+      })),
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Error occurred" });
+  }
+};
+
+// Get mess subscribers with their current hostel (highlight if different)
+const getMessSubscribers = async (req, res) => {
+  try {
+    const hostelId = req.hostel._id;
+
+    // Find all users subscribed to this hostel's mess
+    const subscribers = await User.find({ curr_subscribed_mess: hostelId })
+      .select("name rollNumber email roomNumber hostel curr_subscribed_mess")
+      .populate("hostel", "hostel_name")
+      .populate("curr_subscribed_mess", "hostel_name");
+
+    const subscribersList = subscribers.map((sub) => {
+      const isDifferentHostel =
+        sub.hostel && sub.hostel._id.toString() !== hostelId.toString();
+
+      return {
+        _id: sub._id,
+        name: sub.name,
+        rollNumber: sub.rollNumber,
+        email: sub.email,
+        roomNumber: sub.roomNumber || "N/A",
+        currentHostel: sub.hostel ? sub.hostel.hostel_name : "N/A",
+        currentSubscribedMess: sub.curr_subscribed_mess
+          ? sub.curr_subscribed_mess.hostel_name
+          : "N/A",
+        isDifferentHostel: isDifferentHostel,
+      };
+    });
+
+    // Sort: different hostel first (marked)
+    subscribersList.sort((a, b) => {
+      if (a.isDifferentHostel && !b.isDifferentHostel) return -1;
+      if (!a.isDifferentHostel && b.isDifferentHostel) return 1;
+      return a.rollNumber.localeCompare(b.rollNumber);
+    });
+
+    return res.status(200).json({
+      count: subscribersList.length,
+      subscribers: subscribersList,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Error occurred" });
+  }
+};
+
+// Mark user as SMC member
+const markAsSMC = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const hostelId = req.hostel._id;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify user is a boarder of this hostel
+    if (user.hostel.toString() !== hostelId.toString()) {
+      return res.status(403).json({
+        message: "User is not a boarder of this hostel",
+      });
+    }
+
+    user.isSMC = true;
+    await user.save();
+
+    return res.status(200).json({
+      message: "User marked as SMC member successfully",
+      user: {
+        _id: user._id,
+        name: user.name,
+        rollNumber: user.rollNumber,
+        isSMC: user.isSMC,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Error occurred" });
+  }
+};
+
+// Unmark user as SMC member
+const unmarkAsSMC = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const hostelId = req.hostel._id;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify user is a boarder of this hostel
+    if (user.hostel.toString() !== hostelId.toString()) {
+      return res.status(403).json({
+        message: "User is not a boarder of this hostel",
+      });
+    }
+
+    user.isSMC = false;
+    await user.save();
+
+    return res.status(200).json({
+      message: "User unmarked as SMC member successfully",
+      user: {
+        _id: user._id,
+        name: user.name,
+        rollNumber: user.rollNumber,
+        isSMC: user.isSMC,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Error occurred" });
+  }
+};
+
+// Get SMC members for this hostel
+const getSMCMembers = async (req, res) => {
+  try {
+    const hostelId = req.hostel._id;
+
+    const smcMembers = await User.find({
+      hostel: hostelId,
+      isSMC: true,
+    })
+      .select("name rollNumber email roomNumber degree")
+      .sort({ rollNumber: 1 });
+
+    return res.status(200).json({
+      count: smcMembers.length,
+      smcMembers: smcMembers.map((m) => ({
+        _id: m._id,
+        name: m.name,
+        rollNumber: m.rollNumber,
+        email: m.email,
+        roomNumber: m.roomNumber || "N/A",
+        degree: m.degree || "N/A",
+      })),
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Error occurred" });
+  }
+};
+
 module.exports = {
   createHostel,
-  loginHostel,
+  loginHostelPassword,
   getHostel,
   getAllHostels,
   getAllHostelsWithMess,
   getHostelbyId,
   deleteHostel,
   getAllHostelNameAndCaterer,
+  getCatererInfo,
+  getBoarders,
+  getMessSubscribers,
+  markAsSMC,
+  unmarkAsSMC,
+  getSMCMembers,
 };
