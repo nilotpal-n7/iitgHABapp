@@ -20,6 +20,13 @@ const messChangeRequest = async (req, res) => {
       });
     }
 
+    // Check if user is SMC member
+    if (user.isSMC) {
+      return res.status(403).json({
+        message: "SMC members are not allowed to apply for mess change",
+      });
+    }
+
     const { mess_pref_1, mess_pref_2, mess_pref_3 } = req.body || {};
 
     if (!mess_pref_1) {
@@ -52,12 +59,17 @@ const messChangeRequest = async (req, res) => {
       return res.status(400).json({ message: "Preferences must be unique" });
     }
 
-    const currentMessId = (
-      user.curr_subscribed_mess || user.hostel
-    )?.toString();
-    if (ids.includes(currentMessId)) {
+    // Check against current hostel instead of current mess
+    const currentHostelId = user.hostel?.toString();
+    if (!currentHostelId) {
       return res.status(400).json({
-        message: "Please select messes different from your current mess",
+        message: "User hostel not assigned",
+      });
+    }
+
+    if (ids.includes(currentHostelId)) {
+      return res.status(400).json({
+        message: "Please select hostels different from your current hostel",
       });
     }
 

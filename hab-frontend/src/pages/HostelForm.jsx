@@ -10,7 +10,7 @@ export default function HostelForm() {
   const [messId, setMessId] = useState("");
   const [unassignedMess, setUnassignedMess] = useState([]);
   const [error, setError] = useState(null);
-  const [password, setPassword] = useState("");
+  const [microsoftEmail, setMicrosoftEmail] = useState("");
 
   const uploadHandle = async (e) => {
     e.preventDefault();
@@ -19,7 +19,7 @@ export default function HostelForm() {
     const hostelData = {
       hostel_name: hostelName,
       curr_cap: Number(capacity),
-      password,
+      microsoft_email: microsoftEmail,
     };
 
     try {
@@ -100,15 +100,20 @@ export default function HostelForm() {
 
         <div>
           <label className="block text-gray-700 font-medium mb-1">
-            Create Password
+            Microsoft Email
           </label>
           <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            type="email"
+            value={microsoftEmail}
+            onChange={(e) => setMicrosoftEmail(e.target.value)}
+            placeholder="hostel@iitg.ac.in"
             required
             className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+          <p className="text-sm text-gray-500 mt-1">
+            Enter the Microsoft email ID for this hostel (should already be
+            created)
+          </p>
         </div>
 
         <div className="flex justify-end">

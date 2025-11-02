@@ -25,7 +25,9 @@ const {
 } = require("./messController");
 const {
   getMessMenuByDayForAdmin,
+  getMessMenuByDayForSMC,
   modifyMenuItem,
+  modifyMenuItemSMC,
   updateTime,
 } = require("./messAdminController.js");
 
@@ -56,12 +58,18 @@ messRouter.post("/change-hostel/:messId", changeHostel);
 messRouter.post("/unassigned", getUnassignedMess);
 messRouter.post("/unassign/:messId", unassignMess);
 
-//for admin
+//for admin (hostel)
 messRouter.post(
   "/menu/admin/:messId",
   authenticateAdminJWT,
   getMessMenuByDayForAdmin
 );
+
+//for SMC (users with isSMC flag)
+messRouter.post("/menu/smc/:messId", authenticateJWT, getMessMenuByDayForSMC);
+messRouter.post("/menu/modify/smc/:messId", authenticateJWT, modifyMenuItemSMC);
+
+//for admin (hostel)
 messRouter.post("/menu/modify/:messId", authenticateAdminJWT, modifyMenuItem);
 messRouter.post("/menu/time/update", authenticateAdminJWT, updateTime);
 module.exports = messRouter;

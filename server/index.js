@@ -121,7 +121,12 @@ app.get("/api/swagger.json", (req, res) => {
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5174", "http://localhost:5173"], // your frontend port
+    origin: [
+      "http://localhost:5172", // Login frontend
+      "http://localhost:5173", // HAB frontend
+      "http://localhost:5174", // Hostel frontend
+      "http://localhost:5175", // SMC frontend
+    ],
     credentials: true, // allow cookies
   })
 );
