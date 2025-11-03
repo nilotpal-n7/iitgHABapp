@@ -1,16 +1,17 @@
 import 'package:frontend2/apis/protected.dart';
+import 'package:flutter/foundation.dart';
 import 'package:frontend2/constants/endpoint.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 
 Future<void> getUserMessInfo() async {
   try {
-    print('API calling getusermessinfo');
+    debugPrint('API calling getusermessinfo');
     final dio = Dio();
     final token = await getAccessToken();
 
     final response = await dio.post(
-      messInfo.getUserMessInfo,
+      MessInfo.getUserMessInfo,
       options: Options(
         headers: {
           'Authorization': 'Bearer $token',
@@ -18,19 +19,20 @@ Future<void> getUserMessInfo() async {
         },
       ),
     );
-    print("response");
-  print(response);
+    debugPrint("response");
+    debugPrint(response.toString());
     if (response.statusCode == 200) {
       final prefs = await SharedPreferences.getInstance();
 
-      final Map<String, dynamic> userData = response.data as Map<String, dynamic>;
-      print('user mess info is $userData');
+      final Map<String, dynamic> userData =
+          response.data as Map<String, dynamic>;
+      debugPrint('user mess info is $userData');
       final String messID = userData['_id'] ?? "Not found";
       final String messName = userData['name'] ?? "Not found";
       final String hostelID = userData['hostelId'] ?? "Not found";
       //Leaving complaints for now,
       final int rating = userData['rating'] ?? "Not found";
-      final int ranking = userData['ranking']?? "Not found";
+      final int ranking = userData['ranking'] ?? "Not found";
 
       prefs.setString('messID', messID);
       prefs.setString('messName', messName);
@@ -39,6 +41,6 @@ Future<void> getUserMessInfo() async {
       prefs.setInt('ranking', ranking);
     }
   } catch (e) {
-    print('API Error in userMessInfo: $e');
+    debugPrint('API Error in userMessInfo: $e');
   }
 }

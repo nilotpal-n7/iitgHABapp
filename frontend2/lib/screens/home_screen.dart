@@ -2,13 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:frontend2/providers/feedback_provider.dart';
-import 'package:frontend2/screens/complaints_screen.dart';
-import 'package:frontend2/screens/mess_feedback/mess_feedback_page.dart';
+// removed unused imports: feedback_provider, complaints_screen, mess_feedback_page
 import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/screens/profile_screen.dart';
 import 'package:frontend2/screens/qr_scanner.dart';
-import 'package:frontend2/utilities/ComingSoon.dart';
+import 'package:frontend2/utilities/coming_soon.dart';
 import 'package:frontend2/widgets/common/name_trimmer.dart';
 import 'package:frontend2/widgets/mess_widgets/MessMenuBuilder.dart';
 import 'package:provider/provider.dart';
@@ -26,7 +24,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String name = '';
-  int _selectedIndex = 0;
   bool feedbackform = true;
   String currSubscribedMess = '';
   String? token;
@@ -43,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final name1 = prefs.getString('name');
     if (name1 != null) {
       setState(() {
-        name = (capitalizeWords(name1) ?? '').split(' ').first;
+        name = capitalizeWords(name1).split(' ').first;
       });
     }
   }
@@ -63,15 +60,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       currSubscribedMess = prefs.getString('messID') ?? '';
-      print("mess id: ");
-      print(currSubscribedMess);
+      debugPrint("mess id: ");
+      debugPrint(currSubscribedMess);
       token = prefs.getString('access_token');
-    });
-  }
-
-  void _onNavTap(int index) {
-    setState(() {
-      _selectedIndex = index;
     });
   }
 
@@ -91,7 +82,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildQuickActions() {
-    const usernameBlue = Color(0xFF3754DB);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 18.0),
       child: Row(
@@ -128,7 +118,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Center(
                         child: SvgPicture.asset(
                           'assets/icon/complaint.svg',
-                          color: Colors.white,
+                          colorFilter: const ColorFilter.mode(
+                              Colors.white, BlendMode.srcIn),
                           width: 22,
                           height: 22,
                         ),
@@ -179,7 +170,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Center(
                         child: SvgPicture.asset(
                           'assets/icon/qrscan.svg',
-                          color: Colors.white,
+                          colorFilter: const ColorFilter.mode(
+                              Colors.white, BlendMode.srcIn),
                           width: 22,
                           height: 22,
                         ),
@@ -232,7 +224,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Center(
                         child: SvgPicture.asset(
                           'assets/icon/messicon.svg',
-                          color: Colors.white,
+                          colorFilter: const ColorFilter.mode(
+                              Colors.white, BlendMode.srcIn),
                           width: 22,
                           height: 22,
                         ),
@@ -307,7 +300,6 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             }
 
-            final hostelData = messProvider.hostelMap[currSubscribedMess];
             final messId = currSubscribedMess;
 
             return MenuFutureBuilder(

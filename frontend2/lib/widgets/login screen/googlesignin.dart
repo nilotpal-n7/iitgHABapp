@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:frontend2/utilities/ComingSoon.dart';
+import 'package:frontend2/utilities/coming_soon.dart';
 import 'package:frontend2/screens/login_screen.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,7 +16,7 @@ class GoogleSignInDialog extends StatefulWidget {
 
 class _GoogleSignInDialogState extends State<GoogleSignInDialog> {
   bool _loading = false;
-  bool _inprogress = false;
+  // Removed unused `_inprogress` field (was triggering an analyzer warning).
 
   @override
   void initState() {
@@ -39,7 +39,7 @@ class _GoogleSignInDialogState extends State<GoogleSignInDialog> {
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {
-        print('Google sign-in was canceled by the user.');
+        debugPrint('Google sign-in was canceled by the user.');
         return;
       }
 
@@ -47,7 +47,7 @@ class _GoogleSignInDialogState extends State<GoogleSignInDialog> {
           await googleUser.authentication;
 
       if (googleAuth.accessToken == null || googleAuth.idToken == null) {
-        print('Google authentication failed: Missing tokens.');
+        debugPrint('Google authentication failed: Missing tokens.');
         return;
       }
 
@@ -59,12 +59,13 @@ class _GoogleSignInDialogState extends State<GoogleSignInDialog> {
       final UserCredential userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
 
-      print('Signed in as: ${userCredential.user?.displayName}');
+      debugPrint('Signed in as: ${userCredential.user?.displayName}');
       final prefs = await SharedPreferences.getInstance();
       final googleName = userCredential.user?.displayName ?? "Not Provided";
       prefs.setString('googleUsername', googleName);
 
       if (userCredential.user != null) {
+        if (!mounted) return;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -73,10 +74,13 @@ class _GoogleSignInDialogState extends State<GoogleSignInDialog> {
         );
       }
     } catch (e) {
-      print('Error during Google sign-in: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('An error occurred during Google sign-in.')),
-      );
+      debugPrint('Error during Google sign-in: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('An error occurred during Google sign-in.')),
+        );
+      }
     } finally {
       setState(() {
         _loading = false;

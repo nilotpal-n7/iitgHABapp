@@ -1,8 +1,11 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
 import 'package:frontend2/screens/mess_feedback/mess_feedback_page.dart';
 
-
 class FeedbackCard extends StatefulWidget {
+  const FeedbackCard({super.key});
+
   @override
   State<FeedbackCard> createState() => _FeedbackCardState();
 }
@@ -26,7 +29,7 @@ class _FeedbackCardState extends State<FeedbackCard> {
               style: TextStyle(color: Colors.black54)),
           const SizedBox(height: 8),
           const Row(
-            children:  [
+            children: [
               Icon(Icons.access_time, color: Colors.red, size: 18),
               SizedBox(width: 4),
               Text('Form closes in 2 Days',
@@ -38,7 +41,7 @@ class _FeedbackCardState extends State<FeedbackCard> {
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF3754DB),
+                backgroundColor: const Color(0xFF3754DB),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24)),
@@ -48,10 +51,9 @@ class _FeedbackCardState extends State<FeedbackCard> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => MessFeedbackPage(),
+                      builder: (context) => const MessFeedbackPage(),
                     ),
                   );
-
                 });
               },
               child: const Text(

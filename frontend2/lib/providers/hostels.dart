@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:frontend2/constants/endpoint.dart';
 import 'package:frontend2/screens/mess_screen.dart';
 import 'package:frontend2/widgets/common/hostel_name.dart';
@@ -93,8 +94,8 @@ class HostelsNotifier {
       // If the callback fails (for example, because the widget that added it
       // is no longer mounted), swallow the error here — callers should still
       // receive the callback registration and can remove it later.
-      print('HostelsNotifier.addOnChange initial call failed: $e');
-      print(st);
+      debugPrint('HostelsNotifier.addOnChange initial call failed: $e');
+      debugPrint('$st');
     }
     onHostelChanged.add(func);
     return () {

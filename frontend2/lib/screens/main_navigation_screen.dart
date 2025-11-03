@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/screens/mess_preference.dart';
 import 'package:frontend2/screens/profile_screen.dart';
-import 'package:frontend2/utilities/ComingSoon.dart';
+import 'package:frontend2/utilities/coming_soon.dart';
 import 'home_screen.dart';
 import 'mess_screen.dart';
 import '../utilities/notifications.dart';
@@ -46,23 +46,23 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   void _onDeepNavigationRequested() {
     final screenName = deepNavigationNotifier.value;
-    if (screenName != null && context.mounted) {
+    if (screenName != null && mounted) {
+      // Capture navigator before creating an async gap and wait briefly
+      final navigator = Navigator.of(context);
       // Wait for tab navigation to complete
       Future.delayed(const Duration(milliseconds: 100), () {
-        if (!context.mounted) return;
+        if (!mounted) return;
 
         switch (screenName) {
           case 'mess_change_screen':
-            Navigator.push(
-              context,
+            navigator.push(
               MaterialPageRoute(
                 builder: (context) => const MessChangePreferenceScreen(),
               ),
             );
             break;
           case 'profile_screen':
-            Navigator.push(
-              context,
+            navigator.push(
               MaterialPageRoute(
                 builder: (context) => const ProfileScreen(),
               ),

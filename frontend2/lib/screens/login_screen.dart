@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:frontend2/apis/authentication/login.dart';
-import 'package:frontend2/screens/MainNavigationScreen.dart';
-import 'package:frontend2/widgets/common/snack_bar.dart';
+import 'package:frontend2/screens/main_navigation_screen.dart';
 import 'package:frontend2/widgets/login screen/login_button.dart';
 import 'package:lottie/lottie.dart';
 
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +22,7 @@ class LoginScreen extends StatelessWidget {
 }
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({Key? key}) : super(key: key);
+  const OnboardingScreen({super.key});
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -31,7 +30,7 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   bool _inprogress = false;
-  
+
   // Next dbane ke baad GPT kia so yeah
   void _showBottomSheet(BuildContext context) {
     showModalBottomSheet(
@@ -77,7 +76,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          Container(
+                          SizedBox(
                             height: 48,
                             width: double.infinity,
                             child: Material(
@@ -88,6 +87,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               child: InkWell(
                                 splashColor: Colors.white,
                                 onTap: () async {
+                                  // Capture navigator and messenger before async gaps
+                                  final navigator = Navigator.of(context);
+                                  final messenger =
+                                      ScaffoldMessenger.of(context);
                                   try {
                                     setModalState(() {
                                       _inprogress = true;
@@ -97,21 +100,54 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                       _inprogress = false;
                                     });
                                     if (!mounted) return;
-                                    Navigator.pushReplacement(
-                                      context,
+                                    navigator.pushReplacement(
                                       MaterialPageRoute(
                                         builder: (context) =>
                                             const MainNavigationScreen(),
                                       ),
                                     );
-                                    showSnackBar('Successfully Logged In',
-                                        Colors.black, context);
+                                    if (mounted) {
+                                      messenger.showSnackBar(
+                                        const SnackBar(
+                                          content: Center(
+                                            child: Text(
+                                              'Successfully Logged In',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            ),
+                                          ),
+                                          backgroundColor: Colors.black,
+                                          behavior: SnackBarBehavior.floating,
+                                          margin: EdgeInsets.all(50),
+                                          duration:
+                                              Duration(milliseconds: 1000),
+                                        ),
+                                      );
+                                    }
                                   } catch (e) {
                                     setModalState(() {
                                       _inprogress = false;
                                     });
-                                    showSnackBar('Something Went Wrong',
-                                        Colors.black, context);
+                                    if (mounted) {
+                                      messenger.showSnackBar(
+                                        const SnackBar(
+                                          content: Center(
+                                            child: Text(
+                                              'Something Went Wrong',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            ),
+                                          ),
+                                          backgroundColor: Colors.black,
+                                          behavior: SnackBarBehavior.floating,
+                                          margin: EdgeInsets.all(50),
+                                          duration:
+                                              Duration(milliseconds: 1000),
+                                        ),
+                                      );
+                                    }
                                   }
                                 },
                                 child: const Padding(
@@ -134,7 +170,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: AbsorbPointer(
                       absorbing: true, // Disable taps when loading
                       child: Container(
-                        color: Colors.black.withOpacity(0.7),
+                        color: const Color.fromRGBO(0, 0, 0, 0.7),
                         child: Center(
                           child: Lottie.asset(
                             'assets/lottie/loader.json', // your loader path
@@ -187,7 +223,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                     // Header Frame with Welcome text
                     Center(
-                      child: Container(
+                      child: SizedBox(
                         width: screenSize.width *
                             0.9, // Responsive width // no changes here needed
                         height:
@@ -209,8 +245,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 style: TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(
-                                      0xFFAFB9D2),
+                                  color: Color(0xFFAFB9D2),
                                 ),
                               ),
                             ],
@@ -384,11 +419,11 @@ class FeatureButton extends StatelessWidget {
   final String imagePath;
 
   const FeatureButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.color,
     required this.imagePath,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -397,11 +432,11 @@ class FeatureButton extends StatelessWidget {
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Color.fromRGBO(0, 0, 0, 0.3),
             blurRadius: 6,
-            offset: const Offset(0, 3),
+            offset: Offset(0, 3),
           ),
         ],
       ),
@@ -413,6 +448,5 @@ class FeatureButton extends StatelessWidget {
         ),
       ),
     );
-
   }
 }
