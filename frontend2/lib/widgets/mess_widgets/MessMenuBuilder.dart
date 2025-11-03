@@ -1,9 +1,10 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
 import 'package:frontend2/widgets/mess_widgets/interactive_mess_menu.dart';
 
 import '../../apis/mess/mess_menu.dart';
 import '../../models/mess_menu_model.dart';
-
 
 // Update your MenuFutureBuilder
 class MenuFutureBuilder extends StatelessWidget {
@@ -51,7 +52,7 @@ class MenuFutureBuilder extends StatelessWidget {
             color: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(24)),
-              side: BorderSide(color: Color(0xC5C5D1), width: 1),
+              side: BorderSide(color: Color(0xFFC5C5D1), width: 1),
             ),
             elevation: 0.5,
             child: Padding(
@@ -60,20 +61,20 @@ class MenuFutureBuilder extends StatelessWidget {
             ),
           );
         } else if (snapshot.hasError) {
-          return Container(
+          return SizedBox(
             width: double.infinity,
             child: Card(
               color: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
-                side: const BorderSide(color: Color(0xC5C5D1), width: 1),
+                side: const BorderSide(color: Color(0xFFC5C5D1), width: 1),
               ),
               elevation: 0.5,
               child: const Padding(
                 padding: EdgeInsets.all(18.0),
                 child: Text(
                   'Unable to fetch menu',
-                  style: const TextStyle(color: Colors.red),
+                  style: TextStyle(color: Colors.red),
                 ),
               ),
             ),

@@ -402,11 +402,11 @@ class _MessChangePreferenceScreenState
 
                     // Red info text when mess change is disabled
                     if (isMessChangeEnabled == false)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
                         child: Text(
                           'Mess change is currently disabled, you will be notified when it opens.',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             color: Color(0xFFC40205),
                           ),

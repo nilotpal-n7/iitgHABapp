@@ -11,17 +11,18 @@ class InteractiveMessMenuCard extends StatefulWidget {
   final String? userMessId; // User's subscribed mess ID
 
   const InteractiveMessMenuCard({
-    Key? key,
+    super.key,
     required this.menus,
     required this.now,
     required this.parseTime,
     required this.formatDuration,
     required this.currentMessId,
     this.userMessId,
-  }) : super(key: key);
+  });
 
   @override
-  State<InteractiveMessMenuCard> createState() => _InteractiveMessMenuCardState();
+  State<InteractiveMessMenuCard> createState() =>
+      _InteractiveMessMenuCardState();
 }
 
 class _InteractiveMessMenuCardState extends State<InteractiveMessMenuCard> {
@@ -54,13 +55,14 @@ class _InteractiveMessMenuCardState extends State<InteractiveMessMenuCard> {
     });
   }
 
-  Future<void> _toggleLike(String menuItemId, int menuIndex, int itemIndex) async {
+  Future<void> _toggleLike(
+      String menuItemId, int menuIndex, int itemIndex) async {
     if (!_isLikeEnabled) return;
 
     // Optimistic update
     setState(() {
       _menus[menuIndex].items[itemIndex].isLiked =
-      !_menus[menuIndex].items[itemIndex].isLiked;
+          !_menus[menuIndex].items[itemIndex].isLiked;
     });
 
     // Make API call
@@ -70,12 +72,14 @@ class _InteractiveMessMenuCardState extends State<InteractiveMessMenuCard> {
       // Revert if API call failed
       setState(() {
         _menus[menuIndex].items[itemIndex].isLiked =
-        !_menus[menuIndex].items[itemIndex].isLiked;
+            !_menus[menuIndex].items[itemIndex].isLiked;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update favorite')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to update favorite')),
+        );
+      }
     }
   }
 
@@ -86,7 +90,7 @@ class _InteractiveMessMenuCardState extends State<InteractiveMessMenuCard> {
     // Find which meal to show and what status
     MenuModel? currentMenu;
     String statusText = "";
-    Color statusColor = const Color(0x1F8441);
+    Color statusColor = const Color(0xFF1F8441);
 
     for (final menu in _menus) {
       final start = widget.parseTime(menu.startTime);
@@ -117,20 +121,20 @@ class _InteractiveMessMenuCardState extends State<InteractiveMessMenuCard> {
     }
 
     final menuIndex = _menus.indexOf(currentMenu);
-    final dishSection = currentMenu.items
-        .where((item) => item.type == "Dish")
-        .toList();
+    final dishSection =
+        currentMenu.items.where((item) => item.type == "Dish").toList();
     final breadsRice = currentMenu.items
         .where((item) => item.type == "Breads and Rice")
         .toList();
-    final others = currentMenu.items
-        .where((item) => item.type == "Others")
-        .toList();
+    final others =
+        currentMenu.items.where((item) => item.type == "Others").toList();
 
     Widget buildMenuItem(MenuItemModel item) {
       final itemIndex = currentMenu!.items.indexOf(item);
       return GestureDetector(
-        onTap: _isLikeEnabled ? () => _toggleLike(item.id, menuIndex, itemIndex) : null,
+        onTap: _isLikeEnabled
+            ? () => _toggleLike(item.id, menuIndex, itemIndex)
+            : null,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 2.0),
           child: Row(
@@ -149,7 +153,8 @@ class _InteractiveMessMenuCardState extends State<InteractiveMessMenuCard> {
               if (_isLikeEnabled && item.isLiked != true)
                 const Padding(
                   padding: EdgeInsets.only(left: 6.0),
-                  child: Icon(Icons.favorite_border, color: Colors.grey, size: 16),
+                  child:
+                      Icon(Icons.favorite_border, color: Colors.grey, size: 16),
                 ),
             ],
           ),
@@ -214,7 +219,10 @@ class _InteractiveMessMenuCardState extends State<InteractiveMessMenuCard> {
                 const SizedBox(height: 4),
                 ...dishSection.isNotEmpty
                     ? dishSection.map((item) => buildMenuItem(item)).toList()
-                    : [const Text("No main dishes", style: TextStyle(fontSize: 15))],
+                    : [
+                        const Text("No main dishes",
+                            style: TextStyle(fontSize: 15))
+                      ],
                 const SizedBox(height: 10),
                 const Divider(thickness: 1, height: 24),
                 IntrinsicHeight(
@@ -236,8 +244,13 @@ class _InteractiveMessMenuCardState extends State<InteractiveMessMenuCard> {
                             ),
                             const SizedBox(height: 4),
                             ...breadsRice.isNotEmpty
-                                ? breadsRice.map((item) => buildMenuItem(item)).toList()
-                                : [const Text("-", style: TextStyle(fontSize: 15))],
+                                ? breadsRice
+                                    .map((item) => buildMenuItem(item))
+                                    .toList()
+                                : [
+                                    const Text("-",
+                                        style: TextStyle(fontSize: 15))
+                                  ],
                           ],
                         ),
                       ),
@@ -261,8 +274,13 @@ class _InteractiveMessMenuCardState extends State<InteractiveMessMenuCard> {
                             ),
                             const SizedBox(height: 4),
                             ...others.isNotEmpty
-                                ? others.map((item) => buildMenuItem(item)).toList()
-                                : [const Text("-", style: TextStyle(fontSize: 15))],
+                                ? others
+                                    .map((item) => buildMenuItem(item))
+                                    .toList()
+                                : [
+                                    const Text("-",
+                                        style: TextStyle(fontSize: 15))
+                                  ],
                           ],
                         ),
                       ),

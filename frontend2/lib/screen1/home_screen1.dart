@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:frontend2/apis/scan/qrscan_mess.dart';
 import 'package:frontend2/screen1/qr_scanner.dart';
 
-class homescreen1 extends StatelessWidget {
-  const homescreen1({super.key});
+class HomeScreen1 extends StatelessWidget {
+  const HomeScreen1({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,10 +24,9 @@ class homescreen1 extends StatelessWidget {
                   );
                 },
                 child: const SizedBox(
-                  width: 150, // Set square width
-                  height: 150, // Set square height
-                  child: Text("GALA DINNER")
-                ),
+                    width: 150, // Set square width
+                    height: 150, // Set square height
+                    child: Text("GALA DINNER")),
               ),
             ),
           ),
@@ -45,10 +44,9 @@ class homescreen1 extends StatelessWidget {
                   );
                 },
                 child: const SizedBox(
-                  width: 150, // Set square width
-                  height: 150, // Set square height
-                  child: Text("MESS VERIFICATION")
-                ),
+                    width: 150, // Set square width
+                    height: 150, // Set square height
+                    child: Text("MESS VERIFICATION")),
               ),
             ),
           ),

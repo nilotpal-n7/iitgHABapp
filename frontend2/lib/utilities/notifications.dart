@@ -85,9 +85,10 @@ Future<void> _saveNotificationToHistory(String title, String body,
 
     // Update the ValueNotifier to notify listeners
     notificationHistoryNotifier.value = notifications;
-    print('✅ Saved notification to history: $title: $body (isAlert: $isAlert)');
+    debugPrint(
+        '✅ Saved notification to history: $title: $body (isAlert: $isAlert)');
   } catch (e) {
-    print('❌ Error saving notification to history: $e');
+    debugPrint('❌ Error saving notification to history: $e');
   }
 }
 
@@ -113,7 +114,7 @@ List<NotificationModel> _loadNotificationsFromPrefs() {
 
     return notifications;
   } catch (e) {
-    print('❌ Error loading notifications: $e');
+    debugPrint('❌ Error loading notifications: $e');
     return [];
   }
 }
@@ -131,7 +132,7 @@ List<NotificationModel> _cleanupExpiredNotifications(
   if (filtered.length != notifications.length) {
     _sharedPrefs?.setStringList(
         'notifications', filtered.map((n) => jsonEncode(n.toJson())).toList());
-    print(
+    debugPrint(
         '🧹 Cleaned up ${notifications.length - filtered.length} expired notifications');
   }
 
@@ -146,7 +147,7 @@ Future<void> _updateNotificationsInPrefs(
     await _sharedPrefs?.setStringList('notifications', jsonList);
     notificationHistoryNotifier.value = notifications;
   } catch (e) {
-    print('❌ Error updating notifications: $e');
+    debugPrint('❌ Error updating notifications: $e');
   }
 }
 
@@ -157,10 +158,10 @@ Future<void> markNotificationAsRead(int index) async {
     if (index >= 0 && index < notifications.length) {
       notifications[index] = notifications[index].copyWith(isRead: true);
       await _updateNotificationsInPrefs(notifications);
-      print('✅ Marked notification $index as read');
+      debugPrint('✅ Marked notification $index as read');
     }
   } catch (e) {
-    print('❌ Error marking notification as read: $e');
+    debugPrint('❌ Error marking notification as read: $e');
   }
 }
 
@@ -170,9 +171,9 @@ Future<void> markAllNotificationsAsRead() async {
     List<NotificationModel> notifications = _loadNotificationsFromPrefs();
     notifications = notifications.map((n) => n.copyWith(isRead: true)).toList();
     await _updateNotificationsInPrefs(notifications);
-    print('✅ Marked all notifications as read');
+    debugPrint('✅ Marked all notifications as read');
   } catch (e) {
-    print('❌ Error marking all notifications as read: $e');
+    debugPrint('❌ Error marking all notifications as read: $e');
   }
 }
 
@@ -190,10 +191,11 @@ List<NotificationModel> getActiveAlerts() {
 
 // ✅ Background message handler (must be top-level function)
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print('💤 Handling background message: ${message.messageId}');
-  print('💤 Message data: ${message.data}');
+  debugPrint('💤 Handling background message: ${message.messageId}');
+  debugPrint('💤 Message data: ${message.data}');
   if (message.notification != null) {
-    print('💤 Message also contained a notification: ${message.notification}');
+    debugPrint(
+        '💤 Message also contained a notification: ${message.notification}');
     final redirectType = message.data['redirectType'];
     final isAlert =
         message.data['isAlert'] == 'true' || message.data['isAlert'] == true;
@@ -231,9 +233,9 @@ Future<void> initializeFcm() async {
 
   // ✅ Foreground message handler
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('📩 Foreground message received: ${message.messageId}');
+    debugPrint('📩 Foreground message received: ${message.messageId}');
     if (message.notification != null) {
-      print(
+      debugPrint(
           '📩 Notification: ${message.notification!.title} - ${message.notification!.body}');
       // Save to notification history (this also updates the ValueNotifier)
       final redirectType = message.data['redirectType'];
@@ -252,7 +254,7 @@ Future<void> initializeFcm() async {
 
   // ✅ Notification tap handler (when app is opened via notification)
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    print('🚀 Notification opened: ${message.data}');
+    debugPrint('🚀 Notification opened: ${message.data}');
     if (message.notification != null) {
       final redirectType = message.data['redirectType'];
       final isAlert =
@@ -271,7 +273,7 @@ Future<void> initializeFcm() async {
   // Handle notification when app is opened from terminated state
   FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
     if (message != null && message.notification != null) {
-      print('🔁 App opened from terminated via notification');
+      debugPrint('🔁 App opened from terminated via notification');
       final redirectType = message.data['redirectType'];
       final isAlert =
           message.data['isAlert'] == 'true' || message.data['isAlert'] == true;
@@ -292,7 +294,7 @@ void _handleNotificationNavigation(Map<String, dynamic> data) {
   if (data['redirectType'] == null) return;
 
   final redirectType = data['redirectType'] as String;
-  print('📍 Handling redirect: $redirectType');
+  debugPrint('📍 Handling redirect: $redirectType');
 
   // Map redirect types to tab indices
   int? targetTab;
@@ -310,13 +312,13 @@ void _handleNotificationNavigation(Map<String, dynamic> data) {
       deepNavigationNotifier.value = 'profile_screen';
       break;
     default:
-      print('📍 Unknown redirect type: $redirectType');
+      debugPrint('📍 Unknown redirect type: $redirectType');
       return;
   }
 
   // Trigger navigation to the appropriate tab
   tabNavigationNotifier.value = targetTab;
-  print('📍 Navigated to tab: $targetTab');
+  debugPrint('📍 Navigated to tab: $targetTab');
 }
 
 // ✅ Helper function to display local notification in foreground
@@ -346,7 +348,7 @@ void _showLocalNotification(
 // ✅ Handler for local notification taps
 @pragma('vm:entry-point')
 void _onNotificationTap(NotificationResponse response) {
-  print('🔔 Local notification tapped: ${response.payload}');
+  debugPrint('🔔 Local notification tapped: ${response.payload}');
   if (response.payload != null && response.payload!.isNotEmpty) {
     final redirectType = response.payload!;
     _handleNotificationNavigation({'redirectType': redirectType});
@@ -357,19 +359,19 @@ void _onNotificationTap(NotificationResponse response) {
 Future<void> registerFcmToken() async {
   try {
     final header = await getAccessToken();
-    print('Access token: 😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊');
-    print('1');
+    debugPrint('Access token: 😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊');
+    debugPrint('1');
 
     String? token = await FirebaseMessaging.instance.getToken();
     if (token == null) {
-      print('❌ No FCM token received');
+      debugPrint('❌ No FCM token received');
       return;
     }
 
     final dio = Dio();
-    print('2');
-    print('Header Token: $header');
-    print('Uri: ${Uri.parse(NotificationEndpoints.registerToken)}');
+    debugPrint('2');
+    debugPrint('Header Token: $header');
+    debugPrint('Uri: ${Uri.parse(NotificationEndpoints.registerToken)}');
 
     // ✅ Listen for token refresh events and re-register
     FirebaseMessaging.instance.onTokenRefresh.listen((fcmToken) async {
@@ -384,12 +386,12 @@ Future<void> registerFcmToken() async {
         data: jsonEncode({'fcmToken': fcmToken}), // ✅ Use fcmToken here
       );
       if (res.statusCode == 200) {
-        print('🔄 FCM token re-registered: $fcmToken');
+        debugPrint('🔄 FCM token re-registered: $fcmToken');
       } else {
-        print('❌ Failed to re-register token');
+        debugPrint('❌ Failed to re-register token');
       }
     }).onError((err) {
-      print('❌ Failed to re-register token: $err');
+      debugPrint('❌ Failed to re-register token: $err');
     });
 
     // ✅ Register the current token
@@ -404,15 +406,15 @@ Future<void> registerFcmToken() async {
       data: jsonEncode({'fcmToken': token}),
     );
 
-    print('3');
+    debugPrint('3');
     if (res.statusCode == 200) {
-      print('✅ FCM token registered: $token');
+      debugPrint('✅ FCM token registered: $token');
     } else {
-      print('❌ Failed to register token');
+      debugPrint('❌ Failed to register token');
     }
   } catch (e) {
-    print('4');
-    print('❌ Error registering FCM token: $e');
+    debugPrint('4');
+    debugPrint('❌ Error registering FCM token: $e');
   }
 }
 
@@ -421,7 +423,7 @@ Future<void> listenNotifications() async {
   await setupNotificationChannel();
   await FirebaseMessaging.instance.requestPermission();
   await initializeFcm(); // Initialize handlers after permission granted
-  print('✅ Notification listeners initialized');
+  debugPrint('✅ Notification listeners initialized');
 }
 
 // ✅ Helper function to get notification history from SharedPreferences
@@ -432,7 +434,7 @@ Future<List<NotificationModel>> getNotificationHistory() async {
     notifications = _cleanupExpiredNotifications(notifications);
     return notifications;
   } catch (e) {
-    print('❌ Error getting notification history: $e');
+    debugPrint('❌ Error getting notification history: $e');
     return [];
   }
 }

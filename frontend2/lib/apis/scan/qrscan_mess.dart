@@ -6,8 +6,7 @@ import 'package:vibration/vibration.dart';
 import 'package:frontend2/widgets/common/cornerQR.dart';
 import 'package:dio/dio.dart';
 
-import '../../screen1/QrDetail.dart';
-
+import '../../screen1/qr_detail.dart';
 
 class QrScanMess extends StatefulWidget {
   const QrScanMess({super.key});
@@ -18,7 +17,8 @@ class QrScanMess extends StatefulWidget {
 
 class _QrScanState extends State<QrScanMess> {
   late MobileScannerController controller;
-  bool _hasScanned = false; // Flag to track if a scan has been processed VERY IMP CONCEPT like this happens it scans twice maybe idk
+  bool _hasScanned =
+      false; // Flag to track if a scan has been processed VERY IMP CONCEPT like this happens it scans twice maybe idk
 
   @override
   void initState() {
@@ -55,16 +55,15 @@ class _QrScanState extends State<QrScanMess> {
       if (response.statusCode == 200) {
         return response.data;
       } else if (response.statusCode == 404) {
-        print('Item not found');
+        debugPrint('Item not found');
       } else {
-        print('Failed to load item. Status code: ${response.statusCode}');
+        debugPrint('Failed to load item. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error: $e');
+      debugPrint('Error: $e');
     }
     return null;
   }
-
 
   // Handle QR code detection
   void onBarcodeDetected(BarcodeCapture capture) async {
@@ -76,17 +75,18 @@ class _QrScanState extends State<QrScanMess> {
       for (final barcode in barcodes) {
         final result = barcode.rawValue;
         if (result != null) {
-          print('Barcode found: $result');
+          debugPrint('Barcode found: $result');
           controller.stop();
 
           // Fetch the item data using the serial number (barcode result)
           var itemData = await fetchItemBySerialNumber(result);
           if (itemData != null) {
-            if (await Vibration.hasVibrator() ?? false) {
+            if (await Vibration.hasVibrator()) {
               Vibration.vibrate(duration: 100);
             }
-            print(itemData);
+            debugPrint(itemData.toString());
             // Navigate to the details page with the fetched item data
+            if (!mounted) return;
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -94,17 +94,16 @@ class _QrScanState extends State<QrScanMess> {
               ),
             );
           } else {
-            print('Failed to fetch item data.');
+            debugPrint('Failed to fetch item data.');
           }
         } else {
-          print('No QR code found.');
+          debugPrint('No QR code found.');
         }
       }
     } catch (e, stackTrace) {
-      print('Error: $e');
-      print(stackTrace);
+      debugPrint('Error: $e');
+      debugPrint(stackTrace.toString());
     }
-
   }
 
   @override
@@ -128,4 +127,3 @@ class _QrScanState extends State<QrScanMess> {
     );
   }
 }
-

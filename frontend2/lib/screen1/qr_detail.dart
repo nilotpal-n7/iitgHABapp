@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:frontend2/widgets/common/hostel_name.dart';
 import 'dart:convert';
 
-
-
 class QrDetail extends StatefulWidget {
   final Map<String, dynamic> itemData;
 
@@ -14,29 +12,20 @@ class QrDetail extends StatefulWidget {
 }
 
 class _QrDetailState extends State<QrDetail> {
-  final TextEditingController _complaintNameController = TextEditingController();
-  final TextEditingController _complaintDescriptionController = TextEditingController();
+  final TextEditingController _complaintNameController =
+      TextEditingController();
+  final TextEditingController _complaintDescriptionController =
+      TextEditingController();
 
-
-  final _formKey = GlobalKey<FormState>(); // Key for form validation
-  String complaintName = '';
-  String complaintDescription = '';
-  bool _isSubmitting = false; // For loading state
-
-  // Function to submit the complaint to the backend
-
-
-  void _showSnackbar(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
+  // (Optional) complaint submission fields were removed because they're
+  // not used in the current QR details view. Add them back when implementing
+  // the complaint submission form.
 
   @override
   Widget build(BuildContext context) {
     // Extracting the relevant data from itemData
-    print("widget.itemData Type: ${widget.itemData.runtimeType}");
-    print("widget.itemData Content: ${jsonEncode(widget.itemData)}");
-
+    debugPrint("widget.itemData Type: ${widget.itemData.runtimeType}");
+    debugPrint("widget.itemData Content: ${jsonEncode(widget.itemData)}");
 
     final user = widget.itemData['user'] as Map<String, dynamic>? ?? {};
 
@@ -53,13 +42,16 @@ class _QrDetailState extends State<QrDetail> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Current Mess is: ${calculateHostel(currMess)}' , style: const TextStyle(fontSize: 20)),
+              Text('Current Mess is: ${calculateHostel(currMess)}',
+                  style: const TextStyle(fontSize: 20)),
               const SizedBox(height: 8),
               Text('Name: $name', style: const TextStyle(fontSize: 20)),
               const SizedBox(height: 8),
-              Text('rollNumber: $rollNumber', style: const TextStyle(fontSize: 16)),
+              Text('rollNumber: $rollNumber',
+                  style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 8),
-              Text('Hostel: ${calculateHostel(hostel)}', style: const TextStyle(fontSize: 16)),
+              Text('Hostel: ${calculateHostel(hostel)}',
+                  style: const TextStyle(fontSize: 16)),
               const Divider(height: 30),
             ],
           ),
