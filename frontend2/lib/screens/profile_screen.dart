@@ -345,11 +345,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ProfilePictureProvider.profilePictureString,
                               builder: (context, value, child) => CircleAvatar(
                                 radius: 68,
-                                backgroundColor: Colors.blue[100],
+                                // Use a local default asset when no profile picture is set
+                                backgroundColor: Colors.transparent,
                                 backgroundImage: (value).isNotEmpty
                                     ? MemoryImage(base64Decode(value))
-                                    : const NetworkImage(
-                                            "https://api.dicebear.com/7.x/initials/svg?seed=User")
+                                    : const AssetImage(
+                                            'assets/images/default_profile.png')
                                         as ImageProvider,
                               ),
                             ),

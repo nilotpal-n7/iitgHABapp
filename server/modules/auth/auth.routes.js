@@ -3,9 +3,10 @@ const router = express.Router();
 const scope = "User.read offline_access Mail.read"; // Fixed the typo in 'offline_access'
 const catchAsync = require("../../utils/catchAsync.js");
 const {
-    mobileRedirectHandler,
-    loginHandler,
-    logoutHandler,
+  mobileRedirectHandler,
+  loginHandler,
+  logoutHandler,
+  webLoginHandler,
 } = require("./auth.controller.js");
 
 // Not used
@@ -19,7 +20,7 @@ router.get("/login", loginHandler);
  *     tags: ["Authentication"]
  *     description: |
  *       **Internal OAuth callback endpoint - DO NOT call this directly.**
- * 
+ *
  *       This endpoint is used to handle the OAuth redirect after successful authentication.
  *       It processes the authorization code received from the OAuth provider and exchanges it for an access token.
  *     parameters:
@@ -39,13 +40,13 @@ router.get("/login", loginHandler);
  *           example: "user.read"
  *     responses:
  *       302:
-*          description: "Redirects to the mobile app with the access token"
-*          headers:
-*            Location:
-*              description: "Redirect URL to the mobile app with the access token and user data"
-*              schema:
-*                type: string
-*                example: "iitgcomplain://success?token=JWT_TOKEN&user=USER_DATA"
+ *          description: "Redirects to the mobile app with the access token"
+ *          headers:
+ *            Location:
+ *              description: "Redirect URL to the mobile app with the access token and user data"
+ *              schema:
+ *                type: string
+ *                example: "iitgcomplain://success?token=JWT_TOKEN&user=USER_DATA"
  *       400:
  *         description: Bad Request - Authorization code missing
  *         content:
@@ -77,7 +78,12 @@ router.get("/login", loginHandler);
  *                   type: string
  *                   example: "Something went wrong"
  */
+// Mobile app login redirect (different from web login)
 router.get("/login/redirect/mobile", mobileRedirectHandler);
+
+// Unified web login handler for HAB, Hostel, and SMC
+// Usage: /api/auth/login/redirect/web?code=xxx&type=hab|hostel|smc
+router.get("/login/redirect/web", webLoginHandler);
 
 router.get("/logout", logoutHandler);
 

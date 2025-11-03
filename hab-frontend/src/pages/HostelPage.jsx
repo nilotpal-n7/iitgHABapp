@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import MessBillCalculator from "../Components/MessBillCalculator";
 import HostelStats from "./stats/HostelStats";
 import HostelUsersList from "../Components/HostelUsersList";
 import {
@@ -231,16 +230,6 @@ export default function HostelPage() {
               Users ({hostel.users?.length || 0})
             </button>
             <button
-              onClick={() => setActiveTab("bill")}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === "bill"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              Mess Bill Calculator
-            </button>
-            <button
               onClick={() => setActiveTab("stats")}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === "stats"
@@ -386,13 +375,6 @@ export default function HostelPage() {
           <HostelUsersList
             hostelName={hostel.hostel_name}
             users={hostel.users}
-          />
-        )}
-
-        {activeTab === "bill" && (
-          <MessBillCalculator
-            hostelId={hostelId}
-            hostelName={hostel.hostel_name}
           />
         )}
 
