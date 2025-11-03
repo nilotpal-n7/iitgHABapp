@@ -91,7 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (token == 'error') return;
       final dio = Dio();
       final res = await dio.get(
-        '${baseUrl}/profile/settings',
+        '$baseUrl/profile/settings',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       if (res.statusCode == 200) {
@@ -237,8 +237,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: const [
+              const Row(
+                children: [
                   Text('Edit profile',
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),

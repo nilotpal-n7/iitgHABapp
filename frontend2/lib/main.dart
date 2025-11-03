@@ -9,7 +9,7 @@ import 'package:frontend2/apis/mess/user_mess_info.dart';
 import 'package:frontend2/apis/users/user.dart';
 import 'package:frontend2/providers/feedback_provider.dart';
 import 'package:frontend2/providers/hostels.dart';
-import 'package:frontend2/screens/MainNavigationScreen.dart';
+import 'package:frontend2/screens/main_navigation_screen.dart';
 import 'package:frontend2/screens/home_screen.dart';
 import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/screens/login_screen.dart';

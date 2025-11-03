@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class messcard extends StatefulWidget {
+class MessCard extends StatefulWidget {
+  const MessCard({super.key});
+
   @override
-  State<messcard> createState() => _messcardState();
+  State<MessCard> createState() => _MessCardState();
 }
 
-class _messcardState extends State<messcard> {
+class _MessCardState extends State<MessCard> {
   String rollNumber = '';
 
   @override
@@ -16,7 +18,6 @@ class _messcardState extends State<messcard> {
     super.initState();
     getRoll();
   }
-
 
   Future<void> getRoll() async {
     final prefs = await SharedPreferences.getInstance();
@@ -38,10 +39,10 @@ class _messcardState extends State<messcard> {
         child: rollNumber.isEmpty
             ? const CircularProgressIndicator() // Show loading indicator while fetching data
             : QrImageView(
-          data: url, // QR Code contains the GET request URL
-          version: QrVersions.auto,
-          size: 400.0,
-        ),
+                data: url, // QR Code contains the GET request URL
+                version: QrVersions.auto,
+                size: 400.0,
+              ),
       ),
     );
   }

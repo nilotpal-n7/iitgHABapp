@@ -51,11 +51,11 @@ class _QrScanOldState extends State<QrScanOld> {
           displayData = response.data;
         });
 
-        if (await Vibration.hasVibrator() ?? false) {
+        if (await Vibration.hasVibrator()) {
           Vibration.vibrate(duration: 100);
         }
 
-        print("User details: $displayData");
+        debugPrint("User details: $displayData");
 
         Future.delayed(const Duration(seconds: 1), () {
           setState(() {
@@ -65,13 +65,19 @@ class _QrScanOldState extends State<QrScanOld> {
           controller.start();
         });
       } else if (response.statusCode == 400) {
-        showSnackBar('QR has been used once', Colors.red, context);
+        if (mounted) {
+          showSnackBar('QR has been used once', Colors.red, context);
+        }
       } else {
-        showSnackBar('Failed to load item. Status code: ${response.statusCode}',
-            Colors.red, context);
+        if (mounted) {
+          showSnackBar(
+              'Failed to load item. Status code: ${response.statusCode}',
+              Colors.red,
+              context);
+        }
       }
     } catch (e) {
-      showSnackBar('Something went wrong!', Colors.red, context);
+      if (mounted) showSnackBar('Something went wrong!', Colors.red, context);
     } finally {
       Future.delayed(const Duration(seconds: 1), () {
         setState(() {
@@ -90,7 +96,7 @@ class _QrScanOldState extends State<QrScanOld> {
     for (final barcode in barcodes) {
       final result = barcode.rawValue;
       if (result != null) {
-        print('Barcode found: $result');
+        debugPrint('Barcode found: $result');
         fetchItemBySerialNumber(result);
         break;
       }
