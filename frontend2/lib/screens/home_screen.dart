@@ -346,15 +346,14 @@ class _HomeScreenState extends State<HomeScreen> {
               valueListenable: ProfilePictureProvider.profilePictureString,
               builder: (context, value, child) {
                 final String b64 = value;
-                final ImageProvider backgroundImg = b64.isNotEmpty
-                    ? MemoryImage(base64Decode(b64))
-                    : const NetworkImage(
-                        'https://api.dicebear.com/7.x/initials/svg?seed=User');
 
                 return CircleAvatar(
                   radius: 16,
-                  backgroundColor: Colors.blue[100],
-                  backgroundImage: backgroundImg,
+                  // prefer transparent bg so default asset is visible
+                  backgroundColor: Colors.transparent,
+                  backgroundImage: b64.isNotEmpty
+                      ? MemoryImage(base64Decode(b64))
+                      : const AssetImage('assets/images/default_profile.png'),
                 );
               },
             ),

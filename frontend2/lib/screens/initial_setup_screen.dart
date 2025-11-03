@@ -229,11 +229,12 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
                         ProfilePictureProvider.profilePictureString,
                     builder: (context, value, child) => CircleAvatar(
                       radius: 64,
-                      backgroundColor: Colors.blue[100],
+                      // show local default when no profile pic present
+                      backgroundColor: Colors.transparent,
                       backgroundImage: value.isNotEmpty
                           ? MemoryImage(base64Decode(value))
-                          : const NetworkImage(
-                                  "https://api.dicebear.com/7.x/initials/svg?seed=User")
+                          : const AssetImage(
+                                  'assets/images/default_profile.png')
                               as ImageProvider,
                     ),
                   ),
