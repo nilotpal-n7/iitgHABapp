@@ -51,13 +51,12 @@ const {
   sundayScheduler,
 } = require("./modules/hostel/hostelScheduler.js");
 const {
-  feedbackScheduler,
-  feedbackAutoScheduler,
-} = require("./modules/feedback/feedbackScheduler.js");
+  initializeFeedbackAutoScheduler,
+} = require("./modules/feedback/autoFeedbackScheduler.js");
 
 const {
-  initializeMessChangeScheduler,
-} = require("./modules/mess_change/messChangeScheduler.js");
+  initializeMessChangeAutoScheduler,
+} = require("./modules/mess_change/autoMessChangeScheduler.js");
 const messChangeRouter = require("./modules/mess_change/messchangeRoute.js");
 require("dotenv").config();
 
@@ -122,7 +121,12 @@ app.get("/api/swagger.json", (req, res) => {
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5174", "http://localhost:5173"], // your frontend port
+    origin: [
+      "http://localhost:5172", // Login frontend
+      "http://localhost:5173", // HAB frontend
+      "http://localhost:5174", // Hostel frontend
+      "http://localhost:5175", // SMC frontend
+    ],
     credentials: true, // allow cookies
   })
 );
@@ -139,11 +143,9 @@ mongoose
 
     sundayScheduler();
 
-    feedbackScheduler();
-    feedbackAutoScheduler();
-
-    // Initialize mess change automatic scheduler
-    initializeMessChangeScheduler();
+    // Initialize automatic schedulers for feedback and mess change
+    initializeFeedbackAutoScheduler();
+    initializeMessChangeAutoScheduler();
   })
   .catch((err) => console.log(err));
 

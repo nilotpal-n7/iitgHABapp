@@ -6,13 +6,19 @@ const {
 
 const {
   createHostel,
-  loginHostel,
+  loginHostelPassword,
   deleteHostel,
   getHostel,
   getHostelbyId,
   getAllHostels,
   getAllHostelsWithMess,
   getAllHostelNameAndCaterer,
+  getCatererInfo,
+  getBoarders,
+  getMessSubscribers,
+  markAsSMC,
+  unmarkAsSMC,
+  getSMCMembers,
 } = require("./hostelController.js");
 const { uploadData } = require("./hostelAlloc.js");
 const multer = require("multer");
@@ -190,7 +196,9 @@ hostelRouter.delete("/delete/:hostelId", deleteHostel);
  */
 hostelRouter.get("/all/:hostelId", getHostelbyId);
 
-hostelRouter.post("/login", loginHostel);
+// Legacy password-based login (for backward compatibility during migration)
+// Note: Web login is now handled by unified webLoginHandler at /api/auth/login/redirect/web?type=hostel
+hostelRouter.post("/login-password", loginHostelPassword);
 
 hostelRouter.get("/get", authenticateAdminJWT, getHostel);
 
@@ -245,5 +253,13 @@ hostelRouter.post("/gethnc", getAllHostelNameAndCaterer);
 
 // Allocation upload endpoint
 hostelRouter.post("/alloc/upload", upload.single("file"), uploadData);
+
+// Hostel-side routes (requires authentication)
+hostelRouter.get("/caterer-info", authenticateAdminJWT, getCatererInfo);
+hostelRouter.get("/boarders", authenticateAdminJWT, getBoarders);
+hostelRouter.get("/mess-subscribers", authenticateAdminJWT, getMessSubscribers);
+hostelRouter.get("/smc-members", authenticateAdminJWT, getSMCMembers);
+hostelRouter.post("/mark-smc", authenticateAdminJWT, markAsSMC);
+hostelRouter.post("/unmark-smc", authenticateAdminJWT, unmarkAsSMC);
 
 module.exports = hostelRouter;

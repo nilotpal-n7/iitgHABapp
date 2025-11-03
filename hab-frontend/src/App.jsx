@@ -1,4 +1,11 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider } from "./context/AuthProvider";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import Sidebar from "./Components/Sidebar";
 import Home from "./pages/Home";
 import Hostels from "./pages/Hostels";
@@ -17,41 +24,66 @@ import AllocateHostel from "./pages/AllocateHostel.jsx";
 import ProfileSettings from "./pages/ProfileSettings.jsx";
 import FeedbackControl from "./pages/FeedbackControl.jsx";
 import FeedbackLeaderboard from "./pages/FeedbackLeaderboard.jsx";
+import Notifications from "./pages/Notifications.jsx";
 
 function App() {
   return (
     <Router>
-      <div className="flex">
-        <Sidebar />
-        <div className="flex-1 ml-64 p-6 bg-gray-50 min-h-screen">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/hostels" element={<AllHostelList />} />
-            <Route path="/create-hostel" element={<HostelForm />} />
-            <Route path="/hostel/:hostelId" element={<HostelPage />} />
-            <Route path="/caterers" element={<Caterers />} />
-            <Route path="/students" element={<Students />} />
-            <Route path="/create-mess" element={<CreateMess />} />
-            <Route path="/mess/:id" element={<MessDetails />} />
-            <Route path="/mess/menu/:id" element={<MessMenu />} />
-            <Route
-              path="/mess/changeapplication"
-              element={
-                <>
-                  <MessChangePage />
-                </>
-              }
-            />
-            <Route path="/allocate-hostel" element={<AllocateHostel />} />
-            <Route path="/profile-settings" element={<ProfileSettings />} />
-            <Route path="/feedback-control" element={<FeedbackControl />} />
-            <Route
-              path="/feedback-leaderboard"
-              element={<FeedbackLeaderboard />}
-            />
-          </Routes>
-        </div>
-      </div>
+      <AuthProvider>
+        <Routes>
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <div className="flex">
+                  <Sidebar />
+                  <div className="flex-1 ml-64 p-6 bg-gray-50 min-h-screen">
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/hab/dashboard" element={<Home />} />
+                      <Route path="/hostels" element={<AllHostelList />} />
+                      <Route path="/create-hostel" element={<HostelForm />} />
+                      <Route
+                        path="/hostel/:hostelId"
+                        element={<HostelPage />}
+                      />
+                      <Route path="/caterers" element={<Caterers />} />
+                      <Route path="/students" element={<Students />} />
+                      <Route path="/create-mess" element={<CreateMess />} />
+                      <Route path="/mess/:id" element={<MessDetails />} />
+                      <Route path="/mess/menu/:id" element={<MessMenu />} />
+                      <Route
+                        path="/mess/changeapplication"
+                        element={<MessChangePage />}
+                      />
+                      <Route
+                        path="/allocate-hostel"
+                        element={<AllocateHostel />}
+                      />
+                      <Route
+                        path="/profile-settings"
+                        element={<ProfileSettings />}
+                      />
+                      <Route
+                        path="/feedback-control"
+                        element={<FeedbackControl />}
+                      />
+                      <Route
+                        path="/feedback-leaderboard"
+                        element={<FeedbackLeaderboard />}
+                      />
+                      <Route
+                        path="/notifications"
+                        element={<Notifications />}
+                      />
+                    </Routes>
+                  </div>
+                </div>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 }

@@ -1,23 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:frontend2/utilities/notifications.dart';
 
 class NotificationNotifier {
-  static ValueNotifier<List<String>> notifier = ValueNotifier([]);
-  static SharedPreferences? prefs;
+  // Delegate to the global notificationHistoryNotifier from notifications.dart
+  static ValueNotifier<List<dynamic>> get notifier =>
+      notificationHistoryNotifier;
 
-  static void init() async {
-    prefs = await SharedPreferences.getInstance();
-    notifier.value = prefs?.getStringList("notifications") ?? [];
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-      String? title = message.notification?.title ?? 'No Title';
-      String? body = message.notification?.body ?? 'No Body';
-      NotificationNotifier.addNewNotification(title, body);
-    });
-  }
-
-  static void addNewNotification(String title, String body) {
-    notifier.value.add('$title: $body');
-    prefs?.setStringList('notifications', notifier.value);
+  static void init() {
+    // The notifications.dart file handles all initialization
+    // This is just a compatibility wrapper
+    print('✅ NotificationNotifier initialized (using global notifier)');
   }
 }

@@ -1,7 +1,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -18,7 +17,6 @@ import 'package:frontend2/screens/mess_screen.dart';
 import 'package:frontend2/utilities/notifications.dart';
 import 'package:frontend2/utilities/startupitem.dart';
 import 'package:provider/provider.dart';
-import 'package:frontend2/utilities/Notifier.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,7 +50,7 @@ Future<void> main() async {
 
   await getUserMessInfo();
 
-  NotificationNotifier.init();
+  // NotificationNotifier.init(); // No longer needed - handled by listenNotifications()
 
   runApp(
     MultiProvider(
@@ -87,6 +85,7 @@ class _MyAppState extends State<MyApp> {
 
     isLoggedIn().then((asLoggedIn) => {if (asLoggedIn) registerFcmToken()});
     listenNotifications();
+    setNavigatorKey(navigatorKey); // Set global navigator key for notifications
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // This ensures it runs after the first frame
