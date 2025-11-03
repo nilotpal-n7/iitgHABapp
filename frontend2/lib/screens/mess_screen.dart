@@ -51,9 +51,9 @@ class _MessScreenState extends State<MessScreen> {
       _isLoading = false; // Only now we render
     });
 
-    print("Mess name: $caterername");
-    print("Rating: $rating");
-    print("Rank: $rank");
+    debugPrint("Mess name: $caterername");
+    debugPrint("Rating: $rating");
+    debugPrint("Rank: $rank");
   }
 
   Future<void> fetchCurrSubscrMess() async {
@@ -172,7 +172,7 @@ class _MenuSectionState extends State<_MenuSection> {
             : (byMessName?.isNotEmpty == true ? byMessName : null);
       });
     });
-    print("Selected Hostel rn: $selectedHostel");
+    debugPrint("Selected Hostel rn: $selectedHostel");
     _removeHostelListener = HostelsNotifier.addOnChange(
       () {
         if (!mounted) return;
@@ -252,7 +252,7 @@ class _MenuSectionState extends State<_MenuSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          FeedbackCard(),
+          const FeedbackCard(),
           const SizedBox(height: 24),
           Row(
             children: [

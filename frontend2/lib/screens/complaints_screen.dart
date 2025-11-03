@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/feedback_provider.dart';
-import '../../widgets/feedback/custom_option.dart';
 
 class ComplaintsScreen extends StatelessWidget {
+  const ComplaintsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,14 +15,14 @@ class ComplaintsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                          "Mess Complaints",
-                          style: TextStyle(
-                            fontFamily: 'OpenSans_regular',
-                            fontSize: 32,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF2E2F31),
-                          ),
-                        ),
+                  "Mess Complaints",
+                  style: TextStyle(
+                    fontFamily: 'OpenSans_regular',
+                    fontSize: 32,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2E2F31),
+                  ),
+                ),
                 const SizedBox(height: 32),
                 // const Text("Coming Soon...", style: TextStyle(color: Colors.deepPurple)),
                 // const SizedBox(height: 11),
