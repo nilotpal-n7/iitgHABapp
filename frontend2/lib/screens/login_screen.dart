@@ -32,7 +32,6 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   bool _inprogress = false;
 
-  // Next dbane ke baad GPT kia so yeah
   void _showBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -44,7 +43,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             return Stack(
               children: [
                 FractionallySizedBox(
-                  heightFactor: 0.3,
+                  heightFactor: 0.4, // slightly increased height
                   child: Container(
                     decoration: const BoxDecoration(
                       color: Colors.white,
@@ -54,60 +53,68 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Sign in',
-                            style: TextStyle(
-                              fontFamily: 'GeneralSans',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 32,
-                            ),
-                          ),
-                          const Divider(),
-                          const Text(
-                            'For Students',
-                            style: TextStyle(
-                              fontFamily: 'GeneralSans',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 14,
-                              color: Color(0xFF676767),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            height: 48,
-                            width: double.infinity,
-                            child: Material(
-                              color: const Color(0xFF4C4EDB),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50),
+                      padding: EdgeInsets.only(
+                        left: 24,
+                        right: 24,
+                        top: 24,
+                        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                      ),
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'Sign in',
+                              style: TextStyle(
+                                fontFamily: 'GeneralSans',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 32,
                               ),
-                              child: InkWell(
-                                splashColor: Colors.white,
-                                onTap: () async {
-                                  // Capture navigator and messenger before async gaps
-                                  final navigator = Navigator.of(context);
-                                  final messenger =
-                                      ScaffoldMessenger.of(context);
-                                  try {
-                                    setModalState(() {
-                                      _inprogress = true;
-                                    });
-                                    await authenticate();
-                                    setModalState(() {
-                                      _inprogress = false;
-                                    });
-                                    if (!mounted) return;
-                                    navigator.pushReplacement(
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const MainNavigationScreen(),
-                                      ),
-                                    );
-                                    if (mounted) {
+                            ),
+                            const Divider(),
+                            const Text(
+                              'For Students',
+                              style: TextStyle(
+                                fontFamily: 'GeneralSans',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14,
+                                color: Color(0xFF676767),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+
+                            // Microsoft login
+                            SizedBox(
+                              height: 48,
+                              width: double.infinity,
+                              child: Material(
+                                color: const Color(0xFF4C4EDB),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(50),
+                                ),
+                                child: InkWell(
+                                  splashColor: Colors.white,
+                                  onTap: () async {
+                                    final navigator = Navigator.of(context);
+                                    final messenger =
+                                        ScaffoldMessenger.of(context);
+                                    try {
+                                      setModalState(() {
+                                        _inprogress = true;
+                                      });
+                                      await authenticate();
+                                      setModalState(() {
+                                        _inprogress = false;
+                                      });
+                                      if (!mounted) return;
+                                      navigator.pushReplacement(
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const MainNavigationScreen(),
+                                        ),
+                                      );
                                       messenger.showSnackBar(
                                         const SnackBar(
                                           content: Center(
@@ -125,12 +132,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                               Duration(milliseconds: 1000),
                                         ),
                                       );
-                                    }
-                                  } catch (e) {
-                                    setModalState(() {
-                                      _inprogress = false;
-                                    });
-                                    if (mounted) {
+                                    } catch (e) {
+                                      setModalState(() {
+                                        _inprogress = false;
+                                      });
                                       messenger.showSnackBar(
                                         const SnackBar(
                                           content: Center(
@@ -149,52 +154,55 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                         ),
                                       );
                                     }
-                                  }
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.all(15),
-                                  child: LoginButton(),
+                                  },
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(15),
+                                    child: LoginButton(),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          // Guest login button
-                          SizedBox(
-                            height: 48,
-                            width: double.infinity,
-                            child: Material(
-                              color: const Color(0xFF2E2E2E),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              child: InkWell(
-                                splashColor: Colors.white24,
-                                onTap: () {
-                                  // Show guest login dialog
-                                  showDialog(
-                                    context: context,
-                                    builder: (ctx) => GuestLoginDialog(),
-                                  );
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.all(12),
-                                  child: Center(
-                                    child: Text(
-                                      'Sign in as Guest',
-                                      style: TextStyle(
+
+                            const SizedBox(height: 10),
+
+                            // Guest login
+                            SizedBox(
+                              height: 48,
+                              width: double.infinity,
+                              child: Material(
+                                color: const Color(0xFF2E2E2E),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(50),
+                                ),
+                                child: InkWell(
+                                  splashColor: Colors.white24,
+                                  onTap: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (ctx) =>
+                                          const GuestLoginDialog(),
+                                    );
+                                  },
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(12),
+                                    child: Center(
+                                      child: Text(
+                                        'Sign in as Guest',
+                                        style: TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.w500,
                                           fontSize: 14,
-                                          fontFamily: 'GeneralSans'),
+                                          fontFamily: 'GeneralSans',
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 14),
-                        ],
+                            const SizedBox(height: 14),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -204,12 +212,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 if (_inprogress)
                   Positioned.fill(
                     child: AbsorbPointer(
-                      absorbing: true, // Disable taps when loading
+                      absorbing: true,
                       child: Container(
                         color: const Color.fromRGBO(0, 0, 0, 0.7),
                         child: Center(
                           child: Lottie.asset(
-                            'assets/lottie/loader.json', // your loader path
+                            'assets/lottie/loader.json',
                             width: 240,
                             height: 240,
                             fit: BoxFit.contain,
@@ -228,9 +236,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //Note we have to take care of every screen this app runs so from bginning we have to make sure screensize
     final screenSize = MediaQuery.of(context).size;
-    final isSmallScreen = screenSize.height < 700; //doesnt exist
+    final isSmallScreen = screenSize.height < 700;
 
     return Scaffold(
       body: Container(
@@ -238,7 +245,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         child: SafeArea(
           child: Stack(
             children: [
-              // Background frame
               Positioned.fill(
                 top: MediaQuery.of(context).size.height * 0.3,
                 child: Image.asset(
@@ -246,24 +252,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   fit: BoxFit.contain,
                 ),
               ),
-
-              // Main Content
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Adjust top spacing based on screen size small screen size
-                    SizedBox(
-                        height: isSmallScreen ? 20.0 : 40.0), // 20 40 is fine
-
-                    // Header Frame with Welcome text
+                    SizedBox(height: isSmallScreen ? 20.0 : 40.0),
                     Center(
                       child: SizedBox(
-                        width: screenSize.width *
-                            0.9, // Responsive width // no changes here needed
-                        height:
-                            isSmallScreen ? 120.0 : 152.0, // Responsive height
+                        width: screenSize.width * 0.9,
+                        height: isSmallScreen ? 120.0 : 152.0,
                         child: const Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -289,89 +287,71 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                       ),
                     ),
-
-                    // Adjustable spacing based on screen size
-                    SizedBox(
-                        height: isSmallScreen ? 24.0 : 48.0), // here it is fine
-
-                    // Feature buttons Stack in a flexible container
+                    SizedBox(height: isSmallScreen ? 24.0 : 48.0),
                     Expanded(
-                      flex: 3, // Give it proportional space
+                      flex: 3,
                       child: LayoutBuilder(
-                        // this logic is IMP
                         builder: (context, constraints) {
-                          // Calculate scaling factor based on available height
                           final double scaleFactor =
                               constraints.maxHeight / 240.0;
                           return Stack(
-                            fit: StackFit.expand, // Use all available space
+                            fit: StackFit.expand,
                             children: [
-                              // Feedbacks button
                               Positioned(
                                 left: 20 * scaleFactor,
                                 top: 20 * scaleFactor,
                                 child: const FeatureButton(
                                   text: 'Feedbacks',
-                                  color: Color(0xFF1F7157), // Green
+                                  color: Color(0xFF1F7157),
                                   imagePath:
                                       'assets/images/features/feedback.png',
                                 ),
                               ),
-
-                              // Canteens button
                               Positioned(
                                 right: 20 * scaleFactor,
                                 top: 20 * scaleFactor,
                                 child: const FeatureButton(
                                   text: 'Canteens',
-                                  color: Color(0xFF4E46B4), // Purple
+                                  color: Color(0xFF4E46B4),
                                   imagePath:
                                       'assets/images/features/canteens.png',
                                 ),
                               ),
-
-                              // Mess button
                               Positioned(
                                 left: 50 * scaleFactor,
                                 top: 90 * scaleFactor,
                                 child: const FeatureButton(
                                   text: 'Mess',
-                                  color: Color(0xFF4E46B4), // Purple
+                                  color: Color(0xFF4E46B4),
                                   imagePath: 'assets/images/features/mess.png',
                                 ),
                               ),
-
-                              // Complaints button
                               Positioned(
                                 right: 50 * scaleFactor,
                                 top: 100 * scaleFactor,
                                 child: const FeatureButton(
                                   text: 'Complaints',
-                                  color: Color(0xFFD14B65), // Red
+                                  color: Color(0xFFD14B65),
                                   imagePath:
                                       'assets/images/features/complaints.png',
                                 ),
                               ),
-
-                              // Updates button
                               Positioned(
                                 left: 40 * scaleFactor,
                                 top: 160 * scaleFactor,
                                 child: const FeatureButton(
                                   text: 'Updates',
-                                  color: Color(0xFFB27C38), // Orange/Brown
+                                  color: Color(0xFFB27C38),
                                   imagePath:
                                       'assets/images/features/updates.png',
                                 ),
                               ),
-
-                              // Schedules button
                               Positioned(
                                 right: 40 * scaleFactor,
                                 top: 160 * scaleFactor,
                                 child: const FeatureButton(
                                   text: 'Schedules',
-                                  color: Color(0xFF1F7157), // Green
+                                  color: Color(0xFF1F7157),
                                   imagePath:
                                       'assets/images/features/schedules.png',
                                 ),
@@ -381,8 +361,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         },
                       ),
                     ),
-
-                    //  to handle overflow when testing on different devices
                     const Expanded(
                       flex: 1,
                       child: SingleChildScrollView(
@@ -409,18 +387,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                       ),
                     ),
-                    // Next Button - In SafeArea to avoid bottom system UI(IMP)
                     SafeArea(
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 16.0),
                         child: ElevatedButton(
-                          onPressed: () {
-                            // make sure to Show bottom sheet when Next is tapped
-                            _showBottomSheet(context);
-                          },
+                          onPressed: () => _showBottomSheet(context),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color(0xFF6149CD), // Purple color
+                            backgroundColor: const Color(0xFF6149CD),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30.0),
                             ),
@@ -448,7 +421,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-// made a widget for above feature buttons
 class FeatureButton extends StatelessWidget {
   final String text;
   final Color color;
@@ -487,7 +459,6 @@ class FeatureButton extends StatelessWidget {
   }
 }
 
-// Dialog to enter guest email & password
 class GuestLoginDialog extends StatefulWidget {
   const GuestLoginDialog({super.key});
 
@@ -509,17 +480,16 @@ class _GuestLoginDialogState extends State<GuestLoginDialog> {
 
   Future<void> _attemptGuestLogin() async {
     final navigator = Navigator.of(context);
-    // Prefer the root scaffold messenger (from the app's navigatorKey) because
-    // this dialog's context may not have a Scaffold ancestor.
     final messenger = (navigatorKey.currentContext != null)
         ? ScaffoldMessenger.of(navigatorKey.currentContext!)
         : ScaffoldMessenger.of(context);
+
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     if (email.isEmpty || password.isEmpty) {
-      messenger.showSnackBar(const SnackBar(
-        content: Text('Please enter email and password'),
-      ));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Please enter email and password')),
+      );
       return;
     }
 
@@ -528,40 +498,42 @@ class _GuestLoginDialogState extends State<GuestLoginDialog> {
       await guestAuthenticate(email, password);
       setState(() => _inProgress = false);
       if (!mounted) return;
-      navigator.pop(); // close dialog
-      // Navigate to main screen
+      navigator.pop();
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (ctx) => const MainNavigationScreen()),
       );
-      messenger.showSnackBar(const SnackBar(
-        content: Center(
-          child: Text(
-            'Successfully Logged In as Guest',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white),
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Center(
+            child: Text(
+              'Successfully Logged In as Guest',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white),
+            ),
           ),
+          backgroundColor: Colors.black,
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(50),
+          duration: Duration(milliseconds: 1000),
         ),
-        backgroundColor: Colors.black,
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(50),
-        duration: Duration(milliseconds: 1000),
-      ));
+      );
     } catch (e) {
       setState(() => _inProgress = false);
-      if (!mounted) return;
-      messenger.showSnackBar(const SnackBar(
-        content: Center(
-          child: Text(
-            'Guest login failed',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white),
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Center(
+            child: Text(
+              'Guest login failed',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white),
+            ),
           ),
+          backgroundColor: Colors.black,
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(50),
+          duration: Duration(milliseconds: 1000),
         ),
-        backgroundColor: Colors.black,
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(50),
-        duration: Duration(milliseconds: 1000),
-      ));
+      );
     }
   }
 
