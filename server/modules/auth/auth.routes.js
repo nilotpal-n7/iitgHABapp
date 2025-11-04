@@ -6,6 +6,7 @@ const {
   mobileRedirectHandler,
   loginHandler,
   logoutHandler,
+  guestLoginHandler,
   webLoginHandler,
 } = require("./auth.controller.js");
 
@@ -86,6 +87,9 @@ router.get("/login/redirect/mobile", mobileRedirectHandler);
 router.get("/login/redirect/web", webLoginHandler);
 
 router.get("/logout", logoutHandler);
+
+// Guest login (POST) - accepts { email, password } and returns a JWT on success
+router.post("/guest", guestLoginHandler);
 
 // Exporting the router
 module.exports = router;
