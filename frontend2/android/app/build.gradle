@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id "com.android.application"
     id "org.jetbrains.kotlin.android"
@@ -6,14 +9,22 @@ plugins {
     id "com.google.gms.google-services"
 }
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+} else {
+    println("⚠️ Warning: key.properties not found — release signing may fail.")
+}
+
 android {
-    namespace = "in.codingclub.hab"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
+    namespace "in.codingclub.hab"
+    compileSdk flutter.compileSdkVersion
+    ndkVersion "27.0.12077973"
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
         coreLibraryDesugaringEnabled true
     }
 
@@ -22,25 +33,40 @@ android {
     }
 
     defaultConfig {
-        applicationId = "in.codingclub.hab"
-        minSdkVersion = 24
-        targetSdkVersion = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
-        manifestPlaceholders += [appAuthRedirectScheme: "placeholder-text"]
+        applicationId "in.codingclub.hab"
+        minSdkVersion 23
+        targetSdkVersion flutter.targetSdkVersion
+        versionCode project.hasProperty("flutterVersionCode") ? flutterVersionCode.toInteger() : 1
+        versionName project.hasProperty("flutterVersionName") ? flutterVersionName : "1.0"
+        manifestPlaceholders = [appAuthRedirectScheme: "placeholder-text"]
+    }
+
+    signingConfigs {
+        release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storePassword keystoreProperties['storePassword']
+        }
     }
 
     buildTypes {
         release {
-            // For now, sign with debug key until you add a release keystore
-            signingConfig = signingConfigs.debug
+            signingConfig signingConfigs.release
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            signingConfig signingConfigs.debug
         }
     }
 }
 
 flutter {
-    source = "../.."
+    source "../.."
 }
+
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }
