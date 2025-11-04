@@ -49,6 +49,43 @@ Future<void> authenticate() async {
   }
 }
 
+/// Authenticate using guest credentials stored on the server.
+/// Sends email & password to server and expects JSON { token }
+Future<void> guestAuthenticate(String email, String password) async {
+  try {
+    final dio = Dio();
+    final resp = await dio.post(
+      '$baseUrl/auth/guest',
+      data: {
+        'email': email,
+        'password': password,
+      },
+      options: Options(headers: {'Content-Type': 'application/json'}),
+    );
+
+    if (resp.statusCode != 200 ||
+        resp.data == null ||
+        resp.data['token'] == null) {
+      throw ('Guest login failed');
+    }
+
+    final accessToken = resp.data['token'] as String;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('access_token', accessToken);
+
+    // Reuse post-login initialization
+    await fetchUserDetails();
+    await getUserMessInfo();
+    await registerFcmToken();
+    await HostelsNotifier.init();
+    ProfilePictureProvider.init();
+  } catch (e, st) {
+    debugPrint('Error in guestAuthenticate: $e');
+    debugPrint(st.toString());
+    rethrow;
+  }
+}
+
 Future<void> logoutHandler(context) async {
   try {
     final dio = Dio();

@@ -327,9 +327,92 @@ const webLoginHandler = async (req, res, next) => {
 };
 
 // Exporting the handlers
+// Guest login handler - compares posted credentials with env vars and returns JWT
+const guestLoginHandler = async (req, res, next) => {
+  try {
+    const { email, password } = req.body || {};
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password required" });
+    }
+
+    const GUEST_EMAIL = process.env.GUEST_EMAIL;
+    const GUEST_PASSWORD = process.env.GUEST_EMAIL_PASSWORD;
+
+    if (!GUEST_EMAIL || !GUEST_PASSWORD) {
+      return next(
+        new AppError(500, "Guest credentials not configured on server")
+      );
+    }
+
+    if (
+      email.toLowerCase() !== GUEST_EMAIL.toLowerCase() ||
+      password !== GUEST_PASSWORD
+    ) {
+      return res.status(401).json({ message: "Invalid guest credentials" });
+    }
+
+    // Find the guest user in DB
+    let existingUser = await findUserWithEmail(email);
+    if (!existingUser) {
+      // Create a guest user using the roll number and allocate hostel similar to normal auth
+      const GUEST_ROLL = process.env.GUEST_ROLL;
+
+      // Try to fetch allocation by roll (mirrors mobileRedirectHandler)
+      let allocatedHostel = null;
+      if (GUEST_ROLL) {
+        try {
+          allocatedHostel = await getHostelAlloc(GUEST_ROLL);
+        } catch (e) {
+          console.error("Error fetching hostel allocation for guest roll:", e);
+        }
+      }
+
+      const userData = {
+        name: process.env.GUEST_NAME || "Guest User",
+        degree: "BTech",
+        rollNumber: GUEST_ROLL,
+        email: email,
+      };
+
+      if (allocatedHostel) {
+        userData.hostel = allocatedHostel._id;
+        userData.curr_subscribed_mess = allocatedHostel._id;
+      } else {
+        return next(new AppError(500, "Guest hostel allocation not found"));
+      }
+
+      try {
+        const user = new User(userData);
+        existingUser = await user.save();
+        // send welcome notification (best-effort)
+        try {
+          await sendNotificationToUser(
+            existingUser._id,
+            "Welcome to HAB App",
+            "Thanks for signing in! You will receive updates here."
+          );
+        } catch (e) {
+          console.log("Failed to send welcome notification to guest:", e);
+        }
+      } catch (e) {
+        console.error("Failed to create guest user:", e);
+        return next(new AppError(500, "Failed to create guest user"));
+      }
+    }
+
+    const token = existingUser.generateJWT();
+    return res.status(200).json({ token });
+  } catch (err) {
+    console.error("Error in guestLoginHandler:", err);
+    return next(new AppError(500, "Error during guest login"));
+  }
+};
+
+// Exporting the handlers
 module.exports = {
   loginHandler,
   mobileRedirectHandler,
   logoutHandler,
+  guestLoginHandler,
   webLoginHandler,
 };
