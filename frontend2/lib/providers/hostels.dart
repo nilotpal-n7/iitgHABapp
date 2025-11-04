@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:frontend2/constants/endpoint.dart';
 import 'package:frontend2/screens/mess_screen.dart';
 import 'package:frontend2/widgets/common/hostel_name.dart';
@@ -9,6 +11,7 @@ class HostelsNotifier {
   static String userHostel = "";
   static var hostelNotifier = ValueNotifier<List<String>>([]);
   static var hostels = <String>[];
+  static var hostelIdToNameMap = <String, String>{};
   static var onHostelChanged = <void Function()>[];
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -18,9 +21,19 @@ class HostelsNotifier {
         '$baseUrl/hostel/all', // Match your backend route
       );
       hostels = [];
+      hostelIdToNameMap = {};
       for (Map hostel in response.data) {
-        hostels.add(hostel['hostel_name']);
+        final hostelName = hostel['hostel_name'] as String;
+        final hostelId = hostel['_id'] as String;
+        hostels.add(hostelName);
+        hostelIdToNameMap[hostelId] = hostelName;
       }
+      // Store the mapping in SharedPreferences for offline access
+      final mapJson =
+          hostelIdToNameMap.map((key, value) => MapEntry(key, value));
+      await prefs.setString('hostelIdToNameMap', jsonEncode(mapJson));
+      // Update the cache in hostel_name.dart
+      updateHostelIdCache(hostelIdToNameMap);
     } catch (e) {
       hostels = [
         'Barak',
@@ -37,6 +50,19 @@ class HostelsNotifier {
         'Subansiri',
         'Umiam',
       ];
+      // Try to load cached mapping if API call fails
+      try {
+        final cachedMap = prefs.getString('hostelIdToNameMap');
+        if (cachedMap != null) {
+          final map = jsonDecode(cachedMap) as Map<String, dynamic>;
+          hostelIdToNameMap =
+              map.map((key, value) => MapEntry(key, value.toString()));
+          // Update the cache in hostel_name.dart
+          updateHostelIdCache(hostelIdToNameMap);
+        }
+      } catch (_) {
+        // If cache is also unavailable, map will remain empty
+      }
     } finally {
       hostelNotifier.value = hostels;
 
@@ -68,8 +94,8 @@ class HostelsNotifier {
       // If the callback fails (for example, because the widget that added it
       // is no longer mounted), swallow the error here — callers should still
       // receive the callback registration and can remove it later.
-      print('HostelsNotifier.addOnChange initial call failed: $e');
-      print(st);
+      debugPrint('HostelsNotifier.addOnChange initial call failed: $e');
+      debugPrint('$st');
     }
     onHostelChanged.add(func);
     return () {

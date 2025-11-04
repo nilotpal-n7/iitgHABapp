@@ -2,6 +2,9 @@ const { User } = require("../user/userModel");
 const { Hostel } = require("../hostel/hostelModel");
 const Feedback = require("./feedbackModel");
 const { FeedbackSettings } = require("./feedbackSettingsModel");
+const {
+  sendNotificationMessage,
+} = require("../notification/notificationController");
 
 const ratingMap = {
   "Very Poor": 1,
@@ -181,7 +184,20 @@ const enableFeedback = async (req, res) => {
     s.isEnabled = true;
     s.enabledAt = new Date();
     s.disabledAt = null;
+
+    // Set closing time (2 days from now, end of day)
+    const closingDate = new Date(s.enabledAt);
+    closingDate.setDate(closingDate.getDate() + 2);
+    closingDate.setHours(23, 59, 59, 999);
+    s.currentWindowClosingTime = closingDate;
+
     await s.save();
+    sendNotificationMessage(
+      "MESS FEEDBACK",
+      "Mess Feedback for this month is enabled",
+      "All_Hostels",
+      { redirectType: "mess_screen", isAlert: "true" }
+    );
     return res.status(200).json({ message: "Feedback enabled", data: s });
   } catch (e) {
     return res
@@ -202,6 +218,64 @@ const disableFeedback = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Failed to disable", error: String(e.message || e) });
+  }
+};
+
+// Helper to enable feedback automatically (non-Express) so schedulers can call it
+const enableFeedbackAutomatic = async () => {
+  try {
+    let s = await FeedbackSettings.findOne();
+    if (!s) {
+      s = new FeedbackSettings();
+      s.currentWindowNumber = 1;
+    }
+
+    // If enabling a new window, increment window number and reset user submission flags
+    if (!s.isEnabled) {
+      s.currentWindowNumber += 1;
+      await User.updateMany({}, { $set: { isFeedbackSubmitted: false } });
+    }
+
+    s.isEnabled = true;
+    s.enabledAt = new Date();
+    s.disabledAt = null;
+
+    // Set closing time (2 days from now, end of day)
+    const closingDate = new Date(s.enabledAt);
+    closingDate.setDate(closingDate.getDate() + 2);
+    closingDate.setHours(23, 59, 59, 999);
+    s.currentWindowClosingTime = closingDate;
+
+    await s.save();
+    sendNotificationMessage(
+      "MESS FEEDBACK",
+      "Mess Feedback for this month is enabled",
+      "All_Hostels",
+      { redirectType: "mess_screen", isAlert: "true" }
+    );
+    console.log("✅ Feedback enabled automatically");
+    return { success: true, settings: s };
+  } catch (e) {
+    console.error("❌ Error enabling feedback automatically:", e);
+    return { success: false, error: e };
+  }
+};
+
+// Helper to disable feedback automatically (non-Express)
+const disableFeedbackAutomatic = async () => {
+  try {
+    let s = await FeedbackSettings.findOne();
+    if (!s) return { success: false, error: "Settings not found" };
+
+    s.isEnabled = false;
+    s.disabledAt = new Date();
+    await s.save();
+
+    console.log("✅ Feedback disabled automatically");
+    return { success: true, settings: s };
+  } catch (e) {
+    console.error("❌ Error disabling feedback automatically:", e);
+    return { success: false, error: e };
   }
 };
 
@@ -553,23 +627,36 @@ const getFeedbackWindowTimeLeft = async (req, res) => {
         .status(200)
         .json({ timeLeft: 0, unit: "minutes", formatted: "Closed" });
     }
-    const minutes = Math.floor(diffMs / 60000);
-    const hours = Math.floor(diffMs / (60 * 60000));
-    const days = Math.floor(diffMs / (24 * 60 * 60000));
+    const totalMinutes = Math.floor(diffMs / 60000);
+    const totalHours = Math.floor(diffMs / (60 * 60000));
+    const days = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+    const hours = Math.floor(
+      (diffMs % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)
+    );
+    const minutes = Math.floor((diffMs % (60 * 60 * 1000)) / (60 * 1000));
+
     let formatted = "";
     let unit = "minutes";
     if (days >= 1) {
-      formatted = `${days} day${days > 1 ? "s" : ""} ${hours % 24} hour${
-        hours % 24 !== 1 ? "s" : ""
-      }`;
+      if (hours > 0) {
+        formatted = `${days} day${days > 1 ? "s" : ""} ${hours} hour${
+          hours !== 1 ? "s" : ""
+        }`;
+      } else {
+        formatted = `${days} day${days > 1 ? "s" : ""}`;
+      }
       unit = "days";
-    } else if (hours >= 1) {
-      formatted = `${hours} hour${hours !== 1 ? "s" : ""} ${
-        minutes % 60
-      } minute${minutes % 60 !== 1 ? "s" : ""}`;
+    } else if (totalHours >= 1) {
+      if (minutes > 0) {
+        formatted = `${totalHours} hour${
+          totalHours !== 1 ? "s" : ""
+        } ${minutes} minute${minutes !== 1 ? "s" : ""}`;
+      } else {
+        formatted = `${totalHours} hour${totalHours !== 1 ? "s" : ""}`;
+      }
       unit = "hours";
     } else {
-      formatted = `${minutes} minute${minutes !== 1 ? "s" : ""}`;
+      formatted = `${totalMinutes} minute${totalMinutes !== 1 ? "s" : ""}`;
       unit = "minutes";
     }
     return res.status(200).json({ timeLeft: diffMs, unit, formatted });
@@ -587,6 +674,8 @@ module.exports = {
   getAllFeedback,
   enableFeedback,
   disableFeedback,
+  enableFeedbackAutomatic,
+  disableFeedbackAutomatic,
   getFeedbackSettings,
   getFeedbackSettingsPublic,
   getFeedbackLeaderboard,

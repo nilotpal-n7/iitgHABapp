@@ -1,5 +1,6 @@
 // lib/apis/mess/menu_like.dart
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/endpoint.dart';
 
@@ -22,7 +23,7 @@ class MenuLikeAPI {
 
       return response.statusCode == 200;
     } catch (e) {
-      print('Error toggling like: $e');
+      debugPrint('Error toggling like: $e');
       return false;
     }
   }

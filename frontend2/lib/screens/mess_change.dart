@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'Dropdown Demo',
       home: MessChangeReq(),
     );
@@ -15,8 +17,10 @@ class MyApp extends StatelessWidget {
 }
 
 class MessChangeReq extends StatefulWidget {
+  const MessChangeReq({super.key});
+
   @override
-  _MessChangeReqState createState() => _MessChangeReqState();
+  State<MessChangeReq> createState() => _MessChangeReqState();
 }
 
 class _MessChangeReqState extends State<MessChangeReq> {
@@ -41,9 +45,12 @@ class _MessChangeReqState extends State<MessChangeReq> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mess Preference',style: TextStyle(
-          fontWeight: FontWeight.w700,
-        ),),
+        title: const Text(
+          'Mess Preference',
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
       backgroundColor: Colors.white,
       body: Padding(

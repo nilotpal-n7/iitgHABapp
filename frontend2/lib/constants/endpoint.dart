@@ -15,23 +15,15 @@ class UserEndpoints {
   static const String saveUser = '$baseUrl/users/save';
 }
 
-class itemEndpoint {
+class ItemEndpoint {
   static const String getitem = '$baseUrl/items/';
 }
 
-class hostelEndpoint {
+class HostelEndpoint {
   static const String getitem = '$baseUrl/hostel/';
 }
 
-class authendpoint {
-  static const String Authendpoint =
-      'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize';
-}
-
-class tokenendpoint {
-  static const Tokenendpoint =
-      'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token';
-}
+// Legacy/duplicate auth endpoints removed - use `AuthEndpoints` instead.
 
 class AuthEndpoints {
   static const String getAccess =
@@ -42,23 +34,16 @@ class Userendpoints {
   static const getdetails = 'https://graph.microsoft.com/v1.0/me';
 }
 
-class tokenlink {
-  static const Tokenlink =
-      'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token';
-}
+// Legacy token link removed - use `AuthEndpoints` or platform-specific config.
 
-class redirecturi {
-  static const Redirecturi = '${baseUrl}/auth/login/redirect/mobile';
-}
-
-class messFeedback {
+class MessFeedback {
   static const feedbackSubmit = "$baseUrl/feedback/submit";
   static const feedbackSubmitted = "$baseUrl/feedback/submitted";
   static const feedbackSettings = "$baseUrl/feedback/settings";
   static const windowTimeLeft = "$baseUrl/feedback/window-time-left";
 }
 
-class messInfo {
+class MessInfo {
   static const getMessInfo = "$baseUrl/mess/all";
   static const getUserMessInfo = "$baseUrl/mess/get";
 }

@@ -9,6 +9,7 @@ import {
   BarChartOutlined,
   UploadOutlined,
   SettingOutlined,
+  NotificationOutlined,
 } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 
@@ -70,6 +71,12 @@ const Sidebar = () => {
       path: "/feedback-leaderboard",
       icon: <BarChartOutlined />,
     },
+    {
+      key: "10",
+      name: "Send Notifications",
+      path: "/notifications",
+      icon: <NotificationOutlined />,
+    },
   ];
 
   useEffect(() => {
@@ -84,6 +91,7 @@ const Sidebar = () => {
       "/profile-settings": "7",
       "/feedback-control": "8",
       "/feedback-leaderboard": "9",
+      "/notifications": "10",
     };
     setSelectedKey(mapping[currentPath] || "1");
   }, []);

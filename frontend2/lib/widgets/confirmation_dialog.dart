@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class ConfirmationDialog extends StatelessWidget {
   final VoidCallback onConfirm;
 
-  const ConfirmationDialog({Key? key, required this.onConfirm}) : super(key: key);
+  const ConfirmationDialog({super.key, required this.onConfirm});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,10 @@ class ConfirmationDialog extends StatelessWidget {
             const SizedBox(height: 16),
             const Text(
               "Your choice has been submitted",
-              style: TextStyle(fontFamily: 'OpenSans_regular',fontSize: 14, fontWeight: FontWeight.w300),
+              style: TextStyle(
+                  fontFamily: 'OpenSans_regular',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w300),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -42,11 +45,15 @@ class ConfirmationDialog extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 39, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 39, vertical: 12),
               ),
               child: const Text(
                 "Close",
-                style: TextStyle(fontFamily: 'OpenSans_regular',color: Colors.white, fontSize: 16),
+                style: TextStyle(
+                    fontFamily: 'OpenSans_regular',
+                    color: Colors.white,
+                    fontSize: 16),
               ),
             ),
           ],

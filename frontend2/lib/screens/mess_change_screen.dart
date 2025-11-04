@@ -65,7 +65,8 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
     super.dispose();
   }
 
-  late String Message = 'You can apply for any Hostel';
+  // Renamed to lowerCamelCase to satisfy linter
+  late String message = 'You can apply for any Hostel';
 
   // Check if the button should be enabled
   Future<void> _checkAllowedDays() async {
@@ -73,7 +74,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
     final prefs = await SharedPreferences.getInstance();
     final clicked = prefs.getBool('buttonpressed') ?? false;
     final gotMess1 = prefs.getBool('gotMess') ?? false;
-    print("you pressed : $clicked");
+    debugPrint("you pressed : $clicked");
     // Update the state based on the condition
 
     setState(() {
@@ -81,7 +82,7 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
       isSubmitted = clicked;
       gotMess = gotMess1;
     });
-    print("isSubmitted is: $isSubmitted");
+    debugPrint("isSubmitted is: $isSubmitted");
   }
 
   void getAllocatedHostel() async {
@@ -113,12 +114,12 @@ class _MessChangeScreenState extends State<MessChangeScreen> {
         _isloading = false; // Hide the loading indicator imp
       });
     } else {
-      print("Failed to load user details.");
+      debugPrint("Failed to load user details.");
       setState(() {
         _isloading =
             false; // Hide the loading indicator if data fetching fails need to keep track of stuff
       });
-      showSnackBar('Something Went Wrong', Colors.black, context);
+      if (mounted) showSnackBar('Something Went Wrong', Colors.black, context);
     }
   }
 

@@ -6,10 +6,9 @@ import 'package:frontend2/apis/protected.dart';
 import 'package:frontend2/apis/users/user.dart';
 import 'package:frontend2/constants/endpoint.dart';
 import 'package:frontend2/main.dart';
-import 'package:frontend2/providers/feedback_provider.dart';
 import 'package:frontend2/providers/hostels.dart';
 import 'package:frontend2/screens/initial_setup_screen.dart';
-import 'package:provider/provider.dart';
+// provider import removed (unused in this file)
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:dio/dio.dart';
@@ -21,11 +20,10 @@ Future<void> authenticate() async {
     final result = await FlutterWebAuth2.authenticate(
         url: AuthEndpoints.getAccess, callbackUrlScheme: "iitgcomplain");
 
-    print("result: $result");
+    debugPrint("result: $result");
 
     final accessToken = Uri.parse(result).queryParameters['token'];
-    print("access token is");
-
+    debugPrint("access token is");
     debugPrint(accessToken);
 
     final prefs = await SharedPreferences.getInstance();
@@ -45,8 +43,45 @@ Future<void> authenticate() async {
   } catch (e, st) {
     // Better debugging output: print the error and stacktrace so we can see why
     // FlutterWebAuth2 failed to return the expected redirect URL (or token).
-    print('Error in getting code: $e');
-    print(st);
+    debugPrint('Error in getting code: $e');
+    debugPrint(st.toString());
+    rethrow;
+  }
+}
+
+/// Authenticate using guest credentials stored on the server.
+/// Sends email & password to server and expects JSON { token }
+Future<void> guestAuthenticate(String email, String password) async {
+  try {
+    final dio = Dio();
+    final resp = await dio.post(
+      '$baseUrl/auth/guest',
+      data: {
+        'email': email,
+        'password': password,
+      },
+      options: Options(headers: {'Content-Type': 'application/json'}),
+    );
+
+    if (resp.statusCode != 200 ||
+        resp.data == null ||
+        resp.data['token'] == null) {
+      throw ('Guest login failed');
+    }
+
+    final accessToken = resp.data['token'] as String;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('access_token', accessToken);
+
+    // Reuse post-login initialization
+    await fetchUserDetails();
+    await getUserMessInfo();
+    await registerFcmToken();
+    await HostelsNotifier.init();
+    ProfilePictureProvider.init();
+  } catch (e, st) {
+    debugPrint('Error in guestAuthenticate: $e');
+    debugPrint(st.toString());
     rethrow;
   }
 }
@@ -55,10 +90,10 @@ Future<void> logoutHandler(context) async {
   try {
     final dio = Dio();
     // Don't throw on non-2xx so we can handle 404s gracefully
-    await dio.get('${baseUrl}/auth/logout',
+    await dio.get('$baseUrl/auth/logout',
         options: Options(validateStatus: (status) => true));
   } catch (e) {
-    print('Warning: server logout failed: $e');
+    debugPrint('Warning: server logout failed: $e');
   }
 
   final prefs = await SharedPreferences.getInstance();
@@ -85,7 +120,7 @@ Future<void> logoutHandler(context) async {
         (route) => false,
       );
     } catch (e) {
-      print('Navigation to login failed: $e');
+      debugPrint('Navigation to login failed: $e');
     }
   }
 }
@@ -99,11 +134,11 @@ Future<void> signInWithApple() async {
       ],
     );
 
-    print('User ID: ${credential.userIdentifier}');
-    print('Email: ${credential.email}');
-    print('Full Name: ${credential.givenName} ${credential.familyName}');
+    debugPrint('User ID: ${credential.userIdentifier}');
+    debugPrint('Email: ${credential.email}');
+    debugPrint('Full Name: ${credential.givenName} ${credential.familyName}');
   } catch (e) {
-    print('Error during Apple Sign-In: $e');
+    debugPrint('Error during Apple Sign-In: $e');
   }
 }
 

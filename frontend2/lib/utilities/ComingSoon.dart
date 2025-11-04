@@ -1,20 +1,26 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
-import 'package:frontend2/screens/MainNavigationScreen.dart';
+import 'package:frontend2/screens/main_navigation_screen.dart';
 
 class ComingSoonScreen extends StatelessWidget {
   const ComingSoonScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(
-      backgroundColor: Colors.white,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const MainNavigationScreen()));
-        },
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const MainNavigationScreen()));
+          },
+        ),
       ),
-    ),
       backgroundColor: Colors.white,
       body: Center(
         child: Text(

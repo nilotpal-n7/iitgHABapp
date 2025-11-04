@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:frontend2/providers/hostels.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// removed unused SharedPreferences import (commented-out code left in file)
 
 class MessDropdown extends StatefulWidget {
   final String? selectedOption;

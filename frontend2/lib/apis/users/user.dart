@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:frontend2/apis/protected.dart';
 import 'package:frontend2/constants/endpoint.dart';
 import 'package:http/http.dart' as http;
@@ -28,7 +29,7 @@ Future<bool> saveUserProfileFields(
 
     return resp.statusCode == 200;
   } catch (e) {
-    print('saveUserProfileFields error: $e');
+    debugPrint('saveUserProfileFields error: $e');
     return false;
   }
 }
@@ -36,7 +37,7 @@ Future<bool> saveUserProfileFields(
 Future<Map<String, String>?> fetchUserDetails() async {
   final header = await getAccessToken();
 
-  print("token is $header");
+  debugPrint("token is $header");
   if (header == 'error') {
     throw ('token not found');
   }
@@ -48,13 +49,13 @@ Future<Map<String, String>?> fetchUserDetails() async {
         "Content-Type": "application/json",
       },
     );
-    print('Response headers: ${resp.headers}');
+    debugPrint('Response headers: ${resp.headers}');
 
     if (resp.statusCode == 200) {
       final prefs = await SharedPreferences.getInstance();
       final Map<String, dynamic> userData = json.decode(resp.body);
 
-      print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!UserData: $userData");
+      debugPrint("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!UserData: $userData");
 
       // Extract user details
       final String name = userData['name'] ?? "User";
@@ -95,14 +96,14 @@ Future<Map<String, String>?> fetchUserDetails() async {
         'roll': roll,
       };
     } else if (resp.statusCode == 401) {
-      print("Unauthorized access: Invalid token or session expired.");
+      debugPrint("Unauthorized access: Invalid token or session expired.");
       throw Exception('Unauthorized: Please log in again.');
     } else {
-      print("Error occurred: ${resp.statusCode} - ${resp.reasonPhrase}");
+      debugPrint("Error occurred: ${resp.statusCode} - ${resp.reasonPhrase}");
       throw Exception('Failed to fetch user details.');
     }
   } catch (e) {
-    print("error is: $e");
+    debugPrint("error is: $e");
     rethrow;
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../apis/mess/menu_like.dart';
 import '../../apis/mess/mess_menu.dart';
 import '../../models/mess_menu_model.dart';
 
@@ -58,26 +57,27 @@ class _HorizontalMenuBuilderState extends State<HorizontalMenuBuilder> {
       future: _menuFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Padding(
-            padding: EdgeInsets.all(12),
+          // Use SizedBox to provide spacing while keeping the child centered
+          return const SizedBox(
+            width: double.infinity,
             child: Center(child: CircularProgressIndicator()),
           );
         }
         if (snapshot.hasError) {
-          return Container(
+          return SizedBox(
             width: double.infinity,
             child: Card(
               color: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
-                side: const BorderSide(color: Color(0xC5C5D1), width: 1),
+                side: const BorderSide(color: Color(0xFFC5C5D1), width: 1),
               ),
               elevation: 0.5,
               child: const Padding(
                 padding: EdgeInsets.all(18.0),
                 child: Text(
                   'Unable to fetch menu',
-                  style: const TextStyle(color: Colors.red),
+                  style: TextStyle(color: Colors.red),
                 ),
               ),
             ),
@@ -109,7 +109,16 @@ class _HorizontalMenuBuilderState extends State<HorizontalMenuBuilder> {
           // isSubscribed: true,
           isSubscribed: widget.userMessId == widget.messId,
           parseTime: _parseTime,
-          statusDisplay: {"monday": 1, "tuesday": 2, "wednesday": 3, "thursday": 4, "friday": 5, "saturday": 6, "sunday": 7}[widget.day.toLowerCase()] == DateTime.now().weekday,
+          statusDisplay: {
+                "monday": 1,
+                "tuesday": 2,
+                "wednesday": 3,
+                "thursday": 4,
+                "friday": 5,
+                "saturday": 6,
+                "sunday": 7
+              }[widget.day.toLowerCase()] ==
+              DateTime.now().weekday,
         );
       },
     );
@@ -145,7 +154,7 @@ class _IndividualMealCardState extends State<IndividualMealCard>
   void initState() {
     super.initState();
     _menu = widget.menu;
-    print("🥳🥳 is mess subscribes??: ${widget.isSubscribed}");
+    debugPrint("🥳🥳 is mess subscribes??: ${widget.isSubscribed}");
     _expanded = _statusText().startsWith("Ongoing");
   }
 
@@ -198,10 +207,16 @@ class _IndividualMealCardState extends State<IndividualMealCard>
         padding: EdgeInsets.symmetric(vertical: widget.isSubscribed ? 4 : 0),
         child: Container(
           height: widget.isSubscribed ? 30 : 20,
-          padding: widget.isSubscribed ? const EdgeInsets.symmetric(horizontal: 8, vertical: 2) : const EdgeInsets.all(0),
+          padding: widget.isSubscribed
+              ? const EdgeInsets.symmetric(horizontal: 8, vertical: 2)
+              : const EdgeInsets.all(0),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: widget.isSubscribed ? item.isLiked ? const Color(0xFFFCF0F0) :const Color(0xFFF5F5F5) : Colors.transparent,
+            color: widget.isSubscribed
+                ? item.isLiked
+                    ? const Color(0xFFFCF0F0)
+                    : const Color(0xFFF5F5F5)
+                : Colors.transparent,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -216,9 +231,20 @@ class _IndividualMealCardState extends State<IndividualMealCard>
                     size: 14, // slightly larger than before
                   ),
                 ),
-                const SizedBox(width: 8,),
+                const SizedBox(
+                  width: 8,
+                ),
               ],
-              Flexible(child: Text(item.name, overflow: TextOverflow.ellipsis, style: const TextStyle(fontFamily: "Manrope_semibold",fontWeight: FontWeight.w600, color: Color(0xFF2E2F31), fontSize: 14),)),
+              Flexible(
+                  child: Text(
+                item.name,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontFamily: "Manrope_semibold",
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2E2F31),
+                    fontSize: 14),
+              )),
             ],
           ),
         ),
@@ -226,7 +252,7 @@ class _IndividualMealCardState extends State<IndividualMealCard>
     );
   }
 
-  String day_clock_to_dozen_clock(String s) {
+  String dayClockToDozenClock(String s) {
     int hour = int.parse(s.substring(0, 2));
     if (hour > 12) {
       return "${hour - 12}${s.substring(2)} ${hour == 12 ? "AM" : "PM"}";
@@ -239,7 +265,8 @@ class _IndividualMealCardState extends State<IndividualMealCard>
   Widget build(BuildContext context) {
     final status = _statusText();
     final dishSection = _menu.items.where((i) => i.type == "Dish").toList();
-    final breads = _menu.items.where((i) => i.type == "Breads and Rice").toList();
+    final breads =
+        _menu.items.where((i) => i.type == "Breads and Rice").toList();
     final others = _menu.items.where((i) => i.type == "Others").toList();
 
     return AnimatedSize(
@@ -248,10 +275,9 @@ class _IndividualMealCardState extends State<IndividualMealCard>
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16), 
-          color: const Color(0xFFFFFFFF),
-          border: Border.all(color: const Color(0xFFC5C5D1))
-        ),
+            borderRadius: BorderRadius.circular(16),
+            color: const Color(0xFFFFFFFF),
+            border: Border.all(color: const Color(0xFFC5C5D1))),
         child: InkWell(
           customBorder: Border.all(color: const Color(0xFFC5C5D1), width: 1),
           borderRadius: BorderRadius.circular(16),
@@ -276,35 +302,59 @@ class _IndividualMealCardState extends State<IndividualMealCard>
                         children: [
                           Text(
                             _menu.type,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF676767)),
+                            style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF676767)),
                           ),
                           //
-                          if (widget.isSubscribed) ...[
+                          if (widget.isSubscribed &&
+                              _statusColor(status) != Colors.green) ...[
                             const SizedBox(width: 8),
                             Container(
                               height: 28,
-                              padding: const EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
+                              padding: const EdgeInsets.only(
+                                  left: 8, right: 8, top: 4, bottom: 4),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20),
-                                color: getTotalLikes() == 0 ? const Color(0xFFF5F5F5) :const Color(0xFFFCF0F0),
+                                color: getTotalLikes() == 0
+                                    ? const Color(0xFFF5F5F5)
+                                    : const Color(0xFFFCF0F0),
                               ),
                               child: Row(
                                 children: [
-                                  Icon(getTotalLikes() == 0 ? Icons.favorite_border : Icons.favorite, size: 14.4, color: getTotalLikes() == 0 ? const Color(0xFF676767) : const Color(0xFFC40205)),
+                                  Icon(
+                                      getTotalLikes() == 0
+                                          ? Icons.favorite_border
+                                          : Icons.favorite,
+                                      size: 14.4,
+                                      color: getTotalLikes() == 0
+                                          ? const Color(0xFF676767)
+                                          : const Color(0xFFC40205)),
                                   const SizedBox(width: 2),
                                   Text(
                                     getTotalLikes().toString(),
-                                    style: TextStyle(fontSize: 14, color: getTotalLikes() == 0 ? const Color(0xFF676767) : const Color(0xFFC40205), fontWeight: FontWeight.w500),
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        color: getTotalLikes() == 0
+                                            ? const Color(0xFF676767)
+                                            : const Color(0xFFC40205),
+                                        fontWeight: FontWeight.w500),
                                   ),
                                 ],
                               ),
                             ),
                           ] else ...[
-                            const SizedBox(width: 4,),
-                            if (widget.statusDisplay??false)
+                            const SizedBox(
+                              width: 4,
+                            ),
+                            if (widget.statusDisplay ?? false)
                               Text(
                                 status,
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _statusColor(status)),
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: _statusColor(status)),
                               )
                           ]
                         ],
@@ -325,15 +375,34 @@ class _IndividualMealCardState extends State<IndividualMealCard>
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Icon(Icons.access_time, size: 16, color: Color(0xFF676767),),
-                      const SizedBox(width: 5,),
-                      Text("${day_clock_to_dozen_clock(widget.menu.startTime)} - ${day_clock_to_dozen_clock(widget.menu.endTime)}", style: const TextStyle(fontSize: 14, color: Color(0xFF676767)))
+                      const Icon(
+                        Icons.access_time,
+                        size: 16,
+                        color: Color(0xFF676767),
+                      ),
+                      const SizedBox(
+                        width: 5,
+                      ),
+                      Text(
+                          "${dayClockToDozenClock(widget.menu.startTime)} - ${dayClockToDozenClock(widget.menu.endTime)}",
+                          style: const TextStyle(
+                              fontSize: 14, color: Color(0xFF676767)))
                     ],
                   ),
                   const SizedBox(height: 12),
-                  const Text("DISH", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF676767), fontFamily: "Manrope_semibold")),
-                  ...dishSection.map((item) => _buildItem(item, _menu.items.indexOf(item))),
-                  const Divider(color: Color(0xFFE6E6E6), thickness: 1.8, height: 32,),
+                  const Text("DISH",
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF676767),
+                          fontFamily: "Manrope_semibold")),
+                  ...dishSection.map(
+                      (item) => _buildItem(item, _menu.items.indexOf(item))),
+                  const Divider(
+                    color: Color(0xFFE6E6E6),
+                    thickness: 1.8,
+                    height: 32,
+                  ),
                   IntrinsicHeight(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -342,20 +411,35 @@ class _IndividualMealCardState extends State<IndividualMealCard>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text("BREADS & RICE", style: TextStyle(fontFamily: "Manrope_semibold", fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF676767))),
-                              ...breads.map((item) => _buildItem(item, _menu.items.indexOf(item))),
+                              const Text("BREADS & RICE",
+                                  style: TextStyle(
+                                      fontFamily: "Manrope_semibold",
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF676767))),
+                              ...breads.map((item) =>
+                                  _buildItem(item, _menu.items.indexOf(item))),
                             ],
                           ),
                         ),
-                        const VerticalDivider(color: Color(0xFFE6E6E6), thickness: 1.8,),
+                        const VerticalDivider(
+                          color: Color(0xFFE6E6E6),
+                          thickness: 1.8,
+                        ),
                         Expanded(
                           child: Padding(
                             padding: const EdgeInsets.only(left: 16),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text("OTHERS", style: TextStyle(fontFamily: "Manrope_semibold", fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF676767))),
-                                ...others.map((item) => _buildItem(item, _menu.items.indexOf(item))),
+                                const Text("OTHERS",
+                                    style: TextStyle(
+                                        fontFamily: "Manrope_semibold",
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF676767))),
+                                ...others.map((item) => _buildItem(
+                                    item, _menu.items.indexOf(item))),
                               ],
                             ),
                           ),

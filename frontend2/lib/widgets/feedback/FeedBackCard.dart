@@ -1,10 +1,15 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/endpoint.dart';
 import '../../screens/mess_feedback/mess_feedback_page.dart';
+import '../../utilities/notifications.dart';
 
 class FeedbackCard extends StatefulWidget {
+  const FeedbackCard({super.key});
+
   @override
   State<FeedbackCard> createState() => _FeedbackCardState();
 }
@@ -20,6 +25,21 @@ class _FeedbackCardState extends State<FeedbackCard> {
     super.initState();
     _checkFeedbackStatus();
     _fetchWindowTimeLeft();
+
+    // Listen to feedback refresh notifier
+    feedbackRefreshNotifier.addListener(_onRefreshNotified);
+  }
+
+  void _onRefreshNotified() {
+    debugPrint("🔄 FeedbackCard refresh triggered");
+    _checkFeedbackStatus();
+    _fetchWindowTimeLeft();
+  }
+
+  @override
+  void dispose() {
+    feedbackRefreshNotifier.removeListener(_onRefreshNotified);
+    super.dispose();
   }
 
   Future<void> _checkFeedbackStatus() async {
@@ -27,38 +47,38 @@ class _FeedbackCardState extends State<FeedbackCard> {
       final dio = Dio();
 
       // Check if feedback window is open
-      final settingsRes = await dio.get(messFeedback.feedbackSettings);
+      final settingsRes = await dio.get(MessFeedback.feedbackSettings);
       final windowOpen = settingsRes.data['isEnabled'] == true;
 
       if (windowOpen) {
         // Get auth token
         final prefs = await SharedPreferences.getInstance();
         final token = prefs.getString('access_token');
-        print("FEEDBACK: Open");
+        debugPrint("FEEDBACK: Open");
         if (token != null) {
           // Check if user has already submitted feedback
-          print("FEEDBACK: Checking submission status");
+          debugPrint("FEEDBACK: Checking submission status");
           final submittedRes = await dio.get(
-            messFeedback.feedbackSubmitted,
+            MessFeedback.feedbackSubmitted,
             options: Options(
               headers: {"Authorization": "Bearer $token"},
             ),
           );
-          print(
+          debugPrint(
               "FEEDBACK: Submission status: ${submittedRes.data['submitted']}");
           setState(() {
             _submitted = submittedRes.data['submitted'] == true;
             _windowOpen = true;
             _loading = false;
           });
-          print("FEEDBACK: Submission status checked");
+          debugPrint("FEEDBACK: Submission status checked");
         } else {
           setState(() {
             _submitted = false;
             _windowOpen = true;
             _loading = false;
           });
-          print("FEEDBACK: No token found");
+          debugPrint("FEEDBACK: No token found");
         }
       } else {
         setState(() {
@@ -79,7 +99,7 @@ class _FeedbackCardState extends State<FeedbackCard> {
   Future<void> _fetchWindowTimeLeft() async {
     try {
       final dio = Dio();
-      final res = await dio.get(messFeedback.windowTimeLeft);
+      final res = await dio.get(MessFeedback.windowTimeLeft);
       if (res.data != null && res.data['formatted'] != null) {
         setState(() {
           _windowTimeLeft = res.data['formatted'];
@@ -100,7 +120,7 @@ class _FeedbackCardState extends State<FeedbackCard> {
   Widget build(BuildContext context) {
     // Don't show the card if feedback window is closed
     if (!_windowOpen) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
 
     return Container(
@@ -133,7 +153,7 @@ class _FeedbackCardState extends State<FeedbackCard> {
           ),
           const SizedBox(height: 12),
           _loading
-              ? Center(child: CircularProgressIndicator())
+              ? const Center(child: CircularProgressIndicator())
               : SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -151,7 +171,8 @@ class _FeedbackCardState extends State<FeedbackCard> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => MessFeedbackPage(),
+                                  builder: (context) =>
+                                      const MessFeedbackPage(),
                                 ),
                               );
                             });

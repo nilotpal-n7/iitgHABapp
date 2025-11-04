@@ -1,7 +1,7 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend2/providers/hostels.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// shared_preferences not used here; removed to avoid unused import
 
 class HostelDrop extends StatefulWidget {
   final Function(String) onChanged;
@@ -12,7 +12,8 @@ class HostelDrop extends StatefulWidget {
   final String selectedHostel;
 
   @override
-  _HostelDropState createState() => _HostelDropState();
+  // Return the public State type to avoid exposing a private type in the public API
+  State<HostelDrop> createState() => _HostelDropState();
 }
 
 class _HostelDropState extends State<HostelDrop> {
@@ -29,7 +30,7 @@ class _HostelDropState extends State<HostelDrop> {
       setState(() {
         hostels = HostelsNotifier.hostels;
       });
-      print("hostels: $hostels\nselected hostel: $selectedHostel");
+      debugPrint("hostels: $hostels\nselected hostel: $selectedHostel");
     });
   }
 
@@ -153,7 +154,7 @@ class _HostelDropState extends State<HostelDrop> {
     // );
     return Builder(
       builder: (context) => hostels.isEmpty || selectedHostel.isEmpty
-          ? SizedBox()
+          ? const SizedBox()
           : DropdownButtonHideUnderline(
               child: SizedBox(
                 width: 125,

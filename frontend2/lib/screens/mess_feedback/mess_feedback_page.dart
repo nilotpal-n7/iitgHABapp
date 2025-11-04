@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frontend2/constants/themes.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/feedback_provider.dart';
@@ -7,6 +6,8 @@ import '../../widgets/feedback/custom_option.dart';
 import 'comment_page.dart';
 
 class MessFeedbackPage extends StatefulWidget {
+  const MessFeedbackPage({super.key});
+
   @override
   State<MessFeedbackPage> createState() => _MessFeedbackPageState();
 }
@@ -157,7 +158,7 @@ class _MessFeedbackPageState extends State<MessFeedbackPage> {
                   child: GestureDetector(
                     onTap: provider.isComplete()
                         ? () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => CommentPage()))
+                            MaterialPageRoute(builder: (_) => const CommentPage()))
                         : null,
                     child: Container(
                       width: 358,
