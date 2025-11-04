@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
 
 typedef OnWidgetSizeChange = void Function(Size size);
@@ -7,13 +9,13 @@ class MeasureSize extends StatefulWidget {
   final OnWidgetSizeChange onChange;
 
   const MeasureSize({
-    Key? key,
+    super.key,
     required this.child,
     required this.onChange,
-  }) : super(key: key);
+  });
 
   @override
-  _MeasureSizeState createState() => _MeasureSizeState();
+  State<MeasureSize> createState() => _MeasureSizeState();
 }
 
 class _MeasureSizeState extends State<MeasureSize> {

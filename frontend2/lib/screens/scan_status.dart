@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:frontend2/screens/MainNavigationScreen.dart';
+import 'package:frontend2/screens/main_navigation_screen.dart';
 
 class ScanStatusPage extends StatelessWidget {
   final Response response;
 
   const ScanStatusPage({
-    Key? key,
+    super.key,
     required this.response,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,12 +23,13 @@ class ScanStatusPage extends StatelessWidget {
   Widget _buildStatusContent(BuildContext context) {
     final statusCode = response.statusCode ?? 500;
     final data = response.data as Map<String, dynamic>? ?? {};
-    print(data['message']);
-    print(statusCode);
-    if (statusCode == 200 &&data['message']?.toString().contains('Already') != true) {
+    debugPrint(data['message']?.toString());
+    debugPrint(statusCode.toString());
+    if (statusCode == 200 &&
+        data['message']?.toString().contains('Already') != true) {
       return _buildSuccessScreen(context, data);
-    } else if (statusCode == 200 && data['message']?.toString().contains('Already') == true) {
-
+    } else if (statusCode == 200 &&
+        data['message']?.toString().contains('Already') == true) {
       return _buildAlreadyLoggedScreen(context, data);
     } else {
       return _buildFailedScreen(context, data);
@@ -38,7 +39,8 @@ class ScanStatusPage extends StatelessWidget {
   Widget _buildSuccessScreen(BuildContext context, Map<String, dynamic> data) {
     final mealType = data['mealType'] ?? 'Meal';
     final userName = data['user']?['name'] ?? 'User';
-    final userPhoto = data['user']?['photo'] ?? 'https://via.placeholder.com/100';
+    final userPhoto =
+        data['user']?['photo'] ?? 'https://via.placeholder.com/100';
     final time = data['time'] ?? _getCurrentTime();
     final date = data['date'] ?? _getCurrentDate();
 
@@ -50,8 +52,8 @@ class ScanStatusPage extends StatelessWidget {
         Container(
           width: 120,
           height: 120,
-          decoration: BoxDecoration(
-            color: Colors.green.withOpacity(0.2),
+          decoration: const BoxDecoration(
+            color: Color.fromRGBO(76, 175, 80, 0.2),
             shape: BoxShape.circle,
           ),
           child: const Icon(
@@ -102,7 +104,6 @@ class ScanStatusPage extends StatelessWidget {
             color: Color(0xFF929292),
             fontSize: 22,
             fontWeight: FontWeight.w600,
-
           ),
         ),
 
@@ -139,8 +140,9 @@ class ScanStatusPage extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-                      (Route<dynamic> route) => false,
+                  MaterialPageRoute(
+                      builder: (context) => const MainNavigationScreen()),
+                  (Route<dynamic> route) => false,
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -173,8 +175,8 @@ class ScanStatusPage extends StatelessWidget {
         Container(
           width: 120,
           height: 120,
-          decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.2),
+          decoration: const BoxDecoration(
+            color: Color.fromRGBO(244, 67, 54, 0.2),
             shape: BoxShape.circle,
           ),
           child: const Icon(
@@ -204,7 +206,7 @@ class ScanStatusPage extends StatelessWidget {
           child: Text(
             data['message']?.toString() ?? 'An error occurred',
             style: const TextStyle(
-              color:Color(0xFF929292),
+              color: Color(0xFF929292),
               fontSize: 18,
             ),
             textAlign: TextAlign.center,
@@ -252,8 +254,9 @@ class ScanStatusPage extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-                          (Route<dynamic> route) => false,
+                      MaterialPageRoute(
+                          builder: (context) => const MainNavigationScreen()),
+                      (Route<dynamic> route) => false,
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -283,7 +286,8 @@ class ScanStatusPage extends StatelessWidget {
     );
   }
 
-  Widget _buildAlreadyLoggedScreen(BuildContext context, Map<String, dynamic> data) {
+  Widget _buildAlreadyLoggedScreen(
+      BuildContext context, Map<String, dynamic> data) {
     final message = data['message']?.toString() ?? 'Entry Already Logged!';
     final mealType = _extractMealType(message);
     final time = data['time'] ?? _getCurrentTime();
@@ -295,8 +299,8 @@ class ScanStatusPage extends StatelessWidget {
         Container(
           width: 120,
           height: 120,
-          decoration: BoxDecoration(
-            color: Colors.orange.withOpacity(0.2),
+          decoration: const BoxDecoration(
+            color: Color.fromRGBO(255, 152, 0, 0.2),
             shape: BoxShape.circle,
           ),
           child: const Icon(
@@ -354,8 +358,9 @@ class ScanStatusPage extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-                      (Route<dynamic> route) => false,
+                  MaterialPageRoute(
+                      builder: (context) => const MainNavigationScreen()),
+                  (Route<dynamic> route) => false,
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -388,7 +393,8 @@ class ScanStatusPage extends StatelessWidget {
 
   String _getCurrentTime() {
     final now = DateTime.now();
-    final hour = now.hour > 12 ? now.hour - 12 : (now.hour == 0 ? 12 : now.hour);
+    final hour =
+        now.hour > 12 ? now.hour - 12 : (now.hour == 0 ? 12 : now.hour);
     final minute = now.minute.toString().padLeft(2, '0');
     final period = now.hour >= 12 ? 'PM' : 'AM';
     return '$hour:$minute $period';
@@ -397,8 +403,18 @@ class ScanStatusPage extends StatelessWidget {
   String _getCurrentDate() {
     final now = DateTime.now();
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     return '${now.day} ${months[now.month - 1]} ${now.year}';
   }

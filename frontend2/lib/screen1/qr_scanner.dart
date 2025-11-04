@@ -3,10 +3,8 @@ import 'package:frontend2/widgets/login screen/googlesignin.dart';
 import 'package:frontend2/apis/scan/qrscan_gala.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
-
 class QrScanner extends StatefulWidget {
-  const QrScanner({Key? key}) : super(key: key);
+  const QrScanner({super.key});
 
   @override
   State<QrScanner> createState() => _MyAppState();
@@ -23,7 +21,8 @@ class _MyAppState extends State<QrScanner> {
 
   Future<void> getName() async {
     final prefs = await SharedPreferences.getInstance();
-    final name1 = prefs.getString('googleUsername') ?? 'Guest'; // Default to 'Guest' if no name is found
+    final name1 = prefs.getString('googleUsername') ??
+        'Guest'; // Default to 'Guest' if no name is found
     setState(() {
       name = name1;
     });
@@ -41,7 +40,7 @@ class _MyAppState extends State<QrScanner> {
 class WelcomePage extends StatelessWidget {
   final String name;
 
-  const WelcomePage({Key? key, required this.name}) : super(key: key);
+  const WelcomePage({super.key, required this.name});
 
   @override
   Widget build(BuildContext context) {

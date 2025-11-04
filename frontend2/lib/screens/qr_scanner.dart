@@ -60,10 +60,16 @@ class _QrScanState extends State<QrScan> {
       _isProcessing = true;
     });
 
+    // capture navigator early to avoid using BuildContext after awaits
+    final navigator = Navigator.of(context);
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getString('userId');
       final accessToken = prefs.getString('access_token');
+
+      // Ensure widget is still mounted before using the BuildContext
+      if (!mounted) return;
 
       if (userId == null) {
         showSnackBar('User not logged in', Colors.red, context);
@@ -85,22 +91,26 @@ class _QrScanState extends State<QrScan> {
         ),
       );
 
-      if (await Vibration.hasVibrator() ?? false) {
+      final hasVib = await Vibration.hasVibrator();
+      if (hasVib == true) {
         Vibration.vibrate(duration: 100);
       }
 
-      Navigator.of(context).push(
+      if (!mounted) return;
+
+      navigator
+          .push(
         MaterialPageRoute(
           builder: (context) => ScanStatusPage(response: response),
         ),
-      ).then((_) {
+      )
+          .then((_) {
         setState(() {
           _hasScanned = false;
           _isProcessing = false;
         });
         controller.start();
       });
-
     } catch (e) {
       String errorMessage = 'Unknown error';
       if (e is DioException) {
@@ -114,7 +124,10 @@ class _QrScanState extends State<QrScan> {
         errorMessage = e.toString();
       }
 
-      Navigator.of(context).push(
+      if (!mounted) return;
+
+      navigator
+          .push(
         MaterialPageRoute(
           builder: (context) => ScanStatusPage(
             response: Response(
@@ -124,7 +137,8 @@ class _QrScanState extends State<QrScan> {
             ),
           ),
         ),
-      ).then((_) {
+      )
+          .then((_) {
         setState(() {
           _hasScanned = false;
           _isProcessing = false;
@@ -203,8 +217,8 @@ class _QrScanState extends State<QrScan> {
     return Column(
       children: [
         const SizedBox(height: 80),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 40),
           child: Column(
             children: [
               Row(
@@ -213,12 +227,12 @@ class _QrScanState extends State<QrScan> {
                   Text(
                     'Ready to Eat?',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Color.fromRGBO(255, 255, 255, 0.7),
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const Text(
+                  Text(
                     ' Scan',
                     style: TextStyle(
                       color: Color(0xFF4C4EDB),
@@ -228,7 +242,7 @@ class _QrScanState extends State<QrScan> {
                   ),
                 ],
               ),
-              const Text(
+              Text(
                 'to Enter',
                 style: TextStyle(
                   color: Color(0xFF4C4EDB),

@@ -23,8 +23,9 @@ class _MessChangePreferenceScreenState
   String? thirdpref;
   bool alreadyApplied = false;
   String? appliedHostel;
-  String? defaultMess;
+  String? defaultMess; // Now represents current hostel
   bool? isMessChangeEnabled;
+  bool isSMC = false; // Track if user is SMC
 
   bool loadingStatus = true; // track API loading state
 
@@ -34,6 +35,18 @@ class _MessChangePreferenceScreenState
   void initState() {
     super.initState();
     checkMessChangeStatus();
+    checkSMCStatus();
+  }
+
+  Future<void> checkSMCStatus() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        isSMC = prefs.getBool('isSMC') ?? false;
+      });
+    } catch (e) {
+      debugPrint('Error checking SMC status: $e');
+    }
   }
 
   /// Helper to show dialogs and refresh after user presses OK
@@ -106,6 +119,13 @@ class _MessChangePreferenceScreenState
   }
 
   Future<void> handleSubmit(String? firstpref) async {
+    // Check if user is SMC
+    if (isSMC) {
+      _showMessage(
+          "Error", "SMC members are not allowed to apply for mess change");
+      return;
+    }
+
     // First preference mandatory; second and third optional
     if (firstpref == null) {
       _showMessage("Error", "Please select your first mess preference");
@@ -122,10 +142,10 @@ class _MessChangePreferenceScreenState
       return;
     }
 
-    // Ensure none of the provided preferences equals current mess
+    // Ensure none of the provided preferences equals current hostel
     if (defaultMess != null && provided.contains(defaultMess)) {
       _showMessage(
-          "Error", "Please select messes different from your current mess");
+          "Error", "Please select hostels different from your current hostel");
       return;
     }
 
@@ -274,6 +294,20 @@ class _MessChangePreferenceScreenState
                     ),
                     const SizedBox(height: 16),
 
+                    // Info banner if user is SMC
+                    if (isSMC)
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.red[100],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'SMC members are not allowed to apply for mess change',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+
                     // Info banner if already applied
                     if (alreadyApplied)
                       Container(
@@ -304,13 +338,16 @@ class _MessChangePreferenceScreenState
                     const SizedBox(height: 8),
                     MessDropdown(
                       selectedOption: firstpref,
-                      enabled: (isMessChangeEnabled == true) && !alreadyApplied,
-                      onChanged:
-                          (isMessChangeEnabled == true) && !alreadyApplied
-                              ? (value) => setState(() {
-                                    firstpref = value;
-                                  })
-                              : null,
+                      enabled: (isMessChangeEnabled == true) &&
+                          !alreadyApplied &&
+                          !isSMC,
+                      onChanged: (isMessChangeEnabled == true) &&
+                              !alreadyApplied &&
+                              !isSMC
+                          ? (value) => setState(() {
+                                firstpref = value;
+                              })
+                          : null,
                     ),
 
                     const SizedBox(height: 12),
@@ -326,13 +363,16 @@ class _MessChangePreferenceScreenState
                     const SizedBox(height: 8),
                     MessDropdown(
                       selectedOption: secondpref,
-                      enabled: (isMessChangeEnabled == true) && !alreadyApplied,
-                      onChanged:
-                          (isMessChangeEnabled == true) && !alreadyApplied
-                              ? (value) => setState(() {
-                                    secondpref = value;
-                                  })
-                              : null,
+                      enabled: (isMessChangeEnabled == true) &&
+                          !alreadyApplied &&
+                          !isSMC,
+                      onChanged: (isMessChangeEnabled == true) &&
+                              !alreadyApplied &&
+                              !isSMC
+                          ? (value) => setState(() {
+                                secondpref = value;
+                              })
+                          : null,
                     ),
 
                     const SizedBox(height: 12),
@@ -348,22 +388,25 @@ class _MessChangePreferenceScreenState
                     const SizedBox(height: 8),
                     MessDropdown(
                       selectedOption: thirdpref,
-                      enabled: (isMessChangeEnabled == true) && !alreadyApplied,
-                      onChanged:
-                          (isMessChangeEnabled == true) && !alreadyApplied
-                              ? (value) => setState(() {
-                                    thirdpref = value;
-                                  })
-                              : null,
+                      enabled: (isMessChangeEnabled == true) &&
+                          !alreadyApplied &&
+                          !isSMC,
+                      onChanged: (isMessChangeEnabled == true) &&
+                              !alreadyApplied &&
+                              !isSMC
+                          ? (value) => setState(() {
+                                thirdpref = value;
+                              })
+                          : null,
                     ),
 
                     // Red info text when mess change is disabled
                     if (isMessChangeEnabled == false)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
                         child: Text(
                           'Mess change is currently disabled, you will be notified when it opens.',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             color: Color(0xFFC40205),
                           ),
@@ -399,14 +442,16 @@ class _MessChangePreferenceScreenState
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16),
-        height: ((isMessChangeEnabled == true) && !alreadyApplied) ? 85 : 16,
+        height: ((isMessChangeEnabled == true) && !alreadyApplied && !isSMC)
+            ? 85
+            : 16,
         decoration: const BoxDecoration(
             //border: Border(top: BorderSide(width: 1, color: Color(0xFFE5E5E5))),
             ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if ((isMessChangeEnabled == true) && !alreadyApplied)
+            if ((isMessChangeEnabled == true) && !alreadyApplied && !isSMC)
               ElevatedButton(
                 onPressed: (loadingStatus)
                     ? null

@@ -1,4 +1,4 @@
-
+// ignore_for_file: file_names
 
 DateTime parseTime(String timeStr) {
   final now = DateTime.now();
@@ -11,7 +11,6 @@ DateTime parseTime(String timeStr) {
     int.parse(parts[1]),
   );
 }
-
 
 String formatDuration(Duration d) {
   if (d.inSeconds <= 0) return "Ended";

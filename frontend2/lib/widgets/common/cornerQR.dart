@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
 
 class CornerPainter extends CustomPainter {
@@ -17,7 +19,7 @@ class CornerPainter extends CustomPainter {
       paint,
     ); // Vertical line
     canvas.drawLine(
-     const Offset(0, 0),
+      const Offset(0, 0),
       const Offset(cornerLength, 0),
       paint,
     ); // Horizontal line

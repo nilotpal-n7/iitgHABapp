@@ -7,6 +7,9 @@ const {
 } = require("../user/userModel.js"); // Assuming getUserFromToken is a named export
 const AppError = require("../../utils/appError.js");
 const UserAllocHostel = require("../hostel/hostelAllocModel.js");
+const {
+  sendNotificationToUser,
+} = require("../notification/notificationController.js");
 require("dotenv").config();
 
 const appConfig = require("../../config/default.js");
@@ -103,7 +106,7 @@ const mobileRedirectHandler = async (req, res, next) => {
     let existingUser = await findUserWithEmail(userFromToken.data.mail);
 
     // If the user doesn't exist, create a new user
-
+    let isFirstLogin = false;
     if (!existingUser) {
       const userData = {
         name: userFromToken.data.displayName,
@@ -118,6 +121,7 @@ const mobileRedirectHandler = async (req, res, next) => {
       const user = new User(userData);
       //console.log( "user model is",user);
       existingUser = await user.save();
+      isFirstLogin = true;
     } else {
       // Optionally ensure user's hostel matches allocated hostel
       try {
@@ -137,6 +141,19 @@ const mobileRedirectHandler = async (req, res, next) => {
     // Generate JWT for the existing or new user
     const token = existingUser.generateJWT();
     //console.log(token);
+
+    // Send welcome notification on first login
+    if (isFirstLogin) {
+      try {
+        await sendNotificationToUser(
+          existingUser._id,
+          "Welcome to HAB App",
+          "Thanks for signing in! You will receive updates here."
+        );
+      } catch (e) {
+        console.log("Failed to send welcome notification", e);
+      }
+    }
 
     // Redirect to the success URL with the token
     return res.redirect(
@@ -161,9 +178,241 @@ const logoutHandler = (req, res, next) => {
   res.redirect(appConfig.clientURL);
 };
 
+// Unified web login handler for HAB, Hostel, and SMC
+const webLoginHandler = async (req, res, next) => {
+  try {
+    const { code, type, state } = req.query;
+
+    if (!code) {
+      return next(new AppError(400, "Authorization code is missing"));
+    }
+
+    // Use state parameter from OAuth callback if type is not provided
+    const loginType = type || state;
+
+    if (!loginType || !["hab", "hostel", "smc"].includes(loginType)) {
+      return next(
+        new AppError(
+          400,
+          "Invalid login type. Must be 'hab', 'hostel', or 'smc'"
+        )
+      );
+    }
+
+    // Get redirect URI based on type
+    const webRedirectUri = process.env.WEB_REDIRECT_URI || redirect_uri;
+
+    const data = qs.stringify({
+      client_secret: clientSecret,
+      client_id: clientid,
+      redirect_uri: webRedirectUri,
+      scope: "user.read",
+      grant_type: "authorization_code",
+      code: code,
+    });
+
+    const config = {
+      method: "post",
+      url: `https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token`,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        client_secret: clientSecret,
+      },
+      data: data,
+    };
+
+    const response = await axios.post(config.url, config.data, {
+      headers: config.headers,
+    });
+
+    if (!response.data) {
+      return next(new AppError(500, "Something went wrong"));
+    }
+
+    const AccessToken = response.data.access_token;
+    const userFromToken = await getUserFromToken(AccessToken);
+
+    if (!userFromToken || !userFromToken.data) {
+      return next(new AppError(401, "Access Denied"));
+    }
+
+    const email = userFromToken.data.mail;
+    if (!email) {
+      return next(new AppError(401, "Email not found in token"));
+    }
+
+    let token;
+    let redirectPath;
+
+    // Handle different login types
+    if (loginType === "hab") {
+      // HAB login: Check against hardcoded email
+      const HAB_EMAIL = process.env.HAB_EMAIL;
+      if (!HAB_EMAIL) {
+        return next(new AppError(500, "HAB email not configured"));
+      }
+
+      if (email.toLowerCase() !== HAB_EMAIL.toLowerCase()) {
+        return next(new AppError(403, "Unauthorized: Not a HAB admin email"));
+      }
+
+      // Generate token for HAB admin
+      const { adminjwtsecret } = require("../../config/default.js");
+      const jwt = require("jsonwebtoken");
+      token = jwt.sign({ hab: true, email: email }, adminjwtsecret, {
+        expiresIn: "2h",
+      });
+      redirectPath = "/hab/dashboard";
+    } else if (loginType === "hostel") {
+      // Hostel login: Find hostel by microsoft_email
+      const { Hostel } = require("../hostel/hostelModel.js");
+      const hostel = await Hostel.findOne({ microsoft_email: email }).populate(
+        "messId"
+      );
+
+      if (!hostel) {
+        return next(
+          new AppError(403, "Unauthorized: No hostel found for this email")
+        );
+      }
+
+      token = hostel.generateJWT();
+      redirectPath = "/hostel/dashboard";
+    } else if (loginType === "smc") {
+      // SMC login: Check if user is SMC
+      const existingUser = await findUserWithEmail(email);
+      if (!existingUser) {
+        return next(new AppError(401, "User not found"));
+      }
+
+      if (!existingUser.isSMC) {
+        return next(
+          new AppError(403, "Unauthorized: User is not an SMC member")
+        );
+      }
+
+      token = existingUser.generateJWT();
+      redirectPath = "/smc/dashboard";
+    }
+
+    // Set token in cookie and redirect
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 2 * 60 * 60 * 1000, // 2 hours
+    });
+
+    // Redirect to the appropriate portal based on login type
+    let baseUrl;
+    if (loginType === "hab") {
+      baseUrl = process.env.HAB_FRONTEND_URL || "http://localhost:5173";
+    } else if (loginType === "hostel") {
+      baseUrl = process.env.HOSTEL_FRONTEND_URL || "http://localhost:5174";
+    } else if (loginType === "smc") {
+      baseUrl = process.env.SMC_FRONTEND_URL || "http://localhost:5175";
+    } else {
+      baseUrl = process.env.WEB_BASE_URL || "http://localhost:5173";
+    }
+
+    return res.redirect(`${baseUrl}${redirectPath}?token=${token}`);
+  } catch (err) {
+    const loginType = req.query.type || req.query.state || "unknown";
+    console.error(`Error in web login (${loginType}):`, err);
+    if (err.response?.status === 400) {
+      return res.status(400).json({ message: "Invalid authorization code" });
+    }
+    return next(new AppError(500, `Error occurred during ${loginType} login`));
+  }
+};
+
+// Exporting the handlers
+// Guest login handler - compares posted credentials with env vars and returns JWT
+const guestLoginHandler = async (req, res, next) => {
+  try {
+    const { email, password } = req.body || {};
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password required" });
+    }
+
+    const GUEST_EMAIL = process.env.GUEST_EMAIL;
+    const GUEST_PASSWORD = process.env.GUEST_EMAIL_PASSWORD;
+
+    if (!GUEST_EMAIL || !GUEST_PASSWORD) {
+      return next(
+        new AppError(500, "Guest credentials not configured on server")
+      );
+    }
+
+    if (
+      email.toLowerCase() !== GUEST_EMAIL.toLowerCase() ||
+      password !== GUEST_PASSWORD
+    ) {
+      return res.status(401).json({ message: "Invalid guest credentials" });
+    }
+
+    // Find the guest user in DB
+    let existingUser = await findUserWithEmail(email);
+    if (!existingUser) {
+      // Create a guest user using the roll number and allocate hostel similar to normal auth
+      const GUEST_ROLL = process.env.GUEST_ROLL;
+
+      // Try to fetch allocation by roll (mirrors mobileRedirectHandler)
+      let allocatedHostel = null;
+      if (GUEST_ROLL) {
+        try {
+          allocatedHostel = await getHostelAlloc(GUEST_ROLL);
+        } catch (e) {
+          console.error("Error fetching hostel allocation for guest roll:", e);
+        }
+      }
+
+      const userData = {
+        name: process.env.GUEST_NAME || "Guest User",
+        degree: "BTech",
+        rollNumber: GUEST_ROLL,
+        email: email,
+      };
+
+      if (allocatedHostel) {
+        userData.hostel = allocatedHostel._id;
+        userData.curr_subscribed_mess = allocatedHostel._id;
+      } else {
+        return next(new AppError(500, "Guest hostel allocation not found"));
+      }
+
+      try {
+        const user = new User(userData);
+        existingUser = await user.save();
+        // send welcome notification (best-effort)
+        try {
+          await sendNotificationToUser(
+            existingUser._id,
+            "Welcome to HAB App",
+            "Thanks for signing in! You will receive updates here."
+          );
+        } catch (e) {
+          console.log("Failed to send welcome notification to guest:", e);
+        }
+      } catch (e) {
+        console.error("Failed to create guest user:", e);
+        return next(new AppError(500, "Failed to create guest user"));
+      }
+    }
+
+    const token = existingUser.generateJWT();
+    return res.status(200).json({ token });
+  } catch (err) {
+    console.error("Error in guestLoginHandler:", err);
+    return next(new AppError(500, "Error during guest login"));
+  }
+};
+
 // Exporting the handlers
 module.exports = {
   loginHandler,
   mobileRedirectHandler,
   logoutHandler,
+  guestLoginHandler,
+  webLoginHandler,
 };

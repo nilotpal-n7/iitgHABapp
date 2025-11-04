@@ -92,6 +92,8 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
     setState(() => _uploading = true);
     try {
       final token = await getAccessToken();
+      // If the widget was disposed while awaiting, bail out
+      if (!mounted) return;
       if (token == 'error') {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -229,11 +231,12 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
                         ProfilePictureProvider.profilePictureString,
                     builder: (context, value, child) => CircleAvatar(
                       radius: 64,
-                      backgroundColor: Colors.blue[100],
+                      // show local default when no profile pic present
+                      backgroundColor: Colors.transparent,
                       backgroundImage: value.isNotEmpty
                           ? MemoryImage(base64Decode(value))
-                          : const NetworkImage(
-                                  "https://api.dicebear.com/7.x/initials/svg?seed=User")
+                          : const AssetImage(
+                                  'assets/images/default_profile.png')
                               as ImageProvider,
                     ),
                   ),
@@ -258,9 +261,9 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
                     currMessName),
                 const Divider(height: 24, color: Color(0xFFE2E2E2)),
                 // Info: other fields are read-only
-                Row(
+                const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Icon(Icons.info_outline, size: 16, color: Colors.grey),
                     SizedBox(width: 6),
                     Expanded(
