@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend2/apis/authentication/login.dart';
 import 'package:frontend2/screens/main_navigation_screen.dart';
+import 'package:frontend2/main.dart';
 import 'package:frontend2/widgets/login screen/login_button.dart';
 import 'package:lottie/lottie.dart';
 
@@ -153,6 +154,41 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 child: const Padding(
                                   padding: EdgeInsets.all(15),
                                   child: LoginButton(),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          // Guest login button
+                          SizedBox(
+                            height: 48,
+                            width: double.infinity,
+                            child: Material(
+                              color: const Color(0xFF2E2E2E),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                              child: InkWell(
+                                splashColor: Colors.white24,
+                                onTap: () {
+                                  // Show guest login dialog
+                                  showDialog(
+                                    context: context,
+                                    builder: (ctx) => GuestLoginDialog(),
+                                  );
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: Center(
+                                    child: Text(
+                                      'Sign in as Guest',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 14,
+                                          fontFamily: 'GeneralSans'),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -447,6 +483,123 @@ class FeatureButton extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
+    );
+  }
+}
+
+// Dialog to enter guest email & password
+class GuestLoginDialog extends StatefulWidget {
+  const GuestLoginDialog({super.key});
+
+  @override
+  State<GuestLoginDialog> createState() => _GuestLoginDialogState();
+}
+
+class _GuestLoginDialogState extends State<GuestLoginDialog> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _inProgress = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _attemptGuestLogin() async {
+    final navigator = Navigator.of(context);
+    // Prefer the root scaffold messenger (from the app's navigatorKey) because
+    // this dialog's context may not have a Scaffold ancestor.
+    final messenger = (navigatorKey.currentContext != null)
+        ? ScaffoldMessenger.of(navigatorKey.currentContext!)
+        : ScaffoldMessenger.of(context);
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (email.isEmpty || password.isEmpty) {
+      messenger.showSnackBar(const SnackBar(
+        content: Text('Please enter email and password'),
+      ));
+      return;
+    }
+
+    try {
+      setState(() => _inProgress = true);
+      await guestAuthenticate(email, password);
+      setState(() => _inProgress = false);
+      if (!mounted) return;
+      navigator.pop(); // close dialog
+      // Navigate to main screen
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (ctx) => const MainNavigationScreen()),
+      );
+      messenger.showSnackBar(const SnackBar(
+        content: Center(
+          child: Text(
+            'Successfully Logged In as Guest',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+        backgroundColor: Colors.black,
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(50),
+        duration: Duration(milliseconds: 1000),
+      ));
+    } catch (e) {
+      setState(() => _inProgress = false);
+      if (!mounted) return;
+      messenger.showSnackBar(const SnackBar(
+        content: Center(
+          child: Text(
+            'Guest login failed',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+        backgroundColor: Colors.black,
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(50),
+        duration: Duration(milliseconds: 1000),
+      ));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Guest Sign In'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(labelText: 'Email'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Password'),
+            ),
+            if (_inProgress) const SizedBox(height: 16),
+            if (_inProgress) const CircularProgressIndicator(),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _inProgress ? null : () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _inProgress ? null : _attemptGuestLogin,
+          child: const Text('Sign In'),
+        ),
+      ],
     );
   }
 }
