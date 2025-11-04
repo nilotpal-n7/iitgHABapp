@@ -8,7 +8,6 @@
 
     <application
         android:label="HABit"
-        android:name="${applicationName}"
         android:icon="@mipmap/hab_icon">
         <activity
             android:name=".MainActivity"
