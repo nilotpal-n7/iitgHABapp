@@ -36,16 +36,8 @@ android {
         applicationId = "in.codingclub.hab"
         minSdk = 23
         targetSdk = flutter.targetSdkVersion
-        versionCode = if (project.hasProperty("flutterVersionCode")) {
-            (project.property("flutterVersionCode") as String).toInt()
-        } else {
-            1
-        }
-        versionName = if (project.hasProperty("flutterVersionName")) {
-            project.property("flutterVersionName") as String
-        } else {
-            "1.0"
-        }
+        versionCode = flutterVersionCode.toInt()
+        versionName = flutterVersionName
         manifestPlaceholders["appAuthRedirectScheme"] = "placeholder-text"
     }
 
