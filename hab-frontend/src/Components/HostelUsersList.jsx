@@ -10,8 +10,8 @@ const HostelUsersList = ({ hostelName, users }) => {
   const [filteredData, setFilteredData] = useState([]);
 
   // Debug logging
-  console.log("HostelUsersList received users:", users);
-  console.log("Users type:", typeof users, "Is array:", Array.isArray(users));
+  // console.log("HostelUsersList received users:", users);
+  // console.log("Users type:", typeof users, "Is array:", Array.isArray(users));
 
   const processedUsers = useMemo(() => {
     if (!users || !Array.isArray(users)) return [];

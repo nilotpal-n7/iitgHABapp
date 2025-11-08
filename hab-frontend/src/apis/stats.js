@@ -16,9 +16,8 @@ export const getStatsByDate = async (date, messId) => {
 export const getAllHostelMessInfo = async () => {
   try {
     const response = await axios.post(`${BACKEND_URL}/mess/all`);
-    return (response.data);
-  }
-  catch (error) {
+    return response.data;
+  } catch (error) {
     console.error("Error fetching hostel and mess data", error);
     throw error;
   }
@@ -26,7 +25,7 @@ export const getAllHostelMessInfo = async () => {
 export const getAllHostelsWithMess = async () => {
   try {
     const response = await axios.get(`${BACKEND_URL}/hostel/allhostel`);
-    console.log(response)
+    // console.log(response)
     const hostels = response.data;
     return hostels;
   } catch (error) {

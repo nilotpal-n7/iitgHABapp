@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, useEffect, useRef } from "react";
-import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
 const AuthContext = createContext();
 const BACKEND_URL =
   import.meta.env.VITE_SERVER_URL || "http://localhost:3000/api";
+const APP_URL = import.meta.env.VITE_APP_URL || "http://localhost:5172";
+import { setAuthToken, clearAuthToken } from "../apiClient";
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token") || null);
@@ -23,6 +24,7 @@ export const AuthProvider = ({ children }) => {
     if (tokenFromUrl) {
       localStorage.setItem("token", tokenFromUrl);
       setToken(tokenFromUrl);
+      setAuthToken(tokenFromUrl);
       window.history.replaceState({}, document.title, location.pathname);
       navigate("/");
     }
@@ -31,11 +33,11 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem("token");
     setToken(null);
-    delete axios.defaults.headers.common["Authorization"];
+    clearAuthToken();
     if (logoutTimerRef.current) {
       clearTimeout(logoutTimerRef.current);
     }
-    window.location.href = "http://localhost:5172";
+    window.location.href = APP_URL;
   };
 
   // Primary useEffect for initial authentication check
@@ -46,11 +48,11 @@ export const AuthProvider = ({ children }) => {
       if (!storedToken) {
         setToken(null);
         setIsLoading(false);
-        window.location.href = "http://localhost:5172";
+        window.location.href = APP_URL;
         return;
       }
 
-      axios.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+      setAuthToken(storedToken);
 
       try {
         const decoded = jwtDecode(storedToken);
@@ -86,13 +88,13 @@ export const AuthProvider = ({ children }) => {
         clearTimeout(logoutTimerRef.current);
       }
     };
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      setAuthToken(token);
     } else {
-      delete axios.defaults.headers.common["Authorization"];
+      clearAuthToken();
     }
   }, [token]);
 
