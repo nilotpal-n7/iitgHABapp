@@ -5,7 +5,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthProvider";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ProtectedRoute } from "./Components/ProtectedRoute";
 import Sidebar from "./Components/Sidebar";
 import Home from "./pages/Home";
 import Hostels from "./pages/Hostels";
