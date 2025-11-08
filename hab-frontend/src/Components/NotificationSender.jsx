@@ -1,3 +1,4 @@
+// NOTE: This file lives in `components` (lowercase).
 import React, { useState } from "react";
 import { BACKEND_URL } from "../apis/server";
 import { Button, Input, Select, Checkbox } from "antd";
