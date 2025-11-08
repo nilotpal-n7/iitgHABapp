@@ -8,17 +8,14 @@ import { AuthProvider } from "./context/AuthProvider";
 import { ProtectedRoute } from "./components/ProtectedRoute.jsx";
 import Sidebar from "./components/Sidebar.jsx";
 import Home from "./pages/Home";
-import Hostels from "./pages/Hostels";
 import AllHostelList from "./pages/AllHostelList";
 import Caterers from "./pages/Caterers";
 import Students from "./pages/Students";
-import HostelStats from "./pages/stats/HostelStats.jsx";
 import CreateMess from "./components/CreateMess.jsx";
 import MessDetails from "./components/MessDetails.jsx";
 import MessMenu from "./components/MessMenu.jsx";
 import HostelForm from "./pages/HostelForm";
 import HostelPage from "./pages/HostelPage";
-
 import MessChangePage from "./pages/MessChangePage.jsx";
 import AllocateHostel from "./pages/AllocateHostel.jsx";
 import ProfileSettings from "./pages/ProfileSettings.jsx";
