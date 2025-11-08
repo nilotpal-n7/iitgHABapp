@@ -55,7 +55,7 @@ const AllocateHostel = () => {
           },
         }
       );
-      console.log(data);
+      // console.log(data);
       message.success(
         `Upload completed. Processed: ${data.processed}, Errors: ${data.errors}`
       );

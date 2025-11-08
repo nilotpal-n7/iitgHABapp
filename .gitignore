@@ -1,1 +1,7 @@
 node_modules
+
+# Ignore specific frontend .env files (local secrets)
+hab-frontend/.env
+hostel-frontend/.env
+smc-frontend/.env
+login-frontend/.env

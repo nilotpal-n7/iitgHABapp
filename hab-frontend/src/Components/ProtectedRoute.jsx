@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthProvider";
 
 export const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
+  const APP_URL = import.meta.env.VITE_APP_URL || "http://localhost:5172";
 
   if (isLoading) {
     return (
@@ -13,7 +14,7 @@ export const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    window.location.href = "http://localhost:5172";
+    window.location.href = APP_URL;
     return null;
   }
 

@@ -20,6 +20,7 @@ const MenuDashboard = ({
   onSuccessfulItemCreation,
   click, // callback to open CreateMenuFallback in parent
   menuExists = true,
+  timeData = {}, // timings passed from parent (Dashboard)
 }) => {
   // active day is provided by parent Dashboard via `day` prop
   const activeDay = day || "Thursday";
@@ -49,6 +50,74 @@ const MenuDashboard = ({
   const [editValue, setEditValue] = useState("");
   const [addingTo, setAddingTo] = useState({ meal: null, category: null });
   const [newItemValue, setNewItemValue] = useState("");
+  // Times for meals per day (start/end). Stored per-day so each day's menu can have its own times.
+  // Structure: { Monday: { breakfast: { start: '08:00', end: '09:00' }, ... }, ... }
+  const [mealTimes, setMealTimes] = useState({
+    Monday: {
+      breakfast: { start: "08:00", end: "09:00" },
+      lunch: { start: "13:00", end: "14:00" },
+      dinner: { start: "20:00", end: "21:00" },
+    },
+    Tuesday: {
+      breakfast: { start: "08:00", end: "09:00" },
+      lunch: { start: "13:00", end: "14:00" },
+      dinner: { start: "20:00", end: "21:00" },
+    },
+    Wednesday: {
+      breakfast: { start: "08:00", end: "09:00" },
+      lunch: { start: "13:00", end: "14:00" },
+      dinner: { start: "20:00", end: "21:00" },
+    },
+    Thursday: {
+      breakfast: { start: "08:00", end: "09:00" },
+      lunch: { start: "13:00", end: "14:00" },
+      dinner: { start: "20:00", end: "21:00" },
+    },
+    Friday: {
+      breakfast: { start: "08:00", end: "09:00" },
+      lunch: { start: "13:00", end: "14:00" },
+      dinner: { start: "20:00", end: "21:00" },
+    },
+    Saturday: {
+      breakfast: { start: "08:00", end: "09:00" },
+      lunch: { start: "13:00", end: "14:00" },
+      dinner: { start: "20:00", end: "21:00" },
+    },
+    Sunday: {
+      breakfast: { start: "08:00", end: "09:00" },
+      lunch: { start: "13:00", end: "14:00" },
+      dinner: { start: "20:00", end: "21:00" },
+    },
+  });
+  const [editingTimeFor, setEditingTimeFor] = useState(null); // meal being edited
+  const [tempStartValue, setTempStartValue] = useState("08:00");
+  const [tempEndValue, setTempEndValue] = useState("09:00");
+  const [timeSaving, setTimeSaving] = useState(false);
+
+  // Sync meal times (start/end) from parent-provided `timeData` (schema) for active day.
+  React.useEffect(() => {
+    if (!timeData) return;
+
+    // Dashboard provides btime_s, btime_e, ltime_s, ltime_e, dtime_s, dtime_e
+    setMealTimes((prev) => ({
+      ...prev,
+      [activeDay]: {
+        breakfast: {
+          start:
+            timeData.btime_s || prev[activeDay]?.breakfast?.start || "08:00",
+          end: timeData.btime_e || prev[activeDay]?.breakfast?.end || "09:00",
+        },
+        lunch: {
+          start: timeData.ltime_s || prev[activeDay]?.lunch?.start || "13:00",
+          end: timeData.ltime_e || prev[activeDay]?.lunch?.end || "14:00",
+        },
+        dinner: {
+          start: timeData.dtime_s || prev[activeDay]?.dinner?.start || "20:00",
+          end: timeData.dtime_e || prev[activeDay]?.dinner?.end || "21:00",
+        },
+      },
+    }));
+  }, [timeData, activeDay]);
 
   const categories = ["Dish", "Breads and Rice", "Others"];
 
@@ -198,8 +267,103 @@ const MenuDashboard = ({
 
   const MealSection = ({ meal, title }) => (
     <div className="bg-white border border-gray-200 rounded-lg w-full">
-      <div className="bg-gray-50 border-b border-gray-200 px-4 py-3">
+      <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <div className="flex items-center gap-2">
+          {editingTimeFor === meal ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="time"
+                value={tempStartValue}
+                onChange={(e) => setTempStartValue(e.target.value)}
+                className="px-2 py-1 text-sm border border-gray-300 rounded"
+              />
+              <span className="text-sm text-gray-500">to</span>
+              <input
+                type="time"
+                value={tempEndValue}
+                onChange={(e) => setTempEndValue(e.target.value)}
+                className="px-2 py-1 text-sm border border-gray-300 rounded"
+              />
+              <button
+                onClick={async () => {
+                  try {
+                    setTimeSaving(true);
+                    const mealType =
+                      meal.charAt(0).toUpperCase() + meal.slice(1);
+                    const payload = { day: activeDay, type: mealType };
+
+                    // Attach appropriate field names expected by the server
+                    if (mealType === "Breakfast") {
+                      payload.btime_s = tempStartValue;
+                      payload.btime_e = tempEndValue;
+                    } else if (mealType === "Lunch") {
+                      payload.ltime_s = tempStartValue;
+                      payload.ltime_e = tempEndValue;
+                    } else if (mealType === "Dinner") {
+                      payload.dtime_s = tempStartValue;
+                      payload.dtime_e = tempEndValue;
+                    }
+
+                    await axios.post(
+                      `${API_BASE_URL}/mess/menu/time/update/smc/${messId}`,
+                      payload
+                    );
+
+                    // Update local state optimistically after successful save
+                    setMealTimes((prev) => ({
+                      ...prev,
+                      [activeDay]: {
+                        ...prev[activeDay],
+                        [meal]: { start: tempStartValue, end: tempEndValue },
+                      },
+                    }));
+                    setEditingTimeFor(null);
+                  } catch (err) {
+                    console.error("Failed to save meal time:", err);
+                    alert(
+                      err.response?.data?.message ||
+                        "Failed to update meal time. Please try again."
+                    );
+                  } finally {
+                    setTimeSaving(false);
+                  }
+                }}
+                disabled={timeSaving}
+                className="px-2 py-1 bg-green-600 text-white rounded text-sm disabled:opacity-60"
+              >
+                {timeSaving ? "Saving..." : "Save"}
+              </button>
+              <button
+                onClick={() => setEditingTimeFor(null)}
+                className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span className="flex items-center gap-1">
+                <Calendar className="w-4 h-4" />
+                {mealTimes[activeDay]
+                  ? `${mealTimes[activeDay][meal].start} - ${mealTimes[activeDay][meal].end}`
+                  : "--:--"}
+              </span>
+              <button
+                onClick={() => {
+                  setEditingTimeFor(meal);
+                  setTempStartValue(
+                    mealTimes[activeDay]?.[meal]?.start || "08:00"
+                  );
+                  setTempEndValue(mealTimes[activeDay]?.[meal]?.end || "09:00");
+                }}
+                className="text-blue-600 hover:underline text-sm"
+              >
+                Change
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="p-4">

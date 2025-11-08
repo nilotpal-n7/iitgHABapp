@@ -1,8 +1,9 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthProvider";
 
 export const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -13,8 +14,7 @@ export const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    window.location.href = "http://localhost:5172";
-    return null;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Verify user is SMC
