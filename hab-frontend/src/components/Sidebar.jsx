@@ -1,3 +1,4 @@
+// NOTE: This file lives in `components` (lowercase).
 import { NavLink } from "react-router-dom";
 import { Menu } from "antd";
 import {

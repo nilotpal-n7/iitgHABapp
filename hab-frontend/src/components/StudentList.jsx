@@ -1,3 +1,4 @@
+// NOTE: This file lives in `components` (lowercase).
 import React, { useState, useEffect, useMemo } from "react";
 import { getStudents } from "../apis/students.js";
 import { Table, Input, Spin, Alert, Button } from "antd";

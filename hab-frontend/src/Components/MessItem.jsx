@@ -1,3 +1,4 @@
+// NOTE: This file lives in `components` (lowercase).
 import React from "react";
 import { Link } from "react-router-dom";
 
