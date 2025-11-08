@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import HostelStats from "./stats/HostelStats";
 import HostelUsersList from "../Components/HostelUsersList";
 import {
   getUnassignedMesses,
   assignMessToHostel,
-  unassignMess,
   getMessById,
 } from "../apis/mess";
 import { getHostelById } from "../apis/hostel";
 
 export default function HostelPage() {
   const { hostelId } = useParams();
-  const navigate = useNavigate();
 
   const [unassignedMess, setUnassignedMess] = useState([]);
   const [selectedMess, setSelectedMess] = useState("");
@@ -42,15 +40,15 @@ export default function HostelPage() {
     const fetchHostel = async () => {
       try {
         const data = await getHostelById(hostelId);
-        console.log("Hostel data received:", data);
+        // console.log("Hostel data received:", data);
         setHostel(data.hostel);
 
         // If hostel has a mess assigned, fetch full mess details
         if (data.hostel.messId) {
-          console.log("Mess ID found:", data.hostel.messId);
+          // console.log("Mess ID found:", data.hostel.messId);
           try {
             const fullMessDetails = await getMessById(data.hostel.messId._id);
-            console.log("Full mess details:", fullMessDetails);
+            // console.log("Full mess details:", fullMessDetails);
             setMessDetails(fullMessDetails);
           } catch (messError) {
             console.error("Error fetching mess details:", messError);
@@ -64,7 +62,7 @@ export default function HostelPage() {
             });
           }
         } else {
-          console.log("No mess assigned to hostel");
+          // console.log("No mess assigned to hostel");
           setMessDetails(null);
         }
       } catch (err) {
@@ -116,8 +114,8 @@ export default function HostelPage() {
   };
 
   const handleUnassignMess = async () => {
-    console.log("Current hostel data:", hostel);
-    console.log("Current messDetails:", messDetails);
+    // console.log("Current hostel data:", hostel);
+    // console.log("Current messDetails:", messDetails);
 
     if (!hostel.messId) {
       setError("No caterer is currently assigned to this hostel.");
@@ -138,14 +136,11 @@ export default function HostelPage() {
       // Get the mess ID - it could be a string or an object with _id
       const messIdToUnassign =
         typeof hostel.messId === "object" ? hostel.messId._id : hostel.messId;
-      console.log("Unassigning mess with ID:", messIdToUnassign);
-
-      const result = await unassignMess(messIdToUnassign);
-      console.log("Unassign result:", result);
+      // console.log("Unassigning mess with ID:", messIdToUnassign);
 
       // Refresh the hostel data
       const data = await getHostelById(hostelId);
-      console.log("Refreshed hostel data after unassign:", data);
+      // console.log("Refreshed hostel data after unassign:", data);
       setHostel(data.hostel);
       setMessDetails(null);
 
@@ -181,7 +176,7 @@ export default function HostelPage() {
   const handleDelete = async () => {
     try {
       // This would need a deleteHostel API function
-      console.log("Delete hostel functionality not implemented yet");
+      // console.log("Delete hostel functionality not implemented yet");
     } catch (err) {
       console.error("Delete error:", err);
     }

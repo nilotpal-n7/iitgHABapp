@@ -10,9 +10,7 @@ export const getMicrosoftAuthUrl = (type = "smc") => {
     import.meta.env.VITE_WEB_REDIRECT_URI ||
       "http://localhost:3000/api/auth/login/redirect/web"
   );
-  const webBaseUrl = encodeURIComponent(
-    import.meta.env.VITE_WEB_BASE_URL || "http://localhost:5173"
-  );
+  const webBaseUrl = encodeURIComponent(import.meta.env.VITE_WEB_BASE_URL);
 
   return `https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=user.read&state=${type}&prompt=consent`;
 };

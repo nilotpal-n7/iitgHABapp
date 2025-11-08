@@ -11,7 +11,7 @@ export default function MessMenu() {
       try {
         const data = await getMessMenuByDay(id, "Monday");
         setMenu(data);
-        console.log(data);
+        // console.log(data);
       } catch (error) {
         console.error("Error fetching mess menu:", error);
       }

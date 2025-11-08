@@ -306,13 +306,13 @@ const webLoginHandler = async (req, res, next) => {
     // Redirect to the appropriate portal based on login type
     let baseUrl;
     if (loginType === "hab") {
-      baseUrl = process.env.HAB_FRONTEND_URL || "http://localhost:5173";
+      baseUrl = process.env.HAB_FRONTEND_URL;
     } else if (loginType === "hostel") {
-      baseUrl = process.env.HOSTEL_FRONTEND_URL || "http://localhost:5174";
+      baseUrl = process.env.HOSTEL_FRONTEND_URL;
     } else if (loginType === "smc") {
-      baseUrl = process.env.SMC_FRONTEND_URL || "http://localhost:5175";
+      baseUrl = process.env.SMC_FRONTEND_URL;
     } else {
-      baseUrl = process.env.WEB_BASE_URL || "http://localhost:5173";
+      return next(new AppError(400, "Invalid login type"));
     }
 
     return res.redirect(`${baseUrl}${redirectPath}?token=${token}`);
