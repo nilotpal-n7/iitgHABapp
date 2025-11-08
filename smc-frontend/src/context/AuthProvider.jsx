@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { API_BASE_URL } from "../apis";
+import apiClient, { setAuthToken, clearAuthToken } from "../apiClient";
 
 const AuthContext = createContext();
 
@@ -23,14 +24,15 @@ export const AuthProvider = ({ children }) => {
     if (tokenFromUrl) {
       localStorage.setItem("token", tokenFromUrl);
       setToken(tokenFromUrl);
+      setAuthToken(tokenFromUrl);
       window.history.replaceState({}, document.title, location.pathname);
     }
   }, [location]);
 
   const getData = async (tokenToUse) => {
     try {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${tokenToUse}`;
-      const response = await axios.get(`${API_BASE_URL}/users/`);
+      setAuthToken(tokenToUse);
+      const response = await apiClient.get(`/users/`);
       setUser(response.data);
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -42,11 +44,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
     setToken(null);
     setUser(null);
-    delete axios.defaults.headers.common["Authorization"];
+    clearAuthToken();
     if (logoutTimerRef.current) {
       clearTimeout(logoutTimerRef.current);
     }
-    window.location.href = "http://localhost:5172";
+    const APP_URL = import.meta.env.VITE_APP_URL || "http://localhost:5172";
+    window.location.href = APP_URL;
   };
 
   // Primary useEffect for initial authentication check
@@ -61,7 +64,7 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      axios.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+      setAuthToken(storedToken);
 
       try {
         const decoded = jwtDecode(storedToken);
@@ -103,9 +106,9 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      setAuthToken(token);
     } else {
-      delete axios.defaults.headers.common["Authorization"];
+      clearAuthToken();
     }
   }, [token]);
 

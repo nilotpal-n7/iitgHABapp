@@ -75,32 +75,39 @@ const modifyMenuItem = async (req, res) => {
 
 const updateTime = async (req, res) => {
   try {
-    const messId = req.body.messId;
-    const type = req.body.type;
+    // Accept messId either in body or as a URL param (for SMC variant)
+    const messId = req.body.messId || req.params?.messId;
+    const type = req.body.type; // expected: 'Breakfast' | 'Lunch' | 'Dinner'
     const day = req.body.day;
 
-    if (!messId || !day) {
-      return res.status(400).json({ message: "Mess ID and day are required" });
+    if (!messId || !day || !type) {
+      return res
+        .status(400)
+        .json({ message: "messId, day and type are required" });
     }
 
-    var start;
-    var end;
+    let start;
+    let end;
 
     if (type === "Breakfast") {
       start = req.body.btime_s;
       end = req.body.btime_e;
-    } else if (type === "lunch") {
+    } else if (type === "Lunch") {
       start = req.body.ltime_s;
       end = req.body.ltime_e;
     } else if (type === "Dinner") {
       start = req.body.dtime_s;
       end = req.body.dtime_e;
     } else {
+      return res.status(400).json({ message: "Invalid meal type" });
     }
 
-    const menu = await Menu.findOne({ messId: messId, day: day });
-    if (!menu || menu.length === 0) {
-      return res.status(200).json("DoesntExist");
+    // Find the specific Menu document for this messId, day and meal type
+    const menu = await Menu.findOne({ messId: messId, day: day, type: type });
+    if (!menu) {
+      return res
+        .status(404)
+        .json({ message: "Menu not found for this meal/day" });
     }
 
     menu.startTime = start;
@@ -111,6 +118,64 @@ const updateTime = async (req, res) => {
     return res
       .status(200)
       .json({ message: "Menu timing updated successfully", menu });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// SMC-specific time update: allow authenticated SMC users to update timings
+const updateTimeSMC = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user?.isSMC) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized: User is not an SMC member" });
+    }
+
+    // Delegate to same logic as updateTime by reusing request shape.
+    // We can call updateTime directly, but to keep separation we duplicate minimal logic.
+    const messId = req.params?.messId || req.body.messId;
+    const type = req.body.type;
+    const day = req.body.day;
+
+    if (!messId || !day || !type) {
+      return res
+        .status(400)
+        .json({ message: "messId, day and type are required" });
+    }
+
+    let start;
+    let end;
+
+    if (type === "Breakfast") {
+      start = req.body.btime_s;
+      end = req.body.btime_e;
+    } else if (type === "Lunch") {
+      start = req.body.ltime_s;
+      end = req.body.ltime_e;
+    } else if (type === "Dinner") {
+      start = req.body.dtime_s;
+      end = req.body.dtime_e;
+    } else {
+      return res.status(400).json({ message: "Invalid meal type" });
+    }
+
+    const menu = await Menu.findOne({ messId: messId, day: day, type: type });
+    if (!menu) {
+      return res
+        .status(404)
+        .json({ message: "Menu not found for this meal/day" });
+    }
+
+    menu.startTime = start;
+    menu.endTime = end;
+    await menu.save();
+
+    return res
+      .status(200)
+      .json({ message: "Menu timing updated successfully (SMC)", menu });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
@@ -200,4 +265,5 @@ module.exports = {
   getMessMenuByDayForAdmin,
   getMessMenuByDayForSMC,
   updateTime,
+  updateTimeSMC,
 };

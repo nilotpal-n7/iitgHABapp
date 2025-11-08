@@ -36,14 +36,14 @@ export default function FeedbackLeaderboard() {
       setError("");
       try {
         const leaderUrl = `${BACKEND_URL}/feedback/leaderboard-by-window?windowNumber=${selectedWindow}`;
-        console.log("[Leaderboard] Fetching:", leaderUrl);
+        // console.log("[Leaderboard] Fetching:", leaderUrl);
 
         const res = await fetch(leaderUrl, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         const text = await res.text();
-        console.log("[Leaderboard] Raw response:", text);
+        // console.log("[Leaderboard] Raw response:", text);
 
         if (!res.ok) {
           setError(`Leaderboard failed: ${res.status}`);

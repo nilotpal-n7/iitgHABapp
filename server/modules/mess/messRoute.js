@@ -29,6 +29,7 @@ const {
   modifyMenuItem,
   modifyMenuItemSMC,
   updateTime,
+  updateTimeSMC,
 } = require("./messAdminController.js");
 
 const messRouter = express.Router();
@@ -72,4 +73,10 @@ messRouter.post("/menu/modify/smc/:messId", authenticateJWT, modifyMenuItemSMC);
 //for admin (hostel)
 messRouter.post("/menu/modify/:messId", authenticateAdminJWT, modifyMenuItem);
 messRouter.post("/menu/time/update", authenticateAdminJWT, updateTime);
+// SMC-specific time update (authenticated SMC users)
+messRouter.post(
+  "/menu/time/update/smc/:messId",
+  authenticateJWT,
+  updateTimeSMC
+);
 module.exports = messRouter;

@@ -39,7 +39,7 @@ const StudentList = ({ refreshTrigger }) => {
 
   const filteredStudents = useMemo(() => {
     if (!searchQuery.trim()) return students;
-    console.log(students);
+    // console.log(students);
     const query = searchQuery.toLowerCase();
     return students.filter(
       (student) =>
