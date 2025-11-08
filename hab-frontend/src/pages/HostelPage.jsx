@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import HostelStats from "./stats/HostelStats";
-import HostelUsersList from "../Components/HostelUsersList";
+import HostelUsersList from "../components/HostelUsersList";
 import {
   getUnassignedMesses,
   assignMessToHostel,

@@ -1,5 +1,5 @@
 import React from "react";
-import NotificationSender from "../Components/NotificationSender";
+import NotificationSender from "../components/NotificationSender";
 
 const Notifications = () => {
   return (
