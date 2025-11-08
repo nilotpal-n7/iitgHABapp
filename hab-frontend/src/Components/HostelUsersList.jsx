@@ -1,3 +1,4 @@
+// NOTE: This file lives in `components` (lowercase).
 import React, { useState, useEffect, useMemo } from "react";
 import { Table, Input, Typography, Avatar, Tag, Empty } from "antd";
 import { UserOutlined, SearchOutlined, MailOutlined } from "@ant-design/icons";
@@ -50,7 +51,7 @@ const HostelUsersList = ({ hostelName, users }) => {
       dataIndex: "name",
       key: "name",
       sorter: (a, b) => a.name.localeCompare(b.name),
-      render: (text, record) => (
+      render: (text) => (
         <div style={{ display: "flex", alignItems: "center" }}>
           <Avatar
             size={32}

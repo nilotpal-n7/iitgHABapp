@@ -1,3 +1,4 @@
+// NOTE: This file lives in `components` (lowercase).
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getMessMenuByDay } from "../apis/mess";

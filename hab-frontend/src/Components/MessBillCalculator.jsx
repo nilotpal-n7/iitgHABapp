@@ -1,3 +1,4 @@
+// NOTE: This file lives in `components` (lowercase).
 import React, { useState, useEffect } from "react";
 import { BACKEND_URL } from "../apis/server";
 
