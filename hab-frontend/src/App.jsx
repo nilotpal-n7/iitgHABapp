@@ -1,19 +1,9 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthProvider";
-import { ProtectedRoute } from "./components/ProtectedRoute.jsx";
-import Sidebar from "./components/Sidebar.jsx";
 import Home from "./pages/Home";
 import AllHostelList from "./pages/AllHostelList";
 import Caterers from "./pages/Caterers";
 import Students from "./pages/Students";
-import CreateMess from "./components/CreateMess.jsx";
-import MessDetails from "./components/MessDetails.jsx";
-import MessMenu from "./components/MessMenu.jsx";
 import HostelForm from "./pages/HostelForm";
 import HostelPage from "./pages/HostelPage";
 import MessChangePage from "./pages/MessChangePage.jsx";
@@ -22,10 +12,12 @@ import ProfileSettings from "./pages/ProfileSettings.jsx";
 import FeedbackControl from "./pages/FeedbackControl.jsx";
 import FeedbackLeaderboard from "./pages/FeedbackLeaderboard.jsx";
 import Notifications from "./pages/Notifications.jsx";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Sidebar from "./components/Sidebar";
 
 function App() {
   return (
-    <Router>
+    <Router basename="/hab">
       <AuthProvider>
         <Routes>
           <Route
@@ -37,7 +29,7 @@ function App() {
                   <div className="flex-1 ml-64 p-6 bg-gray-50 min-h-screen">
                     <Routes>
                       <Route path="/" element={<Home />} />
-                      <Route path="/hab/dashboard" element={<Home />} />
+                      <Route path="/dashboard" element={<Home />} />
                       <Route path="/hostels" element={<AllHostelList />} />
                       <Route path="/create-hostel" element={<HostelForm />} />
                       <Route
