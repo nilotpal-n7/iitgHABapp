@@ -12,7 +12,7 @@ import ProfileSettings from "./pages/ProfileSettings.jsx";
 import FeedbackControl from "./pages/FeedbackControl.jsx";
 import FeedbackLeaderboard from "./pages/FeedbackLeaderboard.jsx";
 import Notifications from "./pages/Notifications.jsx";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import Sidebar from "./components/Sidebar";
 
 function App() {
