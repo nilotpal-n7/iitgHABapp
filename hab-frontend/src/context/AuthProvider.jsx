@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+// import { useNavigate, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { setAuthToken, clearAuthToken } from "../apiClient";
 
@@ -12,29 +12,26 @@ const APP_URL = import.meta.env.VITE_APP_URL || "http://localhost:5172";
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
-  const location = useLocation();
+  // const navigate = useNavigate();
+  // const location = useLocation();
   const logoutTimerRef = useRef(null);
 
   const isAuthenticated = !!token;
 
   // ✅ Check token in URL after redirect (from backend login)
   useEffect(() => {
-    const urlParams = new URLSearchParams(location.search);
+    const urlParams = new URLSearchParams(window.location.search);
     const tokenFromUrl = urlParams.get("token");
-
+    console.log("🔍 TOKEN FROM URL:", tokenFromUrl);
     if (tokenFromUrl) {
       localStorage.setItem("token", tokenFromUrl);
       setToken(tokenFromUrl);
       setAuthToken(tokenFromUrl);
-
-      // Clean up URL (remove ?token=...)
-      window.history.replaceState({}, document.title, location.pathname);
-
-      // ✅ Redirect to dashboard instead of login root
-      navigate("/hab/dashboard", { replace: true });
+      console.log("✅ Token stored in localStorage");
+    } else {
+      console.log("❌ No token param found in URL");
     }
-  }, [location, navigate]);
+  }, []);
 
   // ✅ Logout function
   const logout = () => {
