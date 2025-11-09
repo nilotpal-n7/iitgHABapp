@@ -1,12 +1,13 @@
 import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { setAuthToken, clearAuthToken } from "../apiClient";
 
 const AuthContext = createContext();
+
 const BACKEND_URL =
   import.meta.env.VITE_SERVER_URL || "http://localhost:3000/api";
 const APP_URL = import.meta.env.VITE_APP_URL || "http://localhost:5172";
-import { setAuthToken, clearAuthToken } from "../apiClient";
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token") || null);
@@ -17,19 +18,25 @@ export const AuthProvider = ({ children }) => {
 
   const isAuthenticated = !!token;
 
-  // Check token from URL on mount (from Microsoft redirect)
+  // ✅ Check token in URL after redirect (from backend login)
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const tokenFromUrl = urlParams.get("token");
+
     if (tokenFromUrl) {
       localStorage.setItem("token", tokenFromUrl);
       setToken(tokenFromUrl);
       setAuthToken(tokenFromUrl);
+
+      // Clean up URL (remove ?token=...)
       window.history.replaceState({}, document.title, location.pathname);
-      navigate("/");
+
+      // ✅ Redirect to dashboard instead of login root
+      navigate("/hab/dashboard", { replace: true });
     }
   }, [location, navigate]);
 
+  // ✅ Logout function
   const logout = () => {
     localStorage.removeItem("token");
     setToken(null);
@@ -37,10 +44,12 @@ export const AuthProvider = ({ children }) => {
     if (logoutTimerRef.current) {
       clearTimeout(logoutTimerRef.current);
     }
+
+    // Redirect to login page (the root, hosted separately)
     window.location.href = APP_URL;
   };
 
-  // Primary useEffect for initial authentication check
+  // ✅ On mount: check and validate token
   useEffect(() => {
     const initializeAuth = async () => {
       const storedToken = localStorage.getItem("token");
@@ -67,14 +76,13 @@ export const AuthProvider = ({ children }) => {
           setToken(storedToken);
         }
 
+        // Auto logout when token expires
         if (logoutTimerRef.current) {
           clearTimeout(logoutTimerRef.current);
         }
-        logoutTimerRef.current = setTimeout(() => {
-          logout();
-        }, expire);
+        logoutTimerRef.current = setTimeout(() => logout(), expire);
       } catch (error) {
-        console.error("Error in initializeAuth:", error);
+        console.error("Error validating token:", error);
         logout();
       } finally {
         setIsLoading(false);
@@ -84,18 +92,14 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
 
     return () => {
-      if (logoutTimerRef.current) {
-        clearTimeout(logoutTimerRef.current);
-      }
+      if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
     };
   }, [token]);
 
+  // Keep axios headers in sync
   useEffect(() => {
-    if (token) {
-      setAuthToken(token);
-    } else {
-      clearAuthToken();
-    }
+    if (token) setAuthToken(token);
+    else clearAuthToken();
   }, [token]);
 
   const authContextValue = {
