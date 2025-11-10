@@ -170,8 +170,9 @@ const logoutHandler = (req, res, next) => {
   // res.clearCookie("token");
   res.cookie("token", "loggedout", {
     maxAge: 0,
-    sameSite: "lax",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     secure: false,
+    path: "/",
     expires: new Date(Date.now()),
     httpOnly: true,
   });
@@ -295,15 +296,20 @@ const webLoginHandler = async (req, res, next) => {
       redirectPath = "/smc/dashboard";
     }
 
-    // Set token in cookie and redirect
+    // Set token in cookie. We will NOT include the token in the query string
+    // to avoid leaking it via referer or browser history. Frontends should
+    // validate session using /api/auth/me which reads the httpOnly cookie.
+    // Set cookie for the entire site so subsequent /api/auth/me calls can read it
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      // For production (cross-site) we need SameSite=None and Secure; in dev use Lax
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/",
       maxAge: 2 * 60 * 60 * 1000, // 2 hours
     });
 
-    // Redirect to the appropriate portal based on login type
+    // Redirect to the appropriate portal based on login type (no token in URL)
     let baseUrl;
     if (loginType === "hab") {
       baseUrl = process.env.HAB_FRONTEND_URL;
@@ -315,7 +321,15 @@ const webLoginHandler = async (req, res, next) => {
       return next(new AppError(400, "Invalid login type"));
     }
 
-    return res.redirect(`${baseUrl}${redirectPath}?token=${token}`);
+    // In development include token in the redirect query for easier local testing
+    // (local dev often runs on different ports and cannot use Secure SameSite=None cookies)
+    if (process.env.NODE_ENV !== "production") {
+      return res.redirect(
+        `${baseUrl}${redirectPath}?token=${encodeURIComponent(token)}`
+      );
+    }
+
+    return res.redirect(`${baseUrl}${redirectPath}`);
   } catch (err) {
     const loginType = req.query.type || req.query.state || "unknown";
     console.error(`Error in web login (${loginType}):`, err);
@@ -323,6 +337,70 @@ const webLoginHandler = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid authorization code" });
     }
     return next(new AppError(500, `Error occurred during ${loginType} login`));
+  }
+};
+
+// Return authenticated principal based on token in cookie or Authorization header
+const meHandler = async (req, res, next) => {
+  try {
+    // token can be in cookie or authorization header (Bearer)
+    let token = req.cookies?.token;
+    if (!token && req.headers?.authorization) {
+      const authHeader = req.headers.authorization;
+      if (authHeader.startsWith("Bearer ")) token = authHeader.split(" ")[1];
+    }
+
+    if (!token) {
+      console.log(
+        "meHandler: no token provided in cookie or Authorization header"
+      );
+      return res.status(401).json({ authenticated: false });
+    }
+
+    // Try as normal User
+    try {
+      const user = await User.findByJWT(token);
+      if (user) {
+        console.log("meHandler: authenticated as user", user._id);
+        return res
+          .status(200)
+          .json({ authenticated: true, type: "user", user });
+      }
+    } catch (e) {
+      // ignore and try other types
+    }
+
+    // Try as Hostel (admin-like token for hostel)
+    try {
+      const { Hostel } = require("../hostel/hostelModel.js");
+      const hostel = await Hostel.findByJWT(token);
+      if (hostel) {
+        return res
+          .status(200)
+          .json({ authenticated: true, type: "hostel", hostel });
+      }
+    } catch (e) {
+      // ignore and try admin token
+    }
+
+    // Try admin HAB token (signed with adminjwtsecret)
+    try {
+      const { adminjwtsecret } = require("../../config/default.js");
+      const jwt = require("jsonwebtoken");
+      const decoded = jwt.verify(token, adminjwtsecret);
+      if (decoded && decoded.hab) {
+        return res
+          .status(200)
+          .json({ authenticated: true, type: "hab", email: decoded.email });
+      }
+    } catch (e) {
+      // fall through
+    }
+
+    return res.status(401).json({ authenticated: false });
+  } catch (err) {
+    console.error("Error in meHandler:", err);
+    return next(new AppError(500, "Server error while validating session"));
   }
 };
 
@@ -415,4 +493,5 @@ module.exports = {
   logoutHandler,
   guestLoginHandler,
   webLoginHandler,
+  meHandler,
 };

@@ -8,6 +8,7 @@ const {
   logoutHandler,
   guestLoginHandler,
   webLoginHandler,
+  meHandler,
 } = require("./auth.controller.js");
 
 // Not used
@@ -85,6 +86,9 @@ router.get("/login/redirect/mobile", mobileRedirectHandler);
 // Unified web login handler for HAB, Hostel, and SMC
 // Usage: /api/auth/login/redirect/web?code=xxx&type=hab|hostel|smc
 router.get("/login/redirect/web", webLoginHandler);
+
+// Get current authenticated principal (reads httpOnly cookie or Authorization header)
+router.get("/me", meHandler);
 
 router.get("/logout", logoutHandler);
 
