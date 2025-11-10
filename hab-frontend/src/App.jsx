@@ -12,12 +12,23 @@ import ProfileSettings from "./pages/ProfileSettings.jsx";
 import FeedbackControl from "./pages/FeedbackControl.jsx";
 import FeedbackLeaderboard from "./pages/FeedbackLeaderboard.jsx";
 import Notifications from "./pages/Notifications.jsx";
+import CreateMess from "./components/CreateMess";
+import MessDetails from "./components/MessDetails";
+import MessMenu from "./components/MessMenu";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Sidebar from "./components/Sidebar";
 
 function App() {
+  // Compute basename dynamically:
+  // - prefer Vite-provided `VITE_BASE` (set in production builds when hosted under /hab)
+  // - fallback: if the current pathname starts with /hab use '/hab'
+  // - otherwise use '/' so local dev at root (e.g. http://localhost:5173/dashboard) works
+  const BASENAME =
+    import.meta.env.VITE_BASE ||
+    (window.location.pathname.startsWith("/hab") ? "/hab" : "/");
+
   return (
-    <Router basename="/hab">
+    <Router basename={BASENAME}>
       <AuthProvider>
         <Routes>
           <Route
