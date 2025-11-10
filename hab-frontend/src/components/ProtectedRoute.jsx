@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthProvider";
 
 export const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
-  const APP_URL = import.meta.env.VITE_APP_URL || "http://localhost:5172";
+  const APP_URL = import.meta.env.VITE_APP_URL || "https://youtube.com";
 
   if (isLoading) {
     return (
