@@ -24,6 +24,7 @@ export const AuthProvider = ({ children }) => {
       const urlParams = new URLSearchParams(window.location.search);
       const tokenFromUrl = urlParams.get("token");
 
+      // Dev mode: If token is in URL (redirect param), store it
       if (tokenFromUrl) {
         console.log(
           "[AuthProvider] Found token in URL:",
@@ -48,37 +49,42 @@ export const AuthProvider = ({ children }) => {
           const data = await resp.json();
           console.log("[AuthProvider] /auth/me response:", data);
 
-          if (data?.token) {
-            console.log("[AuthProvider] Setting token from server response.");
-            localStorage.setItem("token", data.token);
-            setToken(data.token);
-            setAuthToken(data.token);
-          } else if (!tokenFromUrl && localStorage.getItem("token")) {
-            const stored = localStorage.getItem("token");
-            console.log("[AuthProvider] Using existing local token.");
-            setToken(stored);
-            setAuthToken(stored);
+          if (data.authenticated) {
+            console.log("[AuthProvider] ✅ Authenticated via backend cookie.");
+            // Optional: mirror this for React’s state
+            setToken("cookie-session");
+            setAuthToken(null); // don’t attach Bearer token, rely on cookie
+            setIsLoading(false);
+            return;
           } else {
-            console.warn(
-              "[AuthProvider] No token found in server or localStorage."
-            );
+            console.warn("[AuthProvider] /auth/me says not authenticated.");
           }
         } else {
           console.warn("[AuthProvider] ❌ /auth/me failed:", resp.status);
-          localStorage.removeItem("token");
-          setToken(null);
-          clearAuthToken();
-          window.location.href = APP_URL;
         }
       } catch (err) {
         console.error("[AuthProvider] ⚠️ Auth check failed:", err);
-        localStorage.removeItem("token");
-        setToken(null);
-        clearAuthToken();
-        window.location.href = APP_URL;
-      } finally {
-        setIsLoading(false);
       }
+
+      // Fallback: try existing local token if present
+      const stored = localStorage.getItem("token");
+      if (stored) {
+        console.log("[AuthProvider] Using existing local token fallback.");
+        setToken(stored);
+        setAuthToken(stored);
+        setIsLoading(false);
+        return;
+      }
+
+      // No cookie and no local token → redirect to login
+      console.warn(
+        "[AuthProvider] ❌ No valid session — redirecting to login."
+      );
+      localStorage.removeItem("token");
+      setToken(null);
+      clearAuthToken();
+      setIsLoading(false);
+      window.location.href = APP_URL;
     };
 
     initializeFromServer();
@@ -109,13 +115,22 @@ export const AuthProvider = ({ children }) => {
   };
 
   // ==========================================================
-  // 3️⃣ LOCAL TOKEN VALIDATION & AUTO LOGOUT
+  // 3️⃣ LOCAL TOKEN VALIDATION & AUTO LOGOUT (for dev mode only)
   // ==========================================================
   useEffect(() => {
     const initializeAuth = async () => {
-      console.log("[AuthProvider] 🔍 Checking local token validity...");
       const storedToken = localStorage.getItem("token");
 
+      // In production, cookies handle session — skip this
+      if (import.meta.env.MODE === "production") {
+        console.log(
+          "[AuthProvider] Production mode — skipping local JWT checks."
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      console.log("[AuthProvider] 🔍 Checking local token validity...");
       if (!storedToken) {
         console.warn(
           "[AuthProvider] No local token found — redirecting to login."
@@ -168,11 +183,11 @@ export const AuthProvider = ({ children }) => {
   // 4️⃣ SYNC TOKEN TO AXIOS
   // ==========================================================
   useEffect(() => {
-    if (token) {
+    if (token && token !== "cookie-session") {
       console.log("[AuthProvider] ✅ Token set — syncing with axios.");
       setAuthToken(token);
     } else {
-      console.warn("[AuthProvider] ❌ No token — clearing axios auth.");
+      console.warn("[AuthProvider] ❌ No Bearer token — clearing axios auth.");
       clearAuthToken();
     }
   }, [token]);
