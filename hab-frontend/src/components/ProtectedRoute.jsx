@@ -1,5 +1,3 @@
-// NOTE: This file lives in `components` (lowercase).
-import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthProvider";
 
 export const ProtectedRoute = ({ children }) => {

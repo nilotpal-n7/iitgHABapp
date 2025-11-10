@@ -12,32 +12,24 @@ const APP_URL = import.meta.env.VITE_APP_URL || "http://localhost:5172";
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [isLoading, setIsLoading] = useState(true);
-  // const navigate = useNavigate();
-  // const location = useLocation();
   const logoutTimerRef = useRef(null);
 
   const isAuthenticated = !!token;
 
-  // ✅ Check token in URL after redirect (from backend login)
-  // On mount: validate session with server using httpOnly cookie (primary)
-  // Optional compatibility: if token exists in URL (older flow), temporarily use it
   useEffect(() => {
     const initializeFromServer = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const tokenFromUrl = urlParams.get("token");
 
       if (tokenFromUrl) {
-        // Temporary compatibility fallback: store and set header for immediate requests
         localStorage.setItem("token", tokenFromUrl);
         setToken(tokenFromUrl);
         setAuthToken(tokenFromUrl);
-        // remove token from URL to avoid leakage
         const cleanUrl = window.location.pathname + window.location.hash;
         window.history.replaceState({}, document.title, cleanUrl);
       }
 
       try {
-        // Validate session by calling backend /auth/me which reads httpOnly cookie
         const resp = await fetch(`${BACKEND_URL}/auth/me`, {
           method: "GET",
           credentials: "include",
@@ -48,7 +40,6 @@ export const AuthProvider = ({ children }) => {
 
         if (resp.ok) {
           const data = await resp.json();
-          // If server returns a token, prefer that; otherwise keep previously stored token
           if (data?.token) {
             localStorage.setItem("token", data.token);
             setToken(data.token);
@@ -59,7 +50,6 @@ export const AuthProvider = ({ children }) => {
             setAuthToken(stored);
           }
         } else {
-          // Not authenticated
           localStorage.removeItem("token");
           setToken(null);
           clearAuthToken();
@@ -79,10 +69,8 @@ export const AuthProvider = ({ children }) => {
     initializeFromServer();
   }, []);
 
-  // ✅ Logout function — clear server cookie and local token
   const logout = async () => {
     try {
-      // Call server logout to clear httpOnly cookie
       await fetch(`${BACKEND_URL}/auth/logout`, {
         method: "GET",
         credentials: "include",

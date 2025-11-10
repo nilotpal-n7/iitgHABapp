@@ -263,7 +263,7 @@ const webLoginHandler = async (req, res, next) => {
       token = jwt.sign({ hab: true, email: email }, adminjwtsecret, {
         expiresIn: "2h",
       });
-      redirectPath = "/dashboard";
+      redirectPath = "/";
     } else if (loginType === "hostel") {
       // Hostel login: Find hostel by microsoft_email
       const { Hostel } = require("../hostel/hostelModel.js");
