@@ -7,7 +7,7 @@ const AuthContext = createContext();
 
 const BACKEND_URL =
   import.meta.env.VITE_SERVER_URL || "http://localhost:3000/api";
-const APP_URL = import.meta.env.VITE_APP_URL || "http://localhost:5172";
+const APP_URL = "https://youtube.com";
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token") || null);
