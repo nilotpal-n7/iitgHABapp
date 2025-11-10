@@ -9,7 +9,6 @@ export default function App() {
 
     const authUrl = `https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=user.read&state=${type}&prompt=consent`;
 
-    // Redirect to Microsoft login
     window.location.href = authUrl;
   };
 
