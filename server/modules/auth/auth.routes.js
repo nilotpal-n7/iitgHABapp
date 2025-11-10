@@ -4,15 +4,11 @@ const scope = "User.read offline_access Mail.read"; // Fixed the typo in 'offlin
 const catchAsync = require("../../utils/catchAsync.js");
 const {
   mobileRedirectHandler,
-  loginHandler,
   logoutHandler,
   guestLoginHandler,
   webLoginHandler,
   meHandler,
 } = require("./auth.controller.js");
-
-// Not used
-router.get("/login", loginHandler);
 
 /**
  * @swagger

@@ -122,7 +122,7 @@ app.use(express.json());
 app.use(
   cors({
     origin: [
-      "https://hab.codingclub.in", // ✅ Production domain
+      "https://hab.codingclub.in",
       "https://hostel.codingclub.in",
       "https://smc.codingclub.in",
       "http://localhost:5172",
@@ -130,7 +130,7 @@ app.use(
       "http://localhost:5174",
       "http://localhost:5175",
     ],
-    credentials: true, // ✅ critical for cookies
+    credentials: true,
   })
 );
 
