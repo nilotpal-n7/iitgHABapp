@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect, useRef } from "react";
-// import { useNavigate, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { setAuthToken, clearAuthToken } from "../apiClient";
 
@@ -16,12 +15,20 @@ export const AuthProvider = ({ children }) => {
 
   const isAuthenticated = !!token;
 
+  // ==========================================================
+  // 1️⃣ INITIAL CHECK — read token from URL or verify session with /auth/me
+  // ==========================================================
   useEffect(() => {
     const initializeFromServer = async () => {
+      console.log("[AuthProvider] 🚀 Initializing from server...");
       const urlParams = new URLSearchParams(window.location.search);
       const tokenFromUrl = urlParams.get("token");
 
       if (tokenFromUrl) {
+        console.log(
+          "[AuthProvider] Found token in URL:",
+          tokenFromUrl.slice(0, 20) + "..."
+        );
         localStorage.setItem("token", tokenFromUrl);
         setToken(tokenFromUrl);
         setAuthToken(tokenFromUrl);
@@ -30,33 +37,41 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
+        console.log("[AuthProvider] Checking backend session at /auth/me...");
         const resp = await fetch(`${BACKEND_URL}/auth/me`, {
           method: "GET",
           credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         });
 
         if (resp.ok) {
           const data = await resp.json();
+          console.log("[AuthProvider] /auth/me response:", data);
+
           if (data?.token) {
+            console.log("[AuthProvider] Setting token from server response.");
             localStorage.setItem("token", data.token);
             setToken(data.token);
             setAuthToken(data.token);
           } else if (!tokenFromUrl && localStorage.getItem("token")) {
             const stored = localStorage.getItem("token");
+            console.log("[AuthProvider] Using existing local token.");
             setToken(stored);
             setAuthToken(stored);
+          } else {
+            console.warn(
+              "[AuthProvider] No token found in server or localStorage."
+            );
           }
         } else {
+          console.warn("[AuthProvider] ❌ /auth/me failed:", resp.status);
           localStorage.removeItem("token");
           setToken(null);
           clearAuthToken();
           window.location.href = APP_URL;
         }
       } catch (err) {
-        console.error("Auth check failed", err);
+        console.error("[AuthProvider] ⚠️ Auth check failed:", err);
         localStorage.removeItem("token");
         setToken(null);
         clearAuthToken();
@@ -69,36 +84,42 @@ export const AuthProvider = ({ children }) => {
     initializeFromServer();
   }, []);
 
+  // ==========================================================
+  // 2️⃣ LOGOUT HANDLER
+  // ==========================================================
   const logout = async () => {
+    console.log("[AuthProvider] 🧹 Logging out...");
     try {
-      await fetch(`${BACKEND_URL}/auth/logout`, {
+      const resp = await fetch(`${BACKEND_URL}/auth/logout`, {
         method: "GET",
         credentials: "include",
       });
+      console.log("[AuthProvider] /auth/logout response:", resp.status);
     } catch (err) {
-      console.warn(
-        "Server logout call failed, continuing to clear local state",
-        err
-      );
+      console.warn("[AuthProvider] Server logout call failed:", err);
     }
 
     localStorage.removeItem("token");
     setToken(null);
     clearAuthToken();
-    if (logoutTimerRef.current) {
-      clearTimeout(logoutTimerRef.current);
-    }
+    if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
 
-    // Redirect to login page (the root, hosted separately)
+    console.log("[AuthProvider] Redirecting to login page:", APP_URL);
     window.location.href = APP_URL;
   };
 
-  // ✅ On mount: check and validate token
+  // ==========================================================
+  // 3️⃣ LOCAL TOKEN VALIDATION & AUTO LOGOUT
+  // ==========================================================
   useEffect(() => {
     const initializeAuth = async () => {
+      console.log("[AuthProvider] 🔍 Checking local token validity...");
       const storedToken = localStorage.getItem("token");
 
       if (!storedToken) {
+        console.warn(
+          "[AuthProvider] No local token found — redirecting to login."
+        );
         setToken(null);
         setIsLoading(false);
         window.location.href = APP_URL;
@@ -110,23 +131,27 @@ export const AuthProvider = ({ children }) => {
       try {
         const decoded = jwtDecode(storedToken);
         const expire = decoded.exp * 1000 - Date.now();
+        console.log(
+          `[AuthProvider] Decoded token exp in ${(expire / 1000).toFixed(1)}s`
+        );
 
         if (expire < 1000) {
+          console.warn("[AuthProvider] Token expired — logging out.");
           logout();
           return;
         }
 
-        if (token !== storedToken) {
-          setToken(storedToken);
-        }
+        if (token !== storedToken) setToken(storedToken);
 
-        // Auto logout when token expires
-        if (logoutTimerRef.current) {
-          clearTimeout(logoutTimerRef.current);
-        }
-        logoutTimerRef.current = setTimeout(() => logout(), expire);
+        if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
+        logoutTimerRef.current = setTimeout(() => {
+          console.log(
+            "[AuthProvider] ⏰ Token expired — auto logout triggered."
+          );
+          logout();
+        }, expire);
       } catch (error) {
-        console.error("Error validating token:", error);
+        console.error("[AuthProvider] Error decoding token:", error);
         logout();
       } finally {
         setIsLoading(false);
@@ -134,18 +159,27 @@ export const AuthProvider = ({ children }) => {
     };
 
     initializeAuth();
-
     return () => {
       if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
     };
   }, [token]);
 
-  // Keep axios headers in sync
+  // ==========================================================
+  // 4️⃣ SYNC TOKEN TO AXIOS
+  // ==========================================================
   useEffect(() => {
-    if (token) setAuthToken(token);
-    else clearAuthToken();
+    if (token) {
+      console.log("[AuthProvider] ✅ Token set — syncing with axios.");
+      setAuthToken(token);
+    } else {
+      console.warn("[AuthProvider] ❌ No token — clearing axios auth.");
+      clearAuthToken();
+    }
   }, [token]);
 
+  // ==========================================================
+  // PROVIDER CONTEXT EXPORT
+  // ==========================================================
   const authContextValue = {
     token,
     logout,
