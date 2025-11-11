@@ -16,7 +16,6 @@ import Card from "../components/ui/Card";
 import Tabs from "../components/ui/Tabs";
 import Button from "../components/ui/Button";
 import MessBillCalculator from "../components/MessBillCalculator";
-import "./Dashboard.css";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
