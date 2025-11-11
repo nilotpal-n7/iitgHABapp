@@ -1,5 +1,6 @@
 const admin = require("./firebase.js");
 const FCMToken = require("./FCMToken.js");
+// eslint-disable-next-line no-unused-vars
 const User = require("../user/userModel.js");
 const { Hostel } = require("../hostel/hostelModel.js");
 

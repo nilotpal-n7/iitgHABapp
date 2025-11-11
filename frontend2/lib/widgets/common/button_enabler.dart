@@ -6,7 +6,8 @@ class EnableButtonExample extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final DateTime now = DateTime.now();
-    final bool isButtonEnabled = now.weekday >= DateTime.monday && now.weekday <= DateTime.wednesday;
+    final bool isButtonEnabled =
+        now.weekday >= DateTime.monday && now.weekday <= DateTime.wednesday;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -14,11 +15,11 @@ class EnableButtonExample extends StatelessWidget {
         ElevatedButton(
           onPressed: isButtonEnabled
               ? () {
-            // Action when the button is pressed
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Button Pressed!')),
-            );
-          }
+                  // Action when the button is pressed
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Button Pressed!')),
+                  );
+                }
               : null, // Button is disabled if null
           child: const Text('Press Me'),
         ),

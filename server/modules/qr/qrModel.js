@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const dotenv = require("dotenv")
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
 
 dotenv.config();
 
@@ -26,6 +26,6 @@ const qrSchema = new mongoose.Schema(
     }
 );
 
-const QR = mongoose.model('QR', qrSchema);
+const QR = mongoose.model("QR", qrSchema);
 
 module.exports = {QR};

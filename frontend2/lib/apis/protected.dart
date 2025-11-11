@@ -10,7 +10,3 @@ Future<String> getAccessToken() async {
     return 'error';
   }
 }
-
-
-
-

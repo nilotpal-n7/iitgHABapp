@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
+// eslint-disable-next-line no-unused-vars
 const scope = "User.read offline_access Mail.read"; // Fixed the typo in 'offline_access'
+// eslint-disable-next-line no-unused-vars
 const catchAsync = require("../../utils/catchAsync.js");
 const {
   mobileRedirectHandler,
