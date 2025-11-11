@@ -14,7 +14,7 @@ class CustomLinearProgress extends StatelessWidget {
       color: const Color.fromRGBO(255, 255, 255, 0.9),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children:  [
+        children: [
           const Center(
             child: SizedBox(
               width: 100,

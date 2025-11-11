@@ -10,6 +10,7 @@ const MessChangePage = () => {
   const [messChangeSettings, setMessChangeSettings] = useState(null);
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [hostels, setHostels] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [hostelsLoading, setHostelsLoading] = useState(false);
   const [scheduleInfo, setScheduleInfo] = useState(null);
   const [scheduleLoading, setScheduleLoading] = useState(false);
@@ -91,7 +92,6 @@ const MessChangePage = () => {
       setHostelsLoading(false);
     }
   };
-
 
   const fetchScheduleInfo = async () => {
     try {

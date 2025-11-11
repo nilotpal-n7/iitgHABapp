@@ -19,9 +19,10 @@ jobs:
         with:
           channel: 'stable'
           cache: true
-      - run: flutter pub get
-      - run: flutter analyze --no-fatal-infos
-      - run: flutter test --coverage
+      - run: |
+          flutter pub get
+          flutter analyze --no-fatal-infos
+          flutter test --coverage
 
   web-hab:
     name: Web (hab-frontend)
@@ -41,26 +42,62 @@ jobs:
           npm run lint --if-present
           npm test --if-present
 
-  web-hmc:
-    name: Web (hmc-frontend)
+  web-hostel:
+    name: Web (hostel-frontend)
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: hmc-frontend
+        working-directory: hostel-frontend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: 'hmc-frontend/package-lock.json'
+          cache-dependency-path: 'hostel-frontend/package-lock.json'
+      - run: |
+          npm ci
+          npm run lint --if-present
+          npm test --if-present
+
+  web-login:
+    name: Web (login-frontend)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: login-frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'login-frontend/package-lock.json'
+      - run: |
+          npm ci
+          npm run lint --if-present
+          npm test --if-present
+
+  web-smc:
+    name: Web (smc-frontend)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: smc-frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'smc-frontend/package-lock.json'
       - run: |
           npm ci
           npm run lint --if-present
           npm test --if-present
 
   backend:
-    name: Backend (Node.js)
+    name: Backend (server)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -82,7 +119,7 @@ jobs:
 
   deploy-staging:
     if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
-    needs: [flutter, web-hab, web-hmc, backend]
+    needs: [flutter, web-hab, web-hostel, web-login, web-smc, backend]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -99,7 +136,7 @@ jobs:
 
   deploy-prod:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    needs: [flutter, web-hab, web-hmc, backend]
+    needs: [flutter, web-hab, web-hostel, web-login, web-smc, backend]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

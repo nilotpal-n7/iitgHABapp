@@ -61,7 +61,12 @@ const Students = () => {
             cancelText="Cancel"
             onConfirm={handleClearAll}
           >
-            <Button danger loading={clearing} size="large" style={{ borderRadius: "6px", height: "40px", fontWeight: 500 }}>
+            <Button
+              danger
+              loading={clearing}
+              size="large"
+              style={{ borderRadius: "6px", height: "40px", fontWeight: 500 }}
+            >
               Clear All Students
             </Button>
           </Popconfirm>

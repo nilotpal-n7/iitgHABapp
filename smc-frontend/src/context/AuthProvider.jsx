@@ -1,9 +1,8 @@
-import { createContext, useContext, useState, useEffect, useRef } from "react";
-import axios from "axios";
+import { createContext, useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { API_BASE_URL } from "../apis";
 import apiClient, { setAuthToken, clearAuthToken } from "../apiClient";
+import { useCallback } from "react";
 
 const AuthContext = createContext();
 
@@ -11,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [isLoading, setIsLoading] = useState(true);
+  // eslint-disable-next-line no-unused-vars
   const navigate = useNavigate();
   const location = useLocation();
   const logoutTimerRef = useRef(null);
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, [location]);
 
-  const getData = async (tokenToUse) => {
+  const getData = useCallback(async (tokenToUse) => {
     try {
       setAuthToken(tokenToUse);
       const response = await apiClient.get(`/users/`);
@@ -38,8 +38,9 @@ export const AuthProvider = ({ children }) => {
       console.error("Error fetching user data:", error);
       logout();
     }
-  };
+  }, []);
 
+  // eslint-disable-next-line no-unused-vars
   const logout = (reason = null) => {
     localStorage.removeItem("token");
     setToken(null);
@@ -102,7 +103,7 @@ export const AuthProvider = ({ children }) => {
         clearTimeout(logoutTimerRef.current);
       }
     };
-  }, []);
+  }, [getData, token]);
 
   useEffect(() => {
     if (token) {
@@ -126,5 +127,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);

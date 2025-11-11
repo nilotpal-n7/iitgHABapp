@@ -11,17 +11,21 @@ function OverallStatsHeader({ date, setDate }) {
         </div>
         <div>
           <h1 className="text-2xl font-bold">Overall Statistics</h1>
-          <h3 className="text-sm text-gray-500">Track daily meal attendance patterns</h3>
+          <h3 className="text-sm text-gray-500">
+            Track daily meal attendance patterns
+          </h3>
         </div>
       </div>
       <DatePicker
         defaultValue={dayjs(date)}
-        onChange={(date, dateString) => { setDate(dateString) }}
+        onChange={(date, dateString) => {
+          setDate(dateString);
+        }}
         size="large"
         className="w-56"
       />
     </header>
-  )
+  );
 }
 
 export default OverallStatsHeader;

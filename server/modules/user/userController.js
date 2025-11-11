@@ -1,7 +1,7 @@
 const { User } = require("./userModel.js");
 const { Hostel } = require("../hostel/hostelModel.js");
 
-const getUserData = async (req, res, next) => {
+const getUserData = async (req, res) => {
   //console.log(req);
   return res.json(req.user);
 };
@@ -52,6 +52,7 @@ const deleteUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     res.status(200).json(deletedUser);
+    // eslint-disable-next-line no-unused-vars
   } catch (err) {
     res.status(500).json({ message: "Error deleting user" });
   }
@@ -113,6 +114,7 @@ const getUserComplaints = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     res.status(200).json(user);
+    // eslint-disable-next-line no-unused-vars
   } catch (err) {
     res.status(500).json({ message: "Error fetching user complaints" });
   }

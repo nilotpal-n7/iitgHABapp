@@ -1,4 +1,5 @@
 const express = require("express");
+// eslint-disable-next-line no-unused-vars
 const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
 
 const { createQR, checkScanned } = require("./qrController.js");

@@ -1,13 +1,16 @@
-import { DatabaseOutlined, RiseOutlined, FallOutlined, HomeOutlined } from "@ant-design/icons"
+import {
+  DatabaseOutlined,
+  RiseOutlined,
+  FallOutlined,
+  HomeOutlined,
+} from "@ant-design/icons";
 
 function TopHostelStatistic({ stats, data }) {
-
   function getHostelName(messId) {
     for (const key in data) {
-      if (key._id == messId)
-        return key.hostelName;
+      if (key._id == messId) return key.hostelName;
     }
-    return ""
+    return "";
   }
 
   if (stats.total)
@@ -19,7 +22,9 @@ function TopHostelStatistic({ stats, data }) {
           </div>
           <div>
             <h1 className="text-2xl font-bold">Hostel Performance</h1>
-            <h3 className="text-sm text-gray-500">Track hostels with highest and lowest attendance</h3>
+            <h3 className="text-sm text-gray-500">
+              Track hostels with highest and lowest attendance
+            </h3>
           </div>
         </div>
 
@@ -30,8 +35,12 @@ function TopHostelStatistic({ stats, data }) {
                 <RiseOutlined className="!text-green-600 text-lg" />
                 <div className="text-gray-600">Highest Attendance</div>
               </div>
-              <div className="text-3xl font-semibold mt-3">{getHostelName(stats.highest[0])}</div>
-              <div className="text-green-600">{stats.highest[1].toString() + "%"} attendance</div>
+              <div className="text-3xl font-semibold mt-3">
+                {getHostelName(stats.highest[0])}
+              </div>
+              <div className="text-green-600">
+                {stats.highest[1].toString() + "%"} attendance
+              </div>
             </div>
             <div className="h-20 w-20 bg-green-100 rounded-full flex items-center justify-center">
               <HomeOutlined className="!text-green-600 text-3xl" />
@@ -43,17 +52,20 @@ function TopHostelStatistic({ stats, data }) {
                 <FallOutlined className="!text-orange-600 text-lg" />
                 <div className="text-gray-600">Lowest Attendance</div>
               </div>
-              <div className="text-3xl font-semibold mt-3">{getHostelName(stats.lowest[0])}</div>
-              <div className="text-orange-600">{stats.lowest[1].toString() + "%"} attendance</div>
+              <div className="text-3xl font-semibold mt-3">
+                {getHostelName(stats.lowest[0])}
+              </div>
+              <div className="text-orange-600">
+                {stats.lowest[1].toString() + "%"} attendance
+              </div>
             </div>
             <div className="h-20 w-20 bg-orange-100 rounded-full flex items-center justify-center">
               <HomeOutlined className="!text-orange-600 text-3xl" />
             </div>
           </div>
-
         </section>
       </>
-    )
+    );
 }
 
 export default TopHostelStatistic;

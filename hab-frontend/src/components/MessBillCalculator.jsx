@@ -142,8 +142,8 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
         </head>
         <body>
           <div class="header">MESS BILL CALCULATION FOR ${billData.month.toUpperCase()} ${
-      billData.year
-    }</div>
+            billData.year
+          }</div>
           
           <table>
             <tr>

@@ -1,0 +1,33 @@
+{
+  "name": "habit",
+  "private": true,
+  "scripts": {
+      "postinstall": "node scripts/fix-hooks.mjs",
+      "lint": "npx lint-staged"
+  },
+  "devDependencies": {
+      "husky": "^9.1.7",
+      "lint-staged": "^16.2.6",
+      "prettier": "^3.6.2"
+  },
+  "lint-staged": {
+    "hab-frontend/**/*.{js,jsx,ts,tsx,css}": [
+        "npx eslint --fix --config hab-frontend/eslint.config.js"
+    ],
+    "hostel-frontend/**/*.{js,jsx,ts,tsx,css}": [
+        "npx eslint --fix --config hostel-frontend/eslint.config.js"
+    ],
+    "login-frontend/**/*.{js,jsx,ts,tsx,css}": [
+        "npx eslint --fix --config login-frontend/eslint.config.js"
+    ],
+    "smc-frontend/**/*.{js,jsx,ts,tsx,css}": [
+        "npx eslint --fix --config smc-frontend/eslint.config.js"
+    ],
+    "server/**/*.{js,jsx,ts,tsx,css}": [
+        "npx eslint --fix --config server/eslint.config.js"
+    ],
+    "frontend2/**/*.{dart}": [
+        "dart format ./frontend2"
+    ]
+  }
+}

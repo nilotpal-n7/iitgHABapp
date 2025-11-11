@@ -55,7 +55,6 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
     if (hostelId) {
       fetchMessSubscribers();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hostelId]);
 
   // Calculate all derived values when inputs change
@@ -138,8 +137,8 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
         </head>
         <body>
           <div class="header">MESS BILL CALCULATION FOR ${billData.month.toUpperCase()} ${
-      billData.year
-    }</div>
+            billData.year
+          }</div>
           
           <table>
             <tr>

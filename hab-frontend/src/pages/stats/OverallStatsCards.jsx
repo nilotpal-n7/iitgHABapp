@@ -1,7 +1,11 @@
-import { BarChartOutlined, CalendarOutlined, TeamOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import {
+  BarChartOutlined,
+  CalendarOutlined,
+  TeamOutlined,
+  ExclamationCircleOutlined,
+} from "@ant-design/icons";
 
 function OverallStatsCards({ stats }) {
-
   let sum = 0;
   let first = "breakfast";
   for (const key in stats) {
@@ -11,12 +15,12 @@ function OverallStatsCards({ stats }) {
     }
   }
 
-  const attendance = ((sum / stats.total / 3) * 100).toFixed(1).toString() + "%";
+  const attendance =
+    ((sum / stats.total / 3) * 100).toFixed(1).toString() + "%";
 
   if (stats.total)
     return (
       <section className="flex gap-8 mt-8 flex-col md:flex-row">
-
         <div className="flex flex-1 gap-4 bg-blue-50 p-4 items-center rounded-2xl">
           <div className="p-2 bg-blue-100 rounded-lg">
             <TeamOutlined className="!text-blue-500 text-2xl" />
@@ -43,19 +47,22 @@ function OverallStatsCards({ stats }) {
           </div>
           <div>
             <div className="text-sm text-gray-600">Most Active Meal</div>
-            <div className="text-xl font-bold">{first.charAt(0).toUpperCase() + first.slice(1)}</div>
+            <div className="text-xl font-bold">
+              {first.charAt(0).toUpperCase() + first.slice(1)}
+            </div>
           </div>
         </div>
-
       </section>
-    )
+    );
   else
     return (
       <div className="flex flex-col items-center justify-center mt-30">
-        <ExclamationCircleOutlined className="!text-red-500 text-8xl mb-6"/>
-        <div className="font-semibold text-5xl text-gray-600">This Date has no Stats!</div>
+        <ExclamationCircleOutlined className="!text-red-500 text-8xl mb-6" />
+        <div className="font-semibold text-5xl text-gray-600">
+          This Date has no Stats!
+        </div>
       </div>
-    )
+    );
 }
 
 export default OverallStatsCards;

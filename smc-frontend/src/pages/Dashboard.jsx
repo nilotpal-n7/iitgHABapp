@@ -1,4 +1,4 @@
-import { useAuth } from "../context/AuthProvider";
+import { useAuth } from "../context/useAuth.jsx";
 import React, { useState, useEffect, useCallback } from "react";
 import Menu_content from "../components/Menu_content.jsx";
 import axios from "axios";
@@ -49,7 +49,7 @@ export const Dashboard = () => {
   const [messId, setMessId] = useState(null);
 
   // Get user's hostel and messId
-  const getUserHostel = async () => {
+  const getUserHostel = useCallback(async () => {
     try {
       if (!user?.hostel) return null;
       const response = await axios.get(
@@ -60,7 +60,7 @@ export const Dashboard = () => {
       console.error("Error fetching hostel:", err);
       return null;
     }
-  };
+  }, [user]);
 
   // Fetch hostel and messId on mount
   useEffect(() => {
@@ -72,7 +72,7 @@ export const Dashboard = () => {
       }
     };
     fetchHostel();
-  }, [user]);
+  }, [getUserHostel, user]);
 
   const fetchMess = useCallback(async () => {
     if (!messId || !user?.hostel) {
@@ -155,7 +155,7 @@ export const Dashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [messId, activeTab]);
+  }, [messId, user, activeTab]);
 
   useEffect(() => {
     fetchMess();

@@ -1,15 +1,11 @@
-const express = require("express")
+const express = require("express");
 
-const {
-    statsByDate,
-    createLogs,
-    deleteall
-} = require("./ScanLogsController")
+const { statsByDate, createLogs, deleteall } = require("./ScanLogsController");
 
 const scanLogsRouter = express.Router();
 
-scanLogsRouter.get("/get/:date", statsByDate)
-scanLogsRouter.post("/make", createLogs)
-scanLogsRouter.delete("/delete", deleteall)
+scanLogsRouter.get("/get/:date", statsByDate);
+scanLogsRouter.post("/make", createLogs);
+scanLogsRouter.delete("/delete", deleteall);
 
-module.exports = scanLogsRouter
+module.exports = scanLogsRouter;

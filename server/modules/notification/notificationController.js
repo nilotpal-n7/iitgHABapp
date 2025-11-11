@@ -1,5 +1,6 @@
 const admin = require("./firebase.js");
 const FCMToken = require("./FCMToken.js");
+
 const User = require("../user/userModel.js");
 const { Hostel } = require("../hostel/hostelModel.js");
 

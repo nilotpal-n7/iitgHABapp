@@ -7,9 +7,13 @@ const {
 const { ProfileSettings } = require("./profileSettingsModel.js");
 
 const TENANT_ID = onedrive.tenantId; // from onedrive config
+
 const CLIENT_ID = onedrive.clientId; // from onedrive config
+
 const CLIENT_SECRET = onedrive.clientSecret; // from onedrive config
+
 const STORAGE_USER_UPN = onedrive.storageUserUPN; // optional discovery
+
 const DRIVE_ID = onedrive.driveId; // from onedrive config
 const PROFILE_FOLDER_ID = onedrive.profilePicsFolderId; // parent folder itemId from .env
 
@@ -171,12 +175,19 @@ async function setProfilePicture(req, res) {
     // Sanity checks: who am I? which drive? does folder exist?
     let me, drive, parentItem;
     try {
+      // eslint-disable-next-line no-unused-vars
       me = await getMe(token);
-    } catch (e) {}
+      // eslint-disable-next-line no-unused-vars
+    } catch (e) {
+      /* empty */
+    }
 
     try {
       drive = await getMyDrive(token);
-    } catch (e) {}
+      // eslint-disable-next-line no-unused-vars
+    } catch (e) {
+      /* empty */
+    }
 
     try {
       parentItem = await getItemById(token, PROFILE_FOLDER_ID);
@@ -190,6 +201,7 @@ async function setProfilePicture(req, res) {
             "Configured folder belongs to a different drive than the token user's drive.",
         });
       }
+      // eslint-disable-next-line no-unused-vars
     } catch (e) {
       // Parent folder lookup failed
       return res.status(400).json({
@@ -209,9 +221,13 @@ async function setProfilePicture(req, res) {
       for (const it of existing) {
         try {
           await deleteItemById(token, it.id);
-        } catch (e) {}
+          // eslint-disable-next-line no-unused-vars
+        } catch (e) {
+          /* empty */
+        }
       }
     } else {
+      /* empty */
     }
 
     // Upload new content to the parent folder with file name = roll.ext
@@ -227,7 +243,10 @@ async function setProfilePicture(req, res) {
     let publicUrl = null;
     try {
       publicUrl = await createOrganizationViewLink(token, uploaded.id);
-    } catch (e) {}
+      // eslint-disable-next-line no-unused-vars
+    } catch (e) {
+      /* empty */
+    }
 
     user.profilePictureItemId = uploaded.id;
     if (publicUrl) user.profilePictureUrl = publicUrl;
@@ -289,11 +308,15 @@ async function getProfilePicture(req, res) {
               );
               return res.send(Buffer.from(graphResp.data));
             }
-          } catch (ge) {}
+            // eslint-disable-next-line no-unused-vars
+          } catch (e) {
+            /* empty */
+          }
         }
 
         // If we get here, both stored URL and Graph fallback didn't return bytes — return URL JSON as last resort
         return res.status(200).json({ url: user.profilePictureUrl });
+        // eslint-disable-next-line no-unused-vars
       } catch (e) {
         return res.status(200).json({ url: user.profilePictureUrl });
       }

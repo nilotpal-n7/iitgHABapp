@@ -79,7 +79,8 @@ class FeedbackProvider extends ChangeNotifier {
 
   // Check if feedback is complete
   bool isComplete() {
-    bool basicComplete = breakfast.isNotEmpty && lunch.isNotEmpty && dinner.isNotEmpty;
+    bool basicComplete =
+        breakfast.isNotEmpty && lunch.isNotEmpty && dinner.isNotEmpty;
 
     if (isSMC) {
       bool smcComplete = hygiene.isNotEmpty &&

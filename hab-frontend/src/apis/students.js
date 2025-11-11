@@ -27,7 +27,7 @@ export const createUser = async (userData) => {
 
 export const clearAllStudents = async () => {
   // attach token if present
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
   const response = await axios.delete(`${BACKEND_URL}/users/all`, { headers });
   return response.data;

@@ -1,5 +1,5 @@
-const express = require('express');
-const {authenticateJWT} = require('../../middleware/authenticateJWT.js');
+const express = require("express");
+const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
 
 const {
   getComplaintsOfItemsByHostel,
@@ -7,10 +7,15 @@ const {
   deleteItem,
   updateItem,
   getItems,
+  // eslint-disable-next-line no-unused-vars
   getItem,
+  // eslint-disable-next-line no-unused-vars
   getItemsWithComplaints,
+  // eslint-disable-next-line no-unused-vars
   getItemsForHAB,
+  // eslint-disable-next-line no-unused-vars
   resolveItem,
+  // eslint-disable-next-line no-unused-vars
   inProgressItem,
 } = require("./itemController");
 
