@@ -3,7 +3,6 @@ import { getMicrosoftAuthUrl } from "../apis";
 
 export function LoginPage() {
   useEffect(() => {
-    // Redirect to Microsoft login
     window.location.href = getMicrosoftAuthUrl("hostel");
   }, []);
 
