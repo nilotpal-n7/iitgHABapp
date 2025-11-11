@@ -164,7 +164,6 @@ const webLoginHandler = async (req, res, next) => {
       if (!hostel) throw new AppError(403, "No hostel found for this email");
       token = hostel.generateJWT();
       baseUrl = process.env.HOSTEL_FRONTEND_URL;
-      redirectPath = "/dashboard";
     }
 
     if (loginType === "smc") {
@@ -173,7 +172,6 @@ const webLoginHandler = async (req, res, next) => {
         throw new AppError(403, "Unauthorized SMC login");
       token = existingUser.generateJWT();
       baseUrl = process.env.SMC_FRONTEND_URL;
-      redirectPath = "/dashboard";
     }
 
     // ✅ Always send token in URL
