@@ -13,6 +13,7 @@ export const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
+    console.log("User not authenticated, redirecting to:", APP_URL);
     window.location.href = APP_URL;
     return null;
   }
