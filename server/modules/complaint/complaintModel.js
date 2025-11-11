@@ -1,10 +1,10 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const complaintSchema = new mongoose.Schema(
     {
         item: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Item',
+            ref: "Item",
             required: true
         },
         title: {
@@ -13,7 +13,7 @@ const complaintSchema = new mongoose.Schema(
         },
         user: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
+            ref: "User",
             required: true
         },
         description: {
@@ -26,12 +26,12 @@ const complaintSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['unresolved', 'resolved', 'in_progress'],
-            default: 'unresolved'
+            enum: ["unresolved", "resolved", "in_progress"],
+            default: "unresolved"
         }
     }
 );
 
-const Complaint = mongoose.model('Complaint', complaintSchema);
+const Complaint = mongoose.model("Complaint", complaintSchema);
 
 module.exports = Complaint;

@@ -230,6 +230,7 @@ const wednesdayScheduler = () => {
         ],
       };
 
+      // eslint-disable-next-line no-unused-vars
       const info = await transporter.sendMail(mailOptions);
 
       //console.log('Email sent:', info.messageId);

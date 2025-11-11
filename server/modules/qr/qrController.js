@@ -1,4 +1,4 @@
-const { QR } = require('./qrModel.js');
+const { QR } = require("./qrModel.js");
 
 const createQR = async (req, res) => {
     try {
@@ -9,12 +9,12 @@ const createQR = async (req, res) => {
         console.log(err);
         res.status(500).json({message: "Error occured"});
     }
-}
+};
 
 const checkScanned = async (req, res) => {
     const {qr_string} = req.body;
     try {
-        const qr = await QR.findOne({'qr_string': qr_string});
+        const qr = await QR.findOne({"qr_string": qr_string});
 
         if (!qr) {
             return res.status(404).json({message: "QR not found"});
@@ -28,7 +28,7 @@ const checkScanned = async (req, res) => {
 
         await qr.save();
 
-        res.status(200).json({message: "QR scanned successfully"})
+        res.status(200).json({message: "QR scanned successfully"});
     } catch (err) {
         console.log(err);
         res.status(500).json({message: "Error occured"});
@@ -38,4 +38,4 @@ const checkScanned = async (req, res) => {
 module.exports = {
     createQR,
     checkScanned
-}
+};

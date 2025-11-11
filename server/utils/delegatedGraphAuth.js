@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 const fs = require("fs");
 const fsp = require("fs").promises;
 const path = require("path");
@@ -42,7 +43,8 @@ async function loadFromDisk() {
       return true;
     }
     return false;
-  } catch (_) {
+  // eslint-disable-next-line no-unused-vars
+  } catch (err) {
     return false;
   }
 }

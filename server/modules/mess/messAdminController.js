@@ -1,13 +1,21 @@
+// eslint-disable-next-line no-unused-vars
 const { Mess } = require("./messModel");
 const { Menu } = require("./menuModel");
 const { MenuItem } = require("./menuItemModel");
+// eslint-disable-next-line no-unused-vars
 const { User } = require("../user/userModel");
+// eslint-disable-next-line no-unused-vars
 const { Hostel } = require("../hostel/hostelModel");
+// eslint-disable-next-line no-unused-vars
 const { ScanLogs } = require("./ScanLogsModel.js");
+// eslint-disable-next-line no-unused-vars
 const mongoose = require("mongoose");
 const {
+  // eslint-disable-next-line no-unused-vars
   getCurrentDate,
+  // eslint-disable-next-line no-unused-vars
   getCurrentTime,
+  // eslint-disable-next-line no-unused-vars
   getCurrentDay,
 } = require("../../utils/date.js");
 
@@ -18,6 +26,7 @@ const getMessMenuByDayForAdmin = async (req, res) => {
     if (!messId || !day) {
       return res.status(400).json({ message: "Mess ID and day are required" });
     }
+    // eslint-disable-next-line no-unused-vars
     const allMenus = await Menu.find({});
     const menu = await Menu.find({ messId: messId, day: day }); //FIX THIS! PUT MESS ID AS WELL
     if (!menu || menu.length === 0) {
