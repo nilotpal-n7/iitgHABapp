@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   authenticateJWT,
+  // eslint-disable-next-line no-unused-vars
   authenticateAdminJWT,
 } = require("../../middleware/authenticateJWT.js");
 

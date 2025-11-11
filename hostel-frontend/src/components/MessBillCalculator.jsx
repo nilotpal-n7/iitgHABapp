@@ -55,7 +55,6 @@ const MessBillCalculator = ({ hostelId, hostelName }) => {
     if (hostelId) {
       fetchMessSubscribers();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hostelId]);
 
   // Calculate all derived values when inputs change

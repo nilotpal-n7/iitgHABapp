@@ -1,5 +1,6 @@
 const express = require("express");
 const {
+  // eslint-disable-next-line no-unused-vars
   authenticateJWT,
   authenticateAdminJWT,
 } = require("../../middleware/authenticateJWT.js");

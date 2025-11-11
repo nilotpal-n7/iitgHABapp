@@ -174,7 +174,7 @@ const createMenuItem = async (req, res) => {
       type,
     });
     const newItem = await newMenuItem.save();
-    const menu = await Menu.findOne({ messId: messId, day: day, type: meal });
+    let menu = await Menu.findOne({ messId: messId, day: day, type: meal });
     if (!menu) {
       const newMenu = new Menu({
         messId,

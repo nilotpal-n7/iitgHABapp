@@ -1,6 +1,8 @@
 const { User } = require("../user/userModel.js");
 const { Hostel } = require("./hostelModel.js");
+// eslint-disable-next-line no-unused-vars
 const { Mess } = require("../mess/messModel.js");
+// eslint-disable-next-line no-unused-vars
 const UserAllocHostel = require("./hostelAllocModel.js");
 
 const createHostel = async (req, res) => {

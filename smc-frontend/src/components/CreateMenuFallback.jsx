@@ -1,13 +1,14 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios"; // Assuming you'll make an API call
 // Corrected import path for AuthProvider - assuming a common src/context/AuthProvider structure
-import { useAuth } from "../context/AuthProvider"; // Adjust this path based on your actual project structure
+import { useAuth } from "../context/useAuth"; // Adjust this path based on your actual project structure
 import { API_BASE_URL } from "../apis"; // Assuming you have a common API base URL defined
 import Button from "./ui/Button";
 import Card from "./ui/Card";
 
 // CreateMenuFallback component receives onSuccessfulCreation prop
 function CreateMenuFallback({ onSuccessfulCreation, activeDay, messId }) {
+  // eslint-disable-next-line no-unused-vars
   const { user } = useAuth();
   const [day, setDay] = useState(activeDay); // Default to Friday
   const [BisGala, setBIsGala] = useState(false);
@@ -116,7 +117,7 @@ function CreateMenuFallback({ onSuccessfulCreation, activeDay, messId }) {
   return (
     <div className="max-w-2xl mx-auto">
       <Card>
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-t-lg -mt-6 mb-4">
+        <div className="bg-linear-to-r from-blue-500 to-blue-600 text-white p-6 rounded-t-lg -mt-6 mb-4">
           <h2 className="text-2xl font-bold text-center">
             Create New Menu for a Day
           </h2>

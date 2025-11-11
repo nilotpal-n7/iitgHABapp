@@ -4,6 +4,7 @@ const {
   enableFeedbackAutomatic,
   disableFeedbackAutomatic,
 } = require("./feedbackController");
+// eslint-disable-next-line no-unused-vars
 const { User } = require("../user/userModel");
 const {
   sendNotificationMessage,

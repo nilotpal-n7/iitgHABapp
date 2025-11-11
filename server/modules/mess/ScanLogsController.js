@@ -32,34 +32,34 @@ const statsByDate = async (req, res) => {
         ++stats.dinner;
       } 
       ++stats.total;
-      ++messwisestats[item.messId][1]
-    })
+      ++messwisestats[item.messId][1];
+    });
 
     //looping through the messes to find highest and lowest
     for(const key in messwisestats){
       const attendance = (messwisestats[key][0]/messwisestats[key][1]/3*100).toFixed(1);
       if (!stats.highest[0]){
-        stats.lowest[0] = key; stats.lowest[1] = attendance
-        stats.highest[0] = key; stats.highest[1] = attendance
+        stats.lowest[0] = key; stats.lowest[1] = attendance;
+        stats.highest[0] = key; stats.highest[1] = attendance;
       }
       else if (attendance > stats.highest[1]){
         stats.highest[0] = key;
-        stats.highest[1] = attendance
+        stats.highest[1] = attendance;
       }
       else if (attendance < stats.lowest[1]){
         stats.lowest[0] = key;
         stats.lowest[1] = attendance;
       }
     }
-console.log(stats)
+console.log(stats);
     res.status(200).json(stats);
   }
   catch (error) {
     console.error(error);
-    console.log("hello")
+    console.log("hello");
     return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 //temporary function for creating sample logs
 const createLogs = async (req, res) => {
@@ -69,13 +69,13 @@ const createLogs = async (req, res) => {
     res.status(200).json({
       message: "Successfully inserted the data!",
       data: insertedlogs,
-    })
+    });
   }
   catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 //temporary function for deleting sample logs
 const deleteall = async (req, res) => {
@@ -83,16 +83,16 @@ const deleteall = async (req, res) => {
     await ScanLogs.deleteMany();
     res.status(200).json({
       message: "Successfulyy deleted everything!",
-    })
+    });
   }
   catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 module.exports = {
   statsByDate,
   createLogs,
   deleteall
-}
+};
