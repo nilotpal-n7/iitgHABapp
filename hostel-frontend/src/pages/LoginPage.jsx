@@ -1,14 +1,8 @@
-import { useEffect } from "react";
-import { getMicrosoftAuthUrl } from "../apis";
-
+// Deprecated: auth is handled by the central login portal
 export function LoginPage() {
-  useEffect(() => {
-    window.location.href = getMicrosoftAuthUrl("hostel");
-  }, []);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-lg font-semibold">Redirecting to login...</div>
-    </div>
-  );
+  const APP_URL = import.meta.env.VITE_APP_URL || "http://localhost:5172";
+  if (typeof window !== "undefined") {
+    window.location.replace(`${APP_URL}?portal=hostel`);
+  }
+  return null;
 }
