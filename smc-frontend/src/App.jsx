@@ -8,7 +8,7 @@ function App() {
   const BASENAME =
     import.meta.env.VITE_BASE ||
     (window.location.pathname.startsWith("/smc") ? "/smc" : "/");
-
+  console.log("App running with BASENAME:", BASENAME);
   return (
     <Router basename={BASENAME}>
       <AuthProvider>
