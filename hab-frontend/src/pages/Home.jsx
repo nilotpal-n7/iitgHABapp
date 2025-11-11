@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import OverallStatsHeader from "./stats/OverallStatsHeader.jsx";
 import OverallStatsCards from "./stats/OverallStatsCards.jsx";
@@ -25,22 +25,23 @@ function Home() {
   const [stats, setStats] = useState({});
   const [hostelData, setHostelData] = useState({});
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     let data = await getStatsByDate(date);
     setStats(data);
-  };
-  const fetchHostels = async () => {
+  }, [date]);
+  
+  const fetchHostels = useCallback(async () => {
     let data = await getAllHostelMessInfo();
     setHostelData(data);
-  }
+  }, []);
 
   useEffect(() => {
     fetchStats();
-  }, [date]);
+  }, [fetchStats]);
 
   useEffect(() => {
     fetchHostels();
-  }, [])
+  }, [fetchHostels]);
 
   return (
     <div className="p-4 min-h-full m-auto">

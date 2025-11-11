@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { BACKEND_URL } from "../apis/server";
 import { Button, Input, Select, Checkbox } from "antd";
 import { SendOutlined } from "@ant-design/icons";
-import { useAuth } from "../context/AuthProvider";
+import { useAuth } from "../context/useAuth";
 
 const { TextArea } = Input;
 const { Option } = Select;

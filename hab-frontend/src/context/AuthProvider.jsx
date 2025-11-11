@@ -1,5 +1,5 @@
 // frontend/src/context/AuthProvider.jsx
-import { createContext, useContext, useState, useEffect, useRef } from "react";
+import { createContext, useState, useEffect, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
 import { setAuthToken, clearAuthToken } from "../apiClient";
 
@@ -112,5 +112,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);

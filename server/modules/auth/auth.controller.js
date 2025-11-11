@@ -13,6 +13,7 @@ const {
   sendNotificationToUser,
 } = require("../notification/notificationController.js");
 require("dotenv").config();
+// eslint-disable-next-line no-unused-vars
 const appConfig = require("../../config/default.js");
 
 const clientId = process.env.CLIENT_ID;
@@ -48,7 +49,7 @@ const mobileRedirectHandler = async (req, res, next) => {
     });
 
     const tokenResp = await axios.post(
-      `https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token`,
+      "https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token",
       data,
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
@@ -134,7 +135,7 @@ const webLoginHandler = async (req, res, next) => {
     });
 
     const tokenResp = await axios.post(
-      `https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token`,
+      "https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token",
       data,
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
@@ -203,7 +204,7 @@ const meHandler = async (req, res, next) => {
         return res
           .status(200)
           .json({ authenticated: true, type: "user", user });
-    } catch {}
+    } catch { /* empty */ }
 
     // Try hostel
     try {
@@ -213,7 +214,7 @@ const meHandler = async (req, res, next) => {
         return res
           .status(200)
           .json({ authenticated: true, type: "hostel", hostel });
-    } catch {}
+    } catch { /* empty */ }
 
     // Try HAB admin
     try {
@@ -222,7 +223,7 @@ const meHandler = async (req, res, next) => {
         return res
           .status(200)
           .json({ authenticated: true, type: "hab", email: decoded.email });
-    } catch {}
+    } catch { /* empty */ }
 
     return res.status(401).json({ authenticated: false });
   } catch (err) {
