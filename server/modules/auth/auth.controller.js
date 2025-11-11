@@ -18,7 +18,7 @@ const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 const redirectUri = process.env.REDIRECT_URI;
 
-// Helper — find hostel allocation by roll number
+// Helper — find hostel allocation by roll no
 const getHostelAlloc = async (rollno) => {
   try {
     const allocation = await UserAllocHostel.findOne({ rollno }).populate(
