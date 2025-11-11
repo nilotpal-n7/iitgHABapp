@@ -13,7 +13,6 @@ const {
   sendNotificationToUser,
 } = require("../notification/notificationController.js");
 require("dotenv").config();
-const appConfig = require("../../config/default.js");
 
 const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
@@ -167,6 +166,7 @@ const webLoginHandler = async (req, res, next) => {
     }
 
     if (loginType === "smc") {
+      console.log("SMC login attempt for email:", email);
       const existingUser = await findUserWithEmail(email);
       if (!existingUser || !existingUser.isSMC)
         throw new AppError(403, "Unauthorized SMC login");
@@ -174,7 +174,6 @@ const webLoginHandler = async (req, res, next) => {
       baseUrl = process.env.SMC_FRONTEND_URL;
     }
 
-    // ✅ Always send token in URL
     return res.redirect(
       `${baseUrl}${redirectPath}?token=${encodeURIComponent(token)}`
     );

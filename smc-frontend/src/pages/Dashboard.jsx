@@ -22,7 +22,7 @@ const days = [
 
 export const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [currentPage, setCurrentPage] = useState("menu"); // 'menu' or 'notifications'
+  const [currentPage, setCurrentPage] = useState("menu");
   const { user, logout } = useAuth();
 
   const [showCreateMenu, setShowCreateMenu] = useState(false);
