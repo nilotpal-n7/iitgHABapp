@@ -173,7 +173,6 @@ const webLoginHandler = async (req, res, next) => {
       token = existingUser.generateJWT();
       baseUrl = process.env.SMC_FRONTEND_URL;
     }
-    console.log("Redirecting to:", baseUrl, "with token:", token);
     return res.redirect(
       `${baseUrl}${redirectPath}?token=${encodeURIComponent(token)}`
     );
