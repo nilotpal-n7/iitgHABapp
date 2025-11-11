@@ -1,9 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthProvider";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { LoginPage } from "./pages/LoginPage";
@@ -11,20 +6,23 @@ import Dashboard from "./pages/Dashboard";
 import "./index.css";
 
 function App() {
+  const BASENAME =
+    import.meta.env.VITE_BASE ||
+    (window.location.pathname.startsWith("/smc") ? "/smc" : "/");
+
   return (
-    <Router>
+    <Router basename={BASENAME}>
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route
-            path="/smc/dashboard"
+            path="/"
             element={
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/smc/dashboard" replace />} />
         </Routes>
       </AuthProvider>
     </Router>
