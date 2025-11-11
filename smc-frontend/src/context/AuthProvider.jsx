@@ -17,7 +17,6 @@ export const AuthProvider = ({ children }) => {
 
   const isAuthenticated = !!user && !!token;
 
-  // Check token from URL on mount (from central login portal redirect)
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const tokenFromUrl = urlParams.get("token");
