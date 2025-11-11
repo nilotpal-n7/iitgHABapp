@@ -30,7 +30,6 @@ class MessInfoModel {
   }
 }
 
-
 //mapping hostelname with messid,messname,rating,ranking
 
 class HostelData {

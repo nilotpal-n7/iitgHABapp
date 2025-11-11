@@ -157,8 +157,10 @@ class _MessFeedbackPageState extends State<MessFeedbackPage> {
                 Center(
                   child: GestureDetector(
                     onTap: provider.isComplete()
-                        ? () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const CommentPage()))
+                        ? () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const CommentPage()))
                         : null,
                     child: Container(
                       width: 358,

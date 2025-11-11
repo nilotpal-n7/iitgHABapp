@@ -7,6 +7,7 @@ const {
   deleteUser,
   updateUser,
   saveUserProfile,
+  // eslint-disable-next-line no-unused-vars
   getUserComplaints,
   // getEmailsOfHABUsers,
   // getEmailsOfSecyUsers,

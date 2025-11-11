@@ -7,7 +7,9 @@ export default function HostelForm() {
 
   const [hostelName, setHostelName] = useState("");
   const [capacity, setCapacity] = useState("");
+  // eslint-disable-next-line no-unused-vars
   const [messId, setMessId] = useState("");
+  // eslint-disable-next-line no-unused-vars
   const [unassignedMess, setUnassignedMess] = useState([]);
   const [error, setError] = useState(null);
   const [microsoftEmail, setMicrosoftEmail] = useState("");

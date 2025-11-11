@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { API_BASE_URL } from "../apis";
 import axios from "axios";
 import Button from "./ui/Button";
-import { useAuth } from "../context/AuthProvider";
+import { useAuth } from "../context/useAuth";
 
 const NotificationSender = () => {
   const [title, setTitle] = useState("");
@@ -30,6 +30,7 @@ const NotificationSender = () => {
           ? `Boarders_${hostelName}`
           : `Subscribers_${hostelName}`;
 
+      // eslint-disable-next-line no-unused-vars
       const response = await axios.post(`${API_BASE_URL}/notification/send`, {
         title,
         body,
