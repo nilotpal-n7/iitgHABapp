@@ -6,10 +6,13 @@ export default function FeedbackControl() {
   const [settings, setSettings] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const token = localStorage.getItem("admin_token");
+  const token =
+    localStorage.getItem("admin_token") || localStorage.getItem("token");
 
   const fetchSettings = useCallback(async () => {
     try {
+      setLoading(true);
+      setError("");
       const res = await fetch(`${BACKEND_URL}/feedback/settings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -20,6 +23,8 @@ export default function FeedbackControl() {
       setSettings(data);
     } catch (err) {
       setError(`Error fetching settings: ${err.message}`);
+    } finally {
+      setLoading(false);
     }
   }, [token]);
 
@@ -84,6 +89,8 @@ export default function FeedbackControl() {
   useEffect(() => {
     if (token) {
       fetchSettings();
+    } else {
+      setError("Not authenticated. Please log in as HAB admin.");
     }
   }, [token, fetchSettings]);
 
@@ -177,13 +184,7 @@ export default function FeedbackControl() {
         >
           {loading ? "Processing..." : "Disable"}
         </button>
-        <button
-          onClick={fetchSettings}
-          disabled={loading}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
-        >
-          Refresh
-        </button>
+        {/* Refresh removed; settings are fetched on mount and after actions */}
       </div>
     </div>
   );

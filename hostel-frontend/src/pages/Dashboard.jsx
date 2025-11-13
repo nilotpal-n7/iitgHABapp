@@ -167,7 +167,7 @@ const Dashboard = () => {
         <div className="flex gap-6 w-full">
           {/* Sidebar */}
           <aside
-            className={`bg-white border border-gray-100 rounded-lg shadow-sm p-3 transition-all duration-200 ${
+            className={`h-screen bg-white border border-gray-100 rounded-lg shadow-sm p-3 transition-all duration-200 ${
               sidebarOpen ? "w-72" : "w-16"
             }`}
           >
