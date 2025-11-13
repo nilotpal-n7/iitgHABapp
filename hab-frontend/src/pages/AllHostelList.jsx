@@ -1,25 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table, Button, Typography, Input, Space } from "antd";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { Table, Button, Typography, Space } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
-const { Search } = Input;
+// Search removed per requirement
 
 export default function AllHostelList() {
   const navigate = useNavigate();
-  const server = import.meta.env.VITE_SERVER_URL;
+  // Normalize API base (avoid double /api in URL)
+  const apiBase = (
+    import.meta.env.VITE_SERVER_URL || "http://localhost:3000/api"
+  ).replace(/\/+$/, "");
 
   const [hostelList, setHostelList] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  // Search removed
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(server + "/api/hostel/gethnc", {
+        const response = await fetch(`${apiBase}/hostel/gethnc`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -49,21 +52,11 @@ export default function AllHostelList() {
       }
     };
     fetchData();
-  }, [server]);
+  }, [apiBase]);
 
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredData(hostelList);
-    } else {
-      const query = searchQuery.toLowerCase();
-      const filtered = hostelList.filter(
-        (item) =>
-          item.hostel_name.toLowerCase().includes(query) ||
-          item.caterer_name.toLowerCase().includes(query)
-      );
-      setFilteredData(filtered);
-    }
-  }, [hostelList, searchQuery]);
+    setFilteredData(hostelList);
+  }, [hostelList]);
 
   const columns = [
     {
@@ -107,9 +100,7 @@ export default function AllHostelList() {
       ),
     },
   ];
-  const handleSearch = (value) => {
-    setSearchQuery(value);
-  };
+  // Search removed
 
   const handleRowClick = (record) => {
     navigate(`/hostel/${record._id}`);
@@ -142,15 +133,7 @@ export default function AllHostelList() {
           </Title>
 
           <Space>
-            <Search
-              placeholder="Search hostels or caterers..."
-              allowClear
-              enterButton={<SearchOutlined />}
-              size="large"
-              style={{ width: 300 }}
-              onSearch={handleSearch}
-              onChange={(e) => handleSearch(e.target.value)}
-            />
+            {/* Search removed */}
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -181,11 +164,7 @@ export default function AllHostelList() {
               onClick: () => handleRowClick(record),
               style: { cursor: "pointer" },
             })}
-            locale={{
-              emptyText: searchQuery
-                ? "No hostels found matching your search."
-                : "No hostels found.",
-            }}
+            locale={{ emptyText: "No hostels found." }}
           />
         </div>
       </div>

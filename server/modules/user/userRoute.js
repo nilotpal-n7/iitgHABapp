@@ -12,7 +12,6 @@ const {
   // getEmailsOfSecyUsers,
   getUserByRoll,
   getAllUsers,
-  clearAllStudents,
   getUsersByHostelForMess,
 } = require("./userController.js");
 
@@ -104,8 +103,6 @@ userRouter.post("/", createUser);
 // userRouter.get('/roll/:roll', getUserByRoll);
 
 userRouter.get("/", authenticateJWT, getUserData);
-// Clear all students
-userRouter.delete("/all", clearAllStudents);
 
 userRouter.delete("/:outlook", authenticateJWT, deleteUser);
 

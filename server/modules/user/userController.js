@@ -183,19 +183,6 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-const clearAllStudents = async (req, res) => {
-  try {
-    console.log("clearing all students");
-    const result = await User.deleteMany({ role: "student" });
-    return res
-      .status(200)
-      .json({ message: "All students cleared", deleted: result.deletedCount });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Error clearing students" });
-  }
-};
-
 const getUsersByHostelForMess = async (req, res) => {
   try {
     const { hostelId } = req.params;
@@ -253,6 +240,5 @@ module.exports = {
   getUserComplaints,
   getUserByRoll,
   getAllUsers,
-  clearAllStudents,
   getUsersByHostelForMess,
 };
