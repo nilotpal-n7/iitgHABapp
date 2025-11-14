@@ -167,15 +167,25 @@ const Dashboard = () => {
         <div className="flex gap-6 w-full">
           {/* Sidebar */}
           <aside
-            className={`h-screen bg-white border border-gray-100 rounded-lg shadow-sm p-3 transition-all duration-200 ${
+            style={{
+              height: "calc(100vh - 48px)",
+              position: "sticky",
+              top: "24px",
+            }}
+            className={`bg-white border border-gray-100 rounded-lg shadow-sm p-3 transition-all duration-200 ${
               sidebarOpen ? "w-72" : "w-16"
             }`}
           >
-            <div className="flex items-center justify-between mb-6">
+            <div
+              className={`flex items-center ${
+                sidebarOpen ? "justify-between" : "justify-center"
+              } mb-6`}
+            >
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setSidebarOpen((v) => !v)}
                   className="p-2 rounded-md hover:bg-gray-100"
+                  title={sidebarOpen ? "Collapse" : "Expand"}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -199,13 +209,6 @@ const Dashboard = () => {
                   </div>
                 )}
               </div>
-              <button
-                onClick={() => logout()}
-                className="text-red-600 hover:text-red-700"
-                title="Logout"
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
             </div>
 
             <div className="space-y-2">
@@ -215,7 +218,11 @@ const Dashboard = () => {
                   <button
                     key={tab.value}
                     onClick={() => setActiveTab(tab.value)}
-                    className={`flex items-center gap-3 w-full px-3 py-2 rounded-md ${
+                    className={`flex items-center ${
+                      sidebarOpen
+                        ? "gap-3 px-3 mx-1"
+                        : "justify-center px-0 mx-0"
+                    } w-full py-2 rounded-md ${
                       activeTab === tab.value
                         ? "bg-blue-50 text-blue-600"
                         : "text-gray-600 hover:bg-gray-50"
@@ -226,6 +233,25 @@ const Dashboard = () => {
                   </button>
                 );
               })}
+            </div>
+            <div
+              className={
+                sidebarOpen
+                  ? "mt-auto px-2 pt-4 border-t border-gray-100"
+                  : "mt-auto flex justify-center pt-4 border-t border-gray-100"
+              }
+            >
+              <button
+                onClick={() => logout()}
+                className={
+                  sidebarOpen
+                    ? "w-full flex items-center justify-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-100 rounded-md py-2 text-sm transition-colors"
+                    : "w-10 h-10 flex items-center justify-center text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                }
+              >
+                <LogOut className="w-5 h-5" />
+                {sidebarOpen && <span>Logout</span>}
+              </button>
             </div>
           </aside>
 
@@ -239,29 +265,76 @@ const Dashboard = () => {
 
             {activeTab === "caterer" && (
               <Card>
-                <h2 className="text-2xl font-bold mb-4">Caterer Information</h2>
-                {loading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+                <div className="p-6">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-bold text-gray-800">
+                      Caterer Information
+                    </h2>
                   </div>
-                ) : catererInfo ? (
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-gray-500">Caterer Name</p>
-                      <p className="text-lg font-semibold">
-                        {catererInfo.catererName}
-                      </p>
+
+                  {loading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Hostel Name</p>
-                      <p className="text-lg font-semibold">
-                        {catererInfo.hostelName}
-                      </p>
+                  ) : catererInfo ? (
+                    <div className="space-y-6 mt-4">
+                      {/* Info rows similar to HostelPage details */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="rounded-lg border border-gray-200 p-4">
+                          <div className="text-xs uppercase tracking-wide text-gray-500">
+                            Caterer
+                          </div>
+                          <div className="mt-1 text-lg font-semibold text-gray-900">
+                            {catererInfo.catererName || "N/A"}
+                          </div>
+                        </div>
+                        <div className="rounded-lg border border-gray-200 p-4">
+                          <div className="text-xs uppercase tracking-wide text-gray-500">
+                            Hostel
+                          </div>
+                          <div className="mt-1 text-lg font-semibold text-gray-900">
+                            {catererInfo.hostelName || "N/A"}
+                          </div>
+                        </div>
+                        <div className="rounded-lg border border-gray-200 p-4">
+                          <div className="text-xs uppercase tracking-wide text-gray-500">
+                            Rating
+                          </div>
+                          <div className="mt-1 text-lg font-semibold text-gray-900">
+                            {catererInfo.rating ?? "N/A"}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="divide-y divide-gray-200 rounded-lg border border-gray-200">
+                        <div className="flex items-center justify-between p-4">
+                          <div className="text-sm text-gray-600">Contact</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {catererInfo.contact || "N/A"}
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between p-4">
+                          <div className="text-sm text-gray-600">Address</div>
+                          <div className="text-sm font-medium text-gray-900 text-right">
+                            {catererInfo.address || "N/A"}
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between p-4">
+                          <div className="text-sm text-gray-600">
+                            Complaints
+                          </div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {(catererInfo.complaints &&
+                              catererInfo.complaints.length) ||
+                              0}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <p className="text-gray-500">No caterer assigned</p>
-                )}
+                  ) : (
+                    <p className="text-gray-500 mt-4">No caterer assigned</p>
+                  )}
+                </div>
               </Card>
             )}
 
