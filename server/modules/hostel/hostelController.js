@@ -31,29 +31,6 @@ const createHostel = async (req, res) => {
   }
 };
 
-// Legacy password-based login (for backward compatibility during migration)
-// Note: Web login is now handled by unified webLoginHandler in auth.controller.js
-const loginHostelPassword = async (req, res) => {
-  const { hostel_name, password } = req.body;
-  try {
-    const hostel = await Hostel.findOne({ hostel_name }).populate("messId");
-    if (!hostel) return res.status(400).json({ message: "No such hostel" });
-
-    const verify = await hostel.verifyPassword(password);
-    if (!verify) return res.status(401).json({ message: "Incorrect password" });
-
-    const token = hostel.generateJWT();
-    return res.status(201).json({
-      message: "Logged in successfully",
-      token,
-      hostel,
-    });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ message: "Error occurred" });
-  }
-};
-
 const getHostel = async (req, res) => {
   try {
     // Fetch the hostel with populated messId
@@ -94,9 +71,9 @@ const getHostelbyId = async (req, res) => {
       return res.status(404).json({ message: "Hostel not found" });
     }
 
-    // Fetch users associated with this hostel
+    // Fetch users associated with this hostel (include phoneNumber & roomNumber)
     const users = await User.find({ hostel: hostelId }).select(
-      "name rollNumber email degree curr_subscribed_mess"
+      "name rollNumber email roomNumber phoneNumber degree curr_subscribed_mess"
     );
     // Fetch all hostels with their mess information to map curr_subscribed_mess
     const hostelsWithMess = await Hostel.find().populate("messId", "name");
@@ -107,6 +84,9 @@ const getHostelbyId = async (req, res) => {
         name: user.name,
         rollNumber: user.rollNumber,
         email: user.email,
+        // include roomNumber and phoneNumber so frontend can display them
+        roomNumber: user.roomNumber || "N/A",
+        phoneNumber: user.phoneNumber || "N/A",
         degree: user.degree,
         curr_subscribed_mess_name: (() => {
           if (!user.curr_subscribed_mess) return "N/A";
@@ -131,19 +111,7 @@ const getHostelbyId = async (req, res) => {
   }
 };
 
-const deleteHostel = async (req, res) => {
-  try {
-    const hostelId = req.params.hostelId;
-    const deletedHostel = await Hostel.findByIdAndDelete(hostelId);
-    if (!deletedHostel) {
-      return res.status(404).json({ message: "Hostel not found" });
-    }
-    return res.status(200).json({ message: "Hostel deleted successfully" });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Internal server error" });
-  }
-};
+// Hostel deletion endpoint removed. Deleting hostels from the system is disallowed per new policy.
 
 const getAllHostelNameAndCaterer = async (req, res) => {
   try {
@@ -199,7 +167,7 @@ const getBoarders = async (req, res) => {
   try {
     const hostelId = req.hostel._id;
     const boarders = await User.find({ hostel: hostelId })
-      .select("name rollNumber email roomNumber degree")
+      .select("name rollNumber email roomNumber phoneNumber degree")
       .sort({ rollNumber: 1 });
 
     return res.status(200).json({
@@ -209,6 +177,7 @@ const getBoarders = async (req, res) => {
         name: b.name,
         rollNumber: b.rollNumber,
         email: b.email,
+        phoneNumber: b.phoneNumber || "N/A",
         roomNumber: b.roomNumber || "N/A",
         degree: b.degree || "N/A",
       })),
@@ -226,7 +195,9 @@ const getMessSubscribers = async (req, res) => {
 
     // Find all users subscribed to this hostel's mess
     const subscribers = await User.find({ curr_subscribed_mess: hostelId })
-      .select("name rollNumber email roomNumber hostel curr_subscribed_mess")
+      .select(
+        "name rollNumber email roomNumber phoneNumber hostel curr_subscribed_mess"
+      )
       .populate("hostel", "hostel_name")
       .populate("curr_subscribed_mess", "hostel_name");
 
@@ -239,6 +210,7 @@ const getMessSubscribers = async (req, res) => {
         name: sub.name,
         rollNumber: sub.rollNumber,
         email: sub.email,
+        phoneNumber: sub.phoneNumber || "N/A",
         roomNumber: sub.roomNumber || "N/A",
         currentHostel: sub.hostel ? sub.hostel.hostel_name : "N/A",
         currentSubscribedMess: sub.curr_subscribed_mess
@@ -249,6 +221,56 @@ const getMessSubscribers = async (req, res) => {
     });
 
     // Sort: different hostel first (marked)
+    subscribersList.sort((a, b) => {
+      if (a.isDifferentHostel && !b.isDifferentHostel) return -1;
+      if (!a.isDifferentHostel && b.isDifferentHostel) return 1;
+      return a.rollNumber.localeCompare(b.rollNumber);
+    });
+
+    return res.status(200).json({
+      count: subscribersList.length,
+      subscribers: subscribersList,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Error occurred" });
+  }
+};
+
+// Public variant: get mess subscribers by hostelId param
+const getMessSubscribersByHostelId = async (req, res) => {
+  try {
+    const { hostelId } = req.params;
+    if (!hostelId) {
+      return res.status(400).json({ message: "Hostel ID is required" });
+    }
+
+    const subscribers = await User.find({ curr_subscribed_mess: hostelId })
+      .select(
+        "name rollNumber email roomNumber phoneNumber hostel curr_subscribed_mess"
+      )
+      .populate("hostel", "hostel_name")
+      .populate("curr_subscribed_mess", "hostel_name");
+
+    const subscribersList = subscribers.map((sub) => {
+      const isDifferentHostel =
+        sub.hostel && sub.hostel._id.toString() !== hostelId.toString();
+
+      return {
+        _id: sub._id,
+        name: sub.name,
+        rollNumber: sub.rollNumber,
+        email: sub.email,
+        phoneNumber: sub.phoneNumber || "N/A",
+        roomNumber: sub.roomNumber || "N/A",
+        currentHostel: sub.hostel ? sub.hostel.hostel_name : "N/A",
+        currentSubscribedMess: sub.curr_subscribed_mess
+          ? sub.curr_subscribed_mess.hostel_name
+          : "N/A",
+        isDifferentHostel: isDifferentHostel,
+      };
+    });
+
     subscribersList.sort((a, b) => {
       if (a.isDifferentHostel && !b.isDifferentHostel) return -1;
       if (!a.isDifferentHostel && b.isDifferentHostel) return 1;
@@ -376,16 +398,15 @@ const getSMCMembers = async (req, res) => {
 
 module.exports = {
   createHostel,
-  loginHostelPassword,
   getHostel,
   getAllHostels,
   getAllHostelsWithMess,
   getHostelbyId,
-  deleteHostel,
   getAllHostelNameAndCaterer,
   getCatererInfo,
   getBoarders,
   getMessSubscribers,
+  getMessSubscribersByHostelId,
   markAsSMC,
   unmarkAsSMC,
   getSMCMembers,

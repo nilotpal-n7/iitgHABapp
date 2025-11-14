@@ -5,7 +5,6 @@ const { authenticateAdminJWT } = require("../../middleware/authenticateJWT.js");
 const {
   createMess,
   createMessWithoutHostel,
-  deleteMess,
   deleteMenu,
   createMenu,
   createMenuItem,
@@ -35,7 +34,7 @@ const {
 const messRouter = express.Router();
 
 messRouter.post("/create", createMess);
-messRouter.delete("/delete/:messId", deleteMess);
+// Deletion of mess/caterers has been disabled: route removed.
 messRouter.post("/create-without-hostel", createMessWithoutHostel);
 messRouter.post("/menu/create", createMenu);
 messRouter.delete("/menu/delete/:menuId", deleteMenu);
