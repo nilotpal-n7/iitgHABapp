@@ -3,7 +3,6 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Tabs } from "antd";
 import {
   ArrowLeft,
-  Trash2,
   QrCode,
   Download,
   AlertCircle,
@@ -11,7 +10,7 @@ import {
   Trophy,
   FileText,
 } from "lucide-react";
-import { getMessById, deleteMess, getMessMenuByDay } from "../apis/mess";
+import { getMessById, getMessMenuByDay } from "../apis/mess";
 import { BACKEND_URL } from "../apis/server";
 import FeedbackList from "./FeedbackList";
 
@@ -48,19 +47,7 @@ export default function MessDetails() {
     fetchMess();
   }, [id]);
 
-  const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this mess?")) {
-      return;
-    }
-
-    try {
-      await deleteMess(id);
-      navigate("/caterers/");
-    } catch (error) {
-      console.error("Error deleting mess:", error);
-      setError("Failed to delete mess. Please try again.");
-    }
-  };
+  // Deletion of mess is disabled in the UI per new requirement.
 
   const handleGoBack = () => {
     navigate("/caterers/");
@@ -481,13 +468,7 @@ export default function MessDetails() {
             </h1>
             <p className="text-gray-500 text-sm">Caterer Dashboard</p>
           </div>
-          <button
-            onClick={handleDelete}
-            className="flex items-center gap-2 px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-          >
-            <Trash2 size={18} />
-            <span className="font-medium">Delete</span>
-          </button>
+          {/* Delete action removed intentionally */}
         </div>
         <Tabs
           defaultActiveKey="info"

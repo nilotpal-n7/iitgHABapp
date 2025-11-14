@@ -129,7 +129,7 @@ export default function AllHostelList() {
           }}
         >
           <Title level={2} style={{ margin: 0 }}>
-            Hostel Management
+            Hostels
           </Title>
 
           <Space>

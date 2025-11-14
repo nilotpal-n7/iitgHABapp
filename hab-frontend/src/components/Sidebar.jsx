@@ -13,7 +13,7 @@ import {
   NotificationOutlined,
 } from "@ant-design/icons";
 
-const Sidebar = () => {
+const Sidebar = ({ collapsed = false, onToggle }) => {
   const { logout } = useAuth();
 
   const navItems = [
@@ -23,16 +23,11 @@ const Sidebar = () => {
     { key: "4", name: "Students", path: "/students", icon: <UserOutlined /> },
     {
       key: "5",
-      name: "Mess Change Applications",
+      name: "Mess Change",
       path: "/mess/changeapplication",
       icon: <BarChartOutlined />,
     },
-    {
-      key: "6",
-      name: "Feedback Control",
-      path: "/feedback-control",
-      icon: <BookOutlined />,
-    },
+    // Feedback Control removed from sidebar per request
     {
       key: "7",
       name: "Send Notifications",
@@ -43,11 +38,36 @@ const Sidebar = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-3 py-4 border-b border-gray-100">
-        <div className="text-center">
-          <div className="text-xl font-bold leading-tight">IIT Guwahati</div>
-          <div className="text-sm text-gray-500">Hostel Affairs Board</div>
-        </div>
+      <div
+        className={`px-3 py-4 border-b border-gray-100 flex items-center ${
+          collapsed ? "justify-center" : "justify-between"
+        }`}
+      >
+        <button
+          onClick={onToggle}
+          className="p-2 rounded-md hover:bg-gray-100 text-gray-700"
+          title={collapsed ? "Expand" : "Collapse"}
+        >
+          <span className="sr-only">Toggle sidebar</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              fillRule="evenodd"
+              d="M3 5h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </button>
+        {!collapsed && (
+          <div className="text-center flex-1">
+            <div className="text-xl font-bold leading-tight">IIT Guwahati</div>
+            <div className="text-sm text-gray-500">Hostel Affairs Board</div>
+          </div>
+        )}
       </div>
 
       <nav className="flex-1 py-3 space-y-1">
@@ -57,7 +77,9 @@ const Sidebar = () => {
             to={item.path}
             end
             className={({ isActive }) =>
-              `flex items-center gap-3 w-full px-3 py-2 rounded-md mx-1 text-sm ${
+              `flex items-center ${
+                collapsed ? "justify-center px-0" : "gap-3 px-3"
+              } w-full py-2 rounded-md ${collapsed ? "mx-0" : "mx-1"} text-sm ${
                 isActive
                   ? "bg-blue-50 text-blue-600"
                   : "text-gray-700 hover:bg-gray-50"
@@ -65,23 +87,49 @@ const Sidebar = () => {
             }
           >
             <span className="text-base">{item.icon}</span>
-            <span>{item.name}</span>
+            {!collapsed && <span>{item.name}</span>}
           </NavLink>
         ))}
       </nav>
 
-      <div className="px-3 py-3 border-t border-gray-100">
+      <div
+        className={`mt-auto ${
+          collapsed
+            ? "flex justify-center py-4 border-t border-gray-100"
+            : "px-3 py-3 border-t border-gray-100"
+        }`}
+      >
         <button
           onClick={logout}
-          className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-100 rounded-md py-2 text-sm transition-colors"
+          className={`${
+            collapsed
+              ? "w-10 h-10 flex items-center justify-center text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+              : "w-full flex items-center justify-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-100 rounded-md py-2 text-sm transition-colors"
+          }`}
         >
-          Logout
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className={collapsed ? "w-5 h-5" : "w-5 h-5"}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l3 3m0 0l-3 3m3-3H3"
+            />
+          </svg>
+          {!collapsed && <span>Logout</span>}
         </button>
       </div>
-      <div className="px-3 pb-4 text-center text-xs text-gray-500">
-        <div>Coding Club</div>
-        <div className="mt-1">© 2025 IIT Guwahai</div>
-      </div>
+      {!collapsed && (
+        <div className="px-3 pb-4 text-center text-xs text-gray-500">
+          <div>Coding Club</div>
+          <div className="mt-1">© 2025 IIT Guwahati</div>
+        </div>
+      )}
     </div>
   );
 };
