@@ -6,7 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="9f22e541-6f34-44ad-b768-3e17d6476ce7" name="Changes" comment="Mess Preference fully done">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend2/.xcodecloud/.xcodecloud/workflow.yml " beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend2/ios/Runner.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend2/ios/Runner.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
