@@ -1,0 +1,21 @@
+version: 1.0
+
+steps:
+  - name: Install Flutter
+    script: |
+      git clone https://github.com/flutter/flutter.git -b stable
+      export PATH="$PATH:`pwd`/flutter/bin"
+
+  - name: Flutter pub get
+    script: |
+      flutter pub get
+
+  - name: Build iOS dependencies
+    script: |
+      cd ios
+      pod install
+      cd ..
+
+  - name: Build iOS (Release)
+    script: |
+      flutter build ios --release

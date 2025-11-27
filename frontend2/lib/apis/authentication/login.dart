@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
@@ -8,11 +9,10 @@ import 'package:frontend2/constants/endpoint.dart';
 import 'package:frontend2/main.dart';
 import 'package:frontend2/providers/hostels.dart';
 import 'package:frontend2/screens/initial_setup_screen.dart';
+import 'package:frontend2/utilities/notifications.dart';
 // provider import removed (unused in this file)
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:dio/dio.dart';
-import 'package:frontend2/utilities/notifications.dart';
+
 import '../../screens/login_screen.dart';
 
 Future<void> authenticate() async {
@@ -125,22 +125,22 @@ Future<void> logoutHandler(context) async {
   }
 }
 
-Future<void> signInWithApple() async {
-  try {
-    final credential = await SignInWithApple.getAppleIDCredential(
-      scopes: [
-        AppleIDAuthorizationScopes.email,
-        AppleIDAuthorizationScopes.fullName,
-      ],
-    );
-
-    debugPrint('User ID: ${credential.userIdentifier}');
-    debugPrint('Email: ${credential.email}');
-    debugPrint('Full Name: ${credential.givenName} ${credential.familyName}');
-  } catch (e) {
-    debugPrint('Error during Apple Sign-In: $e');
-  }
-}
+// Future<void> signInWithApple() async {
+//   try {
+//     final credential = await SignInWithApple.getAppleIDCredential(
+//       scopes: [
+//         AppleIDAuthorizationScopes.email,
+//         AppleIDAuthorizationScopes.fullName,
+//       ],
+//     );
+//
+//     debugPrint('User ID: ${credential.userIdentifier}');
+//     debugPrint('Email: ${credential.email}');
+//     debugPrint('Full Name: ${credential.givenName} ${credential.familyName}');
+//   } catch (e) {
+//     debugPrint('Error during Apple Sign-In: $e');
+//   }
+// }
 
 Future<bool> isLoggedIn() async {
   var access = await getAccessToken();
