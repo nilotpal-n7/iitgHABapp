@@ -37,3 +37,4 @@ Pods/
 Flutter/Flutter.framework
 Flutter/App.framework
 Flutter/engine/
+build/ios/XCBuildData

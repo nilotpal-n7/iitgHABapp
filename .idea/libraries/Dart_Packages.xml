@@ -131,7 +131,7 @@
         <entry key="device_info_plus">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/device_info_plus-12.2.0/lib" />
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/device_info_plus-12.3.0/lib" />
             </list>
           </value>
         </entry>
@@ -1143,7 +1143,7 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/cupertino_icons-1.0.8/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/dbus-0.7.11/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/desktop_webview_window-0.2.3/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/device_info_plus-12.2.0/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/device_info_plus-12.3.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/device_info_plus_platform_interface-7.0.3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/dio-5.9.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/dio_web_adapter-2.1.1/lib" />
