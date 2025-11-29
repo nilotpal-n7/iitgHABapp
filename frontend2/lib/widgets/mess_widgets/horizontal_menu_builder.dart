@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend2/apis/mess/menu_like.dart';
 import '../../apis/mess/mess_menu.dart';
 import '../../models/mess_menu_model.dart';
 
@@ -168,14 +169,21 @@ class _IndividualMealCardState extends State<IndividualMealCard>
     final now = DateTime.now();
     final start = widget.parseTime(_menu.startTime);
     final end = widget.parseTime(_menu.endTime);
+    // final end = widget.parseTime("17:00");
 
-    if (now.isBefore(start)) {
-      final diff = start.difference(now);
-      return "In ${diff.inHours > 0 ? '${diff.inHours}h ' : ''}${diff.inMinutes % 60}m";
-    } else if (now.isAfter(start) && now.isBefore(end)) {
-      return "Ongoing";
+    // print("$now, $start, $end");
+
+    if (widget.statusDisplay??false) {
+      if (now.isBefore(start)) {
+        final diff = start.difference(now);
+        return "In ${diff.inHours > 0 ? '${diff.inHours}h ' : ''}${diff.inMinutes % 60}m";
+      } else if (now.isAfter(start) && now.isBefore(end)) {
+        return "Ongoing";
+      } else {
+        return "is over";
+      }
     } else {
-      return "is over";
+      return "";
     }
   }
 
@@ -191,12 +199,19 @@ class _IndividualMealCardState extends State<IndividualMealCard>
     setState(() {
       _menu.items[index].isLiked = !_menu.items[index].isLiked;
     });
-    // final success = await MenuLikeAPI.toggleLike(itemId);
-    // if (!success) {
-    //   setState(() {
-    //     _menu.items[index].isLiked = !_menu.items[index].isLiked;
-    //   });
-    // }
+    try {
+      final success = await MenuLikeAPI.toggleLike(itemId);
+      if (!success) {
+        setState(() {
+          _menu.items[index].isLiked = !_menu.items[index].isLiked;
+        });
+      }
+    } catch (error) {
+      print(error);
+      setState(() {
+        _menu.items[index].isLiked = !_menu.items[index].isLiked;
+      });
+    };
   }
 
   Widget _buildItem(MenuItemModel item, int index) {
@@ -308,8 +323,7 @@ class _IndividualMealCardState extends State<IndividualMealCard>
                                 color: Color(0xFF676767)),
                           ),
                           //
-                          if (widget.isSubscribed &&
-                              _statusColor(status) != Colors.green) ...[
+                          if (widget.isSubscribed) ...[
                             const SizedBox(width: 8),
                             Container(
                               height: 28,
@@ -344,19 +358,18 @@ class _IndividualMealCardState extends State<IndividualMealCard>
                                 ],
                               ),
                             ),
-                          ] else ...[
-                            const SizedBox(
-                              width: 4,
-                            ),
-                            if (widget.statusDisplay ?? false)
-                              Text(
-                                status,
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: _statusColor(status)),
-                              )
-                          ]
+                          ],
+                          const SizedBox(
+                            width: 4,
+                          ),
+                          if (widget.statusDisplay ?? false)
+                            Text(
+                              status,
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: _statusColor(status)),
+                            )
                         ],
                       ),
                     ),
