@@ -1,9 +1,8 @@
-import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthProvider";
 
 export const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
-  const location = useLocation();
+  const APP_URL = import.meta.env.VITE_APP_URL || "http://localhost:5172";
 
   if (isLoading) {
     return (
@@ -14,7 +13,8 @@ export const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    window.location.href = APP_URL;
+    return null;
   }
 
   // Verify user is SMC

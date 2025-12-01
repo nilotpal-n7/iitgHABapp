@@ -74,30 +74,7 @@ const createMessWithoutHostel = async (req, res) => {
   }
 };
 
-const deleteMess = async (req, res) => {
-  try {
-    const messId = req.params.messId;
-    const deletedMess = await Mess.findByIdAndDelete(messId);
-
-    if (!deletedMess) {
-      return res.status(404).json({ message: "Mess not found" });
-    }
-    if (deletedMess.hostelId) {
-      const hostelRes = await Hostel.findByIdAndUpdate(
-        deletedMess.hostelId,
-        { messId: null },
-        { new: true }
-      );
-      if (!hostelRes) {
-        return res.status(404).json({ message: "Hostel not found" });
-      }
-    }
-    return res.status(200).json({ message: "Mess deleted successfully" });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Internal server error" });
-  }
-};
+// Deletion of mess/caterer has been disabled. The delete endpoint and controller were removed.
 
 const createMenu = async (req, res) => {
   try {
@@ -843,7 +820,6 @@ const formatTime2 = (time) => {
 module.exports = {
   createMess,
   createMessWithoutHostel,
-  deleteMess,
   createMenu,
   deleteMenu,
   createMenuItem,

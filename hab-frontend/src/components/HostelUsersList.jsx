@@ -1,7 +1,7 @@
 // NOTE: This file lives in `components` (lowercase).
 import React, { useState, useEffect, useMemo } from "react";
 import { Table, Input, Typography, Avatar, Tag, Empty } from "antd";
-import { UserOutlined, SearchOutlined, MailOutlined } from "@ant-design/icons";
+import { UserOutlined, SearchOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -9,10 +9,6 @@ const { Search } = Input;
 const HostelUsersList = ({ hostelName, users }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredData, setFilteredData] = useState([]);
-
-  // Debug logging
-  // console.log("HostelUsersList received users:", users);
-  // console.log("Users type:", typeof users, "Is array:", Array.isArray(users));
 
   const processedUsers = useMemo(() => {
     if (!users || !Array.isArray(users)) return [];
@@ -22,6 +18,9 @@ const HostelUsersList = ({ hostelName, users }) => {
       _id: userItem.user._id,
       name: userItem.user.name || "N/A",
       rollNumber: userItem.user.rollNumber || "N/A",
+      // Map backend schema fields exactly (userModel.js uses phoneNumber & roomNumber)
+      phone: userItem.user.phoneNumber || "N/A",
+      room: userItem.user.roomNumber || "N/A",
       email: userItem.user.email || "N/A",
       degree: userItem.user.degree || "N/A",
       curr_subscribed_mess_name:
@@ -38,7 +37,8 @@ const HostelUsersList = ({ hostelName, users }) => {
         (user) =>
           user.name.toLowerCase().includes(query) ||
           user.rollNumber.toLowerCase().includes(query) ||
-          user.email.toLowerCase().includes(query) ||
+          (user.phone || "").toLowerCase().includes(query) ||
+          (user.room || "").toLowerCase().includes(query) ||
           user.degree.toLowerCase().includes(query)
       );
       setFilteredData(filtered);
@@ -69,30 +69,28 @@ const HostelUsersList = ({ hostelName, users }) => {
       sorter: (a, b) => a.rollNumber.localeCompare(b.rollNumber),
     },
     {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-      sorter: (a, b) => a.email.localeCompare(b.email),
-      render: (text) => (
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <MailOutlined style={{ marginRight: 8, color: "#8c8c8c" }} />
-          {text}
-        </div>
-      ),
+      title: "Phone",
+      dataIndex: "phone",
+      key: "phone",
+      sorter: (a, b) =>
+        (a.phone || "").toString().localeCompare((b.phone || "").toString()),
+      render: (text) => <span>{text}</span>,
     },
+    {
+      title: "Room",
+      dataIndex: "room",
+      key: "room",
+      sorter: (a, b) =>
+        (a.room || "").toString().localeCompare((b.room || "").toString()),
+      render: (text) => <span>{text}</span>,
+    },
+    // Email column removed
     {
       title: "Degree",
       dataIndex: "degree",
       key: "degree",
       sorter: (a, b) => a.degree.localeCompare(b.degree),
       render: (text) => <Tag color="blue">{text}</Tag>,
-    },
-    {
-      title: "Current Mess",
-      dataIndex: "curr_subscribed_mess_name",
-      key: "curr_subscribed_mess_name",
-      sorter: (a, b) =>
-        a.curr_subscribed_mess_name.localeCompare(b.curr_subscribed_mess_name),
     },
   ];
 
@@ -116,15 +114,15 @@ const HostelUsersList = ({ hostelName, users }) => {
           style={{ margin: 0, display: "flex", alignItems: "center" }}
         >
           <UserOutlined style={{ marginRight: "12px", color: "#1890ff" }} />
-          {hostelName} Users ({filteredData.length})
+          {hostelName} Boarders ({filteredData.length})
         </Title>
 
         <Search
-          placeholder="Search by name, roll number, email..."
+          placeholder="Search by name, roll number, phone, room..."
           allowClear
           enterButton={<SearchOutlined />}
           size="large"
-          style={{ width: 400 }}
+          style={{ width: 300 }}
           onSearch={handleSearch}
           onChange={(e) => handleSearch(e.target.value)}
         />
@@ -140,7 +138,7 @@ const HostelUsersList = ({ hostelName, users }) => {
           pageSizeOptions: ["10", "20", "50", "100"],
           showQuickJumper: true,
           showTotal: (total, range) =>
-            `${range[0]}-${range[1]} of ${total} users`,
+            `${range[0]}-${range[1]} of ${total} boarders`,
         }}
         size="middle"
         scroll={{ x: true }}
@@ -150,8 +148,8 @@ const HostelUsersList = ({ hostelName, users }) => {
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description={
                 searchQuery
-                  ? "No users found matching your search."
-                  : "No users assigned to this hostel."
+                  ? "No boarders found matching your search."
+                  : "No boarders assigned to this hostel."
               }
             />
           ),

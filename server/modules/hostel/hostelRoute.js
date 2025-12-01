@@ -6,8 +6,6 @@ const {
 
 const {
   createHostel,
-  loginHostelPassword,
-  deleteHostel,
   getHostel,
   getHostelbyId,
   getAllHostels,
@@ -16,6 +14,7 @@ const {
   getCatererInfo,
   getBoarders,
   getMessSubscribers,
+  getMessSubscribersByHostelId,
   markAsSMC,
   unmarkAsSMC,
   getSMCMembers,
@@ -46,15 +45,11 @@ const hostelRouter = express.Router();
  *             type: object
  *             required:
  *               - hostel_name
- *               - password
  *               - messId
  *             properties:
  *               hostel_name:
  *                 type: string
  *                 example: "Kameng Hostel"
- *               password:
- *                 type: string
- *                 example: "hostel123"
  *               messId:
  *                 type: string
  *                 example: "64a1b2c3d4e5f6789012347"
@@ -96,54 +91,7 @@ hostelRouter.post("/", createHostel);
 
 hostelRouter.post("/all/:hostelId", getHostelbyId);
 
-/**
- * @swagger
- * /api/hostel/delete/{hostelId}:
- *   delete:
- *     summary: "Delete a hostel"
- *     tags: ["Hostel"]
- *     description: "Deletes a specific hostel by its ID"
- *     parameters:
- *       - name: hostelId
- *         in: path
- *         required: true
- *         description: "Unique identifier of the hostel to delete"
- *         schema:
- *           type: string
- *           example: "64a1b2c3d4e5f6789012346"
- *     responses:
- *       200:
- *         description: "Hostel deleted successfully"
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Hostel deleted successfully"
- *       404:
- *         description: "Hostel not found"
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Hostel not found"
- *       500:
- *         description: "Internal server error"
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Internal server error"
- */
-hostelRouter.delete("/delete/:hostelId", deleteHostel);
+// Deletion of hostels has been disabled. Route removed.
 
 /**
  * @swagger
@@ -195,11 +143,6 @@ hostelRouter.delete("/delete/:hostelId", deleteHostel);
  *                   example: "Error occurred"
  */
 hostelRouter.get("/all/:hostelId", getHostelbyId);
-
-// Legacy password-based login (for backward compatibility during migration)
-// Note: Web login is now handled by unified webLoginHandler at /api/auth/login/redirect/web?type=hostel
-hostelRouter.post("/login-password", loginHostelPassword);
-
 hostelRouter.get("/get", authenticateAdminJWT, getHostel);
 
 /**
@@ -224,13 +167,11 @@ hostelRouter.get("/get", authenticateAdminJWT, getHostel);
  *                 users: []
  *                 messId: "64a1b2c3d4e5f6789012347"
  *                 curr_cap: 0
- *                 password: "$2b$10$N9qo8uLOickgx2ZMRZoMye..."
  *               - _id: "64a1b2c3d4e5f6789012348"
  *                 hostel_name: "Brahmaputra Hostel"
  *                 users: []
  *                 messId: "64a1b2c3d4e5f6789012349"
  *                 curr_cap: 25
- *                 password: "$2b$10$N9qo8uLOickgx2ZMRZoMye..."
  *       500:
  *         description: "Server error"
  *         content:
@@ -258,6 +199,8 @@ hostelRouter.post("/alloc/upload", upload.single("file"), uploadData);
 hostelRouter.get("/caterer-info", authenticateAdminJWT, getCatererInfo);
 hostelRouter.get("/boarders", authenticateAdminJWT, getBoarders);
 hostelRouter.get("/mess-subscribers", authenticateAdminJWT, getMessSubscribers);
+// Public endpoint to get mess subscribers for a given hostel ID
+hostelRouter.get("/mess-subscribers/:hostelId", getMessSubscribersByHostelId);
 hostelRouter.get("/smc-members", authenticateAdminJWT, getSMCMembers);
 hostelRouter.post("/mark-smc", authenticateAdminJWT, markAsSMC);
 hostelRouter.post("/unmark-smc", authenticateAdminJWT, unmarkAsSMC);

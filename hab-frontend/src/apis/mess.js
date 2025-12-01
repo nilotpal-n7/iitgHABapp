@@ -49,15 +49,7 @@ export const createMess = async (messData) => {
 };
 
 // Delete mess
-export const deleteMess = async (messId) => {
-  try {
-    const response = await axios.delete(`${BACKEND_URL}/mess/delete/${messId}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error deleting mess ${messId}:`, error);
-    throw error;
-  }
-};
+// (Delete mess endpoint removed) - function removed to disable deletion from frontend
 
 // Get unassigned messes
 export const getUnassignedMesses = async () => {
