@@ -16,10 +16,18 @@ import 'package:frontend2/screens/login_screen.dart';
 import 'package:frontend2/screens/mess_screen.dart';
 import 'package:frontend2/utilities/notifications.dart';
 import 'package:frontend2/utilities/startupitem.dart';
+import 'package:frontend2/utilities/version_checker.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Check device type and app version on startup
+  await VersionChecker.init();
+  
+  // Check if update is required
+  final bool updateRequired = await VersionChecker.checkForUpdate();
+  
   final bool asLoggedIn = await isLoggedIn();
   await Firebase.initializeApp();
 
@@ -58,7 +66,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => MessInfoProvider()),
         ChangeNotifierProvider(create: (_) => FeedbackProvider()),
       ],
-      child: MyApp(isLoggedIn: asLoggedIn),
+      child: MyApp(isLoggedIn: asLoggedIn, updateRequired: updateRequired),
     ),
   );
 }
@@ -67,8 +75,9 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 class MyApp extends StatefulWidget {
   final bool isLoggedIn;
+  final bool updateRequired;
 
-  const MyApp({super.key, required this.isLoggedIn});
+  const MyApp({super.key, required this.isLoggedIn, required this.updateRequired});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -88,6 +97,12 @@ class _MyAppState extends State<MyApp> {
     setNavigatorKey(navigatorKey); // Set global navigator key for notifications
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Show update dialog if required
+      if (widget.updateRequired) {
+        VersionChecker.showUpdateDialog(navigatorKey.currentContext!);
+        return; // Don't proceed with other initialization if update is required
+      }
+      
       // This ensures it runs after the first frame
       await context.read<MessInfoProvider>().fetchMessID();
     });

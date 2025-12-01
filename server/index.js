@@ -16,6 +16,7 @@ const notificationRoute = require("./modules/notification/notificationRoute.js")
 const qrRoute = require("./modules/qr/qrRoute.js");
 const messRoute = require("./modules/mess/messRoute.js");
 const logsRoute = require("./modules/mess/ScanLogsRoute.js");
+const appVersionRoute = require("./modules/app_version/appVersionRoute.js");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const {
@@ -213,6 +214,9 @@ app.use("/api/profile", profileRouter);
 
 //scanlogs route
 app.use("/api/logs", logsRoute);
+
+//app version route
+app.use("/api/app-version", appVersionRoute);
 
 // Debug route: accept delegated tokens and save to disk for server use
 // WARNING: Protect this route in production (e.g., require admin auth, restrict IPs)
