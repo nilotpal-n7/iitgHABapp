@@ -1,205 +1,135 @@
-// NOTE: This file lives in `components` (lowercase).
+// Simplified Tailwind-based sidebar aligned with SMC layout
 import { NavLink } from "react-router-dom";
-import { Menu } from "antd";
+import { useAuth } from "../context/AuthProvider";
 import {
   HomeOutlined,
   BankOutlined,
   ShopOutlined,
   UserOutlined,
-  BookOutlined,
-  BarChartOutlined,
   UploadOutlined,
+  BarChartOutlined,
   SettingOutlined,
+  BookOutlined,
   NotificationOutlined,
 } from "@ant-design/icons";
-import { useState, useEffect } from "react";
 
-const Sidebar = () => {
-  const [selectedKey, setSelectedKey] = useState("1");
+const Sidebar = ({ collapsed = false, onToggle }) => {
+  const { logout } = useAuth();
 
   const navItems = [
-    {
-      key: "1",
-      name: "Home",
-      path: "/",
-      icon: <HomeOutlined />,
-    },
-    {
-      key: "2",
-      name: "Hostels",
-      path: "/hostels",
-      icon: <BankOutlined />,
-    },
-    {
-      key: "3",
-      name: "Caterers",
-      path: "/caterers",
-      icon: <ShopOutlined />,
-    },
-    {
-      key: "4",
-      name: "Students",
-      path: "/students",
-      icon: <UserOutlined />,
-    },
+    { key: "1", name: "Home", path: "/", icon: <HomeOutlined /> },
+    { key: "2", name: "Hostels", path: "/hostels", icon: <BankOutlined /> },
+    { key: "3", name: "Caterers", path: "/caterers", icon: <ShopOutlined /> },
+    { key: "4", name: "Students", path: "/students", icon: <UserOutlined /> },
     {
       key: "5",
-      name: "Allocate Hostel",
-      path: "/allocate-hostel",
-      icon: <UploadOutlined />,
-    },
-    {
-      key: "6",
-      name: "Mess Change Applications",
+      name: "Mess Change",
       path: "/mess/changeapplication",
       icon: <BarChartOutlined />,
     },
+    // Feedback Control removed from sidebar per request
     {
       key: "7",
-      name: "Profile Settings",
-      path: "/profile-settings",
-      icon: <SettingOutlined />,
-    },
-    {
-      key: "8",
-      name: "Feedback Control",
-      path: "/feedback-control",
-      icon: <BookOutlined />,
-    },
-    {
-      key: "9",
-      name: "Feedback Leaderboard",
-      path: "/feedback-leaderboard",
-      icon: <BarChartOutlined />,
-    },
-    {
-      key: "10",
       name: "Send Notifications",
       path: "/notifications",
       icon: <NotificationOutlined />,
     },
   ];
 
-  useEffect(() => {
-    const currentPath = window.location.pathname;
-    const mapping = {
-      "/": "1",
-      "/hostels": "2",
-      "/caterers": "3",
-      "/students": "4",
-      "/allocate-hostel": "5",
-      "/mess/changeapplication": "6",
-      "/profile-settings": "7",
-      "/feedback-control": "8",
-      "/feedback-leaderboard": "9",
-      "/notifications": "10",
-    };
-    setSelectedKey(mapping[currentPath] || "1");
-  }, []);
-
-  const handleMenuClick = (item) => {
-    setSelectedKey(item.key);
-  };
-
   return (
-    <div
-      style={{
-        height: "100vh",
-        width: "240px",
-        position: "fixed",
-        left: 0,
-        top: 0,
-        background: "#fff",
-        borderRight: "1px solid #f0f0f0",
-        boxShadow: "2px 0 8px rgba(0,0,0,0.1)",
-        display: "flex",
-        flexDirection: "column",
-        zIndex: 1000,
-      }}
-    >
+    <div className="flex flex-col h-full">
       <div
-        style={{
-          padding: "24px 16px",
-          borderBottom: "1px solid #f0f0f0",
-          textAlign: "center",
-          background: "linear-gradient(135deg, #1890ff 0%, #096dd9 100%)",
-          color: "#fff",
-        }}
+        className={`px-3 py-4 border-b border-gray-100 flex items-center ${
+          collapsed ? "justify-center" : "justify-between"
+        }`}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-          }}
+        <button
+          onClick={onToggle}
+          className="p-2 rounded-md hover:bg-gray-100 text-gray-700"
+          title={collapsed ? "Expand" : "Collapse"}
         >
-          <div>
-            <div
-              style={{
-                fontSize: "32px",
-                fontWeight: "bold",
-                lineHeight: "1.2",
-              }}
-            >
-              IIT Guwahati
-            </div>
-            <div style={{ fontSize: "16px", opacity: 0.9 }}>
-              Hostel Affairs Board
-            </div>
+          <span className="sr-only">Toggle sidebar</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              fillRule="evenodd"
+              d="M3 5h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </button>
+        {!collapsed && (
+          <div className="text-center flex-1">
+            <div className="text-xl font-bold leading-tight">IIT Guwahati</div>
+            <div className="text-sm text-gray-500">Hostel Affairs Board</div>
           </div>
-        </div>
+        )}
       </div>
 
-      <div style={{ flex: 1, padding: "16px 0" }}>
-        <Menu
-          mode="vertical"
-          selectedKeys={[selectedKey]}
-          style={{
-            border: "none",
-            background: "transparent",
-          }}
-          onClick={handleMenuClick}
-        >
-          {navItems.map((item) => (
-            <Menu.Item
-              key={item.key}
-              icon={item.icon}
-              style={{
-                margin: "4px 12px",
-                borderRadius: "8px",
-                height: "48px",
-                lineHeight: "48px",
-                fontSize: "15px",
-              }}
-            >
-              <NavLink
-                to={item.path}
-                style={{
-                  textDecoration: "none",
-                  color: "inherit",
-                }}
-                end
-              >
-                {item.name}
-              </NavLink>
-            </Menu.Item>
-          ))}
-        </Menu>
-      </div>
+      <nav className="flex-1 py-3 space-y-1">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.key}
+            to={item.path}
+            end
+            className={({ isActive }) =>
+              `flex items-center ${
+                collapsed ? "justify-center px-0" : "gap-3 px-3"
+              } w-full py-2 rounded-md ${collapsed ? "mx-0" : "mx-1"} text-sm ${
+                isActive
+                  ? "bg-blue-50 text-blue-600"
+                  : "text-gray-700 hover:bg-gray-50"
+              }`
+            }
+          >
+            <span className="text-base">{item.icon}</span>
+            {!collapsed && <span>{item.name}</span>}
+          </NavLink>
+        ))}
+      </nav>
 
       <div
-        style={{
-          padding: "16px",
-          borderTop: "1px solid #f0f0f0",
-          fontSize: "12px",
-          color: "#8c8c8c",
-          textAlign: "center",
-        }}
+        className={`mt-auto ${
+          collapsed
+            ? "flex justify-center py-4 border-t border-gray-100"
+            : "px-3 py-3 border-t border-gray-100"
+        }`}
       >
-        <div>Coding Club</div>
-        <div style={{ marginTop: "4px" }}>© 2025 IIT Guwahai</div>
+        <button
+          onClick={logout}
+          className={`${
+            collapsed
+              ? "w-10 h-10 flex items-center justify-center text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+              : "w-full flex items-center justify-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-100 rounded-md py-2 text-sm transition-colors"
+          }`}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className={collapsed ? "w-5 h-5" : "w-5 h-5"}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l3 3m0 0l-3 3m3-3H3"
+            />
+          </svg>
+          {!collapsed && <span>Logout</span>}
+        </button>
       </div>
+      {!collapsed && (
+        <div className="px-3 pb-4 text-center text-xs text-gray-500">
+          <div>Coding Club</div>
+          <div className="mt-1">© 2025 IIT Guwahati</div>
+        </div>
+      )}
     </div>
   );
 };
