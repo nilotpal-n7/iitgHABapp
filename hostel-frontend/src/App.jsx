@@ -1,32 +1,25 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthProvider";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { LoginPage } from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import "./index.css";
 
 function App() {
+  const BASENAME =
+    import.meta.env.VITE_BASE ||
+    (window.location.pathname.startsWith("/hostel") ? "/hostel" : "/");
+
   return (
-    <Router>
+    <Router basename={BASENAME}>
       <AuthProvider>
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
           <Route
-            path="/hostel/dashboard"
+            path="/"
             element={
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="/"
-            element={<Navigate to="/hostel/dashboard" replace />}
           />
         </Routes>
       </AuthProvider>
