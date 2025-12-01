@@ -33,7 +33,6 @@ dotenv.config();
  *         - hostel_name
  *         - users
  *         - curr_cap
- *         - password
  *       properties:
  *         _id:
  *           type: string
@@ -64,11 +63,6 @@ dotenv.config();
  *           description: Current capacity/number of users in hostel
  *           default: 0
  *           example: 150
- *         password:
- *           type: string
- *           format: password
- *           description: Hashed password for hostel authentication
- *           example: "$2b$10$N9qo8uLOickgx2ZMRZoMye..."
  */
 
 const hostelSchema = new mongoose.Schema({
@@ -90,24 +84,7 @@ const hostelSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  password: {
-    type: String,
-    required: false, // Keep for backward compatibility during migration
-  },
 });
-
-hostelSchema.pre("save", async function (next) {
-  // Hash password before saving (if it exists - for backward compatibility)
-  if (this.password && this.isModified("password")) {
-    this.password = await bcrypt.hash(this.password, 10);
-  }
-  next();
-});
-
-hostelSchema.methods.verifyPassword = function (givenPassword) {
-  if (!this.password) return false;
-  return bcrypt.compare(givenPassword, this.password);
-};
 
 hostelSchema.methods.generateJWT = function () {
   let hostel = this;

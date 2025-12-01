@@ -22,7 +22,7 @@ const days = [
 
 export const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [currentPage, setCurrentPage] = useState("menu"); // 'menu' or 'notifications'
+  const [currentPage, setCurrentPage] = useState("menu");
   const { user, logout } = useAuth();
 
   const [showCreateMenu, setShowCreateMenu] = useState(false);
@@ -217,15 +217,25 @@ export const Dashboard = () => {
         <div className="flex gap-6 w-full">
           {/* Sidebar */}
           <aside
+            style={{
+              height: "calc(100vh - 48px)",
+              position: "sticky",
+              top: "24px",
+            }}
             className={`bg-white border border-gray-100 rounded-lg shadow-sm p-3 transition-all duration-200 ${
               sidebarOpen ? "w-72" : "w-16"
             }`}
           >
-            <div className="flex items-center justify-between mb-6">
+            <div
+              className={`flex items-center ${
+                sidebarOpen ? "justify-between" : "justify-center"
+              } mb-6`}
+            >
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setSidebarOpen((v) => !v)}
                   className="p-2 rounded-md hover:bg-gray-100"
+                  title={sidebarOpen ? "Collapse" : "Expand"}
                 >
                   <Menu className="w-5 h-5 text-gray-700" />
                 </button>
@@ -236,19 +246,14 @@ export const Dashboard = () => {
                   </div>
                 )}
               </div>
-              <button
-                onClick={() => logout()}
-                className="text-red-600 hover:text-red-700"
-                title="Logout"
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
             </div>
 
             <div className="space-y-2">
               <button
                 onClick={() => setCurrentPage("menu")}
-                className={`flex items-center gap-3 w-full px-3 py-2 rounded-md ${
+                className={`flex items-center ${
+                  sidebarOpen ? "gap-3 px-3 mx-1" : "justify-center px-0 mx-0"
+                } w-full py-2 rounded-md ${
                   currentPage === "menu"
                     ? "bg-blue-50 text-blue-600"
                     : "text-gray-600 hover:bg-gray-50"
@@ -259,7 +264,9 @@ export const Dashboard = () => {
               </button>
               <button
                 onClick={() => setCurrentPage("notifications")}
-                className={`flex items-center gap-3 w-full px-3 py-2 rounded-md ${
+                className={`flex items-center ${
+                  sidebarOpen ? "gap-3 px-3 mx-1" : "justify-center px-0 mx-0"
+                } w-full py-2 rounded-md ${
                   currentPage === "notifications"
                     ? "bg-blue-50 text-blue-600"
                     : "text-gray-600 hover:bg-gray-50"
@@ -267,6 +274,26 @@ export const Dashboard = () => {
               >
                 <Bell className="w-5 h-5" />
                 {sidebarOpen && <span>Notifications</span>}
+              </button>
+            </div>
+            <div
+              className={
+                sidebarOpen
+                  ? "mt-auto px-2 pt-4 border-t border-gray-100"
+                  : "mt-auto flex justify-center pt-4 border-t border-gray-100"
+              }
+            >
+              <button
+                onClick={() => logout()}
+                className={
+                  sidebarOpen
+                    ? "w-full flex items-center justify-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-100 rounded-md py-2 text-sm transition-colors"
+                    : "w-10 h-10 flex items-center justify-center text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                }
+                title="Logout"
+              >
+                <LogOut className="w-5 h-5" />
+                {sidebarOpen && <span>Logout</span>}
               </button>
             </div>
           </aside>

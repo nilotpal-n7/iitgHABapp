@@ -34,6 +34,18 @@ export const getHostelById = async (hostelId) => {
   }
 };
 
+export const getMessSubscribersByHostelId = async (hostelId) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}/hostel/mess-subscribers/${hostelId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching mess subscribers for ${hostelId}:`, error);
+    throw error;
+  }
+};
+
 // Create new hostel
 export const createHostel = async (hostelData) => {
   try {
@@ -58,19 +70,6 @@ export const updateHostel = async (hostelId, hostelData) => {
     return response.data;
   } catch (error) {
     console.error(`Error updating hostel ${hostelId}:`, error);
-    throw error;
-  }
-};
-
-// Delete hostel
-export const deleteHostel = async (hostelId) => {
-  try {
-    const response = await axios.delete(
-      `${BACKEND_URL}/hostel/delete/${hostelId}`
-    );
-    return response.data;
-  } catch (error) {
-    console.error(`Error deleting hostel ${hostelId}:`, error);
     throw error;
   }
 };

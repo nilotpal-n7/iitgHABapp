@@ -1,6 +1,7 @@
 import java.util.Properties
 import java.io.FileInputStream
 
+
 plugins {
     id "com.android.application"
     id "org.jetbrains.kotlin.android"
@@ -11,6 +12,9 @@ plugins {
 
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file("key.properties")
+def flutterCompileSdkVersion = 36
+def flutterTargetSdkVersion = 36
+
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 } else {
@@ -19,7 +23,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace "in.codingclub.hab"
-    compileSdk flutter.compileSdkVersion
+    compileSdk 36
     ndkVersion "27.0.12077973"
 
     compileOptions {

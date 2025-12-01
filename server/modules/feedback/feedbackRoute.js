@@ -15,6 +15,7 @@ const {
   getAvailableWindows,
   checkFeedbackSubmitted,
   getFeedbackWindowTimeLeft,
+  getFeedbacksByCaterer,
 } = require("./feedbackController");
 const { authenticateJWT } = require("../../middleware/authenticateJWT");
 
@@ -33,6 +34,9 @@ feedbackRouter.get("/leaderboard", authenticateJWT, getFeedbackLeaderboard);
 feedbackRouter.get("/leaderboard-by-window", getFeedbackLeaderboardByWindow);
 feedbackRouter.get("/windows", getAvailableWindows);
 feedbackRouter.get("/window-time-left", getFeedbackWindowTimeLeft);
+// HAB: Paginated feedbacks for a caterer (includes user names)
+// Public like leaderboard-by-window to match HAB portal usage
+feedbackRouter.get("/by-caterer", getFeedbacksByCaterer);
 
 // Debug route
 feedbackRouter.get("/all-admin", getAllFeedback);

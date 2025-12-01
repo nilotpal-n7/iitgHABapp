@@ -15,6 +15,135 @@ const ratingMap = {
 };
 
 // ==========================================
+// Get feedback texts for a caterer (with user names) - paginated
+// Query params: catererId (required), page (default 1), pageSize (default 10), windowNumber (optional)
+// Auth: HAB/Admin
+// Response: { items: [{ id, userName, message, createdAt }], page, pageSize, total, totalPages }
+// ==========================================
+const getFeedbacksByCaterer = async (req, res) => {
+  try {
+    const { catererId, page = "1", pageSize = "10", windowNumber } = req.query;
+    if (!catererId) {
+      return res.status(400).json({ message: "catererId is required" });
+    }
+
+    const p = Math.max(1, parseInt(page, 10) || 1);
+    const size = Math.max(1, Math.min(100, parseInt(pageSize, 10) || 10));
+
+    const query = { caterer: catererId };
+    if (windowNumber) {
+      query.feedbackWindowNumber = parseInt(windowNumber, 10);
+    }
+
+    const [total, items] = await Promise.all([
+      Feedback.countDocuments(query),
+      Feedback.find(query)
+        .populate("user", "name")
+        .sort({ date: -1 })
+        .skip((p - 1) * size)
+        .limit(size)
+        .lean(),
+    ]);
+
+    const mapped = items.map((fb) => ({
+      id: String(fb._id),
+      userName: fb.user?.name || "Anonymous User",
+      message: fb.comment || "",
+      createdAt: fb.date,
+    }));
+
+    // Compute OPI and Rank context for this caterer (window-scoped if provided, otherwise all-time)
+    let opi = null;
+    let rank = null;
+    try {
+      const fbQuery = {
+        caterer: { $ne: null },
+      };
+      if (windowNumber)
+        fbQuery.feedbackWindowNumber = parseInt(windowNumber, 10);
+      const all = await Feedback.find(fbQuery)
+        .populate("user", "isSMC")
+        .populate("caterer", "name")
+        .lean();
+
+      const groups = new Map();
+      const toScore = (label) => ratingMap[label] ?? null;
+      for (const fb of all) {
+        const key = String(fb.caterer._id);
+        if (!groups.has(key)) {
+          groups.set(key, {
+            totalUsers: 0,
+            smcUsers: 0,
+            breakfastSum: 0,
+            lunchSum: 0,
+            dinnerSum: 0,
+            smc: {
+              hygieneSum: 0,
+              wasteDisposalSum: 0,
+              qualitySum: 0,
+              uniformSum: 0,
+              count: 0,
+            },
+          });
+        }
+        const g = groups.get(key);
+        g.totalUsers += 1;
+        if (fb.user?.isSMC) g.smcUsers += 1;
+        g.breakfastSum += toScore(fb.breakfast) || 0;
+        g.lunchSum += toScore(fb.lunch) || 0;
+        g.dinnerSum += toScore(fb.dinner) || 0;
+        if (fb.user?.isSMC && fb.smcFields) {
+          g.smc.hygieneSum += toScore(fb.smcFields.hygiene) || 0;
+          g.smc.wasteDisposalSum += toScore(fb.smcFields.wasteDisposal) || 0;
+          g.smc.qualitySum += toScore(fb.smcFields.qualityOfIngredients) || 0;
+          g.smc.uniformSum += toScore(fb.smcFields.uniformAndPunctuality) || 0;
+          g.smc.count += 1;
+        }
+      }
+
+      const rows = [];
+      for (const [key, g] of groups) {
+        const nonSmcAvg = g.totalUsers
+          ? (g.breakfastSum + g.lunchSum + g.dinnerSum) / (3 * g.totalUsers)
+          : 0;
+        const smcAvg = g.smc.count
+          ? (g.smc.hygieneSum +
+              g.smc.wasteDisposalSum +
+              g.smc.qualitySum +
+              g.smc.uniformSum) /
+            (4 * g.smc.count)
+          : 0;
+        const overall = nonSmcAvg * 0.6 + smcAvg * 0.4;
+        rows.push({ catererId: key, overall });
+      }
+      rows.sort((a, b) => b.overall - a.overall);
+      rows.forEach((r, i) => (r.rank = i + 1));
+      const row = rows.find((r) => r.catererId === String(catererId));
+      if (row) {
+        opi = row.overall;
+        rank = row.rank;
+      }
+    } catch (e) {
+      // If leaderboard calc fails, keep opi/rank null but do not fail the endpoint
+      console.error("getFeedbacksByCaterer leaderboard calc error:", e);
+    }
+
+    return res.status(200).json({
+      items: mapped,
+      page: p,
+      pageSize: size,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / size)),
+      opi,
+      rank,
+    });
+  } catch (e) {
+    console.error("getFeedbacksByCaterer error:", e);
+    return res.status(500).json({ message: "Failed to fetch feedbacks" });
+  }
+};
+
+// ==========================================
 // Submit feedback
 // ==========================================
 const submitFeedback = async (req, res) => {
@@ -683,4 +812,5 @@ module.exports = {
   getAvailableWindows,
   checkFeedbackSubmitted,
   getFeedbackWindowTimeLeft,
+  getFeedbacksByCaterer,
 };
