@@ -2,6 +2,8 @@ const { User } = require("../user/userModel.js");
 const { Hostel } = require("./hostelModel.js");
 const { Mess } = require("../mess/messModel.js");
 const UserAllocHostel = require("./hostelAllocModel.js");
+const { MessClosure } = require("./messClosureModel.js");
+const { getCurrentDate } = require("../../utils/date.js");
 
 const createHostel = async (req, res) => {
   try {
@@ -396,6 +398,54 @@ const getSMCMembers = async (req, res) => {
   }
 };
 
+// Set the closure date for the current month
+const finalizeMessClosure = async (req, res) => {
+  try {
+    const { date } = req.body; // Expecting YYYY-MM-DD
+    const hostelId = req.hostel._id;
+
+    const selectedDate = new Date(date);
+    const month = selectedDate.getMonth() + 1;
+    const year = selectedDate.getFullYear();
+
+    // Upsert: Update if exists for this month, else create
+    const closure = await MessClosure.findOneAndUpdate(
+      { hostelId, month, year },
+      { hostelId, closureDate: new Date(date), month, year },
+      { upsert: true, new: true }
+    );
+
+    return res.status(200).json({
+      message: "Mess closure date finalized successfully",
+      closure
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Error finalizing closure" });
+  }
+};
+
+// Get the current closure date for the hostel
+const getMessClosureDate = async (req, res) => {
+  try {
+    const hostelId = req.hostel._id;
+    const officialDate = new Date(getCurrentDate());
+    const currentMonth = officialDate.getMonth() + 1;
+    const currentYear = officialDate.getFullYear();
+
+    const closure = await MessClosure.findOne({
+      hostelId,
+      month: currentMonth,
+      year: currentYear
+    });
+
+    return res.status(200).json({ closureDate: closure ? closure.closureDate : null });
+  } catch (err) {
+    return res.status(500).json({ message: "Error fetching closure date" });
+  }
+};
+
+
 module.exports = {
   createHostel,
   getHostel,
@@ -410,4 +460,6 @@ module.exports = {
   markAsSMC,
   unmarkAsSMC,
   getSMCMembers,
+  finalizeMessClosure,
+  getMessClosureDate
 };
