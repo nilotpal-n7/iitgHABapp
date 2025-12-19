@@ -7,6 +7,7 @@ const { ScanLogs } = require("./ScanLogsModel.js");
 const mongoose = require("mongoose");
 const { QR } = require("../qr/qrModel.js");
 const qrcode = require("qrcode");
+const { MessClosure } = require("../hostel/messClosureModel");
 
 const {
   getCurrentDate,
@@ -285,6 +286,22 @@ const getMessMenuByDay = async (req, res) => {
       return res.status(404).json({ message: "Menu not found" });
     }
 
+    // Check if the mess is closed today
+    const mess = await Mess.findById(messId);
+    const currentDate = getCurrentDate();
+    const todayDate = new Date(currentDate);
+    const isClosed = await MessClosure.findOne({
+      hostelId: mess.hostelId,
+      closureDate: todayDate
+    });
+
+    if (isClosed) {
+      return res.status(200).json({
+        isMessClosed: true,
+        message: "The mess is closed today as per the monthly schedule."
+      });
+    }
+
     const populatedMenus = [];
 
     for (let i = 0; i < menu.length; i++) {
@@ -480,6 +497,22 @@ const ScanMess = async (req, res) => {
         .json({ message: "Mess not found", success: false });
     }
 
+    const currentDate = getCurrentDate();
+    const currentTime = getCurrentTime();
+    const currentDay = getCurrentDay();
+
+    // Check for closure BEFORE scanning
+    const closureRecord = await MessClosure.findOne({
+      hostelId: messInfo.hostelId,
+      closureDate: new Date(currentDate)
+    });
+    if (closureRecord) {
+      return res.status(400).json({
+        message: "Scan failed: Mess is closed today.",
+        success: false
+      });
+    }
+
     const user = await User.findById(userId);
     if (!user) {
       return res
@@ -508,10 +541,6 @@ const ScanMess = async (req, res) => {
         success: false,
       });
     }
-
-    const currentDate = getCurrentDate();
-    const currentTime = getCurrentTime();
-    const currentDay = getCurrentDay();
 
     let scanLog = await ScanLogs.findOne({ userId, messId, date: currentDate });
     if (!scanLog) {
@@ -648,9 +677,8 @@ const formatDate = (date) => {
     "Nov",
     "Dec",
   ];
-  return `${dateObj.getDate()} ${
-    months[dateObj.getMonth()]
-  } ${dateObj.getFullYear()}`;
+  return `${dateObj.getDate()} ${months[dateObj.getMonth()]
+    } ${dateObj.getFullYear()}`;
 };
 
 const getUnassignedMess = async (req, res) => {
