@@ -39,7 +39,7 @@ android {
     defaultConfig {
         applicationId "in.codingclub.hab"
         minSdkVersion flutter.minSdkVersion
-        targetSdkVersion 36
+        targetSdkVersion flutter.targetSdkVersion
         versionCode flutter.versionCode.toInteger()
         versionName flutter.versionName
         manifestPlaceholders = [appAuthRedirectScheme: "placeholder-text"]
