@@ -20,12 +20,13 @@ const {
 } = require("./controllers/adminController.js");
 
 const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
+const { requireMicrosoftAuth } = require("../../middleware/requireMicrosoftAuth.js");
 
 const messChangeRouter = express.Router();
 
-// User routes
-messChangeRouter.get("/status", authenticateJWT, messChangeStatus);
-messChangeRouter.post("/reqchange", authenticateJWT, messChangeRequest);
+// User routes - require Microsoft account linking
+messChangeRouter.get("/status", authenticateJWT, requireMicrosoftAuth, messChangeStatus);
+messChangeRouter.post("/reqchange", authenticateJWT, requireMicrosoftAuth, messChangeRequest);
 
 // Admin routes
 messChangeRouter.get("/all", getAllMessChangeRequestsForAllHostels);

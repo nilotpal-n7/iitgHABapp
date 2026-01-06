@@ -1,6 +1,7 @@
 const express = require("express");
 const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
 const { authenticateAdminJWT } = require("../../middleware/authenticateJWT.js");
+const { requireMicrosoftAuth } = require("../../middleware/requireMicrosoftAuth.js");
 
 const {
   createMess,
@@ -50,9 +51,10 @@ messRouter.post("/menu/item/:menuItemId", authenticateJWT, getMessMenuItemById);
 messRouter.post(
   "/menu/item/like/:menuItemId",
   authenticateJWT,
+  requireMicrosoftAuth,
   toggleLikeMenuItem
 );
-messRouter.post("/scan/:messId", authenticateJWT, ScanMess);
+messRouter.post("/scan/:messId", authenticateJWT, requireMicrosoftAuth, ScanMess);
 messRouter.post("/reassign/:messId", assignMessToHostel);
 messRouter.post("/change-hostel/:messId", changeHostel);
 messRouter.post("/unassigned", getUnassignedMess);

@@ -6,6 +6,7 @@ import 'package:frontend2/constants/themes.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/endpoint.dart';
+import '../widgets/microsoft_required_dialog.dart';
 
 class MessChangePreferenceScreen extends StatefulWidget {
   const MessChangePreferenceScreen({super.key});
@@ -34,8 +35,31 @@ class _MessChangePreferenceScreenState
   @override
   void initState() {
     super.initState();
+    _checkMicrosoftLink();
     checkMessChangeStatus();
     checkSMCStatus();
+  }
+
+  Future<void> _checkMicrosoftLink() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasMicrosoftLinked = prefs.getBool('hasMicrosoftLinked') ?? false;
+
+    if (!hasMicrosoftLinked && mounted) {
+      // Show dialog to link Microsoft account
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => const MicrosoftRequiredDialog(
+              featureName: 'Mess Change',
+            ),
+          );
+          // Navigate back
+          Navigator.pop(context);
+        }
+      });
+      return;
+    }
   }
 
   Future<void> checkSMCStatus() async {

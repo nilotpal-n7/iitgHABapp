@@ -18,12 +18,13 @@ const {
   getFeedbacksByCaterer,
 } = require("./feedbackController");
 const { authenticateJWT } = require("../../middleware/authenticateJWT");
+const { requireMicrosoftAuth } = require("../../middleware/requireMicrosoftAuth");
 
-// Student routes
-feedbackRouter.post("/submit", authenticateJWT, submitFeedback);
-feedbackRouter.post("/remove", authenticateJWT, removeFeedback);
-feedbackRouter.get("/all", authenticateJWT, getAllFeedback);
-feedbackRouter.get("/submitted", authenticateJWT, checkFeedbackSubmitted);
+// Student routes - require Microsoft account linking
+feedbackRouter.post("/submit", authenticateJWT, requireMicrosoftAuth, submitFeedback);
+feedbackRouter.post("/remove", authenticateJWT, requireMicrosoftAuth, removeFeedback);
+feedbackRouter.get("/all", authenticateJWT, requireMicrosoftAuth, getAllFeedback);
+feedbackRouter.get("/submitted", authenticateJWT, requireMicrosoftAuth, checkFeedbackSubmitted);
 feedbackRouter.get("/settings-public", getFeedbackSettingsPublic); // Public endpoint for mobile app
 
 // HAB routes

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:frontend2/apis/mess/user_mess_info.dart';
 import 'package:frontend2/apis/protected.dart';
 import 'package:frontend2/apis/users/user.dart';
@@ -125,22 +126,104 @@ Future<void> logoutHandler(context) async {
   }
 }
 
-// Future<void> signInWithApple() async {
-//   try {
-//     final credential = await SignInWithApple.getAppleIDCredential(
-//       scopes: [
-//         AppleIDAuthorizationScopes.email,
-//         AppleIDAuthorizationScopes.fullName,
-//       ],
-//     );
-//
-//     debugPrint('User ID: ${credential.userIdentifier}');
-//     debugPrint('Email: ${credential.email}');
-//     debugPrint('Full Name: ${credential.givenName} ${credential.familyName}');
-//   } catch (e) {
-//     debugPrint('Error during Apple Sign-In: $e');
-//   }
-// }
+/// Sign in with Apple
+Future<void> signInWithApple() async {
+  try {
+    final credential = await SignInWithApple.getAppleIDCredential(
+      scopes: [
+        AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName,
+      ],
+    );
+
+    // userIdentifier is always provided by Apple (even if email is hidden)
+    if (credential.userIdentifier == null ||
+        credential.userIdentifier!.isEmpty) {
+      throw ('Unable to authenticate with Apple. Please try again.');
+    }
+
+    // Send to backend - email is optional, userIdentifier is required
+    final dio = Dio();
+    final response = await dio.post(
+      '$baseUrl/auth/apple',
+      data: {
+        'identityToken': credential.identityToken,
+        'authorizationCode': credential.authorizationCode,
+        'userIdentifier': credential.userIdentifier,
+        'email': credential.email, // Optional - only used if provided
+        'name': '${credential.givenName ?? ''} ${credential.familyName ?? ''}'
+            .trim(),
+      },
+      options: Options(headers: {'Content-Type': 'application/json'}),
+    );
+
+    final token = response.data['token'];
+    final hasMicrosoftLinked = response.data['hasMicrosoftLinked'] ?? false;
+
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('access_token', token);
+    prefs.setBool('hasMicrosoftLinked', hasMicrosoftLinked);
+
+    await fetchUserDetails();
+    await getUserMessInfo();
+    await registerFcmToken();
+    await HostelsNotifier.init();
+    ProfilePictureProvider.init();
+  } on SignInWithAppleAuthorizationException catch (e) {
+    debugPrint('Apple Sign-In Authorization Error: ${e.code}');
+    // Error code 1000 often means simulator limitation or missing configuration
+    if (e.code == AuthorizationErrorCode.unknown) {
+      throw ('Sign in with Apple is not available. This may be due to simulator limitations. Please test on a real device or check your Apple Developer account configuration.');
+    }
+    rethrow;
+  } catch (e) {
+    debugPrint('Error during Apple Sign-In: $e');
+    rethrow;
+  }
+}
+
+/// Link Microsoft account to existing Apple-authenticated user
+Future<void> linkMicrosoftAccount() async {
+  try {
+    // Start Microsoft OAuth flow
+    final result = await FlutterWebAuth2.authenticate(
+      url: AuthEndpoints.getAccess,
+      callbackUrlScheme: "iitgcomplain",
+    );
+
+    final code = Uri.parse(result).queryParameters['code'];
+    if (code == null) throw ('Authorization code not found');
+
+    // Send code to backend linking endpoint
+    final token = await getAccessToken();
+    if (token == 'error') throw ('Not authenticated');
+
+    final dio = Dio();
+    await dio.post(
+      '$baseUrl/auth/link-microsoft?code=$code',
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      ),
+    );
+
+    // Update local state
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('hasMicrosoftLinked', true);
+
+    // Refresh user details to get roll number and hostel
+    await fetchUserDetails();
+    await getUserMessInfo();
+
+    // Re-register FCM token to subscribe to hostel/mess-specific topics
+    await registerFcmToken();
+  } catch (e) {
+    debugPrint('Error linking Microsoft account: $e');
+    rethrow;
+  }
+}
 
 Future<bool> isLoggedIn() async {
   var access = await getAccessToken();

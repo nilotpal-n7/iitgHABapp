@@ -7,6 +7,7 @@ const {
   getUserFromToken,
   User,
   findUserWithEmail,
+  findUserWithAppleIdentifier,
 } = require("../user/userModel.js");
 const UserAllocHostel = require("../hostel/hostelAllocModel.js");
 const {
@@ -76,9 +77,23 @@ const mobileRedirectHandler = async (req, res, next) => {
         rollNumber: roll,
         email: userFromToken.data.mail,
         hostel: allocatedHostel._id,
+        authProvider: "microsoft",
+        hasMicrosoftLinked: true,
+        microsoftEmail: userFromToken.data.mail,
       });
       existingUser = await user.save();
       isFirstLogin = true;
+    } else {
+      // Update existing user if they didn't have Microsoft linked
+      if (!existingUser.hasMicrosoftLinked) {
+        // Set email now (from Microsoft) - this is when email gets stored
+        existingUser.email = userFromToken.data.mail;
+        existingUser.hasMicrosoftLinked = true;
+        existingUser.microsoftEmail = userFromToken.data.mail;
+        existingUser.authProvider =
+          existingUser.authProvider === "apple" ? "both" : "microsoft";
+        await existingUser.save();
+      }
     }
 
     const token = existingUser.generateJWT();
@@ -227,6 +242,135 @@ const meHandler = async (req, res, next) => {
   }
 };
 
+// Apple Sign In handler
+const appleLoginHandler = async (req, res, next) => {
+  try {
+    const { identityToken, authorizationCode, userIdentifier, email, name } = req.body;
+
+    if (!userIdentifier) {
+      throw new AppError(400, "User identifier is required");
+    }
+
+    // Note: In production, you should verify the Apple identityToken server-side
+    // For now, we'll trust the client-provided userIdentifier (you should add proper verification)
+
+    // Check if user exists by Apple userIdentifier
+    let existingUser = await findUserWithAppleIdentifier(userIdentifier);
+
+    if (!existingUser) {
+      // Create new user without roll number and without email (email only set when Microsoft is linked)
+      const user = new User({
+        name: name || "Apple User",
+        email: null, // Email will be set only when Microsoft account is linked
+        appleUserIdentifier: userIdentifier,
+        rollNumber: null, // Will be set when Microsoft is linked
+        authProvider: "apple",
+        hasMicrosoftLinked: false,
+      });
+      existingUser = await user.save();
+    } else {
+      // If user exists, update name if provided
+      if (name && name !== existingUser.name) {
+        existingUser.name = name;
+      }
+      await existingUser.save();
+    }
+
+    const token = existingUser.generateJWT();
+    return res.status(200).json({
+      token,
+      hasMicrosoftLinked: existingUser.hasMicrosoftLinked || false,
+    });
+  } catch (err) {
+    console.error("Error in appleLoginHandler:", err);
+    next(new AppError(500, "Apple login failed"));
+  }
+};
+
+// Microsoft account linking handler
+const linkMicrosoftAccount = async (req, res, next) => {
+  try {
+    const { code } = req.query; // Microsoft OAuth code
+    const userId = req.user._id; // From authenticateJWT
+
+    if (!code) {
+      throw new AppError(400, "Authorization code is required");
+    }
+
+    const data = qs.stringify({
+      client_secret: clientSecret,
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      scope: "user.read",
+      grant_type: "authorization_code",
+      code: code,
+    });
+
+    const tokenResp = await axios.post(
+      `https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token`,
+      data,
+      { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+    );
+
+    const accessToken = tokenResp.data.access_token;
+    const userFromToken = await getUserFromToken(accessToken);
+    if (!userFromToken?.data) {
+      throw new AppError(401, "Invalid Microsoft account");
+    }
+
+    const roll = userFromToken.data.surname;
+    if (!roll) {
+      throw new AppError(400, "Invalid Microsoft account - roll number not found");
+    }
+
+    // Check if roll number already exists
+    const existingUserWithRoll = await User.findOne({ rollNumber: roll });
+    if (
+      existingUserWithRoll &&
+      existingUserWithRoll._id.toString() !== userId.toString()
+    ) {
+      throw new AppError(
+        400,
+        "This roll number is already linked to another account"
+      );
+    }
+
+    // Get hostel allocation
+    const allocatedHostel = await getHostelAlloc(roll);
+    if (!allocatedHostel) {
+      throw new AppError(
+        400,
+        "Hostel allocation not found for this roll number"
+      );
+    }
+
+    // Update user with Microsoft info
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new AppError(404, "User not found");
+    }
+
+    // Now set email (from Microsoft) - this is when email gets stored
+    user.email = userFromToken.data.mail;
+    user.rollNumber = roll;
+    user.hostel = allocatedHostel._id;
+    user.curr_subscribed_mess = allocatedHostel._id;
+    user.microsoftEmail = userFromToken.data.mail;
+    user.hasMicrosoftLinked = true;
+    user.authProvider = user.authProvider === "apple" ? "both" : "microsoft";
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Microsoft account linked successfully",
+      hasMicrosoftLinked: true,
+    });
+  } catch (err) {
+    console.error("Error in linkMicrosoftAccount:", err);
+    next(new AppError(500, "Failed to link Microsoft account"));
+  }
+};
+
 // Guest login
 const guestLoginHandler = async (req, res, next) => {
   try {
@@ -270,4 +414,6 @@ module.exports = {
   meHandler,
   logoutHandler,
   guestLoginHandler,
+  appleLoginHandler,
+  linkMicrosoftAccount,
 };

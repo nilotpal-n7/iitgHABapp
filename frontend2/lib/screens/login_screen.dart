@@ -85,7 +85,102 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             ),
                             const SizedBox(height: 10),
 
-                            // Microsoft login
+                            // Apple Sign In button
+                            SizedBox(
+                              height: 48,
+                              width: double.infinity,
+                              child: Material(
+                                color: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(50),
+                                ),
+                                child: InkWell(
+                                  splashColor: Colors.white24,
+                                  onTap: () async {
+                                    final navigator = Navigator.of(context);
+                                    final messenger =
+                                        ScaffoldMessenger.of(context);
+                                    try {
+                                      setModalState(() {
+                                        _inprogress = true;
+                                      });
+                                      await signInWithApple();
+                                      setModalState(() {
+                                        _inprogress = false;
+                                      });
+                                      if (!mounted) return;
+                                      navigator.pushReplacement(
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const MainNavigationScreen(),
+                                        ),
+                                      );
+                                      messenger.showSnackBar(
+                                        const SnackBar(
+                                          content: Center(
+                                            child: Text(
+                                              'Successfully Logged In',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            ),
+                                          ),
+                                          backgroundColor: Colors.black,
+                                          behavior: SnackBarBehavior.floating,
+                                          margin: EdgeInsets.all(50),
+                                          duration:
+                                              Duration(milliseconds: 1000),
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      setModalState(() {
+                                        _inprogress = false;
+                                      });
+                                      messenger.showSnackBar(
+                                        const SnackBar(
+                                          content: Center(
+                                            child: Text(
+                                              'Something Went Wrong',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            ),
+                                          ),
+                                          backgroundColor: Colors.black,
+                                          behavior: SnackBarBehavior.floating,
+                                          margin: EdgeInsets.all(50),
+                                          duration:
+                                              Duration(milliseconds: 1000),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(15),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.apple, color: Colors.white, size: 20),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'Sign in with Apple',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 14,
+                                            fontFamily: 'GeneralSans',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            // Microsoft login (Link Student Account)
                             SizedBox(
                               height: 48,
                               width: double.infinity,

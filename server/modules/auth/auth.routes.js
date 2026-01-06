@@ -8,7 +8,10 @@ const {
   guestLoginHandler,
   webLoginHandler,
   meHandler,
+  appleLoginHandler,
+  linkMicrosoftAccount,
 } = require("./auth.controller.js");
+const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
 
 /**
  * @swagger
@@ -90,6 +93,12 @@ router.get("/logout", logoutHandler);
 
 // Guest login (POST) - accepts { email, password } and returns a JWT on success
 router.post("/guest", guestLoginHandler);
+
+// Apple Sign In (POST) - accepts { identityToken, authorizationCode, email, name }
+router.post("/apple", appleLoginHandler);
+
+// Link Microsoft Account (POST) - requires authentication, accepts ?code=xxx
+router.post("/link-microsoft", authenticateJWT, linkMicrosoftAccount);
 
 // Exporting the router
 module.exports = router;
