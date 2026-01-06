@@ -47,7 +47,7 @@ const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
  *              description: "Redirect URL to the mobile app with the access token and user data"
  *              schema:
  *                type: string
- *                example: "iitgcomplain://success?token=JWT_TOKEN&user=USER_DATA"
+ *                example: "iitghab://success?token=JWT_TOKEN&user=USER_DATA"
  *       400:
  *         description: Bad Request - Authorization code missing
  *         content:

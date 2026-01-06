@@ -35,8 +35,13 @@ const getHostelAlloc = async (rollno) => {
 // Mobile redirect (used by app deep link)
 const mobileRedirectHandler = async (req, res, next) => {
   try {
-    const { code } = req.query;
+    const { code, state } = req.query;
     if (!code) throw new AppError(400, "Authorization code is missing");
+
+    // If state is "link", this is for account linking - just pass code through
+    if (state === "link") {
+      return res.redirect(`iitghab://link?code=${code}`);
+    }
 
     const data = qs.stringify({
       client_secret: clientSecret,
@@ -75,25 +80,22 @@ const mobileRedirectHandler = async (req, res, next) => {
         name: userFromToken.data.displayName,
         degree: userFromToken.data.jobTitle,
         rollNumber: roll,
-        email: userFromToken.data.mail,
+        email: userFromToken.data.mail, // Email and microsoftEmail are the same
         hostel: allocatedHostel._id,
         authProvider: "microsoft",
-        hasMicrosoftLinked: true,
-        microsoftEmail: userFromToken.data.mail,
+        hasMicrosoftLinked: true, // Microsoft login = student account (surname exists)
       });
       existingUser = await user.save();
       isFirstLogin = true;
     } else {
-      // Update existing user if they didn't have Microsoft linked
-      if (!existingUser.hasMicrosoftLinked) {
-        // Set email now (from Microsoft) - this is when email gets stored
-        existingUser.email = userFromToken.data.mail;
-        existingUser.hasMicrosoftLinked = true;
-        existingUser.microsoftEmail = userFromToken.data.mail;
-        existingUser.authProvider =
-          existingUser.authProvider === "apple" ? "both" : "microsoft";
-        await existingUser.save();
-      }
+      // Microsoft login always means student account (surname exists), so always set hasMicrosoftLinked
+      existingUser.email = userFromToken.data.mail; // Update email to Microsoft email
+      existingUser.rollNumber = roll; // Update roll number
+      existingUser.hostel = allocatedHostel._id; // Update hostel
+      existingUser.hasMicrosoftLinked = true; // Always true for Microsoft login
+      existingUser.authProvider =
+        existingUser.authProvider === "apple" ? "both" : "microsoft";
+      await existingUser.save();
     }
 
     const token = existingUser.generateJWT();
@@ -111,7 +113,7 @@ const mobileRedirectHandler = async (req, res, next) => {
     }
 
     return res.redirect(
-      `iitgcomplain://success?token=${token}&user=${encodeURIComponent(
+      `iitghab://success?token=${token}&user=${encodeURIComponent(
         existingUser.email
       )}`
     );
@@ -245,7 +247,8 @@ const meHandler = async (req, res, next) => {
 // Apple Sign In handler
 const appleLoginHandler = async (req, res, next) => {
   try {
-    const { identityToken, authorizationCode, userIdentifier, email, name } = req.body;
+    const { identityToken, authorizationCode, userIdentifier, email, name } =
+      req.body;
 
     if (!userIdentifier) {
       throw new AppError(400, "User identifier is required");
@@ -261,7 +264,7 @@ const appleLoginHandler = async (req, res, next) => {
       // Create new user without roll number and without email (email only set when Microsoft is linked)
       const user = new User({
         name: name || "Apple User",
-        email: null, // Email will be set only when Microsoft account is linked
+        email: email || null, // Email is optional - only set when Microsoft account is linked
         appleUserIdentifier: userIdentifier,
         rollNumber: null, // Will be set when Microsoft is linked
         authProvider: "apple",
@@ -286,6 +289,8 @@ const appleLoginHandler = async (req, res, next) => {
     next(new AppError(500, "Apple login failed"));
   }
 };
+
+// Note: linkMicrosoftRedirectHandler removed - using mobileRedirectHandler with state="link" instead
 
 // Microsoft account linking handler
 const linkMicrosoftAccount = async (req, res, next) => {
@@ -320,10 +325,49 @@ const linkMicrosoftAccount = async (req, res, next) => {
 
     const roll = userFromToken.data.surname;
     if (!roll) {
-      throw new AppError(400, "Invalid Microsoft account - roll number not found");
+      throw new AppError(
+        400,
+        "Invalid Microsoft account - roll number not found"
+      );
     }
 
-    // Check if roll number already exists
+    const microsoftEmail = userFromToken.data.mail;
+
+    // Get the current user trying to link
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      throw new AppError(404, "User not found");
+    }
+
+    // Check if a user with this Microsoft email already exists
+    const existingUserWithEmail = await findUserWithEmail(microsoftEmail);
+
+    // If email exists and it's a different user, merge accounts
+    if (
+      existingUserWithEmail &&
+      existingUserWithEmail._id.toString() !== userId.toString()
+    ) {
+      // The Microsoft account already exists - merge Apple account into Microsoft account
+      // First, delete the duplicate Apple-only user to free up the appleUserIdentifier
+      const appleUserIdentifier = currentUser.appleUserIdentifier;
+      await User.findByIdAndDelete(userId);
+
+      // Then update the existing Microsoft user to include Apple identifier
+      existingUserWithEmail.appleUserIdentifier = appleUserIdentifier;
+      existingUserWithEmail.authProvider = "both";
+      // Keep Microsoft account's data (email, rollNumber, hostel, etc.)
+      await existingUserWithEmail.save();
+
+      // Return token for the merged account
+      const token = existingUserWithEmail.generateJWT();
+      return res.status(200).json({
+        message: "Microsoft account linked successfully - accounts merged",
+        token, // Return new token for merged account
+        hasMicrosoftLinked: true,
+      });
+    }
+
+    // Check if roll number already exists (shouldn't happen if email check passed, but double-check)
     const existingUserWithRoll = await User.findOne({ rollNumber: roll });
     if (
       existingUserWithRoll &&
@@ -344,22 +388,16 @@ const linkMicrosoftAccount = async (req, res, next) => {
       );
     }
 
-    // Update user with Microsoft info
-    const user = await User.findById(userId);
-    if (!user) {
-      throw new AppError(404, "User not found");
-    }
+    // Update current user with Microsoft info
+    currentUser.email = microsoftEmail;
+    currentUser.rollNumber = roll;
+    currentUser.hostel = allocatedHostel._id;
+    currentUser.curr_subscribed_mess = allocatedHostel._id;
+    currentUser.hasMicrosoftLinked = true; // Microsoft account = student account (surname exists)
+    currentUser.authProvider =
+      currentUser.authProvider === "apple" ? "both" : "microsoft";
 
-    // Now set email (from Microsoft) - this is when email gets stored
-    user.email = userFromToken.data.mail;
-    user.rollNumber = roll;
-    user.hostel = allocatedHostel._id;
-    user.curr_subscribed_mess = allocatedHostel._id;
-    user.microsoftEmail = userFromToken.data.mail;
-    user.hasMicrosoftLinked = true;
-    user.authProvider = user.authProvider === "apple" ? "both" : "microsoft";
-
-    await user.save();
+    await currentUser.save();
 
     return res.status(200).json({
       message: "Microsoft account linked successfully",

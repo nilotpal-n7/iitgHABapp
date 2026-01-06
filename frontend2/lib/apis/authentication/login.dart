@@ -19,7 +19,7 @@ import '../../screens/login_screen.dart';
 Future<void> authenticate() async {
   try {
     final result = await FlutterWebAuth2.authenticate(
-        url: AuthEndpoints.getAccess, callbackUrlScheme: "iitgcomplain");
+        url: AuthEndpoints.getAccess, callbackUrlScheme: "iitghab");
 
     debugPrint("result: $result");
 
@@ -165,7 +165,10 @@ Future<void> signInWithApple() async {
     prefs.setBool('hasMicrosoftLinked', hasMicrosoftLinked);
 
     await fetchUserDetails();
-    await getUserMessInfo();
+    // Only fetch mess info if user has Microsoft linked (has roll number and mess subscription)
+    if (hasMicrosoftLinked) {
+      await getUserMessInfo();
+    }
     await registerFcmToken();
     await HostelsNotifier.init();
     ProfilePictureProvider.init();
@@ -185,21 +188,35 @@ Future<void> signInWithApple() async {
 /// Link Microsoft account to existing Apple-authenticated user
 Future<void> linkMicrosoftAccount() async {
   try {
-    // Start Microsoft OAuth flow
+    // Start Microsoft OAuth flow with direct app redirect to get code
     final result = await FlutterWebAuth2.authenticate(
-      url: AuthEndpoints.getAccess,
-      callbackUrlScheme: "iitgcomplain",
+      url: AuthEndpoints.linkMicrosoft,
+      callbackUrlScheme: "iitghab",
     );
 
-    final code = Uri.parse(result).queryParameters['code'];
-    if (code == null) throw ('Authorization code not found');
+    debugPrint("Link Microsoft redirect result: $result");
+
+    // Parse the redirect URL - backend redirects to iitghab://link?code=...
+    final uri = Uri.parse(result);
+    final code = uri.queryParameters['code'];
+    final error = uri.queryParameters['error'];
+
+    if (error != null) {
+      throw ('Error during Microsoft OAuth: $error');
+    }
+
+    if (code == null) {
+      debugPrint(
+          "No code found in redirect. Full URL: $result, Query parameters: ${uri.queryParameters}");
+      throw ('Authorization code not found in redirect URL');
+    }
 
     // Send code to backend linking endpoint
     final token = await getAccessToken();
     if (token == 'error') throw ('Not authenticated');
 
     final dio = Dio();
-    await dio.post(
+    final response = await dio.post(
       '$baseUrl/auth/link-microsoft?code=$code',
       options: Options(
         headers: {
@@ -213,12 +230,21 @@ Future<void> linkMicrosoftAccount() async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setBool('hasMicrosoftLinked', true);
 
-    // Refresh user details to get roll number and hostel
+    // If accounts were merged, backend returns a new token - update it
+    if (response.data['token'] != null) {
+      prefs.setString('access_token', response.data['token']);
+    }
+
+    // Refresh user details to get updated name, roll number, hostel, etc.
+    // This will update SharedPreferences with the latest user data
     await fetchUserDetails();
     await getUserMessInfo();
 
     // Re-register FCM token to subscribe to hostel/mess-specific topics
     await registerFcmToken();
+
+    // Trigger home screen refresh to update displayed name
+    homeScreenRefreshNotifier.value = true;
   } catch (e) {
     debugPrint('Error linking Microsoft account: $e');
     rethrow;

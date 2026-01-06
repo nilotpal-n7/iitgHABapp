@@ -29,6 +29,9 @@ final ValueNotifier<int?> tabNavigationNotifier = ValueNotifier<int?>(null);
 final ValueNotifier<String?> deepNavigationNotifier =
     ValueNotifier<String?>(null);
 
+// ✅ Global ValueNotifier to trigger home screen refresh (e.g., after account linking)
+final ValueNotifier<bool> homeScreenRefreshNotifier = ValueNotifier<bool>(false);
+
 // ✅ Global navigator key reference (set from main.dart to avoid circular imports)
 GlobalKey<NavigatorState>? globalNavigatorKey;
 
@@ -213,8 +216,15 @@ Future<void> initializeFcm() async {
   // Initialize local notifications with tap handler
   const AndroidInitializationSettings androidInit =
       AndroidInitializationSettings('@mipmap/hab_icon');
+  const DarwinInitializationSettings iosInit =
+      DarwinInitializationSettings(
+    requestAlertPermission: true,
+    requestBadgePermission: true,
+    requestSoundPermission: true,
+  );
   const InitializationSettings initSettings = InitializationSettings(
     android: androidInit,
+    iOS: iosInit,
   );
   await flutterLocalNotificationsPlugin.initialize(
     initSettings,

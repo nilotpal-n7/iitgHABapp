@@ -206,9 +206,6 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  microsoftEmail: {
-    type: String,
-  },
   authProvider: {
     type: String,
     enum: ["apple", "microsoft", "both"],

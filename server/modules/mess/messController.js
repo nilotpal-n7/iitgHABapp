@@ -200,8 +200,18 @@ const getUserMessInfo = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     const messHostelId = user.curr_subscribed_mess;
+    if (!messHostelId) {
+      // User doesn't have a mess subscription yet (e.g., Apple-only user)
+      return res.status(404).json({ message: "No mess subscription found" });
+    }
     const messHostel = await Hostel.findById(messHostelId);
+    if (!messHostel) {
+      return res.status(404).json({ message: "Hostel not found" });
+    }
     const messId = messHostel.messId;
+    if (!messId) {
+      return res.status(404).json({ message: "Mess ID not found" });
+    }
     const messInfo = await Mess.findById(messId);
     if (!messInfo) {
       return res.status(404).json({ message: "Mess not found" });

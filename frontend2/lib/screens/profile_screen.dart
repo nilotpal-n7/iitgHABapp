@@ -13,6 +13,7 @@ import 'package:frontend2/apis/protected.dart';
 import 'package:frontend2/apis/users/user.dart';
 import 'package:frontend2/constants/endpoint.dart';
 import 'package:frontend2/screens/initial_setup_screen.dart';
+import 'package:frontend2/utilities/notifications.dart';
 import 'package:frontend2/widgets/common/custom_linear_progress.dart';
 import 'package:frontend2/widgets/common/hostel_name.dart';
 import 'package:frontend2/apis/authentication/login.dart' as auth;
@@ -77,7 +78,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {
       hostel = hostel1 ?? 'Siang';
       name = name1 ?? 'Aprutul Vasu';
-      email = email1 ?? 'v.katiyar@iitg.ac.in';
+      email = email1 ??
+          ''; // No hardcoded email - will show "Unknown" in UI if empty
       currMess = mess1 ?? 'Lohit';
       roomNo = roomSaved ?? '';
       phone = phoneSaved ?? '';
@@ -492,7 +494,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           _buildField(
                             icon: Icons.email_outlined,
                             label: "Outlook Id",
-                            value: email,
+                            value: email.isNotEmpty ? email : 'Unknown',
                           ),
                           const SizedBox(height: 16),
                         ],
@@ -644,6 +646,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           );
                           // Refresh profile data
                           _initializeData();
+                          // Trigger home screen refresh to update displayed name
+                          homeScreenRefreshNotifier.value = true;
                         }
                       } catch (e) {
                         if (mounted) {
