@@ -7,6 +7,7 @@ import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/screens/profile_screen.dart';
 import 'package:frontend2/screens/qr_scanner.dart';
 import 'package:frontend2/utilities/coming_soon.dart';
+import 'package:frontend2/utilities/notifications.dart';
 import 'package:frontend2/widgets/common/name_trimmer.dart';
 import 'package:frontend2/widgets/mess_widgets/MessMenuBuilder.dart';
 import 'package:provider/provider.dart';
@@ -18,7 +19,8 @@ import 'mess_preference.dart';
 
 class HomeScreen extends StatefulWidget {
   final void Function(int)? onNavigateToTab;
-  const HomeScreen({super.key, this.onNavigateToTab});
+  final VoidCallback? onRefresh;
+  const HomeScreen({super.key, this.onNavigateToTab, this.onRefresh});
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -34,6 +36,22 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     fetchUserData();
     fetchMessIdAndToken();
+    // Listen for refresh requests (e.g., after linking account)
+    homeScreenRefreshNotifier.addListener(_onRefreshRequested);
+  }
+
+  @override
+  void dispose() {
+    homeScreenRefreshNotifier.removeListener(_onRefreshRequested);
+    super.dispose();
+  }
+
+  void _onRefreshRequested() {
+    if (homeScreenRefreshNotifier.value) {
+      fetchUserData();
+      fetchMessIdAndToken();
+      homeScreenRefreshNotifier.value = false; // Reset
+    }
   }
 
   Future<void> fetchUserData() async {

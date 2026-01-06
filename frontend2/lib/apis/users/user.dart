@@ -60,7 +60,8 @@ Future<Map<String, String>?> fetchUserDetails() async {
       // Extract user details
       final String name = userData['name'] ?? "User";
       final String userId = userData['_id'] ?? "";
-      final String mail = userData['email'];
+      final String? mail =
+          userData['email']; // Can be null for Apple-only users
       final String roll = userData['rollNumber'] ?? "Not provided";
       final String currSubscribedMess =
           userData['curr_subscribed_mess'] ?? "Not provided";
@@ -70,6 +71,7 @@ Future<Map<String, String>?> fetchUserDetails() async {
       final bool gotHostel = userData['got_mess_changed'];
       final bool isSMC = userData['isSMC'] ?? false;
       final bool isSetupDone = userData['isSetupDone'] == true;
+      final bool hasMicrosoftLinked = userData['hasMicrosoftLinked'] ?? false;
       final String roomNumber = (userData['roomNumber'] ?? '') as String;
       final String phoneNumber = (userData['phoneNumber'] ?? '') as String;
 
@@ -77,7 +79,13 @@ Future<Map<String, String>?> fetchUserDetails() async {
 
       prefs.setBool('isSMC', isSMC);
       prefs.setBool('gotMess', gotHostel);
-      prefs.setString('email', mail);
+      prefs.setBool('hasMicrosoftLinked', hasMicrosoftLinked);
+      // Only store email if it exists (null for Apple-only users without Microsoft linked)
+      if (mail != null) {
+        prefs.setString('email', mail);
+      } else {
+        prefs.remove('email'); // Remove if it was previously set
+      }
       prefs.setString('rollNumber', roll);
       prefs.setString('appliedMess', appliedMess);
       prefs.setString('rollNo', roll);
@@ -92,7 +100,7 @@ Future<Map<String, String>?> fetchUserDetails() async {
       // Return the data as a map
       return {
         'name': name,
-        'email': mail,
+        'email': mail ?? '', // Provide empty string if null
         'roll': roll,
       };
     } else if (resp.statusCode == 401) {

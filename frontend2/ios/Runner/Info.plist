@@ -69,7 +69,7 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-				<string>iitgcomplain</string>
+				<string>iitghab</string>
 				<string>com.apple.developer.applesignin</string>
 			</array>
 		</dict>
