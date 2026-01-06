@@ -13,6 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utilities/startupitem.dart';
 import '../widgets/complaint_dropdown.dart';
+import '../widgets/microsoft_required_dialog.dart';
 import 'mess_preference.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -195,7 +196,20 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             child: InkWell(
               borderRadius: BorderRadius.circular(18),
-              onTap: () {
+              onTap: () async {
+                final prefs = await SharedPreferences.getInstance();
+                final hasMicrosoftLinked = prefs.getBool('hasMicrosoftLinked') ?? false;
+
+                if (!hasMicrosoftLinked) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const MicrosoftRequiredDialog(
+                      featureName: 'Mess Change',
+                    ),
+                  );
+                  return;
+                }
+
                 Navigator.push(
                   context,
                   // MaterialPageRoute(builder: (context) => MessChangeScreen()),

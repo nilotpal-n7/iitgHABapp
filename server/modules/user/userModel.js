@@ -117,12 +117,19 @@ const userSchema = new mongoose.Schema({
   },
   rollNumber: {
     type: String,
-    required: true,
+    required: false, // Made optional for Apple Sign In users
     unique: true,
+    sparse: true, // Allow multiple null values
   },
   email: {
     type: String,
-    required: true,
+    required: false, // Optional - only set when Microsoft OAuth is used or linked
+  },
+  appleUserIdentifier: {
+    type: String,
+    required: false,
+    unique: true,
+    sparse: true, // Allow multiple null values
   },
   year: {
     type: Number,
@@ -195,6 +202,18 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  hasMicrosoftLinked: {
+    type: Boolean,
+    default: false,
+  },
+  microsoftEmail: {
+    type: String,
+  },
+  authProvider: {
+    type: String,
+    enum: ["apple", "microsoft", "both"],
+    default: "microsoft", // Default for backward compatibility
+  },
 });
 
 userSchema.methods.generateJWT = function () {
@@ -248,8 +267,15 @@ const findUserWithEmail = async function (email) {
   return user;
 };
 
+const findUserWithAppleIdentifier = async function (appleUserIdentifier) {
+  const user = await User.findOne({ appleUserIdentifier: appleUserIdentifier });
+  if (!user) return false;
+  return user;
+};
+
 module.exports = {
   getUserFromToken,
   User,
   findUserWithEmail,
+  findUserWithAppleIdentifier,
 };

@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/endpoint.dart';
 import '../../screens/mess_feedback/mess_feedback_page.dart';
 import '../../utilities/notifications.dart';
+import '../../widgets/microsoft_required_dialog.dart';
 
 class FeedbackCard extends StatefulWidget {
   const FeedbackCard({super.key});
@@ -166,7 +167,20 @@ class _FeedbackCardState extends State<FeedbackCard> {
                     ),
                     onPressed: _submitted
                         ? null
-                        : () {
+                        : () async {
+                            final prefs = await SharedPreferences.getInstance();
+                            final hasMicrosoftLinked = prefs.getBool('hasMicrosoftLinked') ?? false;
+
+                            if (!hasMicrosoftLinked) {
+                              showDialog(
+                                context: context,
+                                builder: (context) => const MicrosoftRequiredDialog(
+                                  featureName: 'Mess Feedback',
+                                ),
+                              );
+                              return;
+                            }
+
                             setState(() {
                               Navigator.push(
                                 context,

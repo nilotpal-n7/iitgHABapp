@@ -15,6 +15,7 @@ import 'package:frontend2/constants/endpoint.dart';
 import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/widgets/common/custom_linear_progress.dart';
 import 'package:frontend2/widgets/common/hostel_name.dart';
+import 'package:frontend2/apis/authentication/login.dart' as auth;
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -365,6 +366,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
 
                           const SizedBox(height: 16),
+                          // Link Student Account section
+                          _buildLinkMicrosoftButton(),
+
+                          const SizedBox(height: 16),
                           // Name (read-only)
                           _buildField(
                             icon: Icons.person_outline,
@@ -570,6 +575,126 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildLinkMicrosoftButton() {
+    return FutureBuilder<bool>(
+      future: _checkMicrosoftLink(),
+      builder: (context, snapshot) {
+        if (snapshot.data == false) {
+          return Container(
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF4C4EDB).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFF4C4EDB).withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.link,
+                  color: Color(0xFF4C4EDB),
+                  size: 32,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Link Student Account',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    fontFamily: 'OpenSans_regular',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Link your Student Account to verify your student identity and unlock all features including QR scanning, feedback, and mess change.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.black87,
+                    fontFamily: 'OpenSans_regular',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        await auth.linkMicrosoftAccount();
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Center(
+                                child: Text(
+                                  'Student Account linked successfully',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              backgroundColor: Colors.black,
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.all(50),
+                              duration: Duration(milliseconds: 2000),
+                            ),
+                          );
+                          // Refresh profile data
+                          _initializeData();
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Center(
+                                child: Text(
+                                  'Failed to link Student Account',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              backgroundColor: Colors.black,
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.all(50),
+                              duration: Duration(milliseconds: 2000),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4C4EDB),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text(
+                      'Link Account',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'OpenSans_regular',
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Future<bool> _checkMicrosoftLink() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('hasMicrosoftLinked') ?? false;
   }
 
   void _showSignOutDialog(BuildContext context) {

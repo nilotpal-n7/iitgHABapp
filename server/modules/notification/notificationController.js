@@ -9,45 +9,54 @@ const registerToken = async (req, res) => {
     if (!req.user)
       return res.status(403).json({ error: "Only users can register tokens" });
 
-    const curr_sub_mess_name = (
-      await Hostel.findById((await req.user.curr_subscribed_mess)._id)
-    )["hostel_name"].replaceAll(" ", "_");
-
-    // Get user's current hostel name for Boarders_Their_Hostel topic
-    const userHostel = await Hostel.findById(req.user.hostel);
-    const userHostelName = userHostel
-      ? userHostel.hostel_name.replaceAll(" ", "_")
-      : null;
-
-    console.log("Subscribing to topics:", {
-      curr_sub_mess_name,
-      userHostelName,
-    });
-
     const { fcmToken } = req.body;
     if (!fcmToken)
       return res.status(400).json({ error: "FCM token is required" });
 
-    // Subscribe to generic topics for all hostels
+    // Always subscribe to general notifications (available to all authenticated users)
     admin.messaging().subscribeToTopic(fcmToken, "All_Hostels");
 
-    // Subscribe based on user's CURRENT HOSTEL (where they live)
-    if (userHostelName) {
-      // For boarders of this hostel
-      admin
-        .messaging()
-        .subscribeToTopic(fcmToken, `Boarders_${userHostelName}`);
+    // Hostel/mess-specific subscriptions require Microsoft linking
+    if (req.user.hasMicrosoftLinked && req.user.rollNumber) {
+      try {
+        const curr_sub_mess = req.user.curr_subscribed_mess;
+        if (curr_sub_mess) {
+          const curr_sub_mess_name = (
+            await Hostel.findById(curr_sub_mess._id || curr_sub_mess)
+          )["hostel_name"].replaceAll(" ", "_");
+
+          // Get user's current hostel name for Boarders_Their_Hostel topic
+          const userHostel = await Hostel.findById(req.user.hostel);
+          const userHostelName = userHostel
+            ? userHostel.hostel_name.replaceAll(" ", "_")
+            : null;
+
+          console.log("Subscribing to topics:", {
+            curr_sub_mess_name,
+            userHostelName,
+          });
+
+          // Subscribe based on user's CURRENT HOSTEL (where they live)
+          if (userHostelName) {
+            // For boarders of this hostel
+            admin
+              .messaging()
+              .subscribeToTopic(fcmToken, `Boarders_${userHostelName}`);
+          }
+
+          // Subscribe based on user's SUBSCRIBED MESS (hostel where their mess is)
+          admin
+            .messaging()
+            .subscribeToTopic(fcmToken, `Subscribers_${curr_sub_mess_name}`);
+
+          // Legacy: Subscribe to the hostel name directly (for backward compatibility)
+          admin.messaging().subscribeToTopic(fcmToken, curr_sub_mess_name);
+        }
+      } catch (err) {
+        console.error("Error subscribing to hostel/mess topics:", err);
+        // Continue even if subscription fails
+      }
     }
-
-    // Subscribe based on user's SUBSCRIBED MESS (hostel where their mess is)
-    // Note: curr_sub_mess_name is the hostel name where their subscribed mess is located
-    admin
-      .messaging()
-      .subscribeToTopic(fcmToken, `Subscribers_${curr_sub_mess_name}`);
-
-    // Legacy: Subscribe to the hostel name directly (for backward compatibility)
-    // This is the same as the mess hostel name
-    admin.messaging().subscribeToTopic(fcmToken, curr_sub_mess_name);
 
     await FCMToken.findOneAndUpdate(
       { user: req.user._id },

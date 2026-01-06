@@ -8,6 +8,7 @@ import 'package:vibration/vibration.dart';
 import 'package:frontend2/widgets/common/cornerQR.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend2/constants/endpoint.dart';
+import 'package:frontend2/widgets/microsoft_required_dialog.dart';
 
 final dio = Dio();
 
@@ -27,8 +28,31 @@ class _QrScanState extends State<QrScan> {
   @override
   void initState() {
     super.initState();
+    _checkMicrosoftLink();
     controller = MobileScannerController();
     _checkPermission();
+  }
+
+  Future<void> _checkMicrosoftLink() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasMicrosoftLinked = prefs.getBool('hasMicrosoftLinked') ?? false;
+
+    if (!hasMicrosoftLinked && mounted) {
+      // Show dialog to link Microsoft account
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => const MicrosoftRequiredDialog(
+              featureName: 'QR Code Scanning',
+            ),
+          );
+          // Navigate back
+          Navigator.pop(context);
+        }
+      });
+      return;
+    }
   }
 
   Future<void> _checkPermission() async {
