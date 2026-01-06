@@ -26,6 +26,7 @@ class _QrScanState extends State<QrScan> {
   bool _isProcessing = false;
   bool _cameraPermissionGranted = false;
   bool _profilePicMissing = false;
+  bool _isCheckingPermission = false;
 
   @override
   void initState() {
@@ -33,7 +34,7 @@ class _QrScanState extends State<QrScan> {
     _checkMicrosoftLink();
     controller = MobileScannerController();
     _checkProfilePic();
-    _checkPermission();
+    _initializeCameraPermission();
   }
 
   Future<void> _checkMicrosoftLink() async {
@@ -77,98 +78,170 @@ class _QrScanState extends State<QrScan> {
       builder: (BuildContext dialogContext) {
         return PopScope(
           canPop: false,
-          child: Dialog(
+          child: AlertDialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(12),
             ),
-            backgroundColor: const Color(0xFF1E1E2C),
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.person_off_rounded,
-                      color: Colors.redAccent,
-                      size: 48,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Profile Picture Required',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'You need to upload a profile picture to scan mess QR',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.redAccent,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _profilePicMissing = false; // Allow pop temporarily
-                        });
-                        Navigator.of(dialogContext).pop(); // Close dialog
-                        navigator.pop(); // Go back to previous screen
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4C4EDB),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Go Back',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+            title: const Text(
+              'Profile Picture Required',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'OpenSans_regular',
               ),
             ),
+            content: const Text(
+              'You need to upload a profile picture to scan mess QR. Please go to your profile and add a profile picture.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+                fontFamily: 'OpenSans_regular',
+              ),
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _profilePicMissing = false; // Allow pop temporarily
+                  });
+                  Navigator.of(dialogContext).pop(); // Close dialog
+                  navigator.pop(); // Go back to previous screen
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4C4EDB),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  'Go Back',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'OpenSans_regular',
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },
     );
   }
 
-  Future<void> _checkPermission() async {
+  Future<void> _initializeCameraPermission() async {
     var status = await Permission.camera.status;
     if (status.isGranted) {
-      setState(() => _cameraPermissionGranted = true);
+      setState(() {
+        _cameraPermissionGranted = true;
+      });
       controller.start();
-    } else {
-      var result = await Permission.camera.request();
-      if (result.isGranted) {
-        setState(() => _cameraPermissionGranted = true);
-        controller.start();
-      } else {
-        setState(() => _cameraPermissionGranted = false);
-      }
     }
+    // If not granted, the overlay will be shown in the build method
+  }
+
+  Future<void> _requestCameraPermission() async {
+    if (_isCheckingPermission) return;
+
+    setState(() {
+      _isCheckingPermission = true;
+    });
+
+    var status = await Permission.camera.status;
+
+    if (status.isGranted) {
+      setState(() {
+        _cameraPermissionGranted = true;
+        _isCheckingPermission = false;
+      });
+      controller.start();
+      return;
+    }
+
+    // Request permission - this will show the system dialog
+    var result = await Permission.camera.request();
+
+    setState(() {
+      _isCheckingPermission = false;
+    });
+
+    if (result.isGranted) {
+      setState(() {
+        _cameraPermissionGranted = true;
+      });
+      controller.start();
+    } else if (result.isPermanentlyDenied) {
+      // Permission permanently denied - show dialog with Settings link
+      _showPermissionDeniedDialog();
+    } else {
+      // Permission denied but not permanently - show dialog with Settings link
+      _showPermissionDeniedDialog();
+    }
+  }
+
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: const Text(
+            'Camera Access Required',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'OpenSans_regular',
+            ),
+          ),
+          content: const Text(
+            'Camera access is required to scan QR codes. Please enable camera permission in Settings to use this feature.',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.black87,
+              fontFamily: 'OpenSans_regular',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                  fontFamily: 'OpenSans_regular',
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                openAppSettings();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4C4EDB),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: const Text(
+                'Open Settings',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'OpenSans_regular',
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -353,13 +426,65 @@ class _QrScanState extends State<QrScan> {
     return Container(
       color: Colors.black,
       child: Center(
-        child: ElevatedButton(
-          onPressed: _checkPermission,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF4C4EDB),
-            foregroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.camera_alt_outlined,
+                size: 80,
+                color: Color(0xFF4C4EDB),
+              ),
+              const SizedBox(height: 32),
+              const Text(
+                'Camera Access Needed',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'We need access to your camera to scan QR codes for mess entry.',
+                style: TextStyle(
+                  color: Color.fromRGBO(255, 255, 255, 0.7),
+                  fontSize: 16,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+              if (_isCheckingPermission)
+                const CircularProgressIndicator(
+                  color: Color(0xFF4C4EDB),
+                )
+              else
+                ElevatedButton(
+                  onPressed: _requestCameraPermission,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4C4EDB),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 48,
+                      vertical: 14,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    'Continue',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'OpenSans_regular',
+                    ),
+                  ),
+                ),
+            ],
           ),
-          child: const Text('Grant Camera Access'),
         ),
       ),
     );
