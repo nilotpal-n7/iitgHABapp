@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend2/screens/scan_status.dart';
+import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/widgets/common/snack_bar.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -24,12 +25,14 @@ class _QrScanState extends State<QrScan> {
   bool _hasScanned = false;
   bool _isProcessing = false;
   bool _cameraPermissionGranted = false;
+  bool _profilePicMissing = false;
 
   @override
   void initState() {
     super.initState();
     _checkMicrosoftLink();
     controller = MobileScannerController();
+    _checkProfilePic();
     _checkPermission();
   }
 
@@ -53,6 +56,103 @@ class _QrScanState extends State<QrScan> {
       });
       return;
     }
+  }
+
+  void _checkProfilePic() {
+    if (ProfilePictureProvider.profilePictureString.value.isEmpty) {
+      setState(() {
+        _profilePicMissing = true;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showProfilePicDialog();
+      });
+    }
+  }
+
+  void _showProfilePicDialog() {
+    final navigator = Navigator.of(context);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return PopScope(
+          canPop: false,
+          child: Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            backgroundColor: const Color(0xFF1E1E2C),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.person_off_rounded,
+                      color: Colors.redAccent,
+                      size: 48,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Profile Picture Required',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'You need to upload a profile picture to scan mess QR',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.redAccent,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _profilePicMissing = false; // Allow pop temporarily
+                        });
+                        Navigator.of(dialogContext).pop(); // Close dialog
+                        navigator.pop(); // Go back to previous screen
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4C4EDB),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Go Back',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _checkPermission() async {
@@ -191,33 +291,61 @@ class _QrScanState extends State<QrScan> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text('Mess Scanner'),
+    return PopScope(
+      canPop: !_profilePicMissing,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && _profilePicMissing) {
+          // Show the dialog again if they try to dismiss it
+          _showProfilePicDialog();
+        }
+      },
+      child: Scaffold(
         backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
-      body: !_cameraPermissionGranted
-          ? _buildPermissionOverlay()
-          : Stack(
-              children: [
-                MobileScanner(
-                  controller: controller,
-                  onDetect: onBarcodeDetected,
-                ),
-                _buildScannerUI(),
-                if (_isProcessing)
-                  Container(
-                    color: Colors.black54,
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFF4C4EDB),
-                      ),
-                    ),
+        appBar: AppBar(
+          title: const Text('Mess Scanner'),
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              if (!_profilePicMissing) {
+                Navigator.of(context).pop();
+              } else {
+                _showProfilePicDialog();
+              }
+            },
+          ),
+        ),
+        body: _profilePicMissing
+            ? Container(
+                color: Colors.black,
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xFF4C4EDB),
                   ),
-              ],
-            ),
+                ),
+              )
+            : !_cameraPermissionGranted
+                ? _buildPermissionOverlay()
+                : Stack(
+                    children: [
+                      MobileScanner(
+                        controller: controller,
+                        onDetect: onBarcodeDetected,
+                      ),
+                      _buildScannerUI(),
+                      if (_isProcessing)
+                        Container(
+                          color: Colors.black54,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Color(0xFF4C4EDB),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+      ),
     );
   }
 

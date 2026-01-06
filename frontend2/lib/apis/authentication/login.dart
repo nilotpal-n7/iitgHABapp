@@ -35,6 +35,7 @@ Future<void> authenticate() async {
 
     prefs.setString('access_token', accessToken);
     await fetchUserDetails();
+    await fetchUserProfilePicture();
     await getUserMessInfo();
     await registerFcmToken();
     await HostelsNotifier.init();

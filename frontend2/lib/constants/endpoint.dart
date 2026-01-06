@@ -1,5 +1,6 @@
 const String baseUrl = "https://hab.codingclub.in/api";
 
+
 class NotificationEndpoints {
   static const String registerToken = '$baseUrl/notification/register-token';
 }
@@ -56,4 +57,9 @@ class MessInfo {
 class ProfilePicture {
   static const changeUserProfilePicture = "$baseUrl/profile/picture/set";
   static const getUserProfilePicture = "$baseUrl/profile/picture/get";
+}
+
+class AppVersionEndpoints {
+  static const String getAndroidVersion = "$baseUrl/app-version/android";
+  static const String getIosVersion = "$baseUrl/app-version/ios";
 }
