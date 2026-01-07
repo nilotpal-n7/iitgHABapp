@@ -10,8 +10,8 @@ const {
   sendNotification,
 } = require("./notificationController.js");
 
-router.post("/send", sendNotification);
-// router.post("/send", authenticateAdminJWT, sendNotification);
+// Send notification requires admin authentication (hostel office or HAB)
+router.post("/send", authenticateAdminJWT, sendNotification);
 router.post("/register-token", authenticateJWT, registerToken);
 
 module.exports = router;

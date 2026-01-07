@@ -4,13 +4,13 @@ const express = require("express");
 const feedbackRouter = express.Router();
 const {
   submitFeedback,
-  removeFeedback,
-  getAllFeedback,
+  // removeFeedback,
+  // getAllFeedback,
   enableFeedback,
   disableFeedback,
   getFeedbackSettings,
-  getFeedbackSettingsPublic,
-  getFeedbackLeaderboard,
+  // getFeedbackSettingsPublic,
+  // getFeedbackLeaderboard,
   getFeedbackLeaderboardByWindow,
   getAvailableWindows,
   checkFeedbackSubmitted,
@@ -18,28 +18,37 @@ const {
   getFeedbacksByCaterer,
 } = require("./feedbackController");
 const { authenticateJWT } = require("../../middleware/authenticateJWT");
-const { requireMicrosoftAuth } = require("../../middleware/requireMicrosoftAuth");
+const {
+  requireMicrosoftAuth,
+} = require("../../middleware/requireMicrosoftAuth");
 
 // Student routes - require Microsoft account linking
-feedbackRouter.post("/submit", authenticateJWT, requireMicrosoftAuth, submitFeedback);
-feedbackRouter.post("/remove", authenticateJWT, requireMicrosoftAuth, removeFeedback);
-feedbackRouter.get("/all", authenticateJWT, requireMicrosoftAuth, getAllFeedback);
-feedbackRouter.get("/submitted", authenticateJWT, requireMicrosoftAuth, checkFeedbackSubmitted);
-feedbackRouter.get("/settings-public", getFeedbackSettingsPublic); // Public endpoint for mobile app
+feedbackRouter.post(
+  "/submit",
+  authenticateJWT,
+  requireMicrosoftAuth,
+  submitFeedback
+);
+// feedbackRouter.post("/remove", authenticateJWT, requireMicrosoftAuth, removeFeedback);
+// feedbackRouter.get("/all", authenticateJWT, requireMicrosoftAuth, getAllFeedback);
+feedbackRouter.get(
+  "/submitted",
+  authenticateJWT,
+  requireMicrosoftAuth,
+  checkFeedbackSubmitted
+);
+// feedbackRouter.get("/settings-public", getFeedbackSettingsPublic);
 
 // HAB routes
 feedbackRouter.get("/settings", getFeedbackSettings);
 feedbackRouter.post("/enable", enableFeedback);
 feedbackRouter.post("/disable", disableFeedback);
-feedbackRouter.get("/leaderboard", authenticateJWT, getFeedbackLeaderboard);
+// feedbackRouter.get("/leaderboard", authenticateJWT, getFeedbackLeaderboard);
 feedbackRouter.get("/leaderboard-by-window", getFeedbackLeaderboardByWindow);
 feedbackRouter.get("/windows", getAvailableWindows);
 feedbackRouter.get("/window-time-left", getFeedbackWindowTimeLeft);
-// HAB: Paginated feedbacks for a caterer (includes user names)
-// Public like leaderboard-by-window to match HAB portal usage
 feedbackRouter.get("/by-caterer", getFeedbacksByCaterer);
 
-// Debug route
-feedbackRouter.get("/all-admin", getAllFeedback);
+// feedbackRouter.get("/all-admin", getAllFeedback);
 
 module.exports = feedbackRouter;

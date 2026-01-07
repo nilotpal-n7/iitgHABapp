@@ -7,7 +7,7 @@ const {
   logoutHandler,
   guestLoginHandler,
   webLoginHandler,
-  meHandler,
+  // meHandler,
   appleLoginHandler,
   linkMicrosoftAccount,
 } = require("./auth.controller.js");
@@ -86,15 +86,14 @@ router.get("/login/redirect/mobile", mobileRedirectHandler);
 // Usage: /api/auth/login/redirect/web?code=xxx&type=hab|hostel|smc
 router.get("/login/redirect/web", webLoginHandler);
 
-// Get current authenticated principal (reads httpOnly cookie or Authorization header)
-router.get("/me", meHandler);
+// router.get("/me", meHandler);
 
 router.get("/logout", logoutHandler);
 
-// Guest login (POST) - accepts { email, password } and returns a JWT on success
+// Guest login
 router.post("/guest", guestLoginHandler);
 
-// Apple Sign In (POST) - accepts { identityToken, authorizationCode, email, name }
+// Apple Sign In
 router.post("/apple", appleLoginHandler);
 
 // Link Microsoft Account (POST) - requires authentication, accepts ?code=xxx
