@@ -4,10 +4,10 @@ const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
 const {
   getUserData,
   createUser,
-  deleteUser,
-  updateUser,
+  // deleteUser,
+  // updateUser,
   saveUserProfile,
-  getUserComplaints,
+  // getUserComplaints,
   // getEmailsOfHABUsers,
   // getEmailsOfSecyUsers,
   getUserByRoll,
@@ -104,11 +104,10 @@ userRouter.post("/", createUser);
 
 userRouter.get("/", authenticateJWT, getUserData);
 
-userRouter.delete("/:outlook", authenticateJWT, deleteUser);
+// userRouter.delete("/:outlook", authenticateJWT, deleteUser);
 
-userRouter.put("/:outlook", authenticateJWT, updateUser);
+// userRouter.put("/:outlook", authenticateJWT, updateUser);
 
-// Save roomNumber and phoneNumber for authenticated user
 userRouter.post("/save", authenticateJWT, saveUserProfile);
 
 userRouter.get("/roll/:qr", getUserByRoll); //removed authenticateJWT from here
@@ -177,9 +176,7 @@ userRouter.get("/all", getAllUsers);
 userRouter.get("/mess-subscribers/:hostelId", getUsersByHostelForMess);
 
 // userRouter.get('/complaints/:outlook', getUserComplaints);
-
 // userRouter.get('/habmails', getEmailsOfHABUsers);
-
 // userRouter.get('/welfaresecymails', getEmailsOfSecyUsers);
 
 module.exports = userRouter;

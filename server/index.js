@@ -9,11 +9,11 @@ const mongoose = require("mongoose");
 const itemRoute = require("./modules/item/itemRoute.js");
 const userRoute = require("./modules/user/userRoute.js");
 const cookieParser = require("cookie-parser");
-const complaintRoute = require("./modules/complaint/complaintRoute.js");
+// const complaintRoute = require("./modules/complaint/complaintRoute.js");
 const feedbackRoute = require("./modules/feedback/feedbackRoute.js");
 const hostelRoute = require("./modules/hostel/hostelRoute.js");
 const notificationRoute = require("./modules/notification/notificationRoute.js");
-const qrRoute = require("./modules/qr/qrRoute.js");
+// const qrRoute = require("./modules/qr/qrRoute.js");
 const messRoute = require("./modules/mess/messRoute.js");
 const logsRoute = require("./modules/mess/ScanLogsRoute.js");
 const appVersionRoute = require("./modules/app_version/appVersionRoute.js");
@@ -188,10 +188,9 @@ app.use("/api/items", itemRoute);
 // user route
 app.use("/api/users", userRoute);
 
-//complaint route
-app.use("/api/complaints", complaintRoute);
+// app.use("/api/complaints", complaintRoute);
 
-//complaint route
+// Feedback route
 app.use("/api/feedback", feedbackRoute);
 
 //auth route
@@ -203,10 +202,9 @@ app.use("/api/hostel", hostelRoute);
 //notification route
 app.use("/api/notification", notificationRoute);
 
-//qr route
-app.use("/api/qr", qrRoute);
+// app.use("/api/qr", qrRoute);
 
-//mess route
+// Mess route
 app.use("/api/mess", messRoute);
 
 //mess change route

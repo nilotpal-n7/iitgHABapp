@@ -229,60 +229,6 @@ class _MessChangePreferenceScreenState
     }
   }
 
-  Future<void> handleCancel() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('access_token');
-      String url = MessChange.messChangeCancel;
-
-      final res = await dio.post(
-        url,
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-        ),
-      );
-
-      if (res.statusCode == 202) {
-        _showMessage(
-          "Mess Cancel Rejected",
-          "Mess Cancel is only permitted between 24th and 27th of each month.",
-          refreshAfter: true,
-        );
-      } else if (res.statusCode == 200) {
-        _showMessage(
-          "Success",
-          "Mess Change Request Cancelled Successfully!",
-          refreshAfter: true,
-        );
-      } else {
-        _showMessage(
-          "Error",
-          "Form couldn't be submitted. Try again later!",
-          refreshAfter: true,
-        );
-      }
-    } catch (e) {
-      if (e is DioException) {
-        debugPrint('Error submitting mess cancel: $e');
-        _showMessage(
-          "Error",
-          "${e.response?.data['message'] ?? "We couldn't process your request!"}",
-          refreshAfter: true,
-        );
-      } else {
-        debugPrint('Error submitting mess cancel: $e');
-        _showMessage(
-          "Error",
-          "We couldn't process your request!",
-          refreshAfter: true,
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

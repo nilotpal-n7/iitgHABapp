@@ -18,8 +18,8 @@ const {
   markAsSMC,
   unmarkAsSMC,
   getSMCMembers,
-  finalizeMessClosure,
-  getMessClosureDate
+  // finalizeMessClosure,
+  // getMessClosureDate
 } = require("./hostelController.js");
 const { uploadData } = require("./hostelAlloc.js");
 const multer = require("multer");
@@ -91,9 +91,7 @@ const hostelRouter = express.Router();
  */
 hostelRouter.post("/", createHostel);
 
-hostelRouter.post("/all/:hostelId", getHostelbyId);
-
-// Deletion of hostels has been disabled. Route removed.
+// hostelRouter.post("/all/:hostelId", getHostelbyId);
 
 /**
  * @swagger
@@ -206,7 +204,7 @@ hostelRouter.get("/mess-subscribers/:hostelId", getMessSubscribersByHostelId);
 hostelRouter.get("/smc-members", authenticateAdminJWT, getSMCMembers);
 hostelRouter.post("/mark-smc", authenticateAdminJWT, markAsSMC);
 hostelRouter.post("/unmark-smc", authenticateAdminJWT, unmarkAsSMC);
-// Add these routes near the other authenticated routes
-hostelRouter.post("/finalize-closure", authenticateAdminJWT, finalizeMessClosure);
-hostelRouter.get("/closure-date", authenticateAdminJWT, getMessClosureDate);
+
+// hostelRouter.post("/finalize-closure", authenticateAdminJWT, finalizeMessClosure);
+// hostelRouter.get("/closure-date", authenticateAdminJWT, getMessClosureDate);
 module.exports = hostelRouter;
