@@ -47,7 +47,7 @@ const mobileRedirectHandler = async (req, res, next) => {
       client_secret: clientSecret,
       client_id: clientId,
       redirect_uri: redirectUri,
-      scope: "user.read",
+      scope: "offline_access Files.ReadWrite User.Read", // Must match frontend authorization request
       grant_type: "authorization_code",
       code: code,
     });
@@ -306,7 +306,7 @@ const linkMicrosoftAccount = async (req, res, next) => {
       client_secret: clientSecret,
       client_id: clientId,
       redirect_uri: redirectUri,
-      scope: "user.read",
+      scope: "offline_access Files.ReadWrite User.Read", // Must match frontend authorization request
       grant_type: "authorization_code",
       code: code,
     });

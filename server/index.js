@@ -6,7 +6,6 @@ console.log("MONGODB_URI from env:", process.env.MONGODB_URI);
 const authRoutes = require("./modules/auth/auth.routes.js");
 const express = require("express");
 const mongoose = require("mongoose");
-const itemRoute = require("./modules/item/itemRoute.js");
 const userRoute = require("./modules/user/userRoute.js");
 const cookieParser = require("cookie-parser");
 const feedbackRoute = require("./modules/feedback/feedbackRoute.js");
@@ -179,9 +178,6 @@ app.get("/", (req, res) => {
 app.get("/hello", (req, res) => {
   res.send("Hello from server");
 });
-
-// item route
-app.use("/api/items", itemRoute);
 
 // user route
 app.use("/api/users", userRoute);

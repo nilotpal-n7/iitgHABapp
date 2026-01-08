@@ -441,7 +441,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 feedbackform: feedbackform,
               ),
               buildQuickActions(),
-              buildMessTodayCard(),
+              // Only show "In Mess Today" if mess exists
+              if (currSubscribedMess.isNotEmpty) buildMessTodayCard(),
               const SizedBox(height: 32),
             ],
           ),
