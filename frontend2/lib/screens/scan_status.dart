@@ -1,14 +1,35 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:frontend2/screens/main_navigation_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class ScanStatusPage extends StatelessWidget {
+class ScanStatusPage extends StatefulWidget {
   final Response response;
-
   const ScanStatusPage({
     super.key,
     required this.response,
   });
+
+  @override
+  State<ScanStatusPage> createState() => _ScanStatusPageState();
+}
+
+class _ScanStatusPageState extends State<ScanStatusPage> {
+  String profilePicture = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfilePicture();
+  }
+
+  Future<void> _loadProfilePicture() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      profilePicture = prefs.getString("profilePicture") ?? "";
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +42,8 @@ class ScanStatusPage extends StatelessWidget {
   }
 
   Widget _buildStatusContent(BuildContext context) {
-    final statusCode = response.statusCode ?? 500;
-    final data = response.data as Map<String, dynamic>? ?? {};
+    final statusCode = widget.response.statusCode ?? 500;
+    final data = widget.response.data as Map<String, dynamic>? ?? {};
     debugPrint(data['message']?.toString());
     debugPrint(statusCode.toString());
     if (statusCode == 200 &&
@@ -39,8 +60,6 @@ class ScanStatusPage extends StatelessWidget {
   Widget _buildSuccessScreen(BuildContext context, Map<String, dynamic> data) {
     final mealType = data['mealType'] ?? 'Meal';
     final userName = data['user']?['name'] ?? 'User';
-    final userPhoto =
-        data['user']?['photo'] ?? 'https://via.placeholder.com/100';
     final time = data['time'] ?? _getCurrentTime();
     final date = data['date'] ?? _getCurrentDate();
 
@@ -77,11 +96,14 @@ class ScanStatusPage extends StatelessWidget {
 
         const SizedBox(height: 40),
 
-        // User photo
+        // User profile picture
         CircleAvatar(
           radius: 80,
-          backgroundImage: NetworkImage(userPhoto),
           backgroundColor: Colors.grey[300],
+          backgroundImage: profilePicture.isNotEmpty
+              ? MemoryImage(base64Decode(profilePicture))
+              : const AssetImage('assets/images/default_profile.png')
+                  as ImageProvider,
         ),
 
         const SizedBox(height: 30),
