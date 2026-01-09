@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
+import 'package:frontend2/apis/dio_client.dart';
 import '../constants/endpoint.dart';
 import '../models/mess_info_model.dart';
 
@@ -16,7 +17,7 @@ class MessInfoProvider with ChangeNotifier {
   Future<void> fetchMessID() async {
     try {
       debugPrint('api calling');
-      final dio = Dio();
+      final dio = DioClient().dio;
       final response = await dio.post(MessInfo.getMessInfo);
       if (response.statusCode == 200) {
         final data = response.data as List;

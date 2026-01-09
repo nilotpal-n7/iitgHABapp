@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:frontend2/apis/dio_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 import 'package:frontend2/constants/endpoint.dart';
@@ -36,7 +37,7 @@ Future<List<MenuModel>> fetchMenu(String messId, String day) async {
 
     debugPrint('📤 Fetching menu for Mess ID: $messId, Day: $day');
 
-    final response = await Dio().post(
+    final response = await DioClient().dio.post(
       '$baseUrl/mess/menu/$messId',
       options: Options(
         headers: {

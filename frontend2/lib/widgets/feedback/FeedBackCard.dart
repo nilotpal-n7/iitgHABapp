@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:frontend2/apis/dio_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/endpoint.dart';
 import '../../screens/mess_feedback/mess_feedback_page.dart';
@@ -45,7 +46,7 @@ class _FeedbackCardState extends State<FeedbackCard> {
 
   Future<void> _checkFeedbackStatus() async {
     try {
-      final dio = Dio();
+      final dio = DioClient().dio;
 
       // Check if feedback window is open
       final settingsRes = await dio.get(MessFeedback.feedbackSettings);
@@ -99,7 +100,7 @@ class _FeedbackCardState extends State<FeedbackCard> {
 
   Future<void> _fetchWindowTimeLeft() async {
     try {
-      final dio = Dio();
+      final dio = DioClient().dio;
       final res = await dio.get(MessFeedback.windowTimeLeft);
       if (res.data != null && res.data['formatted'] != null) {
         setState(() {

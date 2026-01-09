@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+import 'package:frontend2/apis/dio_client.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:frontend2/apis/mess/user_mess_info.dart';
 import 'package:frontend2/apis/protected.dart';
@@ -55,7 +56,7 @@ Future<void> authenticate() async {
 /// Sends email & password to server and expects JSON { token }
 Future<void> guestAuthenticate(String email, String password) async {
   try {
-    final dio = Dio();
+    final dio = DioClient().dio;
     final resp = await dio.post(
       '$baseUrl/auth/guest',
       data: {
@@ -90,7 +91,7 @@ Future<void> guestAuthenticate(String email, String password) async {
 
 Future<void> logoutHandler(context) async {
   try {
-    final dio = Dio();
+    final dio = DioClient().dio;
     // Don't throw on non-2xx so we can handle 404s gracefully
     await dio.get('$baseUrl/auth/logout',
         options: Options(validateStatus: (status) => true));
@@ -144,7 +145,7 @@ Future<void> signInWithApple() async {
     }
 
     // Send to backend - email is optional, userIdentifier is required
-    final dio = Dio();
+    final dio = DioClient().dio;
     final response = await dio.post(
       '$baseUrl/auth/apple',
       data: {
@@ -216,7 +217,7 @@ Future<void> linkMicrosoftAccount() async {
     final token = await getAccessToken();
     if (token == 'error') throw ('Not authenticated');
 
-    final dio = Dio();
+    final dio = DioClient().dio;
     final response = await dio.post(
       '$baseUrl/auth/link-microsoft?code=$code',
       options: Options(

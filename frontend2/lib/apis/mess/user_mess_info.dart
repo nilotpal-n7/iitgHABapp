@@ -1,3 +1,4 @@
+import 'package:frontend2/apis/dio_client.dart';
 import 'package:frontend2/apis/protected.dart';
 import 'package:flutter/foundation.dart';
 import 'package:frontend2/constants/endpoint.dart';
@@ -7,7 +8,7 @@ import 'package:dio/dio.dart';
 Future<void> getUserMessInfo() async {
   try {
     debugPrint('API calling getusermessinfo');
-    final dio = Dio();
+    final dio = DioClient().dio;
     final token = await getAccessToken();
 
     final response = await dio.post(

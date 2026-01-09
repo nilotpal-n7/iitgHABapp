@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:frontend2/apis/dio_client.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -92,7 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final token = await getAccessToken();
       if (token == 'error') return;
-      final dio = Dio();
+      final dio = DioClient().dio;
       final res = await dio.get(
         '$baseUrl/profile/settings',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
@@ -142,7 +143,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return;
       }
 
-      final dio = Dio();
+      final dio = DioClient().dio;
       final formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(
           file.path,
