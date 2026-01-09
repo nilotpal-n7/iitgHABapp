@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend2/apis/dio_client.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -13,6 +14,9 @@ class VersionChecker {
   static bool _updateRequired = false;
   static String? _storeUrl;
   static String? _updateMessage;
+
+  // Defaults to 'v1' (Latest) until we check with the server
+  static String _apiVersion = 'v1';
 
   static String getDeviceType() {
     if (kIsWeb) {
@@ -44,10 +48,21 @@ class VersionChecker {
     debugPrint('Device Type: $_deviceType');
     debugPrint('App Version: $_appVersion');
     debugPrint('Build Number: $_buildNumber');
+    debugPrint('Initial API Version: $_apiVersion');
     debugPrint('======================================');
   }
 
-  /// Check version against server and return true if update is required
+  /// Returns the headers to be injected into Dio requests
+  static Map<String, dynamic> getApiHeaders() {
+    return {
+      'x-api-version': _apiVersion,
+    };
+  }
+
+  /// Check version against server logic:
+  /// 1. Same Major Version -> Use V1 (Latest)
+  /// 2. 1 Major Version Behind -> Use V2 (Legacy)
+  /// 3. 2+ Major Versions Behind -> Force Update
   static Future<bool> checkForUpdate() async {
     try {
       if (_deviceType != 'Android' && _deviceType != 'iOS') {
@@ -55,7 +70,11 @@ class VersionChecker {
         return false;
       }
 
-      final dio = Dio();
+      final dio = DioClient().dio;
+      
+      // Inject current header so the version check itself goes to the right place
+      dio.options.headers.addAll(getApiHeaders());
+
       final endpoint = _deviceType == 'Android'
           ? AppVersionEndpoints.getAndroidVersion
           : AppVersionEndpoints.getIosVersion;
@@ -66,49 +85,63 @@ class VersionChecker {
 
       if (response.statusCode == 200 && response.data['success'] == true) {
         final data = response.data['data'];
-        final minVersion = data['minVersion'] as String;
-        final forceUpdate = data['forceUpdate'] as bool;
+        
+        // IMPORTANT: We need the SERVER'S LATEST VERSION to compare against.
+        // Ensure your API returns 'latestVersion' or fallback to 'minVersion'
+        final String serverVersion = data['latestVersion'] ?? data['minVersion'] ?? '1.0.0';
+        
         _storeUrl = data['storeUrl'] as String?;
         _updateMessage = data['updateMessage'] as String?;
 
-        debugPrint('Server min version: $minVersion');
-        debugPrint('Current app version: $_appVersion');
-        debugPrint('Force update: $forceUpdate');
+        debugPrint('Server Latest Version: $serverVersion');
+        debugPrint('Local App Version: $_appVersion');
 
-        if (forceUpdate && _isVersionLower(_appVersion!, minVersion)) {
+        // --- CORE LOGIC START ---
+        int localMajor = _getMajorVersion(_appVersion!);
+        int serverMajor = _getMajorVersion(serverVersion);
+        int diff = serverMajor - localMajor;
+
+        debugPrint('Major Version Diff: $diff');
+
+        if (diff <= 0) {
+          // Case: App is equal to (or newer than) Server
+          _apiVersion = 'v1';
+          _updateRequired = false;
+          debugPrint('Status: Up to date. Using API V1.');
+        } 
+        else if (diff == 1) {
+          // Case: App is 1 version behind (13 vs 14)
+          // Use Legacy API
+          _apiVersion = 'v2';
+          _updateRequired = false;
+          debugPrint('Status: Slightly old. Switching to Legacy API V2.');
+        } 
+        else {
+          // Case: App is 2+ versions behind (13 vs 15)
+          // Force Update
           _updateRequired = true;
-          debugPrint('Update required!');
+          debugPrint('Status: Too old. Force Update Required.');
           return true;
         }
+        // --- CORE LOGIC END ---
       }
 
       return false;
     } catch (e) {
       debugPrint('Version check failed: $e');
-      // Don't block app if version check fails
+      // If check fails, default to V1 and allow app usage
+      _apiVersion = 'v1'; 
       return false;
     }
   }
 
-  /// Compare versions: returns true if current < required
-  static bool _isVersionLower(String current, String required) {
+  /// Helper to extract "13" from "13.2.1"
+  static int _getMajorVersion(String version) {
     try {
-      final currentParts = current.split('.').map(int.parse).toList();
-      final requiredParts = required.split('.').map(int.parse).toList();
-
-      // Pad with zeros if needed
-      while (currentParts.length < 3) currentParts.add(0);
-      while (requiredParts.length < 3) requiredParts.add(0);
-
-      for (int i = 0; i < 3; i++) {
-        if (currentParts[i] < requiredParts[i]) return true;
-        if (currentParts[i] > requiredParts[i]) return false;
-      }
-
-      return false; // Versions are equal
+      return int.parse(version.split('.')[0]);
     } catch (e) {
-      debugPrint('Version comparison error: $e');
-      return false;
+      debugPrint('Error parsing major version from $version: $e');
+      return 0;
     }
   }
 
@@ -134,8 +167,8 @@ class VersionChecker {
                   // Update icon
                   Container(
                     padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF0F4FF),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF0F4FF),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -215,11 +248,9 @@ class VersionChecker {
                             size: 20,
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            _deviceType == 'Android'
-                                ? 'Update Now'
-                                : 'Update Now',
-                            style: const TextStyle(
+                          const Text(
+                            'Update Now',
+                            style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                             ),
@@ -247,11 +278,14 @@ class VersionChecker {
     }
   }
 
-  // Getters for accessing version info elsewhere
+  // Getters
   static String get appVersion => _appVersion ?? 'Unknown';
   static String get buildNumber => _buildNumber ?? 'Unknown';
   static String get deviceType => _deviceType ?? 'Unknown';
   static String get fullVersion => '$appVersion+$buildNumber';
   static bool get updateRequired => _updateRequired;
   static String? get storeUrl => _storeUrl;
+  
+  // Getter for the API Version (used by Dio Interceptors)
+  static String get apiVersion => _apiVersion;
 }

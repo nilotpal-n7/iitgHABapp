@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend2/apis/dio_client.dart';
 import 'package:frontend2/apis/protected.dart';
 import 'package:frontend2/widgets/common/mess_dropdowns.dart';
 import 'package:frontend2/constants/themes.dart';
@@ -30,7 +31,7 @@ class _MessChangePreferenceScreenState
 
   bool loadingStatus = true; // track API loading state
 
-  final dio = Dio();
+  final dio = DioClient().dio;
 
   @override
   void initState() {
@@ -101,7 +102,7 @@ class _MessChangePreferenceScreenState
     setState(() => loadingStatus = true);
 
     try {
-      final dio = Dio();
+      final dio = DioClient().dio;
       final token = await getAccessToken();
 
       final res = await dio.get(

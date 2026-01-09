@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend2/apis/dio_client.dart';
 import 'package:frontend2/screens/scan_status.dart';
 import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/widgets/common/snack_bar.dart';
@@ -11,7 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend2/constants/endpoint.dart';
 import 'package:frontend2/widgets/microsoft_required_dialog.dart';
 
-final dio = Dio();
+final dio = DioClient().dio;
 
 class QrScan extends StatefulWidget {
   const QrScan({super.key});

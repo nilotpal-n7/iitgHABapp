@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:frontend2/apis/dio_client.dart';
 import 'package:frontend2/constants/endpoint.dart';
 import 'package:frontend2/apis/protected.dart';
 import 'dart:convert';
@@ -378,7 +379,7 @@ Future<void> registerFcmToken() async {
       return;
     }
 
-    final dio = Dio();
+    final dio = DioClient().dio;
     debugPrint('2');
     debugPrint('Header Token: $header');
     debugPrint('Uri: ${Uri.parse(NotificationEndpoints.registerToken)}');

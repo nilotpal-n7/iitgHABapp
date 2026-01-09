@@ -1,0 +1,82 @@
+const express = require("express");
+const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
+const { authenticateAdminJWT } = require("../../middleware/authenticateJWT.js");
+const {
+  requireMicrosoftAuth,
+} = require("../../middleware/requireMicrosoftAuth.js");
+
+const {
+  createMess,
+  createMessWithoutHostel,
+  deleteMenu,
+  createMenu,
+  createMenuItem,
+  deleteMenuItem,
+  getUserMessInfo,
+  getAllMessInfo,
+  getMessInfo,
+  getMessMenuByDay,
+  getMessMenuByDayForAdminHAB,
+  // getMessMenuItemById,
+  toggleLikeMenuItem,
+  ScanMess,
+  getUnassignedMess,
+  assignMessToHostel,
+  changeHostel,
+  unassignMess,
+} = require("./messController");
+const {
+  getMessMenuByDayForAdmin,
+  getMessMenuByDayForSMC,
+  modifyMenuItem,
+  modifyMenuItemSMC,
+  updateTime,
+  updateTimeSMC,
+} = require("./messAdminController.js");
+
+const messRouter = express.Router();
+
+messRouter.post("/create", createMess);
+messRouter.post("/create-without-hostel", createMessWithoutHostel);
+messRouter.post("/menu/create", createMenu);
+messRouter.delete("/menu/delete/:menuId", deleteMenu);
+messRouter.post("/menu/item/create", createMenuItem);
+messRouter.delete("/menu/item/delete", deleteMenuItem);
+messRouter.post("/get", authenticateJWT, getUserMessInfo);
+messRouter.post("/all", getAllMessInfo);
+messRouter.get("/:id", getMessInfo);
+messRouter.post("/menu/:messId", authenticateJWT, getMessMenuByDay);
+messRouter.post("/hab-menu/:messId", getMessMenuByDayForAdminHAB);
+// messRouter.post("/menu/item/:menuItemId", authenticateJWT, getMessMenuItemById);
+messRouter.post(
+  "/menu/item/like/:menuItemId",
+  authenticateJWT,
+  requireMicrosoftAuth,
+  toggleLikeMenuItem
+);
+messRouter.post(
+  "/scan/:messId",
+  authenticateJWT,
+  requireMicrosoftAuth,
+  ScanMess
+);
+messRouter.post("/reassign/:messId", assignMessToHostel);
+messRouter.post("/change-hostel/:messId", changeHostel);
+messRouter.post("/unassigned", getUnassignedMess);
+messRouter.post("/unassign/:messId", unassignMess);
+
+// messRouter.post("/menu/admin/:messId", authenticateAdminJWT, getMessMenuByDayForAdmin);
+
+messRouter.post("/menu/smc/:messId", authenticateJWT, getMessMenuByDayForSMC);
+messRouter.post("/menu/modify/smc/:messId", authenticateJWT, modifyMenuItemSMC);
+
+// messRouter.post("/menu/modify/:messId", authenticateAdminJWT, modifyMenuItem);
+
+// messRouter.post("/menu/time/update", authenticateAdminJWT, updateTime);
+
+messRouter.post(
+  "/menu/time/update/smc/:messId",
+  authenticateJWT,
+  updateTimeSMC
+);
+module.exports = messRouter;

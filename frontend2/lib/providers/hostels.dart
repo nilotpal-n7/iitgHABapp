@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:frontend2/apis/dio_client.dart';
 import 'package:frontend2/constants/endpoint.dart';
 import 'package:frontend2/screens/mess_screen.dart';
 import 'package:frontend2/widgets/common/hostel_name.dart';
@@ -16,7 +17,7 @@ class HostelsNotifier {
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     try {
-      final dio = Dio();
+      final dio = DioClient().dio;
       final response = await dio.get(
         '$baseUrl/hostel/all', // Match your backend route
       );
