@@ -1,4 +1,4 @@
-const String baseUrl = "http://10.39.187.39:3000/api";
+const String baseUrl = "http://10.150.63.182:3000/api";
 const String authUrl = "https://hab.codingclub.in/api";
 
 class NotificationEndpoints {
