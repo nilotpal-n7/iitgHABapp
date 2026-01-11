@@ -261,10 +261,12 @@ const appleLoginHandler = async (req, res, next) => {
     let existingUser = await findUserWithAppleIdentifier(userIdentifier);
 
     if (!existingUser) {
-      // Create new user without roll number and without email (email only set when Microsoft is linked)
+      // Create new user without roll number and without email
+      // NOTE: Do NOT store Apple email in the email field - email field is only for Microsoft/Outlook emails
+      // Apple emails (like @icloud.com, @me.com) are NOT Microsoft emails
       const user = new User({
         name: name || "User",
-        email: email || null, // Email is optional - only set when Microsoft account is linked
+        email: null, // Email field is ONLY for Microsoft/Outlook emails - set when Microsoft is linked
         appleUserIdentifier: userIdentifier,
         rollNumber: null, // Will be set when Microsoft is linked
         authProvider: "apple",
