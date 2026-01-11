@@ -423,6 +423,8 @@ const linkMicrosoftAccount = async (req, res, next) => {
     }
 
     // Update current user with Microsoft info
+    currentUser.name = userFromToken.data.displayName || currentUser.name; // Update name from Microsoft account
+    currentUser.degree = userFromToken.data.jobTitle || currentUser.degree; // Update degree from Microsoft account
     currentUser.email = microsoftEmail;
     currentUser.rollNumber = roll;
     currentUser.hostel = allocatedHostel._id;
