@@ -82,12 +82,16 @@ const saveUserProfile = async (req, res) => {
 
     const { roomNumber, phoneNumber } = req.body;
     let changed = false;
-    if (typeof roomNumber === "string") {
-      user.roomNumber = roomNumber;
+    
+    // Handle roomNumber: accept string (including empty string) or null/undefined
+    if (roomNumber !== undefined) {
+      user.roomNumber = roomNumber || null; // Convert empty string to null
       changed = true;
     }
-    if (typeof phoneNumber === "string") {
-      user.phoneNumber = phoneNumber;
+    
+    // Handle phoneNumber: accept string (including empty string) or null/undefined
+    if (phoneNumber !== undefined) {
+      user.phoneNumber = phoneNumber || null; // Convert empty string to null
       changed = true;
     }
 

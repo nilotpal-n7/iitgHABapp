@@ -11,23 +11,39 @@ import 'package:shared_preferences/shared_preferences.dart';
 Future<bool> saveUserProfileFields(
     {String? roomNumber, String? phoneNumber}) async {
   final header = await getAccessToken();
-  if (header == 'error') return false;
+  if (header == 'error') {
+    debugPrint('saveUserProfileFields: No access token available');
+    return false;
+  }
 
   try {
     final body = <String, dynamic>{};
-    if (roomNumber != null) body['roomNumber'] = roomNumber;
-    if (phoneNumber != null) body['phoneNumber'] = phoneNumber;
+    // Always include fields, even if null/empty, so server can clear them
+    body['roomNumber'] = roomNumber ?? '';
+    body['phoneNumber'] = phoneNumber ?? '';
+
+    debugPrint('saveUserProfileFields: Sending request to ${UserEndpoints.saveUser}');
+    debugPrint('saveUserProfileFields: Body: $body');
 
     final resp = await http.post(
       Uri.parse(UserEndpoints.saveUser),
       headers: {
         'Authorization': 'Bearer $header',
         'Content-Type': 'application/json',
+        'x-api-version': 'v1', // Add API version header
       },
       body: json.encode(body),
     );
 
-    return resp.statusCode == 200;
+    debugPrint('saveUserProfileFields: Response status: ${resp.statusCode}');
+    debugPrint('saveUserProfileFields: Response body: ${resp.body}');
+
+    if (resp.statusCode == 200) {
+      return true;
+    } else {
+      debugPrint('saveUserProfileFields: Failed with status ${resp.statusCode}: ${resp.body}');
+      return false;
+    }
   } catch (e) {
     debugPrint('saveUserProfileFields error: $e');
     return false;
