@@ -1,7 +1,7 @@
 // server/v2/index.js
 //import authRoutes from "./modules/auth/auth.routes.js";
 
-require("dotenv").config();
+require("dotenv").config({ path: '../.env' });
 console.log("MONGODB_URI from env:", process.env.MONGODB_URI);
 const authRoutes = require("./modules/auth/auth.routes.js");
 const express = require("express");

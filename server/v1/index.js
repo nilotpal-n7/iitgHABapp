@@ -1,7 +1,7 @@
 // server/v1/index.js
 //import authRoutes from "./modules/auth/auth.routes.js";
 
-require("dotenv").config();
+require("dotenv").config({ path: '../.env' });
 console.log("MONGODB_URI from env:", process.env.MONGODB_URI);
 const authRoutes = require("./modules/auth/auth.routes.js");
 const express = require("express");
@@ -24,14 +24,15 @@ const {
 // New: build delegated auth URLs for starting consent
 const onedrive = require("./config/onedrive.js");
 function buildAuthorizeUrl() {
+  // For delegated token flow, use a dedicated callback endpoint
+  // Use PUBLIC_BASE_URL if available, otherwise try to construct from request
+  const baseUrl = process.env.PUBLIC_BASE_URL || "https://hab.codingclub.in";
+  const delegatedRedirectUri = `${baseUrl}/api/_debug/graph/callback`;
+  
   const params = new URLSearchParams({
     client_id: onedrive.clientId,
     response_type: "code",
-    redirect_uri:
-      onedrive.redirectUri ||
-      `${
-        process.env.PUBLIC_BASE_URL || "https://hab.codingclub.in"
-      }/api/_debug/graph/callback`,
+    redirect_uri: delegatedRedirectUri,
     scope:
       (onedrive.graphUserScopes || []).join(" ") ||
       "offline_access Files.ReadWrite User.Read",
@@ -257,13 +258,10 @@ app.get("/api/_debug/graph/callback", async (req, res) => {
       params.append("client_secret", onedrive.clientSecret);
     params.append("grant_type", "authorization_code");
     params.append("code", code);
-    params.append(
-      "redirect_uri",
-      onedrive.redirectUri ||
-        `${
-          process.env.PUBLIC_BASE_URL || "https://hab.codingclub.in"
-        }/api/_debug/graph/callback`
-    );
+    // Use the same redirect URI that was used in the authorization request
+    const baseUrl = process.env.PUBLIC_BASE_URL || "https://hab.codingclub.in";
+    const delegatedRedirectUri = `${baseUrl}/api/_debug/graph/callback`;
+    params.append("redirect_uri", delegatedRedirectUri);
     params.append(
       "scope",
       (onedrive.graphUserScopes || []).join(" ") ||

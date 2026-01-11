@@ -1,5 +1,5 @@
-const String baseUrl = "http://10.150.63.182:3000/api";
-const String authUrl = "https://hab.codingclub.in/api";
+const String baseUrl = "http://localhost:3000/api";
+const String authUrl = "http://localhost:3000/api";
 
 class NotificationEndpoints {
   static const String registerToken = '$baseUrl/notification/register-token';
@@ -22,8 +22,6 @@ class ItemEndpoint {
 class HostelEndpoint {
   static const String getitem = '$baseUrl/hostel/';
 }
-
-// Legacy/duplicate auth endpoints removed - use `AuthEndpoints` instead.
 
 class AuthEndpoints {
   // For initial Microsoft login - redirects through backend

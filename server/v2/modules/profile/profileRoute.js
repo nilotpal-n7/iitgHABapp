@@ -45,9 +45,25 @@ router.post("/settings/disable-photo-change", disablePhotoChange);
  *       200:
  *         description: Profile picture updated
  */
+// Profile picture upload with error handling
+const uploadMiddleware = (req, res, next) => {
+  upload.single("file")(req, res, (err) => {
+    if (err) {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ message: 'File too large. Maximum size is 4MB.' });
+        }
+        return res.status(400).json({ message: `Multer error: ${err.message}` });
+      }
+      return res.status(400).json({ message: `Upload error: ${err.message}` });
+    }
+    next();
+  });
+};
+
 router.post(
   "/picture/set",
-  upload.single("file"),
+  uploadMiddleware,
   authenticateJWT,
   setProfilePicture
 );

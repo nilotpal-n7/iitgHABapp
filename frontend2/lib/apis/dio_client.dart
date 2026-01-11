@@ -22,7 +22,14 @@ class DioClient {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
         // Inject the version header dynamically
-        options.headers.addAll(VersionChecker.getApiHeaders());
+        // Only add headers that don't conflict with FormData (which sets Content-Type automatically)
+        final apiHeaders = VersionChecker.getApiHeaders();
+        apiHeaders.forEach((key, value) {
+          // Don't override Content-Type if it's already set (FormData will set it with boundary)
+          if (key.toLowerCase() != 'content-type' || !options.headers.containsKey('content-type')) {
+            options.headers[key] = value;
+          }
+        });
         
         // Helpful Debug Log
         debugPrint("Request: ${options.uri} | Headers: ${options.headers}");

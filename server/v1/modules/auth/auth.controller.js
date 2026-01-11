@@ -263,7 +263,7 @@ const appleLoginHandler = async (req, res, next) => {
     if (!existingUser) {
       // Create new user without roll number and without email (email only set when Microsoft is linked)
       const user = new User({
-        name: name || "Apple User",
+        name: name || "User",
         email: email || null, // Email is optional - only set when Microsoft account is linked
         appleUserIdentifier: userIdentifier,
         rollNumber: null, // Will be set when Microsoft is linked
@@ -348,8 +348,40 @@ const linkMicrosoftAccount = async (req, res, next) => {
       existingUserWithEmail._id.toString() !== userId.toString()
     ) {
       // The Microsoft account already exists - merge Apple account into Microsoft account
-      // First, delete the duplicate Apple-only user to free up the appleUserIdentifier
+      // Preserve shared fields (profile picture, phone number, room number) from Apple account
       const appleUserIdentifier = currentUser.appleUserIdentifier;
+
+      // Preserve profile picture from Apple account if Microsoft account doesn't have one
+      if (
+        currentUser.profilePictureUrl &&
+        !existingUserWithEmail.profilePictureUrl
+      ) {
+        existingUserWithEmail.profilePictureUrl = currentUser.profilePictureUrl;
+      }
+      if (
+        currentUser.profilePictureItemId &&
+        !existingUserWithEmail.profilePictureItemId
+      ) {
+        existingUserWithEmail.profilePictureItemId =
+          currentUser.profilePictureItemId;
+      }
+
+      // Preserve phone number from Apple account if Microsoft account doesn't have one
+      if (currentUser.phoneNumber && !existingUserWithEmail.phoneNumber) {
+        existingUserWithEmail.phoneNumber = currentUser.phoneNumber;
+      }
+
+      // Preserve room number from Apple account if Microsoft account doesn't have one
+      if (currentUser.roomNumber && !existingUserWithEmail.roomNumber) {
+        existingUserWithEmail.roomNumber = currentUser.roomNumber;
+      }
+
+      // Preserve setup status (if Apple user completed setup but Microsoft didn't)
+      if (currentUser.isSetupDone && !existingUserWithEmail.isSetupDone) {
+        existingUserWithEmail.isSetupDone = currentUser.isSetupDone;
+      }
+
+      // Delete the duplicate Apple-only user to free up the appleUserIdentifier
       await User.findByIdAndDelete(userId);
 
       // Then update the existing Microsoft user to include Apple identifier
