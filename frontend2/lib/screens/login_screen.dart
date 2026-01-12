@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:frontend2/apis/authentication/login.dart';
 import 'package:frontend2/screens/main_navigation_screen.dart';
 import 'package:frontend2/main.dart';
@@ -29,6 +30,28 @@ class OnboardingScreen extends StatefulWidget {
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+/// Get user-friendly error message based on error type
+String _getErrorMessage(dynamic error) {
+  if (error is DioException) {
+    // Check for timeout errors
+    if (error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.sendTimeout) {
+      return 'Connection timeout. Your internet connection seems slow. Please check your connection and try again.';
+    }
+    // Check for connection errors
+    if (error.type == DioExceptionType.connectionError) {
+      return 'Connection failed. Please check your internet connection and try again.';
+    }
+    // Check for other Dio errors
+    if (error.message != null && error.message!.contains('timeout')) {
+      return 'Request timeout. Please check your internet connection and try again.';
+    }
+  }
+  // Default error message
+  return 'Something went wrong. Please try again.';
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
@@ -139,21 +162,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                         setModalState(() {
                                           _inprogress = false;
                                         });
+                                        final errorMessage =
+                                            _getErrorMessage(e);
                                         messenger.showSnackBar(
-                                          const SnackBar(
+                                          SnackBar(
                                             content: Center(
                                               child: Text(
-                                                'Something Went Wrong',
+                                                errorMessage,
                                                 textAlign: TextAlign.center,
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.white),
                                               ),
                                             ),
                                             backgroundColor: Colors.black,
                                             behavior: SnackBarBehavior.floating,
-                                            margin: EdgeInsets.all(50),
-                                            duration:
-                                                Duration(milliseconds: 1000),
+                                            margin: const EdgeInsets.all(50),
+                                            duration: const Duration(
+                                                milliseconds: 3000),
                                           ),
                                         );
                                       }
@@ -237,21 +262,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                       setModalState(() {
                                         _inprogress = false;
                                       });
+                                      final errorMessage = _getErrorMessage(e);
                                       messenger.showSnackBar(
-                                        const SnackBar(
+                                        SnackBar(
                                           content: Center(
                                             child: Text(
-                                              'Something Went Wrong',
+                                              errorMessage,
                                               textAlign: TextAlign.center,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                   color: Colors.white),
                                             ),
                                           ),
                                           backgroundColor: Colors.black,
                                           behavior: SnackBarBehavior.floating,
-                                          margin: EdgeInsets.all(50),
-                                          duration:
-                                              Duration(milliseconds: 1000),
+                                          margin: const EdgeInsets.all(50),
+                                          duration: const Duration(
+                                              milliseconds: 3000),
                                         ),
                                       );
                                     }
@@ -620,19 +646,20 @@ class _GuestLoginDialogState extends State<GuestLoginDialog> {
       );
     } catch (e) {
       setState(() => _inProgress = false);
+      final errorMessage = _getErrorMessage(e);
       messenger.showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Center(
             child: Text(
-              'Guest login failed',
+              errorMessage,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
             ),
           ),
           backgroundColor: Colors.black,
           behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(50),
-          duration: Duration(milliseconds: 1000),
+          margin: const EdgeInsets.all(50),
+          duration: const Duration(milliseconds: 3000),
         ),
       );
     }

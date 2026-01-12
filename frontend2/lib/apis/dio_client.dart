@@ -13,9 +13,10 @@ class DioClient {
 
   DioClient._internal() {
     _dio = Dio(BaseOptions(
-      // Optional: Set your global timeouts or base URL here
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
+      // Increased timeouts for slow connections
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      sendTimeout: const Duration(seconds: 30),
     ));
 
     // ADD THE INTERCEPTOR (Crucial Step)
