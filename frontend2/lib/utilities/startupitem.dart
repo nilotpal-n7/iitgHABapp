@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:dio/dio.dart';
 import 'package:frontend2/apis/dio_client.dart';
 import '../constants/endpoint.dart';
 import '../models/mess_info_model.dart';

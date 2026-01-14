@@ -589,10 +589,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF4C4EDB).withOpacity(0.1),
+              color: const Color(0xFF4C4EDB).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFF4C4EDB).withOpacity(0.3),
+                color: const Color(0xFF4C4EDB).withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -629,7 +629,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onPressed: () async {
                       try {
                         await auth.linkMicrosoftAccount();
-                        if (mounted) {
+                        if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Center(
@@ -651,7 +651,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           homeScreenRefreshNotifier.value = true;
                         }
                       } catch (e) {
-                        if (mounted) {
+                        if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Center(

@@ -3,6 +3,7 @@ import 'package:frontend2/apis/dio_client.dart';
 import 'package:frontend2/constants/endpoint.dart';
 import 'package:frontend2/apis/protected.dart';
 import 'dart:convert';
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +32,8 @@ final ValueNotifier<String?> deepNavigationNotifier =
     ValueNotifier<String?>(null);
 
 // ✅ Global ValueNotifier to trigger home screen refresh (e.g., after account linking)
-final ValueNotifier<bool> homeScreenRefreshNotifier = ValueNotifier<bool>(false);
+final ValueNotifier<bool> homeScreenRefreshNotifier =
+    ValueNotifier<bool>(false);
 
 // ✅ Global navigator key reference (set from main.dart to avoid circular imports)
 GlobalKey<NavigatorState>? globalNavigatorKey;
@@ -217,8 +219,7 @@ Future<void> initializeFcm() async {
   // Initialize local notifications with tap handler
   const AndroidInitializationSettings androidInit =
       AndroidInitializationSettings('@mipmap/hab_icon');
-  const DarwinInitializationSettings iosInit =
-      DarwinInitializationSettings(
+  const DarwinInitializationSettings iosInit = DarwinInitializationSettings(
     requestAlertPermission: true,
     requestBadgePermission: true,
     requestSoundPermission: true,
@@ -372,6 +373,40 @@ Future<void> registerFcmToken() async {
     final header = await getAccessToken();
     debugPrint('Access token: 😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊😊');
     debugPrint('1');
+
+    // On iOS, we need to request permission first, then wait for APNS token before getting FCM token
+    if (Platform.isIOS) {
+      try {
+        // Request notification permission first (required for APNS token on iOS)
+        final settings = await FirebaseMessaging.instance.requestPermission(
+          alert: true,
+          badge: true,
+          sound: true,
+          provisional: false,
+        );
+
+        if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+            settings.authorizationStatus == AuthorizationStatus.provisional) {
+          // Give AppDelegate time to call registerForRemoteNotifications()
+          await Future.delayed(const Duration(milliseconds: 2000));
+
+          // Try to get APNS token - it may take time for iOS to get it from Apple's servers
+          String? apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+
+          // Wait for APNS token if not immediately available (retry up to 20 times with delay)
+          int retries = 0;
+          const maxRetries = 20;
+          while (apnsToken == null && retries < maxRetries) {
+            await Future.delayed(const Duration(milliseconds: 2000));
+            apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+            retries++;
+            if (apnsToken != null) break;
+          }
+        }
+      } catch (e) {
+        // Continue anyway - sometimes APNS token might not be available immediately
+      }
+    }
 
     String? token = await FirebaseMessaging.instance.getToken();
     if (token == null) {

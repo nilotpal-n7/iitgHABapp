@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend2/apis/dio_client.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:dio/dio.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:frontend2/constants/endpoint.dart';
 
@@ -38,7 +37,7 @@ class VersionChecker {
 
   static Future<void> init() async {
     _deviceType = getDeviceType();
-    
+
     // Get app version info
     final packageInfo = await PackageInfo.fromPlatform();
     _appVersion = packageInfo.version;
@@ -71,7 +70,7 @@ class VersionChecker {
       }
 
       final dio = DioClient().dio;
-      
+
       // Inject current header so the version check itself goes to the right place
       dio.options.headers.addAll(getApiHeaders());
 
@@ -85,11 +84,12 @@ class VersionChecker {
 
       if (response.statusCode == 200 && response.data['success'] == true) {
         final data = response.data['data'];
-        
+
         // IMPORTANT: We need the SERVER'S LATEST VERSION to compare against.
         // Ensure your API returns 'latestVersion' or fallback to 'minVersion'
-        final String serverVersion = data['latestVersion'] ?? data['minVersion'] ?? '1.0.0';
-        
+        final String serverVersion =
+            data['latestVersion'] ?? data['minVersion'] ?? '1.0.0';
+
         _storeUrl = data['storeUrl'] as String?;
         _updateMessage = data['updateMessage'] as String?;
 
@@ -108,15 +108,13 @@ class VersionChecker {
           _apiVersion = 'v1';
           _updateRequired = false;
           debugPrint('Status: Up to date. Using API V1.');
-        } 
-        else if (diff == 1) {
+        } else if (diff == 1) {
           // Case: App is 1 version behind (13 vs 14)
           // Use Legacy API
           _apiVersion = 'v2';
           _updateRequired = false;
           debugPrint('Status: Slightly old. Switching to Legacy API V2.');
-        } 
-        else {
+        } else {
           // Case: App is 2+ versions behind (13 vs 15)
           // Force Update
           _updateRequired = true;
@@ -130,7 +128,7 @@ class VersionChecker {
     } catch (e) {
       debugPrint('Version check failed: $e');
       // If check fails, default to V1 and allow app usage
-      _apiVersion = 'v1'; 
+      _apiVersion = 'v1';
       return false;
     }
   }
@@ -178,7 +176,7 @@ class VersionChecker {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Title
                   const Text(
                     'Update Available',
@@ -189,10 +187,10 @@ class VersionChecker {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  
+
                   // Message
                   Text(
-                    _updateMessage ?? 
+                    _updateMessage ??
                         'A new version of the app is available. Please update to continue using the app.',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
@@ -202,7 +200,7 @@ class VersionChecker {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Version info
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -223,7 +221,7 @@ class VersionChecker {
                     ),
                   ),
                   const SizedBox(height: 28),
-                  
+
                   // Update button
                   SizedBox(
                     width: double.infinity,
@@ -285,7 +283,7 @@ class VersionChecker {
   static String get fullVersion => '$appVersion+$buildNumber';
   static bool get updateRequired => _updateRequired;
   static String? get storeUrl => _storeUrl;
-  
+
   // Getter for the API Version (used by Dio Interceptors)
   static String get apiVersion => _apiVersion;
 }

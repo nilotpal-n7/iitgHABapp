@@ -216,7 +216,10 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(18),
               onTap: () async {
                 final prefs = await SharedPreferences.getInstance();
-                final hasMicrosoftLinked = prefs.getBool('hasMicrosoftLinked') ?? false;
+                final hasMicrosoftLinked =
+                    prefs.getBool('hasMicrosoftLinked') ?? false;
+
+                if (!mounted) return;
 
                 if (!hasMicrosoftLinked) {
                   showDialog(

@@ -170,12 +170,15 @@ class _FeedbackCardState extends State<FeedbackCard> {
                         ? null
                         : () async {
                             final prefs = await SharedPreferences.getInstance();
-                            final hasMicrosoftLinked = prefs.getBool('hasMicrosoftLinked') ?? false;
+                            final hasMicrosoftLinked =
+                                prefs.getBool('hasMicrosoftLinked') ?? false;
 
                             if (!hasMicrosoftLinked) {
+                              if (!context.mounted) return;
                               showDialog(
                                 context: context,
-                                builder: (context) => const MicrosoftRequiredDialog(
+                                builder: (context) =>
+                                    const MicrosoftRequiredDialog(
                                   featureName: 'Mess Feedback',
                                 ),
                               );

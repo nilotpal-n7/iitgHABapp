@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -33,6 +34,11 @@ Future<void> main() async {
 
   // initialize listeners & local notifications
   //await listenNotifications();
+
+  // On iOS, wait a bit for AppDelegate to initialize and register for remote notifications
+  if (Platform.isIOS) {
+    await Future.delayed(const Duration(milliseconds: 1500));
+  }
 
   // register token with backend (will also attach the refresh listener)
   await registerFcmToken();

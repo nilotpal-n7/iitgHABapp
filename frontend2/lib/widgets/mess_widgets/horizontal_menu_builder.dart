@@ -173,7 +173,7 @@ class _IndividualMealCardState extends State<IndividualMealCard>
 
     // print("$now, $start, $end");
 
-    if (widget.statusDisplay??false) {
+    if (widget.statusDisplay ?? false) {
       if (now.isBefore(start)) {
         final diff = start.difference(now);
         return "In ${diff.inHours > 0 ? '${diff.inHours}h ' : ''}${diff.inMinutes % 60}m";
@@ -207,11 +207,11 @@ class _IndividualMealCardState extends State<IndividualMealCard>
         });
       }
     } catch (error) {
-      print(error);
+      debugPrint(error.toString());
       setState(() {
         _menu.items[index].isLiked = !_menu.items[index].isLiked;
       });
-    };
+    }
   }
 
   Widget _buildItem(MenuItemModel item, int index) {

@@ -33,7 +33,12 @@ class _QrScanState extends State<QrScan> {
   void initState() {
     super.initState();
     _checkMicrosoftLink();
-    controller = MobileScannerController();
+    controller = MobileScannerController(
+      detectionSpeed: DetectionSpeed.noDuplicates,
+      facing: CameraFacing.back,
+      torchEnabled: false,
+      autoStart: false, // Disable autoStart to manually control when camera starts
+    );
     _checkProfilePic();
     _initializeCameraPermission();
   }
@@ -137,7 +142,23 @@ class _QrScanState extends State<QrScan> {
       setState(() {
         _cameraPermissionGranted = true;
       });
-      controller.start();
+      // Wait for controller to be ready before starting
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (mounted) {
+        try {
+          await controller.start();
+        } catch (e) {
+          // Controller might still be initializing, try again after a delay
+          if (mounted) {
+            await Future.delayed(const Duration(milliseconds: 500));
+            try {
+              await controller.start();
+            } catch (_) {
+              // If still failing, let the user retry manually
+            }
+          }
+        }
+      }
     }
     // If not granted, the overlay will be shown in the build method
   }
@@ -156,7 +177,23 @@ class _QrScanState extends State<QrScan> {
         _cameraPermissionGranted = true;
         _isCheckingPermission = false;
       });
-      controller.start();
+      // Wait for controller to be ready before starting
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (mounted) {
+        try {
+          await controller.start();
+        } catch (e) {
+          // Controller might still be initializing, try again after a delay
+          if (mounted) {
+            await Future.delayed(const Duration(milliseconds: 500));
+            try {
+              await controller.start();
+            } catch (_) {
+              // If still failing, let the user retry manually
+            }
+          }
+        }
+      }
       return;
     }
 
@@ -171,7 +208,23 @@ class _QrScanState extends State<QrScan> {
       setState(() {
         _cameraPermissionGranted = true;
       });
-      controller.start();
+      // Wait for controller to be ready before starting
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (mounted) {
+        try {
+          await controller.start();
+        } catch (e) {
+          // Controller might still be initializing, try again after a delay
+          if (mounted) {
+            await Future.delayed(const Duration(milliseconds: 500));
+            try {
+              await controller.start();
+            } catch (_) {
+              // If still failing, let the user retry manually
+            }
+          }
+        }
+      }
     } else if (result.isPermanentlyDenied) {
       // Permission permanently denied - show dialog with Settings link
       _showPermissionDeniedDialog();
@@ -406,6 +459,14 @@ class _QrScanState extends State<QrScan> {
                       MobileScanner(
                         controller: controller,
                         onDetect: onBarcodeDetected,
+                        errorBuilder: (context, error) {
+                          return Center(
+                            child: Text(
+                              'Camera Error: ${error.errorDetails?.message ?? "Unknown error"}',
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          );
+                        },
                       ),
                       _buildScannerUI(),
                       if (_isProcessing)
@@ -552,6 +613,22 @@ class _QrScanState extends State<QrScan> {
               fontSize: 16,
             ),
             textAlign: TextAlign.center,
+          ),
+        ),
+        const Spacer(),
+        // Camera toggle button
+        Padding(
+          padding: const EdgeInsets.only(bottom: 40),
+          child: IconButton(
+            icon: const Icon(
+              Icons.cameraswitch,
+              color: Colors.white,
+              size: 32,
+            ),
+            onPressed: () {
+              controller.switchCamera();
+            },
+            tooltip: 'Switch Camera',
           ),
         ),
       ],
