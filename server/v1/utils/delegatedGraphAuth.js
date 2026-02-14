@@ -93,7 +93,7 @@ async function refreshIfNeeded() {
   const scopes =
     Array.isArray(onedrive.graphUserScopes) && onedrive.graphUserScopes.length
       ? onedrive.graphUserScopes.join(" ")
-      : "offline_access Files.ReadWrite User.Read";
+      : "offline_access User.Read";
   params.append("scope", scopes);
 
   console.log("[Graph Delegated] Refreshing access token...");
