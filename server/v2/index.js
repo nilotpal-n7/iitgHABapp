@@ -34,7 +34,7 @@ function buildAuthorizeUrl() {
       }/api/_debug/graph/callback`,
     scope:
       (onedrive.graphUserScopes || []).join(" ") ||
-      "offline_access Files.ReadWrite User.Read",
+      "offline_access User.Read",
     prompt: "consent",
   });
   const tenant = onedrive.authTenant || onedrive.tenantId || "common";
@@ -268,7 +268,7 @@ app.get("/api/_debug/graph/callback", async (req, res) => {
     params.append(
       "scope",
       (onedrive.graphUserScopes || []).join(" ") ||
-        "offline_access Files.ReadWrite User.Read"
+        "offline_access User.Read"
     );
 
     const axios = require("axios");
