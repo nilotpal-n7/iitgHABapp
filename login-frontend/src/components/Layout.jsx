@@ -25,7 +25,7 @@ export default function Layout({ children }) {
         "http://localhost:3000/api/auth/login/redirect/web"
     );
 
-    const authUrl = `https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=user.read&state=${type}&prompt=consent`;
+    const authUrl = `https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=user.read&state=${type}`;
 
     window.location.href = authUrl;
   };
