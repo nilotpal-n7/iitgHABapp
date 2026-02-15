@@ -75,4 +75,4 @@ const leaveSchema = new mongoose.Schema({
 const Leave = mongoose.model("Leave", leaveSchema);
 
 //Export leave application model
-module.exports = { Leave };
+module.exports = Leave;
