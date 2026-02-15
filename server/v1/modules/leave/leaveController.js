@@ -53,7 +53,7 @@ const applyForLeave = async (req, res) => {
             });
             return;
         }
-        const proofDocumentUrl = `/v1/modules/leave/uploads/${req.file.filename}`;
+        const proofDocumentUrl = `/api/leave/files/${req.file.filename}`;
         const proofDocumentFilename = req.file.originalname;
         
 

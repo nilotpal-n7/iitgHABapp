@@ -1,4 +1,5 @@
-const expess = require("express");
+const express = require("express");
+const path = require("path");
 
 const {
   authenticateJWT,
@@ -13,13 +14,15 @@ const {
   getApplicationProof,
 } = require("./leaveController.js");
 
-const leaveRouter = expess.Router();
+const leaveRouter = express.Router();
 
 leaveRouter.get("/check", (req, res) => {
     if(req) {
         res.send("Leave is running");
     }
 });
+
+leaveRouter.use('/files', express.static(path.join(__dirname, 'uploads')));
 
 leaveRouter.post("/apply", authenticateJWT, uploadMiddleware, applyForLeave);
 
