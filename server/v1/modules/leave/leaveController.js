@@ -35,12 +35,27 @@ const upload = multer({
     if (mimetype && extname) {
       return cb(null, true);
     } else {
-      cb(new Error("Invalid file Type. Only jpg, pdf, png are allowed!"));
+      cb(new Error("UNSUPPORTED_FILE_TYPE"));
     }
   },
 });
 
-const uploadMiddleware = upload.single("proofDocument");
+const uploadSingle = upload.single('proofDocument');
+
+const uploadMiddleware = async (req, res, next) => {
+    uploadSingle(req, res, (err) => {
+        if(err) {
+            if(err.message == "UNSUPPORTED_FILE_TYPE") {
+                res.status(404).json({
+                    message: "Invalid file Type. Only jpg, pdf, png are allowed!",
+                    error: err.message
+                })
+            }
+        }
+
+        next();
+    })
+}
 
 const applyForLeave = async (req, res) => {
     try {
