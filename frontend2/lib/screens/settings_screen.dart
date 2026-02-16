@@ -218,8 +218,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             if (!dialogContext.mounted) return;
                             Navigator.of(dialogContext).pop();
                             // Clear local data and logout
-                            final prefs =
-                                await SharedPreferences.getInstance();
+                            final prefs = await SharedPreferences.getInstance();
                             await prefs.clear();
                             if (!context.mounted) return;
                             Navigator.of(context).pushAndRemoveUntil(
@@ -229,7 +228,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               (route) => false,
                             );
                             if (!context.mounted) return;
-                            EasyLoading.showSuccess('Account deleted successfully');
+                            EasyLoading.showSuccess(
+                                'Account deleted successfully');
                           } catch (e) {
                             setState(() {
                               isDeleting = false;
