@@ -117,7 +117,7 @@ const applyForLeave = async (req, res) => {
         const appliedAt = new Date(Date.now());
 
         //Only if user exists
-        if(req.user && req.user.hostel) {
+        if(req.user && req.user.curr_subscribed_mess) {
             const leaveApplication = new Leave({
                 user: req.user,
                 leaveType,
@@ -178,14 +178,14 @@ const getApplications = async (req, res) => {
     })
 
     //For empty applications array
-    if (myApplications ==[]) {
-        res.status(201).json({
+    if (myApplications.length===0) {
+        res.status(200).json({
             message: "No past applications available",
         });
         return;
     }
 
-    res.status(201).json({
+    res.status(200).json({
         message: "Retrieved applications successfully",
         myApplications,
     });
@@ -204,10 +204,13 @@ const getApplicationByID = async (req, res) => {
     }
     else {
         try {
-            const application = await Leave.findOne({
-                _id: id,
-                user: req.user
-            });
+            let application = await Leave.findById(id);
+
+            console.log(application.user);
+            console.log(req.user._id);
+            if(!application.user.equals(req.user._id)){
+                application=null;
+            }
 
             //For empty appplication variable
             if(application==null) {
@@ -216,7 +219,7 @@ const getApplicationByID = async (req, res) => {
                 })
             }
             else {
-                res.status(201).json({
+                res.status(200).json({
                     message:"Application retrieved successfully",
                     application,
                 })
@@ -253,7 +256,7 @@ const getApplicationProof = async (req, res) => {
                 })
             }
             else {
-                res.status(201).json({
+                res.status(200).json({
                     message:"Information retrieved successfully",
                     proofDocumentUrl: application.proofDocumentUrl,
                 })
@@ -268,10 +271,193 @@ const getApplicationProof = async (req, res) => {
     }
 }
 
+const getAllPendingApplications = async (req, res) => {
+
+    const pendingApplications = await Leave.find({
+        messHostel: req.hostel,
+        status: "pending"
+    })
+    .sort({
+        appliedAt: -1
+    })
+
+    //For empty applications array
+    if (pendingApplications.length===0) {
+        res.status(201).json({
+            message: "No applications available",
+        });
+        return;
+    }
+
+    res.status(200).json({
+        message: "Retrieved applications successfully",
+        pendingApplications,
+    });
+    return;
+};
+
+const filterApplications = async (req, res) => {
+    
+    const query = {
+        messHostel: req.hostel,
+    };
+
+    if(req.body.status) {
+        query.status = req.body.status
+    }
+
+    if (req.body.year) {
+        query.startDate = {
+            $gte: new Date(year,0,1),
+            $lt: new Date(year+1,0,1),
+        };
+        query.endDate = query.startDate;
+    }
+
+    if(req.body.month && !req.body.year) {
+        let [year,month] = req.body.month.split('-').map(Number);
+        query.startDate = {
+            $gte: new Date(year,month-1,1),
+            $lt: new Date(year,month,1),
+        };
+        query.endDate = query.endDate;
+    } else if (req.body.month && req.body.year) {
+        res.status(404).json({
+            message: "Both year and month input is not allowed",
+        });
+        return;
+    }
+
+
+    try {
+        const filteredApplications = await Leave.find(query).sort({appliedAt: -1});
+
+        if (filteredApplications.length===0) {
+            res.status(200).json({
+                message: "No such applications could be found",
+            });
+            return;
+        }
+        
+        res.status(200).json({
+            message: "Documents fetched successfully",
+            filteredApplications,
+        })
+        
+    }
+
+    catch(err) {
+        res.status(404).json({
+            message: "Error occured while retrieving leave applications",
+            error: err.message,
+        })
+    }
+
+};
+
+const approveApplication = async (req, res) => {
+    const { id } = req.params;
+    const { feedback } = req.body;
+
+    try {
+        let application = await Leave.findById(id);
+            if(!application.messHostel.equals(req.hostel._id)){
+                application=null;
+            }
+
+        if(application!==null) {
+            const query = {status: "approved"};
+            if(feedback) {
+                query.feedback = feedback;
+            }
+    
+            if(application.eligibleDays>=5) {
+                query.isEligibleForRebate = true;
+            };
+
+            await Leave.findByIdAndUpdate(id, query);
+
+            application.status = "approved";
+            application.feedback = feedback;
+    
+            res.status(201).json({
+                message: `Approved application with ID ${id}`,
+                updatedApplication: application,
+            })
+        }
+        else {
+            res.status(404).json({
+                message: "You are not authorised to do that",
+            })
+        }
+    }
+
+    catch(err) {
+        res.status(404).json({
+            message: "Error in approving the leave application",
+            error: err.message,
+        })
+    }
+
+
+};
+
+const rejectApplication = async (req, res) => {
+    const { id } = req.params;
+    const { feedback } = req.body;
+
+    try {
+        let application = await Leave.findById(id);
+            if(!application.messHostel.equals(req.hostel._id)){
+                application=null;
+            }
+
+        if(application!==null) {
+            const query = {status: "rejected"};
+            if(feedback) {
+                query.feedback = feedback;
+            }
+
+            await Leave.findByIdAndUpdate(id, query);
+
+            application.status = "rejected";
+            application.feedback = feedback;
+    
+            res.status(201).json({
+                message: `Rejected application with ID ${id}`,
+                updatedApplication: application,
+            })
+        }
+        else {
+            res.status(404).json({
+                message: "You are not authorised to do that",
+            })
+        }
+    }
+
+    catch(err) {
+        res.status(404).json({
+            message: "Error in approving the leave application",
+            error: err.message,
+        })
+    }
+};
+
+const getRebateSummary = async (req, res) => {
+    
+};
+
+
+
 module.exports = {
     uploadMiddleware,
     applyForLeave,
     getApplications,
     getApplicationByID,
-    getApplicationProof
+    getApplicationProof,
+    getAllPendingApplications,
+    filterApplications,
+    approveApplication,
+    rejectApplication,
+    getRebateSummary
 }

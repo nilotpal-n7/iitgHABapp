@@ -12,6 +12,11 @@ const {
   getApplications,
   getApplicationByID,
   getApplicationProof,
+  getAllPendingApplications,
+  filterApplications,
+  approveApplication,
+  rejectApplication,
+  getRebateSummary,
 } = require("./leaveController.js");
 
 const leaveRouter = express.Router();
@@ -22,15 +27,27 @@ leaveRouter.get("/check", (req, res) => {
     }
 });
 
+//User/Student Endpoint
 leaveRouter.use('/files', express.static(path.join(__dirname, 'uploads')));
 
-leaveRouter.post("/apply", authenticateJWT, uploadMiddleware, applyForLeave);
+leaveRouter.post('/apply', authenticateJWT, uploadMiddleware, applyForLeave);
 
-leaveRouter.get("/my-applications", authenticateJWT, getApplications);
+leaveRouter.get('/my-applications', authenticateJWT, getApplications);
 
-leaveRouter.get("/:id", authenticateJWT, getApplicationByID);
+leaveRouter.get('/:id', authenticateJWT, getApplicationByID);
 
-leaveRouter.get("/:id/proof", authenticateJWT, getApplicationProof);
+leaveRouter.get('/:id/proof', authenticateJWT, getApplicationProof);
 
+
+//Hostel Office Endpoints
+leaveRouter.get('/hostel/pending', authenticateAdminJWT, getAllPendingApplications);
+
+leaveRouter.get('/hostel/all', authenticateAdminJWT, filterApplications);
+
+leaveRouter.post('/:id/approve', authenticateAdminJWT, approveApplication);
+
+leaveRouter.post('/:id/reject', authenticateAdminJWT, rejectApplication);
+
+leaveRouter.get('/hostel/rebate-summary', authenticateAdminJWT, getRebateSummary);
 
 module.exports = leaveRouter;
