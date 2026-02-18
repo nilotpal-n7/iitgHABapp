@@ -12,6 +12,7 @@ const feedbackRoute = require("./modules/feedback/feedbackRoute.js");
 const hostelRoute = require("./modules/hostel/hostelRoute.js");
 const notificationRoute = require("./modules/notification/notificationRoute.js");
 const messRoute = require("./modules/mess/messRoute.js");
+const leaveRoute = require("./modules/leave/leaveRoute.js");
 const logsRoute = require("./modules/mess/ScanLogsRoute.js");
 const appVersionRoute = require("./modules/app_version/appVersionRoute.js");
 const bugReportRoute = require("./modules/bug_report/bugReportRoute.js");
@@ -210,6 +211,9 @@ app.use("/api/notification", notificationRoute);
 
 // Mess route
 app.use("/api/mess", messRoute);
+
+//Mess rebate route
+app.use("/api/leave", leaveRoute);
 
 //mess change route
 app.use("/api/mess-change", messChangeRouter);
