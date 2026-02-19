@@ -1,10 +1,11 @@
 const express = require("express");
-const path = require("path");
 
 const {
   authenticateJWT,
   authenticateAdminJWT,
 } = require("../../middleware/authenticateJWT.js");
+
+const { uploadToOnedrive } = require('./uploadToOnedrive.js')
 
 const {
   uploadMiddleware,
@@ -28,9 +29,8 @@ leaveRouter.get("/check", (req, res) => {
 });
 
 //User/Student Endpoint
-leaveRouter.use('/files', express.static(path.join(__dirname, 'uploads')));
 
-leaveRouter.post('/apply', authenticateJWT, uploadMiddleware, applyForLeave);
+leaveRouter.post('/apply', authenticateJWT, uploadMiddleware, uploadToOnedrive, applyForLeave);
 
 leaveRouter.get('/my-applications', authenticateJWT, getApplications);
 
