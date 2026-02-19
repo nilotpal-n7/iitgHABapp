@@ -1,7 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
-const configPath = path.join(__dirname, "../../config/appVersion.json");
+// Common config file - same directory
+const configPath = path.join(__dirname, "./config/appVersion.json");
 
 /**
  * Read version config from JSON file
@@ -14,17 +15,15 @@ const getVersionConfig = () => {
     console.error("Error reading version config:", error);
     return {
       android: {
-        minVersion: "1.0.0",
-        latestVersion: "1.0.0",
+        minVersionv1: "1.0.0",
+        minVersionv2: "1.0.0",
         storeUrl: "",
-        forceUpdate: true,
         updateMessage: "A new version is available. Please update to continue.",
       },
       ios: {
-        minVersion: "1.0.0",
-        latestVersion: "1.0.0",
+        minVersionv1: "1.0.0",
+        minVersionv2: "1.0.0",
         storeUrl: "",
-        forceUpdate: true,
         updateMessage: "A new version is available. Please update to continue.",
       },
     };
@@ -45,7 +44,7 @@ const saveVersionConfig = (config) => {
 };
 
 /**
- * Get version info for a specific platform
+ * Get version info for a specific platform (returns both v1 and v2)
  */
 const getVersionInfo = (req, res) => {
   try {
@@ -59,13 +58,23 @@ const getVersionInfo = (req, res) => {
     }
 
     const config = getVersionConfig();
-    const versionInfo = config[platform.toLowerCase()];
+    const platformKey = platform.toLowerCase();
+    const platformConfig = config[platformKey];
 
     return res.status(200).json({
       success: true,
       data: {
-        platform: platform.toLowerCase(),
-        ...versionInfo,
+        platform: platformKey,
+        v1: {
+          minVersion: platformConfig.minVersionv1,
+          storeUrl: platformConfig.storeUrl,
+          updateMessage: platformConfig.updateMessage,
+        },
+        v2: {
+          minVersion: platformConfig.minVersionv2,
+          storeUrl: platformConfig.storeUrl,
+          updateMessage: platformConfig.updateMessage,
+        },
       },
     });
   } catch (error) {
@@ -84,8 +93,7 @@ const getVersionInfo = (req, res) => {
 const updateVersionInfo = (req, res) => {
   try {
     const { platform } = req.params;
-    const { minVersion, latestVersion, storeUrl, forceUpdate, updateMessage } =
-      req.body;
+    const { minVersionv1, minVersionv2, storeUrl, updateMessage } = req.body;
 
     if (!["android", "ios"].includes(platform.toLowerCase())) {
       return res.status(400).json({
@@ -97,11 +105,9 @@ const updateVersionInfo = (req, res) => {
     const config = getVersionConfig();
     const platformKey = platform.toLowerCase();
 
-    if (minVersion) config[platformKey].minVersion = minVersion;
-    if (latestVersion) config[platformKey].latestVersion = latestVersion;
+    if (minVersionv1) config[platformKey].minVersionv1 = minVersionv1;
+    if (minVersionv2) config[platformKey].minVersionv2 = minVersionv2;
     if (storeUrl) config[platformKey].storeUrl = storeUrl;
-    if (typeof forceUpdate === "boolean")
-      config[platformKey].forceUpdate = forceUpdate;
     if (updateMessage) config[platformKey].updateMessage = updateMessage;
 
     if (saveVersionConfig(config)) {
