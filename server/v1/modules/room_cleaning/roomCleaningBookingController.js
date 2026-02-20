@@ -34,19 +34,102 @@ const getWeekRange = (dateInput) => {
   return { weekStart, weekEnd };
 };
 
-const isDateInNextTwoDays = (requestedDate) => {
-  const todayStart = startOfDay(new Date());
-  const tomorrow = new Date(todayStart);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const dayAfterTomorrow = new Date(todayStart);
-  dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
-  const requestedStart = startOfDay(requestedDate);
-  return (
-    requestedStart.getTime() === tomorrow.getTime() ||
-    requestedStart.getTime() === dayAfterTomorrow.getTime()
-  );
+/**
+ * Get available slots for the next 2 days (tomorrow and day after tomorrow)
+ * Booking closes at midnight for the next day
+ */
+const getAvailableSlots = async (req, res) => {
+  try {
+    if (!req.user?._id) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    if (!req.user.hostel) {
+      return res.status(400).json({ 
+        message: "User does not have an assigned hostel" 
+      });
+    }
+
+    // Generate schedules for past dates
+    await generateFinalSchedulesForDueRequestedDates();
+
+    const today = startOfDay(new Date());
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dayAfterTomorrow = new Date(today);
+    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+
+    const tomorrowDayName = dayMap[tomorrow.getDay()];
+    const dayAfterTomorrowDayName = dayMap[dayAfterTomorrow.getDay()];
+
+    // Get slots for tomorrow and day after tomorrow
+    const slots = await RoomCleaningSlot.find({
+      hostelId: req.user.hostel,
+      weekDay: { $in: [tomorrowDayName, dayAfterTomorrowDayName] },
+    })
+      .sort({ startTime: 1 })
+      .lean();
+
+    // Get booking counts for these dates
+    const tomorrowSlots = slots.filter((s) => s.weekDay === tomorrowDayName);
+    const dayAfterTomorrowSlots = slots.filter((s) => s.weekDay === dayAfterTomorrowDayName);
+
+    const formatSlotWithAvailability = async (slot, dateStr) => {
+      const bookingCount = await RoomCleaningBooking.countDocuments({
+        slot: slot._id,
+        requestedDate: dateStr,
+        status: { $in: ["pending", "confirmed"] },
+      });
+
+      const availableSlots = Math.max(slot.maxSlots - bookingCount, 0);
+      
+      return {
+        id: slot._id,
+        date: dateStr,
+        weekDay: slot.weekDay,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        maxSlots: slot.maxSlots,
+        bookedSlots: bookingCount,
+        availableSlots,
+        status: availableSlots > 0 ? "available" : "finished",
+      };
+    };
+
+    const tomorrowSlotsFormatted = await Promise.all(
+      tomorrowSlots.map((slot) => formatSlotWithAvailability(slot, tomorrow))
+    );
+
+    const dayAfterTomorrowSlotsFormatted = await Promise.all(
+      dayAfterTomorrowSlots.map((slot) => formatSlotWithAvailability(slot, dayAfterTomorrow))
+    );
+
+    return res.status(200).json({
+      tomorrow: {
+        date: tomorrow,
+        weekDay: tomorrowDayName,
+        slots: tomorrowSlotsFormatted,
+      },
+      dayAfterTomorrow: {
+        date: dayAfterTomorrow,
+        weekDay: dayAfterTomorrowDayName,
+        slots: dayAfterTomorrowSlotsFormatted,
+      },
+    });
+  } catch (error) {
+    console.error("getAvailableSlots error:", error);
+    return res.status(500).json({
+      message: "Failed to fetch available slots",
+      error: String(error.message || error),
+    });
+  }
 };
 
+/**
+ * User: Request a room cleaning booking
+ * Can only book for tomorrow or day after tomorrow
+ * Booking closes at midnight for the next day
+ */
 const requestRoomCleaningBooking = async (req, res) => {
   try {
     if (!req.user?._id) {
@@ -70,9 +153,20 @@ const requestRoomCleaningBooking = async (req, res) => {
     }
     const requestedDayStart = startOfDay(parsedRequestedDate);
 
-    if (!isDateInNextTwoDays(requestedDayStart)) {
+    // Check if booking is for tomorrow or day after tomorrow
+    const today = startOfDay(new Date());
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dayAfterTomorrow = new Date(today);
+    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+
+    const isValidDate = 
+      requestedDayStart.getTime() === tomorrow.getTime() ||
+      requestedDayStart.getTime() === dayAfterTomorrow.getTime();
+
+    if (!isValidDate) {
       return res.status(400).json({
-        message: "You can book only for the next two days",
+        message: "You can only book for tomorrow or the day after tomorrow",
         status: "pending",
       });
     }
@@ -90,6 +184,8 @@ const requestRoomCleaningBooking = async (req, res) => {
       });
     }
 
+    // Check if booking closes at midnight (booking closes for tomorrow at midnight)
+    // This means: if today >= requested date, booking is closed
     if (new Date() >= requestedDayStart) {
       await buildFinalScheduleForSlotDate({
         slotDoc: slot,
@@ -97,7 +193,7 @@ const requestRoomCleaningBooking = async (req, res) => {
       });
       return res.status(400).json({
         message:
-          "Booking for this requestedDate is closed. Final schedule has been generated.",
+          "Booking window is closed for this date. Schedule has been finalized.",
         status: "pending",
       });
     }
@@ -129,8 +225,8 @@ const requestRoomCleaningBooking = async (req, res) => {
       status: { $in: ["pending", "confirmed"] },
     });
     if (activeBookingsCount >= slot.maxSlots) {
-      return res.status(200).json({
-        message: "No slots available for room cleaning on requestedDate",
+      return res.status(400).json({
+        message: "No slots available for room cleaning on this date",
         status: "pending",
       });
     }
@@ -300,6 +396,7 @@ const getMyRoomCleaningBookings = async (req, res) => {
 };
 
 module.exports = {
+  getAvailableSlots,
   requestRoomCleaningBooking,
   getMyRoomCleaningBookings,
   cancelRoomCleaningBooking,
