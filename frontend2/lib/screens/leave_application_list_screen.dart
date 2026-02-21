@@ -17,6 +17,7 @@ class LeaveApplicationListScreen extends StatefulWidget {
 class _LeaveApplicationListScreenState extends State<LeaveApplicationListScreen> {
 
   var myApplications = [];
+  bool isLoading = true;
 
 
   @override
@@ -36,7 +37,12 @@ class _LeaveApplicationListScreenState extends State<LeaveApplicationListScreen>
     if (response.statusCode == 200) {
       final data = response.data as Map;
       setState(() {
-        myApplications.addAll(data['myApplications']);
+        myApplications = data['myApplications'] ?? [];
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        isLoading = false;
       });
     }
   }
@@ -55,7 +61,39 @@ class _LeaveApplicationListScreenState extends State<LeaveApplicationListScreen>
         ),
       ),
 
-      body: ListView.builder(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : myApplications.isEmpty
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.assignment_outlined,
+              size: 80,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              "No previous applications or requests",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.black54,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              "Your leave history will appear here.",
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.black38,
+              ),
+            ),
+          ],
+        ),
+      ) : ListView.builder(
         padding: const EdgeInsets.all(12),
         itemCount: myApplications.length,
         itemBuilder: (context, index) {
