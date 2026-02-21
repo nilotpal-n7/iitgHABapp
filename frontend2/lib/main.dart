@@ -10,6 +10,7 @@ import 'package:frontend2/apis/mess/user_mess_info.dart';
 import 'package:frontend2/apis/users/user.dart';
 import 'package:frontend2/providers/feedback_provider.dart';
 import 'package:frontend2/providers/hostels.dart';
+import 'package:frontend2/providers/room_cleaning_provider.dart';
 import 'package:frontend2/screens/main_navigation_screen.dart';
 import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/screens/login_screen.dart';
@@ -70,6 +71,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => MessInfoProvider()),
         ChangeNotifierProvider(create: (_) => FeedbackProvider()),
+        ChangeNotifierProvider(create: (_) => RoomCleaningProvider(),),
       ],
       child: MyApp(isLoggedIn: asLoggedIn, updateRequired: updateRequired),
     ),
