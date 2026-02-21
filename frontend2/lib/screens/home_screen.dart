@@ -225,13 +225,33 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(width: 16),
+
+          //Rebate
           Expanded(
             child: InkWell(
               borderRadius: BorderRadius.circular(18),
-              onTap: () {
+              onTap: () async {
+                final prefs = await SharedPreferences.getInstance();
+                final hasMicrosoftLinked =
+                    prefs.getBool('hasMicrosoftLinked') ?? false;
+
+                if (!mounted) return;
+
+                if (!hasMicrosoftLinked) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const MicrosoftRequiredDialog(
+                      featureName: 'Mess Rebate',
+                    ),
+                  );
+                  return;
+                }
+
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const LeaveApplicationScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const LeaveApplicationScreen(),
+                  ),
                 );
               },
               child: Container(
