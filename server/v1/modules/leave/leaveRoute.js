@@ -18,6 +18,7 @@ const {
   approveApplication,
   rejectApplication,
   getRebateSummary,
+  validateApply
 } = require("./leaveController.js");
 
 const leaveRouter = express.Router();
@@ -30,7 +31,7 @@ leaveRouter.get("/check", (req, res) => {
 
 //User/Student Endpoint
 
-leaveRouter.post('/apply', authenticateJWT, uploadMiddleware, uploadToOnedrive, applyForLeave);
+leaveRouter.post('/apply', authenticateJWT, uploadMiddleware, validateApply, uploadToOnedrive, applyForLeave);
 
 leaveRouter.get('/my-applications', authenticateJWT, getApplications);
 
