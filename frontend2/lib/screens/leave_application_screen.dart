@@ -1,5 +1,11 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter_launcher_icons/constants.dart';
+import 'package:frontend2/apis/dio_client.dart';
+import 'package:frontend2/apis/protected.dart';
+import 'package:frontend2/constants/endpoint.dart';
+import 'package:frontend2/screens/leave_application_list_screen.dart';
 import 'package:intl/intl.dart';
 
 class LeaveApplicationScreen extends StatefulWidget {
@@ -36,6 +42,38 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
     );
     if (result != null) {
       setState(() => _pickedFile = result.files.first);
+    }
+  }
+
+  Future<void> _sendRequest({required int reason, required DateTimeRange range, required PlatformFile file}) async {
+
+    if (file.path == null) { return; }
+
+    final accessToken = await getAccessToken();
+
+    final dio = DioClient().dio;
+
+    try {
+      final response = await dio.post(
+        MessRebateEndpoints.sendApplication,
+        data: {
+          "leaveType": reason == 1 ? 'Academic' : 'Medical',
+          "startDate": DateFormat("yyyy-MM-dd").format(range.start).toString(),
+          "endDate": DateFormat("yyyy-MM-dd").format(range.end).toString(),
+          "proofDocument": await MultipartFile.fromFile(
+              file.path!,
+              filename: file.name
+          )
+        },
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Application Request Successful!")),
+      );
+    } catch(e){
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error")),
+      );
     }
   }
 
@@ -97,7 +135,7 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
               title: "Supporting Documents",
               child: ListTile(
                 leading: const Icon(Icons.upload_file),
-                title: Text(_pickedFile == null ? "Upload File (PDF/IMG)" : _pickedFile!.name),
+                title: Text(_pickedFile == null ? "Upload File (PDF/IMG) (Max. Size - 5MB)" : _pickedFile!.name),
                 subtitle: _pickedFile != null ? Text("${(_pickedFile!.size / 1024).toStringAsFixed(2)} KB") : null,
                 trailing: const Icon(Icons.attach_file),
                 onTap: _pickFile,
@@ -115,10 +153,20 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
               ),
               onPressed: () {
 
-                if (_selectedValue != null && _selectedDateRange != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Application Submitted successfully!")),
-                  );
+                if (_selectedValue != null && _selectedDateRange != null && _pickedFile!=null) {
+                  if ((_pickedFile!.size)/(1024*1024)>=5) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("File size limit - 5MB")),
+                    );
+                  }else if ((_selectedDateRange!.end.difference(_selectedDateRange!.start).inDays + 1)<5){
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Number of leave days must be >=5")),
+                    );
+                  }else {
+                    _sendRequest(reason: _selectedValue!,
+                        range: _selectedDateRange!,
+                        file: _pickedFile!);
+                  }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Please fill all fields")),
@@ -127,6 +175,23 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
               },
               child: const Text("Submit Application", style: TextStyle(color: Colors.white, fontSize: 16)),
             ),
+
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: const Color(0xFFE3F2FD),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LeaveApplicationListScreen(),
+                  ),
+                );
+              },
+              child: const Text("View history", style: TextStyle(color: Colors.blueAccent, fontSize: 14)),
+          ),
           ],
         ),
       ),

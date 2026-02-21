@@ -1,6 +1,11 @@
 const String baseUrl = "https://hab.codingclub.in/api";
 const String authUrl = "https://hab.codingclub.in/api";
 
+class MessRebateEndpoints {
+  static const String sendApplication = '$baseUrl/leave/apply';
+  static const String getApplications = '$baseUrl/leave/get';
+}
+
 class NotificationEndpoints {
   static const String registerToken = '$baseUrl/notification/register-token';
   static const String welcome = '$baseUrl/notification/welcome';
