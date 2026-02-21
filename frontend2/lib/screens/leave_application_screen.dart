@@ -5,6 +5,7 @@ import 'package:flutter_launcher_icons/constants.dart';
 import 'package:frontend2/apis/dio_client.dart';
 import 'package:frontend2/apis/protected.dart';
 import 'package:frontend2/constants/endpoint.dart';
+import 'package:frontend2/screens/leave_application_list_screen.dart';
 import 'package:intl/intl.dart';
 
 class LeaveApplicationScreen extends StatefulWidget {
@@ -174,6 +175,23 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
               },
               child: const Text("Submit Application", style: TextStyle(color: Colors.white, fontSize: 16)),
             ),
+
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: const Color(0xFFE3F2FD),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LeaveApplicationListScreen(),
+                  ),
+                );
+              },
+              child: const Text("View history", style: TextStyle(color: Colors.blueAccent, fontSize: 14)),
+          ),
           ],
         ),
       ),

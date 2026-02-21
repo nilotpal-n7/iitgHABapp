@@ -5,6 +5,7 @@ import 'package:flutter_launcher_icons/constants.dart';
 import 'package:frontend2/apis/dio_client.dart';
 import 'package:frontend2/apis/protected.dart';
 import 'package:frontend2/constants/endpoint.dart';
+import 'package:frontend2/screens/leave_application_screen.dart';
 import 'package:intl/intl.dart';
 
 class LeaveApplicationListScreen extends StatefulWidget {
@@ -58,6 +59,17 @@ class _LeaveApplicationListScreenState extends State<LeaveApplicationListScreen>
         title: const Text(
           "Applications List",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const LeaveApplicationScreen(),
+              ),
+            );
+          },
         ),
       ),
 
