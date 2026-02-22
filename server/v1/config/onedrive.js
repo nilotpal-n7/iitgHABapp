@@ -5,7 +5,7 @@ const settings = {
   authTenant: process.env.AUTH_TENANT || process.env.TENANT_ID || "common", // Authority to use for auth flows
   // Delegated scopes (configurable via env). Default to minimum required for /me/drive uploads.
   graphUserScopes: (
-    process.env.GRAPH_SCOPES || "User.Read offline_access Files.ReadWrite"
+    process.env.GRAPH_SCOPES || "User.Read offline_access"
   )
     .split(/\s+/)
     .filter(Boolean),
