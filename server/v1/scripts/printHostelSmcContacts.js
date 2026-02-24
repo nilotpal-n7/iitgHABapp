@@ -10,7 +10,7 @@ const { User } = require("../modules/user/userModel.js");
 const mongoUri = process.env.MONGODB_URI;
 const csvPath = path.resolve(
   __dirname,
-  "../hostel_office_secretary_emails_from_images - hostel_office_secretary_emails_from_images.csv"
+  "../hostel_office_secretary_emails_from_images - hostel_office_secretary_emails_from_images.csv",
 );
 
 function normalizeHostelName(value) {
@@ -108,7 +108,7 @@ async function applyCsvUpdates(filePath) {
   }
 
   console.log(
-    `\nUpdate summary: ${updatedCount} updated, ${unmatchedCount} unmatched CSV rows.\n`
+    `\nUpdate summary: ${updatedCount} updated, ${unmatchedCount} unmatched CSV rows.\n`,
   );
 }
 
@@ -120,7 +120,7 @@ async function printSmcCountsByHostel(title) {
   ]);
 
   const countMap = new Map(
-    smcCounts.map((entry) => [String(entry._id), entry.count])
+    smcCounts.map((entry) => [String(entry._id), entry.count]),
   );
 
   let total = 0;
@@ -134,7 +134,10 @@ async function printSmcCountsByHostel(title) {
 }
 
 async function removeAllSmcMembers() {
-  const result = await User.updateMany({ isSMC: true }, { $set: { isSMC: false } });
+  const result = await User.updateMany(
+    { isSMC: true },
+    { $set: { isSMC: false } },
+  );
   const modified = result.modifiedCount ?? result.nModified ?? 0;
   console.log(`Removed SMC flag from ${modified} user(s).`);
 }
@@ -152,9 +155,13 @@ async function printHostelSmcContacts() {
     await applyCsvUpdates(csvPath);
     await printHostelList("Hostel Office + Secretary Emails (After)");
 
-    await printSmcCountsByHostel("Number of SMC Members in Each Hostel (Before Removal)");
+    await printSmcCountsByHostel(
+      "Number of SMC Members in Each Hostel (Before Removal)",
+    );
     await removeAllSmcMembers();
-    await printSmcCountsByHostel("Number of SMC Members in Each Hostel (After Removal)");
+    await printSmcCountsByHostel(
+      "Number of SMC Members in Each Hostel (After Removal)",
+    );
 
     await mongoose.connection.close();
     process.exit(0);

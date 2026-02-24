@@ -7,7 +7,8 @@ const { getCurrentDate } = require("../../utils/date.js");
 
 const createHostel = async (req, res) => {
   try {
-    const { hostel_name, microsoft_email, secretary_email, curr_cap } = req.body;
+    const { hostel_name, microsoft_email, secretary_email, curr_cap } =
+      req.body;
 
     if (!microsoft_email) {
       return res.status(400).json({ message: "Microsoft email is required" });
@@ -76,7 +77,7 @@ const getHostelbyId = async (req, res) => {
 
     // Fetch users associated with this hostel (include phoneNumber & roomNumber)
     const users = await User.find({ hostel: hostelId }).select(
-      "name rollNumber email roomNumber phoneNumber degree curr_subscribed_mess"
+      "name rollNumber email roomNumber phoneNumber degree curr_subscribed_mess",
     );
     // Fetch all hostels with their mess information to map curr_subscribed_mess
     const hostelsWithMess = await Hostel.find().populate("messId", "name");
@@ -94,7 +95,7 @@ const getHostelbyId = async (req, res) => {
         curr_subscribed_mess_name: (() => {
           if (!user.curr_subscribed_mess) return "N/A";
           const subscribedHostel = hostelsWithMess.find(
-            (h) => h._id.toString() === user.curr_subscribed_mess.toString()
+            (h) => h._id.toString() === user.curr_subscribed_mess.toString(),
           );
           return subscribedHostel?.hostel_name || "N/A";
         })(),
@@ -120,7 +121,7 @@ const getAllHostelNameAndCaterer = async (req, res) => {
   try {
     const hostelData = await Hostel.find(
       {},
-      { hostel_name: 1, messId: 1 }
+      { hostel_name: 1, messId: 1 },
     ).populate({
       path: "messId",
       select: "name -_id",
@@ -134,7 +135,7 @@ const getAllHostelNameAndCaterer = async (req, res) => {
           ...hostel.toObject(),
           user_count: userCount,
         };
-      })
+      }),
     );
 
     res.status(200).json(hostelDataWithUserCount);
@@ -199,7 +200,7 @@ const getMessSubscribers = async (req, res) => {
     // Find all users subscribed to this hostel's mess
     const subscribers = await User.find({ curr_subscribed_mess: hostelId })
       .select(
-        "name rollNumber email roomNumber phoneNumber hostel curr_subscribed_mess"
+        "name rollNumber email roomNumber phoneNumber hostel curr_subscribed_mess",
       )
       .populate("hostel", "hostel_name")
       .populate("curr_subscribed_mess", "hostel_name");
@@ -250,7 +251,7 @@ const getMessSubscribersByHostelId = async (req, res) => {
 
     const subscribers = await User.find({ curr_subscribed_mess: hostelId })
       .select(
-        "name rollNumber email roomNumber phoneNumber hostel curr_subscribed_mess"
+        "name rollNumber email roomNumber phoneNumber hostel curr_subscribed_mess",
       )
       .populate("hostel", "hostel_name")
       .populate("curr_subscribed_mess", "hostel_name");
@@ -413,12 +414,12 @@ const finalizeMessClosure = async (req, res) => {
     const closure = await MessClosure.findOneAndUpdate(
       { hostelId, month, year },
       { hostelId, closureDate: new Date(date), month, year },
-      { upsert: true, new: true }
+      { upsert: true, new: true },
     );
 
     return res.status(200).json({
       message: "Mess closure date finalized successfully",
-      closure
+      closure,
     });
   } catch (err) {
     console.error(err);
@@ -437,15 +438,16 @@ const getMessClosureDate = async (req, res) => {
     const closure = await MessClosure.findOne({
       hostelId,
       month: currentMonth,
-      year: currentYear
+      year: currentYear,
     });
 
-    return res.status(200).json({ closureDate: closure ? closure.closureDate : null });
+    return res
+      .status(200)
+      .json({ closureDate: closure ? closure.closureDate : null });
   } catch (err) {
     return res.status(500).json({ message: "Error fetching closure date" });
   }
 };
-
 
 module.exports = {
   createHostel,
@@ -462,5 +464,5 @@ module.exports = {
   unmarkAsSMC,
   getSMCMembers,
   finalizeMessClosure,
-  getMessClosureDate
+  getMessClosureDate,
 };

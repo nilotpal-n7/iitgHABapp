@@ -55,13 +55,13 @@ messRouter.post(
   "/menu/item/like/:menuItemId",
   authenticateJWT,
   requireMicrosoftAuth,
-  toggleLikeMenuItem
+  toggleLikeMenuItem,
 );
 messRouter.post(
   "/scan/:messId",
   authenticateJWT,
   requireMicrosoftAuth,
-  ScanMess
+  ScanMess,
 );
 messRouter.post("/reassign/:messId", assignMessToHostel);
 messRouter.post("/change-hostel/:messId", changeHostel);
@@ -73,12 +73,12 @@ messRouter.post("/unassign/:messId", unassignMess);
 messRouter.post(
   "/menu/smc/:messId",
   authenticateUserOrAdminJWT,
-  getMessMenuByDayForSMC
+  getMessMenuByDayForSMC,
 );
 messRouter.post(
   "/menu/modify/smc/:messId",
   authenticateUserOrAdminJWT,
-  modifyMenuItemSMC
+  modifyMenuItemSMC,
 );
 
 // messRouter.post("/menu/modify/:messId", authenticateAdminJWT, modifyMenuItem);
@@ -88,6 +88,6 @@ messRouter.post(
 messRouter.post(
   "/menu/time/update/smc/:messId",
   authenticateUserOrAdminJWT,
-  updateTimeSMC
+  updateTimeSMC,
 );
 module.exports = messRouter;

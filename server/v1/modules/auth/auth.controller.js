@@ -25,7 +25,7 @@ const redirectUri = process.env.REDIRECT_URI;
 const getHostelAlloc = async (rollno) => {
   try {
     const allocation = await UserAllocHostel.findOne({ rollno }).populate(
-      "hostel"
+      "hostel",
     );
     return allocation?.hostel || null;
   } catch (err) {
@@ -37,7 +37,7 @@ const getHostelAlloc = async (rollno) => {
 const getCurrentSubscribedMess = async (rollno) => {
   try {
     const allocation = await UserAllocHostel.findOne({ rollno }).populate(
-      "current_subscribed_mess"
+      "current_subscribed_mess",
     );
     return allocation?.current_subscribed_mess || null;
   } catch (err) {
@@ -69,7 +69,7 @@ const mobileRedirectHandler = async (req, res, next) => {
     const tokenResp = await axios.post(
       `https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token`,
       data,
-      { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+      { headers: { "Content-Type": "application/x-www-form-urlencoded" } },
     );
 
     const accessToken = tokenResp.data.access_token;
@@ -83,7 +83,7 @@ const mobileRedirectHandler = async (req, res, next) => {
     if (!allocatedHostel)
       throw new AppError(
         401,
-        "Hostel allocation not found for this roll number"
+        "Hostel allocation not found for this roll number",
       );
 
     const currentSubscribedMess = await getCurrentSubscribedMess(roll);
@@ -134,8 +134,8 @@ const mobileRedirectHandler = async (req, res, next) => {
 
     return res.redirect(
       `iitghab://success?token=${token}&user=${encodeURIComponent(
-        existingUser.email
-      )}`
+        existingUser.email,
+      )}`,
     );
   } catch (error) {
     console.error("Error in mobileRedirectHandler:", error);
@@ -172,7 +172,7 @@ const webLoginHandler = async (req, res, next) => {
     const tokenResp = await axios.post(
       `https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token`,
       data,
-      { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+      { headers: { "Content-Type": "application/x-www-form-urlencoded" } },
     );
 
     const accessToken = tokenResp.data.access_token;
@@ -224,7 +224,7 @@ const webLoginHandler = async (req, res, next) => {
       baseUrl = process.env.SMC_FRONTEND_URL;
     }
     return res.redirect(
-      `${baseUrl}${redirectPath}?token=${encodeURIComponent(token)}`
+      `${baseUrl}${redirectPath}?token=${encodeURIComponent(token)}`,
     );
   } catch (err) {
     console.error("Error in webLoginHandler:", err);
@@ -310,15 +310,15 @@ const appleLoginHandler = async (req, res, next) => {
       // If user exists, update name and email if provided and not already linked to Microsoft
       // Once Microsoft is linked, don't overwrite with Apple data
       if (!existingUser.hasMicrosoftLinked) {
-        if (name && name.trim() !== '') {
+        if (name && name.trim() !== "") {
           existingUser.name = name;
         }
-        if (email && email.trim() !== '') {
+        if (email && email.trim() !== "") {
           existingUser.email = email;
         }
       } else {
         // If Microsoft is already linked, only update name if it's not already set from Microsoft
-        if (name && name.trim() !== '' && !existingUser.name) {
+        if (name && name.trim() !== "" && !existingUser.name) {
           existingUser.name = name;
         }
       }
@@ -360,7 +360,7 @@ const linkMicrosoftAccount = async (req, res, next) => {
     const tokenResp = await axios.post(
       `https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token`,
       data,
-      { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+      { headers: { "Content-Type": "application/x-www-form-urlencoded" } },
     );
 
     const accessToken = tokenResp.data.access_token;
@@ -373,7 +373,7 @@ const linkMicrosoftAccount = async (req, res, next) => {
     if (!roll) {
       throw new AppError(
         400,
-        "Invalid Microsoft account - roll number not found"
+        "Invalid Microsoft account - roll number not found",
       );
     }
 
@@ -425,7 +425,7 @@ const linkMicrosoftAccount = async (req, res, next) => {
 
       // Don't overwrite isSetupDone - persist Microsoft account's state
       // Microsoft account's isSetupDone is already set correctly, don't change it
-      
+
       // Delete the duplicate Apple/Guest-only user
       await User.findByIdAndDelete(userId);
 
@@ -457,7 +457,7 @@ const linkMicrosoftAccount = async (req, res, next) => {
     ) {
       throw new AppError(
         400,
-        "This roll number is already linked to another account"
+        "This roll number is already linked to another account",
       );
     }
 
@@ -466,7 +466,7 @@ const linkMicrosoftAccount = async (req, res, next) => {
     if (!allocatedHostel) {
       throw new AppError(
         400,
-        "Hostel allocation not found for this roll number"
+        "Hostel allocation not found for this roll number",
       );
     }
 
@@ -484,7 +484,7 @@ const linkMicrosoftAccount = async (req, res, next) => {
       ? currentSubscribedMess._id
       : allocatedHostel._id;
     currentUser.hasMicrosoftLinked = true; // Microsoft account = student account (surname exists)
-    
+
     // Update authProvider based on current provider
     if (currentUser.authProvider === "apple") {
       currentUser.authProvider = "both";
@@ -517,10 +517,10 @@ const linkMicrosoftAccount = async (req, res, next) => {
 const guestLoginHandler = async (req, res, next) => {
   try {
     const { email, password } = req.body || {};
-    
+
     // Backward compatibility: Old app versions send email/password, but we ignore them
     // New app versions send nothing, which is also fine
-    
+
     // Generate unique guest identifier (UUID) for this guest session
     const guestIdentifier = crypto.randomUUID();
 
@@ -538,12 +538,12 @@ const guestLoginHandler = async (req, res, next) => {
       authProvider: "guest",
       hasMicrosoftLinked: false,
     };
-    
+
     // Create user using Mongoose (normal approach - rollNumber is explicitly set so no conflicts)
     const existingUser = await User.create(userData);
 
     const token = existingUser.generateJWT();
-    return res.status(200).json({ 
+    return res.status(200).json({
       token,
       hasMicrosoftLinked: false,
     });
