@@ -7,7 +7,7 @@ const { getCurrentDate } = require("../../utils/date.js");
 
 const createHostel = async (req, res) => {
   try {
-    const { hostel_name, microsoft_email, curr_cap } = req.body;
+    const { hostel_name, microsoft_email, secretary_email, curr_cap } = req.body;
 
     if (!microsoft_email) {
       return res.status(400).json({ message: "Microsoft email is required" });
@@ -16,6 +16,7 @@ const createHostel = async (req, res) => {
     const hostel = await Hostel.create({
       hostel_name,
       microsoft_email,
+      secretary_email,
       curr_cap,
     });
 

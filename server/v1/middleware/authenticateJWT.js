@@ -47,4 +47,40 @@ function auth(Schema, param) {
 const authenticateJWT = auth(User, "user");
 const authenticateAdminJWT = auth(Hostel, "hostel");
 
-module.exports = { authenticateJWT, authenticateAdminJWT };
+const authenticateUserOrAdminJWT = async (req, res, next) => {
+  let token = req.cookies?.token;
+
+  if (req.headers?.authorization) {
+    const authHeader = req.headers.authorization;
+    if (authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
+    }
+  }
+
+  if (!token) return next(new AppError(403, "Invalid token"));
+
+  try {
+    const user = await User.findByJWT(token);
+    if (user) {
+      req.user = user;
+      return next();
+    }
+
+    const hostel = await Hostel.findByJWT(token);
+    if (hostel) {
+      req.hostel = hostel;
+      return next();
+    }
+
+    return next(new AppError(403, "Not Authenticated"));
+  } catch (err) {
+    console.error("Error verifying token:", err);
+    return next(new AppError(500, "Server error during authentication"));
+  }
+};
+
+module.exports = {
+  authenticateJWT,
+  authenticateAdminJWT,
+  authenticateUserOrAdminJWT,
+};

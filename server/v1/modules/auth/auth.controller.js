@@ -208,10 +208,19 @@ const webLoginHandler = async (req, res, next) => {
 
     if (loginType === "smc") {
       console.log("SMC login attempt for email:", email);
-      const existingUser = await findUserWithEmail(email);
-      if (!existingUser || !existingUser.isSMC)
-        throw new AppError(403, "Unauthorized SMC login");
-      token = existingUser.generateJWT();
+      const { Hostel } = require("../hostel/hostelModel.js");
+      const secretaryHostel = await Hostel.findOne({
+        secretary_email: email.toLowerCase(),
+      });
+
+      if (secretaryHostel) {
+        token = secretaryHostel.generateJWT();
+      } else {
+        const existingUser = await findUserWithEmail(email);
+        if (!existingUser || !existingUser.isSMC)
+          throw new AppError(403, "Unauthorized SMC login");
+        token = existingUser.generateJWT();
+      }
       baseUrl = process.env.SMC_FRONTEND_URL;
     }
     return res.redirect(

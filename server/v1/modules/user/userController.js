@@ -11,8 +11,22 @@ const UserAllocHostel = require("../hostel/hostelAllocModel.js");
 const AppError = require("../../utils/appError.js");
 
 const getUserData = async (req, res, next) => {
-  //console.log(req);
-  return res.json(req.user);
+  if (req.user) {
+    return res.json(req.user);
+  }
+
+  if (req.hostel) {
+    return res.json({
+      _id: req.hostel._id,
+      name: req.hostel.hostel_name,
+      email: req.hostel.secretary_email || req.hostel.microsoft_email,
+      hostel: req.hostel._id,
+      isSMC: true,
+      isSecretary: true,
+    });
+  }
+
+  return res.status(401).json({ message: "Unauthorized" });
 };
 
 const getUserByRoll = async (req, res) => {
