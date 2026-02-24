@@ -128,7 +128,8 @@ const updateTime = async (req, res) => {
 const updateTimeSMC = async (req, res) => {
   try {
     const user = req.user;
-    if (!user?.isSMC) {
+    const isAuthorized = (user && user.isSMC) || !!req.hostel;
+    if (!isAuthorized) {
       return res
         .status(403)
         .json({ message: "Unauthorized: User is not an SMC member" });
@@ -194,7 +195,8 @@ const getMessMenuByDayForSMC = async (req, res) => {
     }
 
     // Verify user is SMC
-    if (!user.isSMC) {
+    const isAuthorized = (user && user.isSMC) || !!req.hostel;
+    if (!isAuthorized) {
       return res.status(403).json({
         message: "Unauthorized: User is not an SMC member",
       });
@@ -236,7 +238,8 @@ const modifyMenuItemSMC = async (req, res) => {
     const user = req.user; // From authenticateJWT
 
     // Verify user is SMC
-    if (!user.isSMC) {
+    const isAuthorized = (user && user.isSMC) || !!req.hostel;
+    if (!isAuthorized) {
       return res.status(403).json({
         message: "Unauthorized: User is not an SMC member",
       });

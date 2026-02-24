@@ -1,5 +1,8 @@
 const express = require("express");
-const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
+const {
+  authenticateJWT,
+  authenticateUserOrAdminJWT,
+} = require("../../middleware/authenticateJWT.js");
 
 const {
   getUserData,
@@ -103,7 +106,7 @@ userRouter.post("/", createUser);
 //
 // userRouter.get('/roll/:roll', getUserByRoll);
 
-userRouter.get("/", authenticateJWT, getUserData);
+userRouter.get("/", authenticateUserOrAdminJWT, getUserData);
 
 // userRouter.delete("/:outlook", authenticateJWT, deleteUser);
 

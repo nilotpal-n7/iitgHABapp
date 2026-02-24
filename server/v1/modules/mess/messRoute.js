@@ -1,6 +1,9 @@
 const express = require("express");
-const { authenticateJWT } = require("../../middleware/authenticateJWT.js");
-const { authenticateAdminJWT } = require("../../middleware/authenticateJWT.js");
+const {
+  authenticateJWT,
+  authenticateAdminJWT,
+  authenticateUserOrAdminJWT,
+} = require("../../middleware/authenticateJWT.js");
 const {
   requireMicrosoftAuth,
 } = require("../../middleware/requireMicrosoftAuth.js");
@@ -52,13 +55,13 @@ messRouter.post(
   "/menu/item/like/:menuItemId",
   authenticateJWT,
   requireMicrosoftAuth,
-  toggleLikeMenuItem
+  toggleLikeMenuItem,
 );
 messRouter.post(
   "/scan/:messId",
   authenticateJWT,
   requireMicrosoftAuth,
-  ScanMess
+  ScanMess,
 );
 messRouter.post("/reassign/:messId", assignMessToHostel);
 messRouter.post("/change-hostel/:messId", changeHostel);
@@ -67,8 +70,16 @@ messRouter.post("/unassign/:messId", unassignMess);
 
 // messRouter.post("/menu/admin/:messId", authenticateAdminJWT, getMessMenuByDayForAdmin);
 
-messRouter.post("/menu/smc/:messId", authenticateJWT, getMessMenuByDayForSMC);
-messRouter.post("/menu/modify/smc/:messId", authenticateJWT, modifyMenuItemSMC);
+messRouter.post(
+  "/menu/smc/:messId",
+  authenticateUserOrAdminJWT,
+  getMessMenuByDayForSMC,
+);
+messRouter.post(
+  "/menu/modify/smc/:messId",
+  authenticateUserOrAdminJWT,
+  modifyMenuItemSMC,
+);
 
 // messRouter.post("/menu/modify/:messId", authenticateAdminJWT, modifyMenuItem);
 
@@ -76,7 +87,7 @@ messRouter.post("/menu/modify/smc/:messId", authenticateJWT, modifyMenuItemSMC);
 
 messRouter.post(
   "/menu/time/update/smc/:messId",
-  authenticateJWT,
-  updateTimeSMC
+  authenticateUserOrAdminJWT,
+  updateTimeSMC,
 );
 module.exports = messRouter;
