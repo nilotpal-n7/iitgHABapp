@@ -9,6 +9,12 @@ const { QR } = require("../qr/qrModel.js");
 const qrcode = require("qrcode");
 const { MessClosure } = require("../hostel/messClosureModel");
 
+const QR_CODE_DATA_URL_OPTIONS = {
+  width: 1024,
+  margin: 2,
+  type: "image/png",
+};
+
 const {
   getCurrentDate,
   getCurrentTime,
@@ -26,13 +32,16 @@ const createMess = async (req, res) => {
     const hostelRes = await Hostel.findByIdAndUpdate(
       hostelId,
       { messId: newMess._id },
-      { new: true }
+      { new: true },
     );
     if (!hostelRes) {
       return res.status(404).json({ message: "Hostel not found" });
     }
     await newMess.save();
-    const qrDataUrl = await qrcode.toDataURL(newMess._id.toString());
+    const qrDataUrl = await qrcode.toDataURL(
+      newMess._id.toString(),
+      QR_CODE_DATA_URL_OPTIONS,
+    );
     const QRres = new QR({
       qr_string: newMess._id.toString(),
       qr_base64: qrDataUrl,
@@ -60,7 +69,10 @@ const createMessWithoutHostel = async (req, res) => {
 
     const newMess = new Mess({ name });
     await newMess.save();
-    const qrDataUrl = await qrcode.toDataURL(newMess._id.toString());
+    const qrDataUrl = await qrcode.toDataURL(
+      newMess._id.toString(),
+      QR_CODE_DATA_URL_OPTIONS,
+    );
     const QRres = new QR({
       qr_string: newMess._id.toString(),
       qr_base64: qrDataUrl,
@@ -247,7 +259,7 @@ const getAllMessInfo = async (req, res) => {
         messObj.user_count = userCount.length;
 
         return messObj;
-      })
+      }),
     );
     console.log("All messes with hostel names:", messesWithHostelName);
 
@@ -302,13 +314,13 @@ const getMessMenuByDay = async (req, res) => {
     const todayDate = new Date(currentDate);
     const isClosed = await MessClosure.findOne({
       hostelId: mess.hostelId,
-      closureDate: todayDate
+      closureDate: todayDate,
     });
 
     if (isClosed) {
       return res.status(200).json({
         isMessClosed: true,
-        message: "The mess is closed today as per the monthly schedule."
+        message: "The mess is closed today as per the monthly schedule.",
       });
     }
 
@@ -404,7 +416,7 @@ const toggleLikeMenuItem = async (req, res) => {
 
     if (menuItem.likes.includes(userId)) {
       menuItem.likes = menuItem.likes.filter(
-        (id) => id.toString() !== userId.toString()
+        (id) => id.toString() !== userId.toString(),
       );
       await menuItem.save();
       return res
@@ -514,12 +526,12 @@ const ScanMess = async (req, res) => {
     // Check for closure BEFORE scanning
     const closureRecord = await MessClosure.findOne({
       hostelId: messInfo.hostelId,
-      closureDate: new Date(currentDate)
+      closureDate: new Date(currentDate),
     });
     if (closureRecord) {
       return res.status(400).json({
         message: "Scan failed: Mess is closed today.",
-        success: false
+        success: false,
       });
     }
 
@@ -584,7 +596,7 @@ const ScanMess = async (req, res) => {
         scanLog.breakfast = true;
         // Set breakfastTime in Kolkata timezone
         scanLog.breakfastTime = new Date(
-          new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+          new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
         );
       }
     } else if (
@@ -597,7 +609,7 @@ const ScanMess = async (req, res) => {
       else {
         scanLog.lunch = true;
         scanLog.lunchTime = new Date(
-          new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+          new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
         );
       }
     } else if (
@@ -610,7 +622,7 @@ const ScanMess = async (req, res) => {
       else {
         scanLog.dinner = true;
         scanLog.dinnerTime = new Date(
-          new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+          new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
         );
       }
     }
@@ -642,7 +654,7 @@ const ScanMess = async (req, res) => {
 
     // Get current time in Kolkata timezone
     const kolkataTime = new Date(
-      new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
     );
 
     return res.status(200).json({
@@ -687,8 +699,9 @@ const formatDate = (date) => {
     "Nov",
     "Dec",
   ];
-  return `${dateObj.getDate()} ${months[dateObj.getMonth()]
-    } ${dateObj.getFullYear()}`;
+  return `${dateObj.getDate()} ${
+    months[dateObj.getMonth()]
+  } ${dateObj.getFullYear()}`;
 };
 
 const getUnassignedMess = async (req, res) => {
@@ -711,7 +724,7 @@ const assignMessToHostel = async (req, res) => {
       messId,
       { hostelId: hostelId },
       { hostel_name: req.body.hostelName },
-      { new: true }
+      { new: true },
     );
     if (!newMess) {
       return res.status(404).json({ message: "Mess not found" });
@@ -722,7 +735,7 @@ const assignMessToHostel = async (req, res) => {
         oldMessId,
         { hostelId: null },
         { hostel_name: null },
-        { new: true }
+        { new: true },
       );
       if (!oldMess) {
         return res.status(404).json({ message: "Old mess not found" });
@@ -732,7 +745,7 @@ const assignMessToHostel = async (req, res) => {
     const hostelRes = await Hostel.findByIdAndUpdate(
       hostelId,
       { messId: messId },
-      { new: true }
+      { new: true },
     );
 
     if (!hostelRes) {
@@ -759,7 +772,7 @@ const changeHostel = async (req, res) => {
     const newMess = await Mess.findByIdAndUpdate(
       messId,
       { hostelId: hostelId },
-      { new: true }
+      { new: true },
     );
     if (!newMess) {
       return res.status(404).json({ message: "Mess not found" });
@@ -768,7 +781,7 @@ const changeHostel = async (req, res) => {
     const oldHostel = await Hostel.findByIdAndUpdate(
       oldHostelId,
       { messId: null },
-      { new: true }
+      { new: true },
     );
     if (!oldHostel) {
       return res.status(404).json({ message: "Old Hostel not found" });
@@ -777,7 +790,7 @@ const changeHostel = async (req, res) => {
     const hostelRes = await Hostel.findByIdAndUpdate(
       hostelId,
       { messId: messId },
-      { new: true }
+      { new: true },
     );
 
     if (!hostelRes) {
@@ -813,7 +826,7 @@ const unassignMess = async (req, res) => {
     const updatedMess = await Mess.findByIdAndUpdate(
       messId,
       { hostelId: null },
-      { new: true }
+      { new: true },
     );
     console.log("Updated mess:", updatedMess);
 
@@ -822,7 +835,7 @@ const unassignMess = async (req, res) => {
       const updatedHostel = await Hostel.findByIdAndUpdate(
         hostelId,
         { messId: null },
-        { new: true }
+        { new: true },
       );
       console.log("Updated hostel:", updatedHostel);
     }

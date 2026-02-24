@@ -87,7 +87,10 @@ class _CommentPageState extends State<CommentPage> {
         );
         provider.clear();
         if (!mounted) return;
-        navigator.popUntil((route) => route.isFirst);
+        navigator.pop();
+        if (navigator.canPop()) {
+          navigator.pop();
+        }
       } else {
         messenger.showSnackBar(
           SnackBar(content: Text('Error: ${response.body}')),
@@ -104,7 +107,6 @@ class _CommentPageState extends State<CommentPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         leading: const BackButton(),
