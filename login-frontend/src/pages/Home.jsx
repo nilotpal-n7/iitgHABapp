@@ -185,72 +185,35 @@ export default function Home() {
           console.error("Error fetching total scan logs count:", scanLogsError);
         }
 
-        // Fetch user count (students) - try multiple methods
-        let studentCountFetched = false;
-
-        // Method 1: Try to get user count from hostel data (most reliable)
+        // Fetch user count (students)
         try {
-          const hostelResponse = await fetch(`${apiBase}/hostel/gethnc`, {
-            method: "POST",
+          const userResponse = await fetch(`${apiBase}/users/count`, {
+            method: "GET",
             headers: {
               "Content-Type": "application/json",
             },
           });
 
-          if (hostelResponse.ok) {
-            const hostelData = await hostelResponse.json();
-            if (Array.isArray(hostelData)) {
-              const totalStudents = hostelData.reduce(
-                (sum, hostel) => sum + (hostel.user_count || 0),
-                0,
-              );
-              if (totalStudents > 0) {
-                setLiveStats((prev) => ({
-                  ...prev,
-                  students: totalStudents.toLocaleString(),
-                }));
-                studentCountFetched = true;
-              }
-            }
-          }
-        } catch (hostelError) {
-          console.warn(
-            "Error fetching hostel data for user count:",
-            hostelError,
-          );
-        }
-
-        // Method 2: If hostel method didn't work, try to get user count from count endpoint
-        if (!studentCountFetched) {
-          try {
-            const userResponse = await fetch(`${apiBase}/users/count`, {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            });
-
-            if (userResponse.ok) {
-              const userData = await userResponse.json();
-              if (typeof userData?.count === "number") {
-                const studentCount = userData.count;
-                setLiveStats((prev) => ({
-                  ...prev,
-                  students: studentCount.toLocaleString(),
-                }));
-              } else {
-                console.warn("User count payload is invalid:", userData);
-              }
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
+            if (typeof userData?.count === "number") {
+              const studentCount = userData.count;
+              setLiveStats((prev) => ({
+                ...prev,
+                students: studentCount.toLocaleString(),
+              }));
             } else {
-              console.error(
-                "Failed to fetch user count:",
-                userResponse.status,
-                userResponse.statusText,
-              );
+              console.warn("User count payload is invalid:", userData);
             }
-          } catch (userError) {
-            console.error("Error fetching user count:", userError);
+          } else {
+            console.error(
+              "Failed to fetch user count:",
+              userResponse.status,
+              userResponse.statusText,
+            );
           }
+        } catch (userError) {
+          console.error("Error fetching user count:", userError);
         }
       } catch (error) {
         console.error("Error fetching stats:", error);

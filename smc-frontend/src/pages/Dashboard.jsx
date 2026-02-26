@@ -53,7 +53,7 @@ export const Dashboard = () => {
     try {
       if (!user?.hostel) return null;
       const response = await axios.get(
-        `${API_BASE_URL}/hostel/all/${user.hostel}`
+        `${API_BASE_URL}/hostel/all/smc/${user.hostel}`,
       );
       return response.data.hostel;
     } catch (err) {
@@ -84,7 +84,7 @@ export const Dashboard = () => {
       setIsLoading(true);
       const response = await axios.post(
         `${API_BASE_URL}/mess/menu/smc/${messId}`,
-        { day: days[activeTab] }
+        { day: days[activeTab] },
       );
 
       if (response.data === "DoesntExist") {
