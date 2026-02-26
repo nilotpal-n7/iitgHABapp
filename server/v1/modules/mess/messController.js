@@ -303,7 +303,7 @@ const getMessMenuByDay = async (req, res) => {
       return res.status(400).json({ message: "Mess ID and day are required" });
     }
 
-    const menu = await Menu.find({ messId, day });
+    const menu = await Menu.find({ messId, day }).sort({ startTime: 1 });
     if (!menu || menu.length === 0) {
       return res.status(404).json({ message: "Menu not found" });
     }
@@ -357,7 +357,7 @@ const getMessMenuByDayForAdminHAB = async (req, res) => {
       return res.status(400).json({ message: "Mess ID and day are required" });
     }
 
-    const menu = await Menu.find({ messId, day });
+    const menu = await Menu.find({ messId, day }).sort({ startTime: 1 });
     if (!menu || menu.length === 0) {
       return res.status(404).json({ message: "Menu not found" });
     }
