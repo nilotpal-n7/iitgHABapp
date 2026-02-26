@@ -220,10 +220,10 @@ export default function Home() {
           );
         }
 
-        // Method 2: If hostel method didn't work, try to get all users and count
+        // Method 2: If hostel method didn't work, try to get user count from count endpoint
         if (!studentCountFetched) {
           try {
-            const userResponse = await fetch(`${apiBase}/users/all`, {
+            const userResponse = await fetch(`${apiBase}/users/count`, {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",
@@ -232,18 +232,18 @@ export default function Home() {
 
             if (userResponse.ok) {
               const userData = await userResponse.json();
-              if (Array.isArray(userData)) {
-                const studentCount = userData.length;
+              if (typeof userData?.count === "number") {
+                const studentCount = userData.count;
                 setLiveStats((prev) => ({
                   ...prev,
                   students: studentCount.toLocaleString(),
                 }));
               } else {
-                console.warn("User data is not an array:", userData);
+                console.warn("User count payload is invalid:", userData);
               }
             } else {
               console.error(
-                "Failed to fetch users:",
+                "Failed to fetch user count:",
                 userResponse.status,
                 userResponse.statusText,
               );
