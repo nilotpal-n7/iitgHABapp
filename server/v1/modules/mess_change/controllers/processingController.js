@@ -1,5 +1,6 @@
 const { User } = require("../../user/userModel.js");
 const { Hostel } = require("../../hostel/hostelModel.js");
+const UserAllocHostel = require("../../hostel/hostelAllocModel.js");
 const { MessChange } = require("../messChangeModel.js");
 const { MessChangeSettings } = require("../messChangeSettingsModel.js");
 const {
@@ -16,20 +17,39 @@ const {
  * upperCap =
  *   - floor(1.2 * max_capacity) when max_capacity < 400
  *   - floor(1.15 * max_capacity) when 400 <= max_capacity < 1000
- *   - floor(1.1 * max_capacity) when max_capacity >= 1000
+ *   - floor(1.1 * max_capacity) when max_capacity = 1000
+ *   - floor(1.05 * max_capacity) when max_capacity > 1000
  * lowerCap = floor(0.9 * max_capacity)
  */
 const initializeCapacityTracker = async (hostels) => {
   const capacityTracker = {};
 
+  const subscriberRows = await UserAllocHostel.aggregate([
+    {
+      $match: {
+        current_subscribed_mess: { $ne: null },
+      },
+    },
+    {
+      $group: {
+        _id: "$current_subscribed_mess",
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const subscriberByHostel = new Map(
+    subscriberRows.map((row) => [String(row._id), row.count]),
+  );
+
   for (const hostel of hostels) {
-    const current = await User.countDocuments({
-      curr_subscribed_mess: hostel._id,
-    });
+    const current = subscriberByHostel.get(hostel._id.toString()) || 0;
 
     const maxCap = hostel.curr_cap || 200;
     let upperMultiplier = 1.2;
-    if (maxCap >= 1000) {
+    if (maxCap > 1000) {
+      upperMultiplier = 1.05;
+    } else if (maxCap === 1000) {
       upperMultiplier = 1.1;
     } else if (maxCap >= 400) {
       upperMultiplier = 1.15;
@@ -51,6 +71,11 @@ const initializeCapacityTracker = async (hostels) => {
 /**
  * Sort users by FCFS priority
  */
+const normalizeRoll = (value) =>
+  value === null || value === undefined
+    ? ""
+    : String(value).trim().toUpperCase();
+
 const sortUsersByPriority = (users) =>
   users.sort((a, b) => a.applied_hostel_timestamp - b.applied_hostel_timestamp);
 
@@ -60,16 +85,18 @@ const sortUsersByPriority = (users) =>
  * - upper cap on entry
  * - lower cap on exit
  */
-const processUsersInIterations = (users, capacityTracker) => {
+const processUsersInIterations = async (users, capacityTracker) => {
   const queue = sortUsersByPriority([...users]);
   const state = new Map();
 
   for (const u of queue) {
+    const hostelId = u.hostel?.toString() || null;
     state.set(u._id.toString(), {
       id: u._id.toString(),
       name: u.name,
       rollNumber: u.rollNumber,
-      currentMess: u.curr_subscribed_mess?.toString() || u.hostel?.toString(),
+      hostelId,
+      currentMess: hostelId,
       prefs: [
         u.next_mess1?.toString() || null,
         u.next_mess2?.toString() || null,
@@ -139,7 +166,7 @@ const processUsersInIterations = (users, capacityTracker) => {
       id: u._id,
       name: u.name,
       rollNumber: u.rollNumber,
-      fromHostelId: u.hostel,
+      fromHostelId: state.get(u._id.toString())?.hostelId || u.hostel,
       toHostelId: null,
     }));
 
@@ -151,16 +178,21 @@ const processUsersInIterations = (users, capacityTracker) => {
  */
 const resetAllUsersToHostel = async () => {
   try {
-    const usersToReset = await User.find({
-      $expr: {
-        $ne: [{ $toString: "$curr_subscribed_mess" }, { $toString: "$hostel" }],
-      },
-    });
+    const allocations = await UserAllocHostel.find({});
 
-    for (const user of usersToReset) {
-      user.curr_subscribed_mess = user.hostel;
-      user.got_mess_changed = false;
-      await user.save();
+    for (const allocation of allocations) {
+      allocation.current_subscribed_mess = allocation.hostel;
+      await allocation.save();
+
+      await User.updateOne(
+        { rollNumber: allocation.rollno },
+        {
+          $set: {
+            curr_subscribed_mess: allocation.hostel,
+            got_mess_changed: false,
+          },
+        },
+      );
     }
   } catch (err) {
     console.error("Error resetting users to hostel:", err);
@@ -174,6 +206,18 @@ const updateAcceptedUsers = async (acceptedUsers) => {
   for (const a of acceptedUsers) {
     const user = await User.findById(a.id);
     if (!user) continue;
+
+    if (user.rollNumber) {
+      await UserAllocHostel.updateOne(
+        { rollno: normalizeRoll(user.rollNumber) },
+        {
+          $set: {
+            current_subscribed_mess: a.toHostelId,
+          },
+        },
+        { upsert: false },
+      );
+    }
 
     const [fromHostel, toHostel] = await Promise.all([
       Hostel.findById(a.fromHostelId),
@@ -191,10 +235,10 @@ const updateAcceptedUsers = async (acceptedUsers) => {
     await user.save();
 
     await MessChange.findOneAndUpdate(
-      { rollNumber: user.rollNumber },
+      { rollNumber: normalizeRoll(user.rollNumber) },
       {
         userName: user.name,
-        rollNumber: user.rollNumber,
+        rollNumber: normalizeRoll(user.rollNumber),
         fromHostel: fromHostel?.hostel_name || "Unknown",
         toHostel: toHostel?.hostel_name || "Unknown",
         toHostel1: toHostel?.hostel_name || "Unknown",
@@ -220,6 +264,19 @@ const updateRejectedUsers = async (rejectedUsers) => {
     const user = await User.findById(r.id);
     if (!user) continue;
 
+    if (user.rollNumber) {
+      await UserAllocHostel.updateOne(
+        { rollno: normalizeRoll(user.rollNumber) },
+        {
+          $set: {
+            current_subscribed_mess: user.hostel,
+          },
+        },
+        { upsert: false },
+      );
+    }
+
+    user.curr_subscribed_mess = user.hostel;
     user.applied_for_mess_changed = false;
     user.applied_hostel_string = "";
     user.next_mess1 = null;
