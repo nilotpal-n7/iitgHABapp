@@ -228,7 +228,11 @@ const getUserMessInfo = async (req, res) => {
     if (!messInfo) {
       return res.status(404).json({ message: "Mess not found" });
     }
-    return res.status(200).json(messInfo);
+    // Ensure rating and ranking are always integers
+    const messObj = messInfo.toObject();
+    messObj.rating = messObj.rating ? Math.round(messObj.rating) : 0;
+    messObj.ranking = messObj.ranking ? Math.round(messObj.ranking) : 0;
+    return res.status(200).json(messObj);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
@@ -252,6 +256,10 @@ const getAllMessInfo = async (req, res) => {
         } else {
           messObj.hostelName = null;
         }
+
+        // Ensure rating and ranking are always integers
+        messObj.rating = messObj.rating ? Math.round(messObj.rating) : 0;
+        messObj.ranking = messObj.ranking ? Math.round(messObj.ranking) : 0;
 
         const userCount = await User.find({
           curr_subscribed_mess: messObj.hostelId,
