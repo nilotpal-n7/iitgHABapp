@@ -14,12 +14,6 @@ const {
 
 /**
  * Initialize capacity tracker
- * upperCap =
- *   - floor(1.2 * max_capacity) when max_capacity < 400
- *   - floor(1.15 * max_capacity) when 400 <= max_capacity < 1000
- *   - floor(1.1 * max_capacity) when max_capacity = 1000
- *   - floor(1.05 * max_capacity) when max_capacity > 1000
- * lowerCap = floor(0.9 * max_capacity)
  */
 const initializeCapacityTracker = async (hostels) => {
   const capacityTracker = {};
@@ -71,19 +65,11 @@ const initializeCapacityTracker = async (hostels) => {
 /**
  * Sort users by FCFS priority
  */
-const normalizeRoll = (value) =>
-  value === null || value === undefined
-    ? ""
-    : String(value).trim().toUpperCase();
-
 const sortUsersByPriority = (users) =>
   users.sort((a, b) => a.applied_hostel_timestamp - b.applied_hostel_timestamp);
 
 /**
- * Core processing function:
- * Restart-based FCFS with
- * - upper cap on entry
- * - lower cap on exit
+ * Core FCFS processing
  */
 const processUsersInIterations = async (users, capacityTracker) => {
   const queue = sortUsersByPriority([...users]);
@@ -91,6 +77,7 @@ const processUsersInIterations = async (users, capacityTracker) => {
 
   for (const u of queue) {
     const hostelId = u.hostel?.toString() || null;
+
     state.set(u._id.toString(), {
       id: u._id.toString(),
       name: u.name,
@@ -115,7 +102,6 @@ const processUsersInIterations = async (users, capacityTracker) => {
       const st = state.get(user._id.toString());
       if (!st || st.resolved) continue;
 
-      // Find highest available preference
       let target = null;
       for (const pref of st.prefs) {
         if (pref && capacityTracker[pref]?.available > 0) {
@@ -128,12 +114,10 @@ const processUsersInIterations = async (users, capacityTracker) => {
       const from = st.currentMess;
       const fromTracker = capacityTracker[from];
 
-      // Lower bound (90%) check
       if (fromTracker && fromTracker.current - 1 < fromTracker.lowerCap) {
         continue;
       }
 
-      // Perform move
       capacityTracker[target].available -= 1;
       capacityTracker[target].current += 1;
 
@@ -174,28 +158,24 @@ const processUsersInIterations = async (users, capacityTracker) => {
 };
 
 /**
- * Reset all users back to their hostel
+ * Reset all users back to hostel
  */
 const resetAllUsersToHostel = async () => {
-  try {
-    const allocations = await UserAllocHostel.find({});
+  const allocations = await UserAllocHostel.find({});
 
-    for (const allocation of allocations) {
-      allocation.current_subscribed_mess = allocation.hostel;
-      await allocation.save();
+  for (const allocation of allocations) {
+    allocation.current_subscribed_mess = allocation.hostel;
+    await allocation.save();
 
-      await User.updateOne(
-        { rollNumber: allocation.rollno },
-        {
-          $set: {
-            curr_subscribed_mess: allocation.hostel,
-            got_mess_changed: false,
-          },
+    await User.updateOne(
+      { rollNumber: allocation.rollno },
+      {
+        $set: {
+          curr_subscribed_mess: allocation.hostel,
+          got_mess_changed: false,
         },
-      );
-    }
-  } catch (err) {
-    console.error("Error resetting users to hostel:", err);
+      },
+    );
   }
 };
 
@@ -209,13 +189,8 @@ const updateAcceptedUsers = async (acceptedUsers) => {
 
     if (user.rollNumber) {
       await UserAllocHostel.updateOne(
-        { rollno: normalizeRoll(user.rollNumber) },
-        {
-          $set: {
-            current_subscribed_mess: a.toHostelId,
-          },
-        },
-        { upsert: false },
+        { rollno: user.rollNumber },
+        { $set: { current_subscribed_mess: a.toHostelId } },
       );
     }
 
@@ -235,10 +210,10 @@ const updateAcceptedUsers = async (acceptedUsers) => {
     await user.save();
 
     await MessChange.findOneAndUpdate(
-      { rollNumber: normalizeRoll(user.rollNumber) },
+      { rollNumber: user.rollNumber },
       {
         userName: user.name,
-        rollNumber: normalizeRoll(user.rollNumber),
+        rollNumber: user.rollNumber,
         fromHostel: fromHostel?.hostel_name || "Unknown",
         toHostel: toHostel?.hostel_name || "Unknown",
         toHostel1: toHostel?.hostel_name || "Unknown",
@@ -266,13 +241,8 @@ const updateRejectedUsers = async (rejectedUsers) => {
 
     if (user.rollNumber) {
       await UserAllocHostel.updateOne(
-        { rollno: normalizeRoll(user.rollNumber) },
-        {
-          $set: {
-            current_subscribed_mess: user.hostel,
-          },
-        },
-        { upsert: false },
+        { rollno: user.rollNumber },
+        { $set: { current_subscribed_mess: user.hostel } },
       );
     }
 
@@ -325,10 +295,10 @@ const processAllMessChangeRequests = async (req, res) => {
     const hostels = await Hostel.find({});
     const capacityTracker = await initializeCapacityTracker(hostels);
 
-    const { acceptedUsers, rejectedUsers } = processUsersInIterations(
+    const { acceptedUsers, rejectedUsers } = await processUsersInIterations(
       users,
       capacityTracker,
-    );
+    ); // ✅ async fix
 
     await updateAcceptedUsers(acceptedUsers);
     await updateRejectedUsers(rejectedUsers);
