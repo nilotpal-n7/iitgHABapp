@@ -466,6 +466,10 @@ const disableFeedback = async (req, res) => {
     s.isEnabled = false;
     s.disabledAt = new Date();
     await s.save();
+    // Call updateAllMessRatingsAndRankings with the just-closed window number
+    if (typeof s.currentWindowNumber === "number") {
+      await updateAllMessRatingsAndRankings(s.currentWindowNumber);
+    }
     return res.status(200).json({ message: "Feedback disabled", data: s });
   } catch (e) {
     return res
@@ -523,6 +527,10 @@ const disableFeedbackAutomatic = async () => {
     s.isEnabled = false;
     s.disabledAt = new Date();
     await s.save();
+    // Call updateAllMessRatingsAndRankings with the just-closed window number
+    if (typeof s.currentWindowNumber === "number") {
+      await updateAllMessRatingsAndRankings(s.currentWindowNumber);
+    }
 
     console.log("✅ Feedback disabled automatically");
     return { success: true, settings: s };
@@ -961,6 +969,159 @@ const getFeedbackWindowTimeLeft = async (req, res) => {
   }
 };
 
+const updateAllMessRatingsAndRankings = async (windowNumber) => {
+  if (typeof windowNumber !== "number") return;
+
+  // Get all messes
+  const messes = await Mess.find({});
+  if (!messes.length) return;
+
+  // Get all hostels — map messId → hostel._id (fixed: was inverting the relationship)
+  const hostels = await Hostel.find({});
+  const hostelByMess = new Map();
+  for (const hostel of hostels) {
+    if (hostel.messId) hostelByMess.set(String(hostel.messId), hostel._id);
+  }
+
+  // Get feedbacks only for the specified window
+  const feedbacks = await Feedback.find({ feedbackWindowNumber: windowNumber })
+    .populate("user", "isSMC")
+    .lean();
+
+  // Get subscriber counts per hostel (fixed: now actually filters to relevant hostelIds)
+  const relevantHostelIds = Array.from(hostelByMess.values());
+  const subscriberRows = await UserAllocHostel.aggregate([
+    {
+      $match: {
+        $or: [
+          { current_subscribed_mess: { $in: relevantHostelIds } },
+          { hostel: { $in: relevantHostelIds } },
+        ],
+      },
+    },
+    {
+      $project: {
+        subscribedHostel: { $ifNull: ["$current_subscribed_mess", "$hostel"] },
+      },
+    },
+    {
+      $group: {
+        _id: "$subscribedHostel",
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+  const subscriberByHostel = new Map(
+    subscriberRows.map((row) => [String(row._id), row.count]),
+  );
+
+  const ratingMap = {
+    "Very Poor": 1,
+    Poor: 2,
+    Average: 3,
+    Good: 4,
+    "Very Good": 5,
+  };
+
+  // Group feedbacks by mess
+  const groups = new Map();
+
+  // Pre-initialise all messes so zero-feedback ones still get updated (fixed: stale ratings)
+  for (const mess of messes) {
+    groups.set(String(mess._id), {
+      totalUsers: 0,
+      breakfastSum: 0,
+      lunchSum: 0,
+      dinnerSum: 0,
+      smc: {
+        hygieneSum: 0,
+        wasteDisposalSum: 0,
+        qualitySum: 0,
+        uniformSum: 0,
+        count: 0,
+      },
+    });
+  }
+
+  for (const fb of feedbacks) {
+    const messId = fb.caterer ? String(fb.caterer) : null;
+    if (!messId || !groups.has(messId)) continue;
+
+    const g = groups.get(messId);
+    g.totalUsers += 1;
+    g.breakfastSum += ratingMap[fb.breakfast] || 0;
+    g.lunchSum += ratingMap[fb.lunch] || 0;
+    g.dinnerSum += ratingMap[fb.dinner] || 0;
+
+    if (fb.user?.isSMC && fb.smcFields) {
+      g.smc.hygieneSum += ratingMap[fb.smcFields.hygiene] || 0;
+      g.smc.wasteDisposalSum += ratingMap[fb.smcFields.wasteDisposal] || 0;
+      g.smc.qualitySum += ratingMap[fb.smcFields.qualityOfIngredients] || 0;
+      g.smc.uniformSum += ratingMap[fb.smcFields.uniformAndPunctuality] || 0;
+      g.smc.count += 1;
+    }
+  }
+
+  // Compute OPI and ranking for all messes using the same logic as getFeedbackLeaderboardByWindow
+  const rows = [];
+  for (const [messId, g] of groups) {
+    const hostelId = hostelByMess.get(messId);
+    const subscriberCount = hostelId
+      ? subscriberByHostel.get(String(hostelId)) || 0
+      : 0;
+
+    const avgBreakfast = computeMealOpi({
+      mealSum: g.breakfastSum,
+      responseCount: g.totalUsers,
+      subscriberCount,
+    });
+    const avgLunch = computeMealOpi({
+      mealSum: g.lunchSum,
+      responseCount: g.totalUsers,
+      subscriberCount,
+    });
+    const avgDinner = computeMealOpi({
+      mealSum: g.dinnerSum,
+      responseCount: g.totalUsers,
+      subscriberCount,
+    });
+    const avgHygiene = g.smc.count ? g.smc.hygieneSum / g.smc.count : null;
+    const avgWasteDisposal = g.smc.count
+      ? g.smc.wasteDisposalSum / g.smc.count
+      : null;
+    const avgQualityOfIngredients = g.smc.count
+      ? g.smc.qualitySum / g.smc.count
+      : null;
+    const avgUniformAndPunctuality = g.smc.count
+      ? g.smc.uniformSum / g.smc.count
+      : null;
+
+    let overall = computeOverallOpi({
+      breakfastAvg: avgBreakfast,
+      lunchAvg: avgLunch,
+      dinnerAvg: avgDinner,
+      uniformAvg: avgUniformAndPunctuality ?? 0,
+      cleanlinessAvg: avgHygiene ?? 0,
+      wasteAvg: avgWasteDisposal ?? 0,
+      qualityAvg: avgQualityOfIngredients ?? 0,
+    });
+    // Round to two decimal places before storing
+    overall = Math.round(overall * 100) / 100;
+
+    rows.push({ messId, overall });
+  }
+
+  rows.sort((a, b) => b.overall - a.overall);
+  rows.forEach((r, i) => (r.rank = i + 1));
+
+  // Fixed: bulk update instead of sequential awaits
+  await Promise.all(
+    rows.map((r) =>
+      Mess.findByIdAndUpdate(r.messId, { rating: r.overall, ranking: r.rank }),
+    ),
+  );
+};
+
 module.exports = {
   submitFeedback,
   removeFeedback,
@@ -977,4 +1138,5 @@ module.exports = {
   checkFeedbackSubmitted,
   getFeedbackWindowTimeLeft,
   getFeedbacksByCaterer,
+  updateAllMessRatingsAndRankings,
 };
