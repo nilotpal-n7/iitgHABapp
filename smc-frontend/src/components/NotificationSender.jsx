@@ -30,7 +30,7 @@ const NotificationSender = () => {
 
       // Get hostel name from user's hostel
       const response = await axios.get(
-        `${API_BASE_URL}/hostel/all/${user.hostel}`
+        `${API_BASE_URL}/hostel/all/smc/${user.hostel}`,
       );
       const hostelName =
         response.data.hostel?.hostel_name?.replaceAll(" ", "_") || "";

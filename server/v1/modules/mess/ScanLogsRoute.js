@@ -6,11 +6,12 @@ const {
   // createLogs,
   // deleteall
 } = require("./ScanLogsController");
+const { authenticateHabJWT } = require("../../middleware/authenticateJWT");
 
 const scanLogsRouter = express.Router();
 
-scanLogsRouter.get("/get/:date", statsByDate);
-scanLogsRouter.get("/total", getTotalScanLogsCount);
+scanLogsRouter.get("/get/:date", authenticateHabJWT, statsByDate);
+scanLogsRouter.get("/total", authenticateHabJWT, getTotalScanLogsCount);
 // scanLogsRouter.post("/make", createLogs)
 // scanLogsRouter.delete("/delete", deleteall)
 

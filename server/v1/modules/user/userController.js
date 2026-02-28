@@ -210,6 +210,16 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+const getUserCount = async (req, res) => {
+  try {
+    const count = await User.countDocuments();
+    return res.status(200).json({ count });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Error fetching user count" });
+  }
+};
+
 const getUsersByHostelForMess = async (req, res) => {
   try {
     const { hostelId } = req.params;
@@ -392,6 +402,7 @@ module.exports = {
   getUserComplaints,
   getUserByRoll,
   getAllUsers,
+  getUserCount,
   getUsersByHostelForMess,
   deleteUserAccount,
 };

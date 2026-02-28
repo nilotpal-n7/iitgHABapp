@@ -1,6 +1,7 @@
 const { User } = require("../modules/user/userModel.js");
 const { Hostel } = require("../modules/hostel/hostelModel.js");
 const AppError = require("../utils/appError.js");
+const jwt = require("jsonwebtoken");
 
 function auth(Schema, param) {
   return async function (req, res, next) {
@@ -79,8 +80,33 @@ const authenticateUserOrAdminJWT = async (req, res, next) => {
   }
 };
 
+const authenticateHabJWT = async (req, res, next) => {
+  let token = req.cookies?.token;
+
+  if (req.headers?.authorization) {
+    const authHeader = req.headers.authorization;
+    if (authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
+    }
+  }
+
+  if (!token) return next(new AppError(403, "Invalid token"));
+
+  try {
+    const decoded = jwt.verify(token, process.env.ADMIN_JWT_SECRET);
+    if (!decoded?.hab) return next(new AppError(403, "Not Authenticated"));
+
+    req.hab = decoded;
+    return next();
+  } catch (err) {
+    console.error("Error verifying HAB token:", err);
+    return next(new AppError(403, "Not Authenticated"));
+  }
+};
+
 module.exports = {
   authenticateJWT,
   authenticateAdminJWT,
   authenticateUserOrAdminJWT,
+  authenticateHabJWT,
 };
