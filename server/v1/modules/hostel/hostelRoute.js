@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   authenticateJWT,
+  authenticateUserOrAdminJWT,
   authenticateHabJWT,
   authenticateAdminJWT,
 } = require("../../middleware/authenticateJWT.js");
@@ -139,7 +140,7 @@ hostelRouter.post("/", authenticateHabJWT, createHostel);
  *                   type: string
  *                   example: "Error occurred"
  */
-hostelRouter.get("/all/smc/:hostelId", authenticateJWT, getHostelbyId);
+hostelRouter.get("/all/smc/:hostelId", authenticateUserOrAdminJWT, getHostelbyId);
 hostelRouter.get("/all/hab/:hostelId", authenticateHabJWT, getHostelbyId);
 hostelRouter.get("/get", authenticateAdminJWT, getHostel);
 
