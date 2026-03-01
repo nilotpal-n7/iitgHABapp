@@ -70,13 +70,30 @@ class _GalaQRScannerScreenState extends State<GalaQRScannerScreen> {
       _isCheckingPermission = false;
       _cameraPermissionGranted = status.isGranted;
     });
+    bool hasPermission = status.isGranted;
     if (status.isDenied) {
       final result = await Permission.camera.request();
       if (mounted) {
         setState(() => _cameraPermissionGranted = result.isGranted);
       }
+      hasPermission = result.isGranted;
       if (result.isPermanentlyDenied && mounted) {
         _showPermissionDeniedDialog();
+      }
+    }
+    // With autoStart: false, we must start the controller after permission is granted
+    if (hasPermission && mounted) {
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (!mounted) return;
+      try {
+        await controller.start();
+      } catch (e) {
+        if (mounted) {
+          await Future.delayed(const Duration(milliseconds: 500));
+          try {
+            await controller.start();
+          } catch (_) {}
+        }
       }
     }
   }
