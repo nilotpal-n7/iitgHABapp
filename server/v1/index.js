@@ -62,6 +62,7 @@ const {
   initializeAnonymizedUser,
 } = require("./modules/user/anonymizedUserInit.js");
 const messChangeRouter = require("./modules/mess_change/messchangeRoute.js");
+const galaRoute = require("./modules/gala/galaRoute.js");
 require("dotenv").config();
 
 const app = express();
@@ -208,6 +209,9 @@ app.use("/api/notification", notificationRoute);
 
 // Mess route
 app.use("/api/mess", messRoute);
+
+// Gala Dinner route
+app.use("/api/gala", galaRoute);
 
 //mess change route
 app.use("/api/mess-change", messChangeRouter);

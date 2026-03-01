@@ -4,8 +4,9 @@ import Menu_content from "../components/Menu_content.jsx";
 import apiClient from "../apiClient";
 import { API_BASE_URL } from "../apis";
 import CreateMenuFallback from "../components/CreateMenuFallback.jsx";
-import { Menu, Download, LogOut, Bell } from "lucide-react";
+import { Menu, Download, LogOut, Bell, Gift } from "lucide-react";
 import NotificationSender from "../components/NotificationSender";
+import GalaDinnerContent from "../components/GalaDinnerContent";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import Tabs from "../components/ui/Tabs";
@@ -263,6 +264,19 @@ export const Dashboard = () => {
                 {sidebarOpen && <span>Menu Management</span>}
               </button>
               <button
+                onClick={() => setCurrentPage("gala")}
+                className={`flex items-center ${
+                  sidebarOpen ? "gap-3 px-3 mx-1" : "justify-center px-0 mx-0"
+                } w-full py-2 rounded-md ${
+                  currentPage === "gala"
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                <Gift className="w-5 h-5" />
+                {sidebarOpen && <span>Gala Dinner</span>}
+              </button>
+              <button
                 onClick={() => setCurrentPage("notifications")}
                 className={`flex items-center ${
                   sidebarOpen ? "gap-3 px-3 mx-1" : "justify-center px-0 mx-0"
@@ -302,6 +316,8 @@ export const Dashboard = () => {
           <main className="flex-1 w-full">
             {currentPage === "notifications" ? (
               <NotificationSender />
+            ) : currentPage === "gala" ? (
+              <GalaDinnerContent />
             ) : (
               <>
                 <Card>
