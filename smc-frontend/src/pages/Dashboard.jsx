@@ -1,7 +1,7 @@
 import { useAuth } from "../context/AuthProvider";
 import React, { useState, useEffect, useCallback } from "react";
 import Menu_content from "../components/Menu_content.jsx";
-import axios from "axios";
+import apiClient from "../apiClient";
 import { API_BASE_URL } from "../apis";
 import CreateMenuFallback from "../components/CreateMenuFallback.jsx";
 import { Menu, Download, LogOut, Bell } from "lucide-react";
@@ -52,8 +52,8 @@ export const Dashboard = () => {
   const getUserHostel = async () => {
     try {
       if (!user?.hostel) return null;
-      const response = await axios.get(
-        `${API_BASE_URL}/hostel/all/smc/${user.hostel}`,
+      const response = await apiClient.get(
+        `/hostel/all/smc/${user.hostel}`,
       );
       return response.data.hostel;
     } catch (err) {
@@ -82,8 +82,8 @@ export const Dashboard = () => {
 
     try {
       setIsLoading(true);
-      const response = await axios.post(
-        `${API_BASE_URL}/mess/menu/smc/${messId}`,
+      const response = await apiClient.post(
+        `/mess/menu/smc/${messId}`,
         { day: days[activeTab] },
       );
 
@@ -181,7 +181,7 @@ export const Dashboard = () => {
     }
 
     try {
-      const response = await axios.get(`${API_BASE_URL}/mess/menu/download`, {
+      const response = await apiClient.get("/mess/menu/download", {
         params: { day: days[activeTab], messId: messId },
         responseType: "blob",
       });
