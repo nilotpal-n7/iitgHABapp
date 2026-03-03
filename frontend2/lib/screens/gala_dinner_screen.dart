@@ -259,52 +259,94 @@ class _GalaDinnerScreenState extends State<GalaDinnerScreen> {
                     color: Color(0xFF2E2F31),
                   ),
                 ),
-                if (dateStr != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    dateStr,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Color(0xFF676767),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 18),
                 if (hasGala) ...[
-                  Text(
-                    _hostelDisplayName != null && _hostelDisplayName != 'Unknown'
-                        ? "You are cordially invited to $_hostelDisplayName's Gala Dinner."
-                        : 'You are cordially invited to the Gala Dinner.',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF2E2F31),
+                  const SizedBox(height: 12),
+                  Card(
+                    elevation: 1,
+                    color: const Color(0xFFF7F7FB),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Builder(
-                    builder: (context) {
-                      final starters = _formatTimeDisplay(galaDinner['startersServingStartTime'] as String?);
-                      final dinner = _formatTimeDisplay(galaDinner['dinnerServingStartTime'] as String?);
-                      final line = starters != null && dinner != null
-                          ? 'Starters will be served at $starters and Dinner will be served at $dinner.'
-                          : starters != null
-                              ? 'Starters will be served at $starters.'
-                              : dinner != null
-                                  ? 'Dinner will be served at $dinner.'
-                                  : 'Starters and Dinner serving times will be announced.';
-                      return Text(
-                        line,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          color: Color(0xFF676767),
-                        ),
-                      );
-                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (dateStr != null)
+                            Text(
+                              dateStr,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                color: Color(0xFF676767),
+                              ),
+                            ),
+                          const SizedBox(height: 10),
+                          Text(
+                            _hostelDisplayName != null && _hostelDisplayName != 'Unknown'
+                                ? "${_hostelDisplayName!} Gala Dinner"
+                                : 'Gala Dinner',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF2E2F31),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            _hostelDisplayName != null && _hostelDisplayName != 'Unknown'
+                                ? 'You are warmly invited to a special gala dinner at $_hostelDisplayName.'
+                                : 'You are warmly invited to a special gala dinner.',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF676767),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Builder(
+                            builder: (context) {
+                              final starters = _formatTimeDisplay(
+                                  galaDinner['startersServingStartTime'] as String?);
+                              final dinner = _formatTimeDisplay(
+                                  galaDinner['dinnerServingStartTime'] as String?);
+
+                              String line;
+                              if (starters != null && dinner != null) {
+                                line = 'Starters • $starters   ·   Dinner • $dinner';
+                              } else if (starters != null) {
+                                line = 'Starters • $starters';
+                              } else if (dinner != null) {
+                                line = 'Dinner • $dinner';
+                              } else {
+                                line = 'Serving times will be announced soon.';
+                              }
+
+                              return Text(
+                                line,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF4C4EDB),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 18),
                 ],
                 _buildCourseBlocks(hasGala),
+                if (hasGala) ...[
+                  const SizedBox(height: 8),
+                  const Text(
+                    '*Please scan only while collecting your plate. Once scanned, it cannot be scanned again.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF929292),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 if (hasGala)
                   _buildMenuCards(menus)
@@ -387,8 +429,27 @@ class _GalaDinnerScreenState extends State<GalaDinnerScreen> {
       content = Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.check_circle_rounded, color: Colors.green.shade600, size: 32),
-          const SizedBox(height: 8),
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.green.shade500,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.green.withValues(alpha: 0.18),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Icon(
+              _iconForCategory(category),
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
+          const SizedBox(height: 10),
           Text(
             category,
             style: const TextStyle(
@@ -417,8 +478,8 @@ class _GalaDinnerScreenState extends State<GalaDinnerScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
               color: _iconBgForCategory(category, hasGala),
               shape: BoxShape.circle,
@@ -435,7 +496,7 @@ class _GalaDinnerScreenState extends State<GalaDinnerScreen> {
             child: Icon(
               _iconForCategory(category),
               color: hasGala ? primaryBlue : Colors.grey,
-              size: 26,
+              size: 18,
             ),
           ),
           const SizedBox(height: 10),

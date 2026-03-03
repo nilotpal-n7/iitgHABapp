@@ -1,16 +1,39 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Shows success or failure after a Gala QR scan. "Go Back" pops twice to return to Gala Dinner tab.
-class GalaScanStatusPage extends StatelessWidget {
+class GalaScanStatusPage extends StatefulWidget {
   final Response response;
 
   const GalaScanStatusPage({super.key, required this.response});
 
   @override
+  State<GalaScanStatusPage> createState() => _GalaScanStatusPageState();
+}
+
+class _GalaScanStatusPageState extends State<GalaScanStatusPage> {
+  String profilePicture = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfilePicture();
+  }
+
+  Future<void> _loadProfilePicture() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      profilePicture = prefs.getString('profilePicture') ?? '';
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final data = response.data is Map
-        ? Map<String, dynamic>.from(response.data as Map)
+    final data = widget.response.data is Map
+        ? Map<String, dynamic>.from(widget.response.data as Map)
         : <String, dynamic>{};
     final success = data['success'] == true;
     return Scaffold(
@@ -52,6 +75,15 @@ class GalaScanStatusPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 40),
+        CircleAvatar(
+          radius: 80,
+          backgroundColor: Colors.grey[300],
+          backgroundImage: profilePicture.isNotEmpty
+              ? MemoryImage(base64Decode(profilePicture))
+              : const AssetImage('assets/images/default_profile.png')
+                  as ImageProvider,
+        ),
+        const SizedBox(height: 30),
         if (userName.isNotEmpty)
           Text(
             userName,

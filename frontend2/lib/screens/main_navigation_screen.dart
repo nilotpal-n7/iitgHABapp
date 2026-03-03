@@ -46,6 +46,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final isSMC = prefs.getBool('isSMC') ?? false;
+      final hasMicrosoftLinked = prefs.getBool('hasMicrosoftLinked') ?? false;
+
+      // Only users who have linked their Microsoft (student) account
+      // should see the Gala tab at all.
+      if (!hasMicrosoftLinked) {
+        if (mounted) {
+          setState(() => _showGalaTab = false);
+        }
+        return;
+      }
+
       final response = await _dio.get(GalaEndpoints.upcoming);
       final galaData = response.data;
       final galaDateRaw = galaData is Map ? galaData['date'] : null;
