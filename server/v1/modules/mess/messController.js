@@ -11,6 +11,7 @@ const { MessClosure } = require("../hostel/messClosureModel");
 
 const NodeCache = require("node-cache");
 const menuCache = new NodeCache({ stdTTL: 300 });
+const messInfoCache = new NodeCache({ stdTTL: 300 });
 
 const QR_CODE_DATA_URL_OPTIONS = {
   width: 1024,
@@ -244,6 +245,11 @@ const getUserMessInfo = async (req, res) => {
 
 const getAllMessInfo = async (req, res) => {
   try {
+    const cachedData = messInfoCache.get("all_mess_info");
+    if (cachedData) {
+      return res.status(200).json(cachedData);
+    }
+
     const messes = await Mess.find().lean();
     if (!messes || messes.length === 0)
       return res.status(404).json({ message: "No mess found" });
@@ -278,6 +284,8 @@ const getAllMessInfo = async (req, res) => {
         user_count: mess.hostelId ? countMap[mess.hostelId.toString()] || 0 : 0,
       };
     });
+
+    messInfoCache.set("all_mess_info", messesWithHostelName);
 
     return res.status(200).json(messesWithHostelName);
   } catch (error) {
@@ -583,7 +591,7 @@ const ScanMess = async (req, res) => {
     const closureRecord = await MessClosure.findOne({
       hostelId: messInfo.hostelId,
       closureDate: new Date(currentDate),
-    });
+    }).lean();
     if (closureRecord) {
       return res.status(400).json({
         message: "Scan failed: Mess is closed today.",
@@ -591,14 +599,14 @@ const ScanMess = async (req, res) => {
       });
     }
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).lean();
     if (!user) {
       return res
         .status(404)
         .json({ message: "User not found", success: false });
     }
 
-    const hostel = await Hostel.findById(user.curr_subscribed_mess);
+    const hostel = await Hostel.findById(user.curr_subscribed_mess).lean();
     if (!hostel) {
       return res
         .status(404)
@@ -606,7 +614,7 @@ const ScanMess = async (req, res) => {
     }
 
     const messId = hostel.messId;
-    const userMess = await Mess.findById(messId);
+    const userMess = await Mess.findById(messId).lean();
     if (!userMess) {
       return res
         .status(404)
@@ -632,11 +640,15 @@ const ScanMess = async (req, res) => {
       });
     }
 
-    const [breakfast, lunch, dinner] = await Promise.all([
-      Menu.findOne({ messId, day: currentDay, type: "Breakfast" }),
-      Menu.findOne({ messId, day: currentDay, type: "Lunch" }),
-      Menu.findOne({ messId, day: currentDay, type: "Dinner" }),
-    ]);
+    const todayMenus = await Menu.find({
+      messId,
+      day: currentDay,
+      type: { $in: ["Breakfast", "Lunch", "Dinner"] }
+    }).lean();
+
+    const breakfast = todayMenus.find((m) => m.type === "Breakfast");
+    const lunch = todayMenus.find((m) => m.type === "Lunch");
+    const dinner = todayMenus.find((m) => m.type === "Dinner");
 
     let mealType = null;
     let alreadyScanned = false;
