@@ -9,6 +9,9 @@ const { QR } = require("../qr/qrModel.js");
 const qrcode = require("qrcode");
 const { MessClosure } = require("../hostel/messClosureModel");
 
+const NodeCache = require("node-cache");
+const menuCache = new NodeCache({ stdTTL: 300 });
+
 const QR_CODE_DATA_URL_OPTIONS = {
   width: 1024,
   margin: 2,
@@ -241,35 +244,40 @@ const getUserMessInfo = async (req, res) => {
 
 const getAllMessInfo = async (req, res) => {
   try {
-    const messes = await Mess.find();
-
-    if (!messes || messes.length === 0) {
+    const messes = await Mess.find().lean();
+    if (!messes || messes.length === 0)
       return res.status(404).json({ message: "No mess found" });
-    }
 
-    const messesWithHostelName = await Promise.all(
-      messes.map(async (mess) => {
-        const messObj = mess.toObject();
-        if (messObj.hostelId) {
-          const hostel = await Hostel.findById(messObj.hostelId);
-          messObj.hostelName = hostel ? hostel.hostel_name : null;
-        } else {
-          messObj.hostelName = null;
-        }
+    const userCounts = await User.aggregate([
+      { $match: { curr_subscribed_mess: { $ne: null } } },
+      { $group: { _id: "$curr_subscribed_mess", count: { $sum: 1 } } },
+    ]);
 
-        // Ensure rating and ranking are always integers
-        messObj.rating = messObj.rating ? Math.round(messObj.rating) : 0;
-        messObj.ranking = messObj.ranking ? Math.round(messObj.ranking) : 0;
+    // Create a fast lookup map
+    const countMap = userCounts.reduce((acc, curr) => {
+      acc[curr._id.toString()] = curr.count;
+      return acc;
+    }, {});
 
-        const userCount = await User.find({
-          curr_subscribed_mess: messObj.hostelId,
-        });
-        messObj.user_count = userCount.length;
+    const hostels = await Hostel.find({
+      _id: { $in: messes.map((m) => m.hostelId).filter(Boolean) },
+    }).lean();
+    const hostelMap = hostels.reduce((acc, curr) => {
+      acc[curr._id.toString()] = curr.hostel_name;
+      return acc;
+    }, {});
 
-        return messObj;
-      }),
-    );
-    console.log("All messes with hostel names:", messesWithHostelName);
+    const messesWithHostelName = messes.map((mess) => {
+      return {
+        ...mess,
+        hostelName: mess.hostelId
+          ? hostelMap[mess.hostelId.toString()] || null
+          : null,
+        rating: mess.rating ? Math.round(mess.rating) : 0,
+        ranking: mess.ranking ? Math.round(mess.ranking) : 0,
+        user_count: mess.hostelId ? countMap[mess.hostelId.toString()] || 0 : 0,
+      };
+    });
 
     return res.status(200).json(messesWithHostelName);
   } catch (error) {
@@ -311,19 +319,58 @@ const getMessMenuByDay = async (req, res) => {
       return res.status(400).json({ message: "Mess ID and day are required" });
     }
 
-    const menu = await Menu.find({ messId, day }).sort({ startTime: 1 });
-    if (!menu || menu.length === 0) {
-      return res.status(404).json({ message: "Menu not found" });
+    const cacheKey = `menu_${messId}_${day}`;
+    let populatedMenus = menuCache.get(cacheKey);
+
+    if (!populatedMenus) {
+      const menu = await Menu.find({ messId, day }).sort({ startTime: 1 });
+      if (!menu || menu.length === 0) {
+        return res.status(404).json({ message: "Menu not found" });
+      }
+
+      populatedMenus = await Promise.all(
+        menu.map(async (m) => {
+          const menuObj = m.toObject();
+          const menuItems = menuObj.items;
+          const menuItemDetails = await MenuItem.find({
+            _id: { $in: menuItems },
+          }).lean();
+
+          menuObj.items = menuItemDetails;
+          return menuObj;
+        }),
+      );
+
+      menuCache.set(cacheKey, populatedMenus);
     }
+
+    // Apply user-specific logic (likes) to cached data
+    const userSpecificMenus = populatedMenus.map((m) => {
+      const mClone = { ...m };
+      mClone.items = m.items.map((item) => {
+        return {
+          ...item,
+          isLiked:
+            item.likes &&
+            item.likes.some((id) => id.toString() === userId.toString()),
+          likesCount: item.likes ? item.likes.length : 0,
+          likes: undefined, // Hide massive array
+        };
+      });
+      return mClone;
+    });
 
     // Check if the mess is closed today
     const mess = await Mess.findById(messId);
     const currentDate = getCurrentDate();
     const todayDate = new Date(currentDate);
-    const isClosed = await MessClosure.findOne({
-      hostelId: mess.hostelId,
-      closureDate: todayDate,
-    });
+    let isClosed = null;
+    if (mess && mess.hostelId) {
+      isClosed = await MessClosure.findOne({
+        hostelId: mess.hostelId,
+        closureDate: todayDate,
+      }).lean();
+    }
 
     if (isClosed) {
       return res.status(200).json({
@@ -332,24 +379,7 @@ const getMessMenuByDay = async (req, res) => {
       });
     }
 
-    const populatedMenus = [];
-
-    for (let i = 0; i < menu.length; i++) {
-      const menuObj = menu[i].toObject();
-      const menuItems = menuObj.items;
-      const menuItemDetails = await MenuItem.find({ _id: { $in: menuItems } });
-
-      const updatedMenuItems = menuItemDetails.map((item) => {
-        const itemObj = item.toObject();
-        itemObj.isLiked = item.likes.includes(userId);
-        return itemObj;
-      });
-
-      menuObj.items = updatedMenuItems;
-      populatedMenus.push(menuObj);
-    }
-
-    return res.status(200).json(populatedMenus);
+    return res.status(200).json(userSpecificMenus);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
@@ -365,27 +395,45 @@ const getMessMenuByDayForAdminHAB = async (req, res) => {
       return res.status(400).json({ message: "Mess ID and day are required" });
     }
 
-    const menu = await Menu.find({ messId, day }).sort({ startTime: 1 });
-    if (!menu || menu.length === 0) {
-      return res.status(404).json({ message: "Menu not found" });
+    const cacheKey = `menu_${messId}_${day}`;
+    let populatedMenus = menuCache.get(cacheKey);
+
+    if (!populatedMenus) {
+      const menu = await Menu.find({ messId, day }).sort({ startTime: 1 });
+      if (!menu || menu.length === 0) {
+        return res.status(404).json({ message: "Menu not found" });
+      }
+
+      populatedMenus = await Promise.all(
+        menu.map(async (m) => {
+          const menuObj = m.toObject();
+          const menuItems = menuObj.items;
+          const menuItemDetails = await MenuItem.find({
+            _id: { $in: menuItems },
+          }).lean();
+
+          menuObj.items = menuItemDetails;
+          return menuObj;
+        }),
+      );
+
+      menuCache.set(cacheKey, populatedMenus);
     }
 
-    const populatedMenus = [];
-    for (let i = 0; i < menu.length; i++) {
-      const menuObj = menu[i].toObject();
-      const menuItems = menuObj.items;
-      const menuItemDetails = await MenuItem.find({ _id: { $in: menuItems } });
-
-      const updatedMenuItems = menuItemDetails.map((item) => {
-        const itemObj = item.toObject();
-        return itemObj;
+    // Apply formatting to cached data
+    const specificMenus = populatedMenus.map((m) => {
+      const mClone = { ...m };
+      mClone.items = m.items.map((item) => {
+        return {
+          ...item,
+          likesCount: item.likes ? item.likes.length : 0,
+          likes: undefined, // Hide massive array
+        };
       });
+      return mClone;
+    });
 
-      menuObj.items = updatedMenuItems;
-      populatedMenus.push(menuObj);
-    }
-
-    return res.status(200).json(populatedMenus);
+    return res.status(200).json(specificMenus);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
