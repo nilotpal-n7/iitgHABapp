@@ -84,8 +84,8 @@ const apiProxy = createProxyMiddleware({
 // 4. Forward everything to the proxy (but don't parse body - proxy handles it)
 app.use("/", apiProxy);
 
-app.listen(PORT, () => {
-  console.log(`🚀 Gateway running on PORT ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Gateway running on PORT ${PORT} (0.0.0.0)`);
   console.log(`   -> V1 (Legacy) upstream: ${targets.v1}`);
   console.log(`   -> V2 (New) upstream:    ${targets.v2}`);
 });
