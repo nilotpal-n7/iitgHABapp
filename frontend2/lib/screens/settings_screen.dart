@@ -233,11 +233,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           } catch (e) {
                             setState(() {
                               isDeleting = false;
-                              final rawMessage = e
-                                  .toString()
-                                  .replaceFirst('Exception: ', '')
-                                  .trim();
-
                               deleteErrorMessage =
                                   'Request failed. Please ensure the following:\n'
                                   '- You do not have any active mess change requests.\n'

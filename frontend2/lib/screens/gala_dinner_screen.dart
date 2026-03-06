@@ -513,7 +513,7 @@ class _GalaDinnerScreenState extends State<GalaDinnerScreen> {
           ),
           if (hasGala) ...[
             const SizedBox(height: 4),
-            Text(
+            const Text(
               'Tap to scan',
               style: TextStyle(
                 fontSize: 11,
@@ -570,9 +570,13 @@ class _GalaDinnerScreenState extends State<GalaDinnerScreen> {
     dynamic dessertsMenu;
     for (final m in menus) {
       final cat = m['category'] as String? ?? '';
-      if (cat == 'Main Course') mainMenu = m;
-      else if (cat == 'Starters') startersMenu = m;
-      else if (cat == 'Desserts') dessertsMenu = m;
+      if (cat == 'Main Course') {
+        mainMenu = m;
+      } else if (cat == 'Starters') {
+        startersMenu = m;
+      } else if (cat == 'Desserts') {
+        dessertsMenu = m;
+      }
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
