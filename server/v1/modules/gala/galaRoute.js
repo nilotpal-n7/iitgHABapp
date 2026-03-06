@@ -3,6 +3,7 @@ const {
   authenticateJWT,
   authenticateHabJWT,
   authenticateUserOrAdminJWT,
+  authenticateMessManagerJWT,
 } = require("../../middleware/authenticateJWT.js");
 const {
   requireMicrosoftAuth,
@@ -20,6 +21,7 @@ const {
   getGalaMenuItems,
   updateGalaMenuItem,
   deleteGalaMenuItem,
+  getManagerGalaSummary,
 } = require("./galaController.js");
 
 const galaRouter = express.Router();
@@ -27,6 +29,13 @@ const galaRouter = express.Router();
 // HAB only
 galaRouter.post("/schedule", authenticateHabJWT, scheduleGalaDinner);
 galaRouter.get("/list", authenticateHabJWT, listGalaDinners);
+
+// Mess-manager (HABit HQ): summary for upcoming gala for manager's hostel
+galaRouter.get(
+  "/manager/summary",
+  authenticateMessManagerJWT,
+  getManagerGalaSummary,
+);
 
 // Upcoming (static paths before /:galaDinnerId so they match correctly)
 galaRouter.get("/upcoming", getUpcomingGalaDinner);

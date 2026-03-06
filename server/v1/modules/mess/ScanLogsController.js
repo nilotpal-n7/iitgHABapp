@@ -1,4 +1,5 @@
 const { ScanLogs } = require("./ScanLogsModel.js");
+const { getCurrentDate } = require("../../utils/date.js");
 
 //For getting count of people who have eaten breakfast, lunch and dinner
 const statsByDate = async (req, res) => {
@@ -103,9 +104,99 @@ const getTotalScanLogsCount = async (req, res) => {
   }
 }
 
+// Mess-manager (HABit HQ): summary for today's scans for the manager's mess.
+// Requires authenticateMessManagerJWT to set req.managerHostel with populated messId.
+const getManagerTodaySummary = async (req, res) => {
+  try {
+    const managerHostel = req.managerHostel;
+    if (!managerHostel || !managerHostel.messId) {
+      return res
+        .status(400)
+        .json({ message: "Manager hostel or messId not found" });
+    }
+
+    const messId =
+      managerHostel.messId._id?.toString() || managerHostel.messId.toString();
+    const today = getCurrentDate(); // "YYYY-MM-DD"
+
+    const logs = await ScanLogs.find({
+      date: today,
+      messId,
+    })
+      .populate("userId", "name rollNumber")
+      .lean();
+
+    const totals = { breakfast: 0, lunch: 0, dinner: 0, total: 0 };
+    const recent = {
+      breakfast: [],
+      lunch: [],
+      dinner: [],
+    };
+
+    logs.forEach((log) => {
+      const user = log.userId || {};
+      const base = {
+        userId: user._id || user.id || log.userId,
+        name: user.name || "",
+        rollNumber: user.rollNumber || "",
+      };
+
+      if (log.breakfast) {
+        totals.breakfast += 1;
+        totals.total += 1;
+        if (log.breakfastTime) {
+          recent.breakfast.push({
+            ...base,
+            time: log.breakfastTime,
+          });
+        }
+      }
+      if (log.lunch) {
+        totals.lunch += 1;
+        totals.total += 1;
+        if (log.lunchTime) {
+          recent.lunch.push({
+            ...base,
+            time: log.lunchTime,
+          });
+        }
+      }
+      if (log.dinner) {
+        totals.dinner += 1;
+        totals.total += 1;
+        if (log.dinnerTime) {
+          recent.dinner.push({
+            ...base,
+            time: log.dinnerTime,
+          });
+        }
+      }
+    });
+
+    const sortByTimeDesc = (arr) =>
+      arr.sort((a, b) => new Date(b.time) - new Date(a.time));
+    sortByTimeDesc(recent.breakfast);
+    sortByTimeDesc(recent.lunch);
+    sortByTimeDesc(recent.dinner);
+
+    return res.status(200).json({
+      date: today,
+      messId,
+      totals,
+      recent,
+    });
+  } catch (error) {
+    console.error("getManagerTodaySummary:", error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
 module.exports = {
   statsByDate,
   createLogs,
   deleteall,
-  getTotalScanLogsCount
+  getTotalScanLogsCount,
+  getManagerTodaySummary,
 }

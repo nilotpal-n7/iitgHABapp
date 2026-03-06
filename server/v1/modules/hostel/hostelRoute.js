@@ -210,4 +210,12 @@ hostelRouter.get(
 hostelRouter.get("/smc-members", authenticateAdminJWT, getSMCMembers);
 hostelRouter.post("/mark-smc", authenticateAdminJWT, markAsSMC);
 hostelRouter.post("/unmark-smc", authenticateAdminJWT, unmarkAsSMC);
+
+// HAB-only: set or update encrypted hostel password
+const { setHostelPassword } = require("./hostelController.js");
+hostelRouter.post(
+  "/set-password",
+  authenticateHabJWT,
+  setHostelPassword,
+);
 module.exports = hostelRouter;

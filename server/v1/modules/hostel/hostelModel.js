@@ -90,6 +90,11 @@ const hostelSchema = new mongoose.Schema({
     sparse: true,
     trim: true,
   },
+  // Encrypted (hashed) password for hostel-level logins (e.g. HABit HQ).
+  managerPasswordHash: {
+    type: String,
+    select: false,
+  },
 });
 
 hostelSchema.methods.generateJWT = function () {

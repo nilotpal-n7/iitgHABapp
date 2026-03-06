@@ -665,6 +665,24 @@ const ScanMess = async (req, res) => {
       new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
     );
 
+    // Broadcast to connected mess-manager WebSocket clients
+    try {
+      const { broadcastMessScanToManagers } = require("./messManagerWs.js");
+      broadcastMessScanToManagers({
+        hostelId: hostel._id.toString(),
+        messId: messId.toString(),
+        mealType,
+        user: {
+          _id: user._id,
+          name: user.name,
+          rollNumber: user.rollNumber,
+        },
+        time: kolkataTime,
+      });
+    } catch (e) {
+      console.error("Failed to broadcast mess scan to managers:", e);
+    }
+
     return res.status(200).json({
       message: "Scan successful",
       success: true,

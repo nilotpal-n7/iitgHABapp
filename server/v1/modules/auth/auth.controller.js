@@ -3,6 +3,7 @@ const axios = require("axios");
 const qs = require("querystring");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const bcrypt = require("bcrypt");
 const AppError = require("../../utils/appError.js");
 const {
   getUserFromToken,
@@ -11,6 +12,7 @@ const {
   findUserWithAppleIdentifier,
   findUserWithGuestIdentifier,
 } = require("../user/userModel.js");
+const { Hostel } = require("../hostel/hostelModel.js");
 const UserAllocHostel = require("../hostel/hostelAllocModel.js");
 const {
   sendNotificationToUser,
@@ -553,6 +555,52 @@ const guestLoginHandler = async (req, res, next) => {
   }
 };
 
+/**
+ * HABit HQ: Hostel manager login via password (no Microsoft OAuth).
+ * Body: { hostelName, password }
+ * Returns: { success, token, message? }
+ */
+const managerLoginHandler = async (req, res, next) => {
+  try {
+    const { hostelName, password } = req.body || {};
+
+    if (!hostelName || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "hostelName and password are required",
+      });
+    }
+
+    const hostel = await Hostel.findOne({
+      hostel_name: hostelName,
+    }).select("+managerPasswordHash");
+
+    if (!hostel || !hostel.managerPasswordHash) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid hostel or password",
+      });
+    }
+
+    const ok = await bcrypt.compare(String(password), hostel.managerPasswordHash);
+    if (!ok) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid hostel or password",
+      });
+    }
+
+    const token = hostel.generateJWT();
+    return res.status(200).json({
+      success: true,
+      token,
+    });
+  } catch (err) {
+    console.error("Error in managerLoginHandler:", err);
+    next(new AppError(500, "Manager login failed"));
+  }
+};
+
 module.exports = {
   mobileRedirectHandler,
   webLoginHandler,
@@ -561,4 +609,5 @@ module.exports = {
   guestLoginHandler,
   appleLoginHandler,
   linkMicrosoftAccount,
+  managerLoginHandler,
 };

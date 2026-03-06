@@ -104,9 +104,37 @@ const authenticateHabJWT = async (req, res, next) => {
   }
 };
 
+// Dedicated middleware for HABit HQ / mess-manager app.
+// Validates a hostel JWT (same token as hostel frontend) and attaches
+// the hostel document as `req.managerHostel`.
+const authenticateMessManagerJWT = async (req, res, next) => {
+  let token;
+
+  if (req.headers?.authorization) {
+    const authHeader = req.headers.authorization;
+    if (authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
+    }
+  }
+
+  if (!token) return next(new AppError(403, "Invalid token"));
+
+  try {
+    const hostel = await Hostel.findByJWT(token);
+    if (!hostel) return next(new AppError(403, "Not Authenticated as manager"));
+
+    req.managerHostel = hostel;
+    return next();
+  } catch (err) {
+    console.error("Error verifying Mess Manager token:", err);
+    return next(new AppError(500, "Server error during authentication"));
+  }
+};
+
 module.exports = {
   authenticateJWT,
   authenticateAdminJWT,
   authenticateUserOrAdminJWT,
   authenticateHabJWT,
+  authenticateMessManagerJWT,
 };

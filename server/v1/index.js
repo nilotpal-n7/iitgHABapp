@@ -300,8 +300,15 @@ app.get("/api/_debug/graph/callback", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+const { initMessManagerWs } = require("./modules/mess/messManagerWs.js");
+const { initGalaManagerWs } = require("./modules/gala/galaManagerWs.js");
+
+const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+// Initialize WebSocket servers for manager live scan logs
+initMessManagerWs(server);
+initGalaManagerWs(server);
 
 module.exports = app;

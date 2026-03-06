@@ -310,6 +310,8 @@ const getUpcomingGalaWithMenusForHostel = async (req, res) => {
  * galaDinnerMenuId is the payload from the QR (GalaDinnerMenu._id).
  * expectedCategory: "Starters" | "Main Course" | "Desserts".
  */
+const { broadcastGalaScanToManagers } = require("./galaManagerWs.js");
+
 const galaScan = async (req, res) => {
   try {
     const { userId, galaDinnerMenuId, expectedCategory } = req.body;
@@ -417,12 +419,31 @@ const galaScan = async (req, res) => {
 
     await log.save();
 
+    // Broadcast to connected manager clients for this hostel
+    try {
+      broadcastGalaScanToManagers({
+        hostelId: menuHostelId,
+        mealType: expectedCategory,
+        user: {
+          _id: user._id,
+          name: user.name,
+          rollNumber: user.rollNumber,
+        },
+        time: timeStr,
+        alreadyScanned: false,
+      });
+    } catch (e) {
+      console.error("broadcastGalaScanToManagers failed:", e);
+    }
+
     return res.status(200).json({
       message: "Scan successful",
       success: true,
       mealType: expectedCategory,
       time: timeStr,
+      alreadyScanned: false,
       user: {
+        _id: user._id,
         name: user.name,
         rollNumber: user.rollNumber,
       },
@@ -473,6 +494,129 @@ const getGalaScanStatus = async (req, res) => {
     });
   } catch (error) {
     console.error("getGalaScanStatus:", error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+/**
+ * Mess-manager (HABit HQ): summary for the next upcoming Gala Dinner for the
+ * manager's hostel: total scans per course and recent scans per course.
+ * Requires authenticateMessManagerJWT to set req.managerHostel.
+ */
+const getManagerGalaSummary = async (req, res) => {
+  try {
+    const managerHostel = req.managerHostel;
+    if (!managerHostel) {
+      return res
+        .status(400)
+        .json({ message: "Manager hostel context not found" });
+    }
+
+    const hostelId = managerHostel._id.toString();
+
+    const now = new Date();
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
+    const startOfTomorrow = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1,
+    );
+
+    // Only consider Gala Dinner scheduled for "today" (manager app requirement)
+    const gala = await GalaDinner.findOne({
+      date: { $gte: startOfToday, $lt: startOfTomorrow },
+    })
+      .sort({ date: 1 })
+      .lean();
+
+    if (!gala) {
+      return res.status(200).json({
+        galaDinner: null,
+        hostelId,
+        totals: { starters: 0, mainCourse: 0, desserts: 0 },
+        recent: { starters: [], mainCourse: [], desserts: [] },
+      });
+    }
+
+    // Fetch all scan logs for this gala, with user populated to filter by hostel.
+    const logs = await GalaDinnerScanLog.find({
+      galaDinnerId: gala._id,
+    })
+      .populate("userId", "name rollNumber curr_subscribed_mess")
+      .lean();
+
+    const totals = { starters: 0, mainCourse: 0, desserts: 0 };
+    const recent = {
+      starters: [],
+      mainCourse: [],
+      desserts: [],
+    };
+
+    logs.forEach((log) => {
+      const user = log.userId || {};
+      // Ensure this scan belongs to the manager's hostel.
+      if (
+        !user.curr_subscribed_mess ||
+        user.curr_subscribed_mess.toString() !== hostelId
+      ) {
+        return;
+      }
+
+      const base = {
+        userId: user._id || user.id || log.userId,
+        name: user.name || "",
+        rollNumber: user.rollNumber || "",
+      };
+
+      if (log.startersScanned) {
+        totals.starters += 1;
+        if (log.startersTime) {
+          recent.starters.push({
+            ...base,
+            time: log.startersTime,
+          });
+        }
+      }
+      if (log.mainCourseScanned) {
+        totals.mainCourse += 1;
+        if (log.mainCourseTime) {
+          recent.mainCourse.push({
+            ...base,
+            time: log.mainCourseTime,
+          });
+        }
+      }
+      if (log.dessertsScanned) {
+        totals.desserts += 1;
+        if (log.dessertsTime) {
+          recent.desserts.push({
+            ...base,
+            time: log.dessertsTime,
+          });
+        }
+      }
+    });
+
+    const sortByTimeDesc = (arr) =>
+      arr.sort((a, b) => new Date(b.time) - new Date(a.time));
+    sortByTimeDesc(recent.starters);
+    sortByTimeDesc(recent.mainCourse);
+    sortByTimeDesc(recent.desserts);
+
+    return res.status(200).json({
+      galaDinner: gala,
+      hostelId,
+      totals,
+      recent,
+    });
+  } catch (error) {
+    console.error("getManagerGalaSummary:", error);
     return res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
@@ -653,4 +797,5 @@ module.exports = {
   getGalaMenuItems,
   updateGalaMenuItem,
   deleteGalaMenuItem,
+  getManagerGalaSummary,
 };

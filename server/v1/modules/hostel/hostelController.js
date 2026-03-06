@@ -1,3 +1,4 @@
+const bcrypt = require("bcrypt");
 const { User } = require("../user/userModel.js");
 const { Hostel } = require("./hostelModel.js");
 const { Mess } = require("../mess/messModel.js");
@@ -7,19 +8,35 @@ const { getCurrentDate } = require("../../utils/date.js");
 
 const createHostel = async (req, res) => {
   try {
-    const { hostel_name, microsoft_email, secretary_email, curr_cap } =
-      req.body;
+    const {
+      hostel_name,
+      microsoft_email,
+      secretary_email,
+      curr_cap,
+      password,
+    } = req.body;
 
     if (!microsoft_email) {
       return res.status(400).json({ message: "Microsoft email is required" });
     }
 
-    const hostel = await Hostel.create({
+    const hostelData = {
       hostel_name,
       microsoft_email,
       secretary_email,
       curr_cap,
-    });
+    };
+
+    // If an initial hostel password is provided, hash and store it securely.
+    if (password && typeof password === "string" && password.trim().length) {
+      const saltRounds = 10;
+      hostelData.managerPasswordHash = await bcrypt.hash(
+        password.trim(),
+        saltRounds,
+      );
+    }
+
+    const hostel = await Hostel.create(hostelData);
 
     return res
       .status(201)
@@ -32,6 +49,41 @@ const createHostel = async (req, res) => {
         .json({ message: "Hostel name or email already exists" });
     }
     return res.status(500).json({ message: "Error occurred" });
+  }
+};
+
+/**
+ * HAB: Set or update the password for a hostel (encrypted with bcrypt).
+ * Body: { hostelId, password }
+ */
+const setHostelPassword = async (req, res) => {
+  try {
+    const { hostelId, password } = req.body;
+
+    if (!hostelId || !password || !String(password).trim().length) {
+      return res.status(400).json({
+        message: "hostelId and a non-empty password are required",
+      });
+    }
+
+    const hostel = await Hostel.findById(hostelId);
+    if (!hostel) {
+      return res.status(404).json({ message: "Hostel not found" });
+    }
+
+    const saltRounds = 10;
+    hostel.managerPasswordHash = await bcrypt.hash(
+      String(password).trim(),
+      saltRounds,
+    );
+    await hostel.save();
+
+    return res
+      .status(200)
+      .json({ message: "Hostel password set successfully" });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Error setting hostel password" });
   }
 };
 
@@ -465,4 +517,5 @@ module.exports = {
   getSMCMembers,
   finalizeMessClosure,
   getMessClosureDate,
+  setHostelPassword,
 };

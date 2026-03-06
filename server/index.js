@@ -3,7 +3,10 @@ require("dotenv").config();
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const cors = require("cors");
-const appVersionRoute = require("./modules/app_version/appVersionRoute.js");
+const {
+  appVersionRouter,
+  hqAppVersionRouter,
+} = require("./modules/app_version/appVersionRoute.js");
 
 const app = express();
 const PORT = process.env.PORT || 3000; // The public port
@@ -63,8 +66,9 @@ const selectProxyTarget = (req) => {
   return targets.v1;
 };
 
-// 2.5. Centralized App Version Route (Before Proxy)
-app.use("/api/app-version", appVersionRoute);
+// 2.5. Centralized App Version Routes (Before Proxy)
+app.use("/api/app-version", appVersionRouter);
+app.use("/api/hq-app-version", hqAppVersionRouter);
 
 // 3. Proxy Setup - http-proxy-middleware automatically handles multipart/form-data streaming
 const apiProxy = createProxyMiddleware({
