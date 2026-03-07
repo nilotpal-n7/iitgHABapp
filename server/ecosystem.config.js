@@ -3,6 +3,7 @@ module.exports = {
     {
       name: "gateway",
       script: "./index.js",
+      cwd: __dirname,
       env: { PORT: 3000 },
     },
     {

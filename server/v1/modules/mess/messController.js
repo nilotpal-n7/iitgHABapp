@@ -725,10 +725,10 @@ const ScanMess = async (req, res) => {
       new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
     );
 
-    // Broadcast to connected mess-manager WebSocket clients
+    // Broadcast to connected mess-manager WebSocket clients (cluster-safe via Redis pub/sub when REDIS_URL is set)
     try {
-      const { broadcastMessScanToManagers } = require("./messManagerWs.js");
-      broadcastMessScanToManagers({
+      const { publishMessScan } = require("../../utils/scanBroadcast.js");
+      publishMessScan({
         hostelId: hostel._id.toString(),
         messId: messId.toString(),
         mealType,

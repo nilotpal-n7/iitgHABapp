@@ -310,7 +310,7 @@ const getUpcomingGalaWithMenusForHostel = async (req, res) => {
  * galaDinnerMenuId is the payload from the QR (GalaDinnerMenu._id).
  * expectedCategory: "Starters" | "Main Course" | "Desserts".
  */
-const { broadcastGalaScanToManagers } = require("./galaManagerWs.js");
+const { publishGalaScan } = require("../../utils/scanBroadcast.js");
 
 const galaScan = async (req, res) => {
   try {
@@ -419,9 +419,9 @@ const galaScan = async (req, res) => {
 
     await log.save();
 
-    // Broadcast to connected manager clients for this hostel
+    // Broadcast to connected manager clients for this hostel (cluster-safe via Redis pub/sub when REDIS_URL is set)
     try {
-      broadcastGalaScanToManagers({
+      publishGalaScan({
         hostelId: menuHostelId,
         mealType: expectedCategory,
         user: {
@@ -433,7 +433,7 @@ const galaScan = async (req, res) => {
         alreadyScanned: false,
       });
     } catch (e) {
-      console.error("broadcastGalaScanToManagers failed:", e);
+      console.error("publishGalaScan failed:", e);
     }
 
     return res.status(200).json({

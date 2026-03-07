@@ -20,6 +20,7 @@ const compression = require("compression");
 const {
   setDelegatedTokens,
   tokenFilePath,
+  initDelegatedGraphRedis,
 } = require("./utils/delegatedGraphAuth.js");
 
 // New: build delegated auth URLs for starting consent
@@ -328,5 +329,12 @@ const server = app.listen(PORT, () => {
 // Initialize WebSocket servers for manager live scan logs
 initMessManagerWs(server);
 initGalaManagerWs(server);
+
+// Subscribe to Redis scan events so all cluster instances can broadcast to their local WS clients
+const { initScanBroadcast } = require("./utils/scanBroadcast.js");
+initScanBroadcast();
+
+// Connect to Redis and backfill delegated Graph token from disk so first request can use Redis
+initDelegatedGraphRedis();
 
 module.exports = app;
