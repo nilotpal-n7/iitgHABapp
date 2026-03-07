@@ -1,16 +1,21 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend2/apis/dio_client.dart';
+import 'package:frontend2/apis/mess/user_mess_info.dart';
+import 'package:frontend2/apis/users/user.dart';
+import 'package:frontend2/constants/endpoint.dart';
+import 'package:frontend2/providers/hostels.dart';
+import 'package:frontend2/screens/gala_dinner_screen.dart';
 import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/screens/mess_preference.dart';
 import 'package:frontend2/screens/profile_screen.dart';
-import 'package:frontend2/apis/dio_client.dart';
-import 'package:frontend2/constants/endpoint.dart';
+import 'package:frontend2/utilities/notifications.dart';
+import 'package:frontend2/widgets/common/bottom_nav_bar.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:frontend2/utilities/startupitem.dart';
 import 'home_screen.dart';
 import 'mess_screen.dart';
-import 'gala_dinner_screen.dart';
-import '../utilities/notifications.dart';
-
-import '../widgets/common/bottom_nav_bar.dart';
 
 final _dio = DioClient().dio;
 
@@ -24,6 +29,7 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 0;
   bool _showGalaTab = false;
+  bool _homeDataReady = false;
 
   void _handleNavTap(int index) {
     setState(() {
@@ -35,9 +41,38 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   void initState() {
     super.initState();
     _resolveGalaTabVisibility();
-    // Listen for navigation from notifications
     tabNavigationNotifier.addListener(_onTabNavigationRequested);
     deepNavigationNotifier.addListener(_onDeepNavigationRequested);
+    _runPhase2AndPhase3();
+  }
+
+  /// Phase 2: fetch user details, mess info, profile picture (loader until done).
+  /// Phase 3: FCM, hostels, analytics, mess list (background).
+  Future<void> _runPhase2AndPhase3() async {
+    // Phase 3 (background) – start immediately, don't block
+    _runPhase3Background();
+
+    // Phase 2 – must complete before hiding home loader
+    try {
+      await fetchUserDetails();
+    } catch (_) {}
+    try {
+      await fetchUserProfilePicture();
+    } catch (_) {}
+    try {
+      await getUserMessInfo();
+    } catch (_) {}
+    if (mounted) setState(() => _homeDataReady = true);
+  }
+
+  void _runPhase3Background() {
+    registerFcmToken();
+    FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
+    HostelsNotifier.init();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<MessInfoProvider>().fetchMessID();
+    });
   }
 
   /// Gala tab: for SMC show when any upcoming gala; for non-SMC show only when
@@ -148,23 +183,49 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       const MessScreen(),
       const GalaDinnerScreen(),
     ];
-    return ValueListenableBuilder(
-      valueListenable: ProfilePictureProvider.isSetupDone,
-      builder: (context, setupDone, child) => Scaffold(
-        body: (setupDone == true)
-            ? IndexedStack(
-                index: _selectedIndex,
-                children: screens,
-              )
-            : const InitialSetupScreen(),
-        bottomNavigationBar: (setupDone == true)
-            ? BottomNavBar(
-                currentIndex: _selectedIndex,
-                onTap: _handleNavTap,
-                showGalaTab: _showGalaTab,
-              )
-            : const SizedBox(),
-      ),
+    return Stack(
+      children: [
+        ValueListenableBuilder(
+          valueListenable: ProfilePictureProvider.isSetupDone,
+          builder: (context, setupDone, child) => Scaffold(
+            body: (setupDone == true)
+                ? IndexedStack(
+                    index: _selectedIndex,
+                    children: screens,
+                  )
+                : const InitialSetupScreen(),
+            bottomNavigationBar: (setupDone == true)
+                ? BottomNavBar(
+                    currentIndex: _selectedIndex,
+                    onTap: _handleNavTap,
+                    showGalaTab: _showGalaTab,
+                  )
+                : const SizedBox(),
+          ),
+        ),
+        if (!_homeDataReady)
+          Positioned.fill(
+            child: Container(
+              color: Colors.white,
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text(
+                      'Loading...',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF676767),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
