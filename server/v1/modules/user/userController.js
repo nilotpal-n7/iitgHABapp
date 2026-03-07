@@ -175,33 +175,24 @@ const getUserComplaints = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find();
+    const users = await User.find().lean();
+    const hostels = await Hostel.find().lean();
 
-    // Map over users and populate both hostel and mess names
-    const updatedUsers = await Promise.all(
-      users.map(async (user) => {
-        const hostelId = user.hostel;
-        const messId = user.curr_subscribed_mess;
-        let hostelName = null;
-        let messName = null;
+    const hostelMap = hostels.reduce((acc, curr) => {
+      acc[curr._id.toString()] = curr.hostel_name;
+      return acc;
+    }, {});
 
-        if (hostelId) {
-          const hostel = await Hostel.findById(hostelId);
-          hostelName = hostel ? hostel.hostel_name : null;
-        }
+    const updatedUsers = users.map((user) => {
+      const hostelId = user.hostel ? user.hostel.toString() : null;
+      const messId = user.curr_subscribed_mess ? user.curr_subscribed_mess.toString() : null;
 
-        if (messId) {
-          const mess = await Hostel.findById(messId);
-          messName = mess ? mess.hostel_name : null;
-        }
-
-        const userObj = user.toObject();
-        userObj.hostel_name = hostelName;
-        userObj.curr_subscribed_mess_name = messName;
-
-        return userObj;
-      }),
-    );
+      return {
+        ...user,
+        hostel_name: hostelId ? hostelMap[hostelId] || null : null,
+        curr_subscribed_mess_name: messId ? hostelMap[messId] || null : null,
+      };
+    });
 
     res.status(200).json(updatedUsers);
   } catch (err) {

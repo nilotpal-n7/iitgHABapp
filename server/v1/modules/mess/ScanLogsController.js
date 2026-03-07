@@ -1,66 +1,76 @@
 const { ScanLogs } = require("./ScanLogsModel.js");
 const { getCurrentDate } = require("../../utils/date.js");
+const mongoose = require("mongoose");
 
 //For getting count of people who have eaten breakfast, lunch and dinner
 const statsByDate = async (req, res) => {
   try {
     const date = req.params.date;
     const messid = req.query.messId;
-    let logs = {};
-    if (!messid) {
-      logs = await ScanLogs.find({ date: date });
-    }
-    else {
-      logs = await ScanLogs.find({ date: date, messId: messid });
-    }
-    const stats = { total: 0, breakfast: 0, lunch: 0, dinner: 0, highest: ["",0], lowest: ["",0] };
 
-    //For finding highest and lowest attendance mess
-    const messwisestats = {};
-
-    logs.forEach((item) => {
-      if(!(item.messId in messwisestats)) messwisestats[item.messId] = [0,0];
-      if (item.breakfast){
-        ++messwisestats[item.messId][0];
-        ++stats.breakfast;
-      } 
-      if (item.lunch){
-        ++messwisestats[item.messId][0];
-        ++stats.lunch;
-      } 
-      if (item.dinner){
-        ++messwisestats[item.messId][0];
-        ++stats.dinner;
-      } 
-      ++stats.total;
-      ++messwisestats[item.messId][1]
-    })
-
-    //looping through the messes to find highest and lowest
-    for(const key in messwisestats){
-      const attendance = (messwisestats[key][0]/messwisestats[key][1]/3*100).toFixed(1);
-      if (!stats.highest[0]){
-        stats.lowest[0] = key; stats.lowest[1] = attendance
-        stats.highest[0] = key; stats.highest[1] = attendance
-      }
-      else if (attendance > stats.highest[1]){
-        stats.highest[0] = key;
-        stats.highest[1] = attendance
-      }
-      else if (attendance < stats.lowest[1]){
-        stats.lowest[0] = key;
-        stats.lowest[1] = attendance;
-      }
+    const matchStage = { date: date };
+    if (messid) {
+      matchStage.messId = new mongoose.Types.ObjectId(messid);
     }
-console.log(stats)
+
+    const aggregatedStats = await ScanLogs.aggregate([
+      { $match: matchStage },
+      {
+        $group: {
+          _id: "$messId",
+          breakfast: { $sum: { $cond: ["$breakfast", 1, 0] } },
+          lunch: { $sum: { $cond: ["$lunch", 1, 0] } },
+          dinner: { $sum: { $cond: ["$dinner", 1, 0] } },
+          totalScans: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const stats = {
+      total: 0,
+      breakfast: 0,
+      lunch: 0,
+      dinner: 0,
+      highest: ["", 0],
+      lowest: ["", 0],
+    };
+
+    if (aggregatedStats.length === 0) {
+      return res.status(200).json(stats);
+    }
+
+    let highestAttendance = -1;
+    let lowestAttendance = 101;
+
+    aggregatedStats.forEach((messStat) => {
+      stats.breakfast += messStat.breakfast;
+      stats.lunch += messStat.lunch;
+      stats.dinner += messStat.dinner;
+      stats.total += messStat.totalScans;
+
+      // 3 possible meals per user per day
+      const attendanceNum =
+        ((messStat.breakfast + messStat.lunch + messStat.dinner) /
+          (messStat.totalScans * 3)) *
+        100;
+      const attendanceStr = attendanceNum.toFixed(1);
+
+      if (stats.highest[0] === "" || attendanceNum > highestAttendance) {
+        highestAttendance = attendanceNum;
+        stats.highest = [messStat._id.toString(), attendanceStr];
+      }
+      if (stats.lowest[0] === "" || attendanceNum < lowestAttendance) {
+        lowestAttendance = attendanceNum;
+        stats.lowest = [messStat._id.toString(), attendanceStr];
+      }
+    });
+
     res.status(200).json(stats);
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
-    console.log("hello")
     return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 //temporary function for creating sample logs
 const createLogs = async (req, res) => {
@@ -70,13 +80,12 @@ const createLogs = async (req, res) => {
     res.status(200).json({
       message: "Successfully inserted the data!",
       data: insertedlogs,
-    })
-  }
-  catch (error) {
+    });
+  } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 //temporary function for deleting sample logs
 const deleteall = async (req, res) => {
@@ -84,25 +93,23 @@ const deleteall = async (req, res) => {
     await ScanLogs.deleteMany();
     res.status(200).json({
       message: "Successfulyy deleted everything!",
-    })
-  }
-  catch (error) {
+    });
+  } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 // Get total count of all scan logs
 const getTotalScanLogsCount = async (req, res) => {
   try {
     const totalCount = await ScanLogs.countDocuments({});
     res.status(200).json({ total: totalCount });
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 // Mess-manager (HABit HQ): summary for today's scans for the manager's mess.
 // Requires authenticateMessManagerJWT to set req.managerHostel with populated messId.
@@ -199,4 +206,4 @@ module.exports = {
   deleteall,
   getTotalScanLogsCount,
   getManagerTodaySummary,
-}
+};

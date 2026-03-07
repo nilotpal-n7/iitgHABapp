@@ -16,6 +16,7 @@ const logsRoute = require("./modules/mess/ScanLogsRoute.js");
 const bugReportRoute = require("./modules/bug_report/bugReportRoute.js");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const compression = require("compression");
 const {
   setDelegatedTokens,
   tokenFilePath,
@@ -44,29 +45,18 @@ function buildAuthorizeUrl() {
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 
-const {
-  wednesdayScheduler,
-  sundayScheduler,
-} = require("./modules/hostel/hostelScheduler.js");
-const {
-  initializeFeedbackAutoScheduler,
-} = require("./modules/feedback/autoFeedbackScheduler.js");
-
-const {
-  initializeMessChangeAutoScheduler,
-} = require("./modules/mess_change/autoMessChangeScheduler.js");
-const {
-  initializeGuestCleanupScheduler,
-} = require("./modules/auth/autoGuestCleanupScheduler.js");
-const {
-  initializeAnonymizedUser,
-} = require("./modules/user/anonymizedUserInit.js");
 const messChangeRouter = require("./modules/mess_change/messchangeRoute.js");
 const galaRoute = require("./modules/gala/galaRoute.js");
 require("dotenv").config();
 
 const app = express();
 app.use(bodyParser.json({ limit: "1mb" }));
+app.use(
+  compression({
+    level: 6,
+    threshold: 100,
+  }),
+);
 
 const MONGOdb_uri = process.env.MONGODB_URI;
 const PORT = process.env.PORT || 3001;
@@ -148,16 +138,44 @@ mongoose
   .then(() => {
     console.log("MongoDB connected");
 
-    wednesdayScheduler();
+    // Only run schedulers on the primary PM2 instance
+    if (
+      process.env.NODE_APP_INSTANCE === "0" ||
+      typeof process.env.NODE_APP_INSTANCE === "undefined"
+    ) {
+      console.log("Primary instance detected. Starting schedulers...");
 
-    sundayScheduler();
+      const {
+        wednesdayScheduler,
+        sundayScheduler,
+      } = require("./modules/hostel/hostelScheduler.js");
+      wednesdayScheduler();
+      sundayScheduler();
 
-    // Initialize automatic schedulers for feedback, mess change, and guest cleanup
-    initializeFeedbackAutoScheduler();
-    initializeMessChangeAutoScheduler();
-    initializeGuestCleanupScheduler();
+      // Initialize automatic schedulers for feedback, mess change, and guest cleanup
+      const {
+        initializeFeedbackAutoScheduler,
+      } = require("./modules/feedback/autoFeedbackScheduler.js");
+      const {
+        initializeMessChangeAutoScheduler,
+      } = require("./modules/mess_change/autoMessChangeScheduler.js");
+      const {
+        initializeGuestCleanupScheduler,
+      } = require("./modules/auth/autoGuestCleanupScheduler.js");
+
+      initializeFeedbackAutoScheduler();
+      initializeMessChangeAutoScheduler();
+      initializeGuestCleanupScheduler();
+    } else {
+      console.log(
+        `Worker instance ${process.env.NODE_APP_INSTANCE} started. Schedulers disabled here.`,
+      );
+    }
 
     // Initialize anonymized user for soft-deleted account references
+    const {
+      initializeAnonymizedUser,
+    } = require("./modules/user/anonymizedUserInit.js");
     initializeAnonymizedUser();
   })
   .catch((err) => console.log(err));
