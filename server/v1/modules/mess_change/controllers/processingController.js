@@ -320,7 +320,7 @@ const processAllMessChangeRequests = async (req, res) => {
       "Mess Change is Disabled",
       "All_Hostels",
       { redirectType: "mess_change", isAlert: "true" },
-    );
+    ).catch((err) => console.error("Mess change disabled notification failed:", err));
 
     res.status(200).json({
       message: `${acceptedUsers.length} accepted, ${rejectedUsers.length} rejected`,
@@ -359,7 +359,7 @@ const rejectAllMessChangeRequests = async (req, res) => {
       "Mess Change is Disabled",
       "All_Hostels",
       { redirectType: "mess_change", isAlert: "true" },
-    );
+    ).catch((err) => console.error("Mess change disabled notification failed:", err));
 
     res.status(200).json({
       message: `Rejected ${users.length} pending requests. Mess change has been automatically disabled.`,

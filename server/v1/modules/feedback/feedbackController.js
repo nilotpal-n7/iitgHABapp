@@ -452,7 +452,7 @@ const enableFeedback = async (req, res) => {
       "Mess Feedback for this month is enabled",
       "All_Hostels",
       { redirectType: "mess_screen", isAlert: "true" },
-    );
+    ).catch((err) => console.error("Feedback enabled notification failed:", err));
     return res.status(200).json({ message: "Feedback enabled", data: s });
   } catch (e) {
     return res
@@ -511,7 +511,7 @@ const enableFeedbackAutomatic = async () => {
       "Mess Feedback for this month is enabled",
       "All_Hostels",
       { redirectType: "mess_screen", isAlert: "true" },
-    );
+    ).catch((err) => console.error("Feedback enabled notification failed:", err));
     console.log("✅ Feedback enabled automatically");
     return { success: true, settings: s };
   } catch (e) {

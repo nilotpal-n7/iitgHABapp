@@ -1,5 +1,7 @@
 // server/index.js (The Gateway)
 require("dotenv").config();
+const { installProcessHandlers } = require("./processHandlers.js");
+installProcessHandlers();
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const cors = require("cors");

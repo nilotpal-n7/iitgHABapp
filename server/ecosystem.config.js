@@ -5,6 +5,7 @@ module.exports = {
       script: "./index.js",
       cwd: __dirname,
       env: { PORT: 3000 },
+      max_memory_restart: "512M",
     },
     {
       name: "api-v1",
@@ -14,12 +15,14 @@ module.exports = {
       exec_mode: "cluster", // Enables multi-threading
       watch: false,
       env: { PORT: 3001 },
+      max_memory_restart: "1G", // Restart if a worker exceeds 1GB (helps recover from memory leaks)
     },
     {
       name: "api-v2",
       script: "./index.js", // Relative to cwd
       cwd: "./v2",
       env: { PORT: 3002 },
+      max_memory_restart: "512M",
     },
   ],
 };
