@@ -46,15 +46,6 @@ const leaveSchema = new mongoose.Schema({
         type: Date,
         required: true,
     },
-    reviewedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: false,
-    },
-    reviewedAt: {
-        type: Date,
-        required: false,
-    },
     feedback: {
         type: String,
         required: false,
@@ -68,6 +59,22 @@ const leaveSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
         required: true
+    },
+    bankAccountNumber: {
+        type: Number,
+        required: true,
+    },
+    bankIFSCCode: {
+        type: String,
+        required: true,
+    },
+    bankName: {
+        type: String,
+        required: true,
+    },
+    bankAccountHoldersName: {
+        type: String,
+        required: true,
     },
 });
 

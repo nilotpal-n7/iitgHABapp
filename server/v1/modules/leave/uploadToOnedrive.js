@@ -2,6 +2,7 @@ const axios = require('axios');
 const { getDelegatedAccessToken } = require('../../utils/delegatedGraphAuth.js');
 require('dotenv').config();
 
+const LEAVE_FOLDER_ID = process.env.ONEDRIVE_LEAVE_FOLDER_ID;
 
 async function requireDelegatedToken() {
   const tok = await getDelegatedAccessToken();
@@ -66,6 +67,7 @@ async function uploadToParentByName(
   buffer,
   mimeType
 ) {
+  // console.log(filename, buffer, mimeType);
   const url = `https://graph.microsoft.com/v1.0/me/drive/items/${parentId}:/${encodeURIComponent(
     filename
   )}:/content`;
@@ -90,11 +92,11 @@ async function createOrganizationViewLink(token, itemId) {
 }
 
 
-const LEAVE_FOLDER_ID = process.env.LEAVE_FOLDER_ID;
 
 async function uploadToOnedrive(req, res, next) {
   try {
     const file = req.file;
+    //console.log("File received by Onedrive Uploader");
     if (!file) return res.status(400).json({ message: "No file uploaded" });
     if (!LEAVE_FOLDER_ID) {
       return res
@@ -103,7 +105,8 @@ async function uploadToOnedrive(req, res, next) {
     }
 
     const ext = extFromMime(file.mimetype);
-    const targetName = req.file.filename;
+    const timeStamp = Date.now()
+    const targetName = `leave-${req.user._id}-${timeStamp}-${file.originalname}`;
 
     // Delegated token required to use /me/drive
     const token = await requireDelegatedToken();
@@ -135,10 +138,10 @@ async function uploadToOnedrive(req, res, next) {
       return res.status(400).json({
         message:
           "Configured ONEDRIVE_LEAVE_FOLDER_ID not found or not accessible for this account.",
-        hint: "Fetch it with GET /v1.0/me/drive/root:/HAB%20App/leaves and use the returned id.",
+        hint: "Fetch it with GET /v1.0/me/drive/root:/HAB%20App/rebate-requests and use the returned id.",
       });
     }
-
+    console.log(`Starting upload to onedrive to ${targetName} for user: ${req.user?.name}`)
     // Upload new content to the parent folder with file name = roll.ext
     const uploaded = await uploadToParentByName(
       token,
@@ -147,6 +150,9 @@ async function uploadToOnedrive(req, res, next) {
       file.buffer,
       file.mimetype
     );
+
+    //console.log("Uplaoding to onedrive successful.");
+    //console.log("Creating organization view link");
 
     // Create org-scoped view link (tenant must allow it)
     let publicUrl = null;
@@ -161,13 +167,14 @@ async function uploadToOnedrive(req, res, next) {
     req.file.leaveId = uploaded.id;
     if (publicUrl) req.file.leaveUrl = publicUrl;
 
+    console.log("Uploading to onedrive successful");
     next();
   } catch (err) {
     const status = err.response?.status;
     const msg = err.response?.data?.error?.message || err.message;
     return res
       .status(status === 403 ? 403 : 500)
-      .json({ message: "Failed to set profile picture", error: msg, status });
+      .json({ message: "Failed to upload leave application", error: msg, status });
   }
 }
 
