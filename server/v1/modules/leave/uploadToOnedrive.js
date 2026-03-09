@@ -96,7 +96,7 @@ async function createOrganizationViewLink(token, itemId) {
 async function uploadToOnedrive(req, res, next) {
   try {
     const file = req.file;
-    console.log("File received by Onedrive Uploader");
+    //console.log("File received by Onedrive Uploader");
     if (!file) return res.status(400).json({ message: "No file uploaded" });
     if (!LEAVE_FOLDER_ID) {
       return res
@@ -151,8 +151,8 @@ async function uploadToOnedrive(req, res, next) {
       file.mimetype
     );
 
-    console.log("Uplaoding to onedrive successful.");
-    console.log("Creating organization view link");
+    //console.log("Uplaoding to onedrive successful.");
+    //console.log("Creating organization view link");
 
     // Create org-scoped view link (tenant must allow it)
     let publicUrl = null;

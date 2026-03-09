@@ -23,12 +23,6 @@ const {
 
 const leaveRouter = express.Router();
 
-leaveRouter.get("/check", (req, res) => {
-    if(req) {
-        res.send("Leave is running");
-    }
-});
-
 //User/Student Endpoint
 
 leaveRouter.post('/apply', authenticateJWT, uploadMiddleware, validateApply, uploadToOnedrive, applyForLeave);
@@ -38,7 +32,6 @@ leaveRouter.get('/my-applications', authenticateJWT, getApplications);
 leaveRouter.get('/:id', authenticateJWT, getApplicationByID);
 
 leaveRouter.get('/:id/proof', authenticateJWT, getApplicationProof);
-
 
 //Hostel Office Endpoints
 leaveRouter.get('/hostel/pending', authenticateAdminJWT, getAllPendingApplications);
