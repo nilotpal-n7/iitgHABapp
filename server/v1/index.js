@@ -16,6 +16,7 @@ const notificationRoute = require("./modules/notification/notificationRoute.js")
 const messRoute = require("./modules/mess/messRoute.js");
 const logsRoute = require("./modules/mess/ScanLogsRoute.js");
 const bugReportRoute = require("./modules/bug_report/bugReportRoute.js");
+const roomCleaningRoute = require("./modules/room_cleaning/roomCleaningRoute.js");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const compression = require("compression");
@@ -246,6 +247,9 @@ app.use("/api/logs", logsRoute);
 
 // Bug report route
 app.use("/api/bug-report", bugReportRoute);
+
+// Room cleaning route
+app.use("/api/room-cleaning", roomCleaningRoute);
 
 // Debug route: accept delegated tokens and save to disk for server use
 // WARNING: Protect this route in production (e.g., require admin auth, restrict IPs)

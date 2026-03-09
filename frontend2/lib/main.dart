@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:frontend2/apis/authentication/login.dart' as auth;
 import 'package:frontend2/providers/feedback_provider.dart';
+import 'package:frontend2/providers/room_cleaning_provider.dart';
 import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/screens/main_navigation_screen.dart';
 import 'package:frontend2/screens/login_screen.dart';
@@ -29,6 +30,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => MessInfoProvider()),
         ChangeNotifierProvider(create: (_) => FeedbackProvider()),
+        ChangeNotifierProvider(create: (_) => RoomCleaningProvider(),),
       ],
       child: MyApp(isLoggedIn: isLoggedIn, updateRequired: updateRequired),
     ),
