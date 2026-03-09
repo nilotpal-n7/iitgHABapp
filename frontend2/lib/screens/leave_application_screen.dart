@@ -7,6 +7,7 @@ import 'package:frontend2/apis/protected.dart';
 import 'package:frontend2/constants/endpoint.dart';
 import 'package:frontend2/screens/leave_application_list_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:frontend2/screens/home_screen.dart';
 
 class LeaveApplicationScreen extends StatefulWidget {
   const LeaveApplicationScreen({super.key});
@@ -88,6 +89,17 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
         title: const Text(
           "Mess Rebate",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const HomeScreen(),
+              ),
+            );
+          },
         ),
       ),
       body: SingleChildScrollView(
@@ -175,6 +187,8 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
               },
               child: const Text("Submit Application", style: TextStyle(color: Colors.white, fontSize: 16)),
             ),
+
+            const Divider(),
 
           ElevatedButton(
               style: ElevatedButton.styleFrom(
