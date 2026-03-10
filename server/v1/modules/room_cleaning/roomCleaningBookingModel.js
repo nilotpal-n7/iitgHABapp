@@ -67,6 +67,13 @@ const roomCleaningBookingSchema = new mongoose.Schema(
       default: null,
       index: true,
     },
+    // Manager finalization timestamp for yesterday/closeout flows.
+    // Once set, the booking status/reason should not be editable via manager finalize endpoint.
+    statusFinalizedAt: {
+      type: Date,
+      default: null,
+      index: true,
+    },
   },
   { timestamps: true },
 );

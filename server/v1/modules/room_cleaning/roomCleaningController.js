@@ -723,7 +723,7 @@ const getRcTomorrow = async (req, res) => {
       status: { $ne: "Cancelled" },
     })
       .sort({ slot: 1, createdAt: 1 })
-      .select("_id userId slot assignedTo status")
+      .select("_id userId slot assignedTo status statusFinalizedAt")
       .lean();
 
     const userIds = [...new Set(bookings.map((b) => b.userId).filter(Boolean))];
@@ -754,6 +754,7 @@ const getRcTomorrow = async (req, res) => {
         timeRange: slotMap[b.slot] || "",
         assignedTo: b.assignedTo ?? null,
         status: b.status ?? null,
+        statusFinalizedAt: b.statusFinalizedAt ?? null,
       };
     });
 
@@ -834,6 +835,113 @@ const postRcTomorrowAssign = async (req, res) => {
   }
 };
 
+/**
+ * RC Manager: POST to finalize booking statuses for a date.
+ * Requires authenticateMessManagerJWT.
+ *
+ * Body:
+ * {
+ *   date: 'YYYY-MM-DD', // required
+ *   updates: [ { bookingId, status, reason? } ]
+ * }
+ *
+ * Allowed status transitions (for manager finalization):
+ * - Cleaned (reason cleared)
+ * - CouldNotBeCleaned (requires reason in allowed set)
+ *
+ * Only updates bookings that belong to the manager hostel and match bookingDate.
+ */
+const postRcFinalizeStatuses = async (req, res) => {
+  try {
+    const hostel = req.managerHostel;
+    if (!hostel) {
+      return res.status(403).json({ message: "Manager hostel not set" });
+    }
+
+    const { date: dateParam, updates } = req.body || {};
+    if (!dateParam) {
+      return res.status(400).json({ message: "date is required (YYYY-MM-DD)" });
+    }
+    if (!Array.isArray(updates)) {
+      return res.status(400).json({ message: "updates must be an array" });
+    }
+
+    const parsed = new Date(dateParam);
+    if (Number.isNaN(parsed.getTime())) {
+      return res.status(400).json({ message: "Invalid date" });
+    }
+    const targetDate = startOfDayIST(parsed);
+
+    const allowedReasons = new Set([
+      "Student Did Not Respond",
+      "Student Asked To Cancel",
+      "Room Cleaners Not Available",
+    ]);
+
+    let updated = 0;
+    let locked = 0;
+    const now = new Date();
+
+    for (const item of updates) {
+      const { bookingId, status, reason } = item || {};
+      if (!bookingId) continue;
+      if (!status) {
+        return res.status(400).json({
+          message: `status is required for booking ${bookingId}`,
+        });
+      }
+
+      if (!["Cleaned", "CouldNotBeCleaned"].includes(status)) {
+        return res.status(400).json({
+          message: `Invalid status "${status}" for booking ${bookingId}`,
+        });
+      }
+
+      const filter = {
+        _id: bookingId,
+        hostelId: hostel._id,
+        bookingDate: targetDate,
+        status: { $in: ["Booked", "Buffered", "Cleaned", "CouldNotBeCleaned"] },
+        statusFinalizedAt: null,
+      };
+
+      if (status === "Cleaned") {
+        const r = await RoomCleaningBooking.updateOne(filter, {
+          $set: { status: "Cleaned", statusFinalizedAt: now },
+          $unset: { reason: 1 },
+        });
+        if (r?.modifiedCount) updated += 1;
+        else locked += 1;
+      } else {
+        if (!reason || !allowedReasons.has(reason)) {
+          return res.status(400).json({
+            message: `reason must be one of [${[...allowedReasons].join(
+              ", ",
+            )}] for booking ${bookingId}`,
+          });
+        }
+        const r = await RoomCleaningBooking.updateOne(filter, {
+          $set: { status: "CouldNotBeCleaned", reason, statusFinalizedAt: now },
+        });
+        if (r?.modifiedCount) updated += 1;
+        else locked += 1;
+      }
+    }
+
+    return res.status(200).json({
+      message: "Statuses finalized",
+      updated,
+      locked,
+    });
+  } catch (err) {
+    console.error("postRcFinalizeStatuses error:", err);
+    return res.status(500).json({
+      message: "Failed to finalize statuses",
+      error: String(err?.message || err),
+    });
+  }
+};
+
 module.exports = {
   getAvailability,
   createBooking,
@@ -842,5 +950,6 @@ module.exports = {
   submitFeedback,
   getRcTomorrow,
   postRcTomorrowAssign,
+  postRcFinalizeStatuses,
 };
 

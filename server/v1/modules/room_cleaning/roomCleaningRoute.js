@@ -7,6 +7,7 @@ const {
   submitFeedback,
   getRcTomorrow,
   postRcTomorrowAssign,
+  postRcFinalizeStatuses,
 } = require("./roomCleaningController");
 const {
   authenticateJWT,
@@ -44,6 +45,13 @@ roomCleaningRouter.post(
   "/rc/tomorrow/assign",
   authenticateMessManagerJWT,
   postRcTomorrowAssign,
+);
+
+// RC Manager (HABit RC app): finalize statuses for a date (e.g. Yesterday)
+roomCleaningRouter.post(
+  "/rc/status/finalize",
+  authenticateMessManagerJWT,
+  postRcFinalizeStatuses,
 );
 
 module.exports = roomCleaningRouter;
