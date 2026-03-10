@@ -15,6 +15,7 @@ import '../utilities/startupitem.dart';
 import '../widgets/alerts_card.dart';
 import '../widgets/microsoft_required_dialog.dart';
 import 'mess_preference.dart';
+import 'room_cleaning/room_cleaning.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -122,7 +123,24 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
 
           const SizedBox(width: 12),
-
+          /// ROOM CLEANING
+          Expanded(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(18),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const RoomCleaningScreen(),
+                  ),
+                );
+              },
+              child: _quickActionCard(
+                iconPath: 'assets/icon/cleaning.svg',
+                label: "Room Cleaning",
+              ),
+            ),
+          ),
           /// MESS CHANGE
           Expanded(
             child: InkWell(
