@@ -79,12 +79,6 @@ const hostelSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  // Number of room cleaners available for room-cleaning scheduling.
-  roomCleaners: {
-    type: Number,
-    default: 0,
-    min: 0,
-  },
   microsoft_email: {
     type: String,
     required: true,

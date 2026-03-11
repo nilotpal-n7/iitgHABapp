@@ -1,5 +1,6 @@
 const { RoomCleaningBooking } = require("./roomCleaningBookingModel");
 const { RcFeedback } = require("./roomCleaningFeedbackModel");
+const { RcCleaner } = require("./rcCleanerModel");
 const { Hostel } = require("../hostel/hostelModel");
 const { User } = require("../user/userModel");
 
@@ -54,7 +55,7 @@ function isBookingWindowOpen(bookingDate, now = getISTNow()) {
 }
 
 // Shared helper to validate targetDate (D+2 or D+3), resolve hostel,
-// compute capacities and booking window.
+// and compute booking window.
 async function resolveContext({ req, dateParam, allowWindowBypass = false }) {
   if (!req.user?._id) {
     const err = new Error("User not authenticated");
@@ -104,19 +105,13 @@ async function resolveContext({ req, dateParam, allowWindowBypass = false }) {
   }
 
   const hostel = await Hostel.findById(hostelId)
-    .select("roomCleaners hostel_name")
+    .select("hostel_name")
     .lean();
   if (!hostel) {
     const err = new Error("Hostel not found");
     err.statusCode = 404;
     throw err;
   }
-
-  const N = typeof hostel.roomCleaners === "number" ? hostel.roomCleaners : 0;
-  // Each cleaner can clean 3 rooms per hour; each slot is 2 hours.
-  // primaryCapacity = max(N-1,0) * 3 * 2
-  const primaryCapacity = Math.max(N - 1, 0) * 3 * 2;
-  const bufferCapacity = 1 * 3 * 2;
 
   const now = getISTNow();
 
@@ -147,12 +142,34 @@ async function resolveContext({ req, dateParam, allowWindowBypass = false }) {
     targetDate,
     hostelId,
     hostel,
-    primaryCapacity,
-    bufferCapacity,
     openTime,
     closeTime,
     now,
   };
+}
+
+// Compute per-slot capacity based on RcCleaner configuration for a hostel.
+// Returns an object: { A: { primaryCapacity, bufferCapacity }, ... }.
+async function getSlotCapacitiesForHostel(hostelId) {
+  const cleaners = await RcCleaner.find({ hostelId })
+    .select("slots")
+    .lean();
+
+  const counts = { A: 0, B: 0, C: 0, D: 0 };
+  for (const c of cleaners) {
+    for (const s of c.slots || []) {
+      if (counts[s] != null) counts[s] += 1;
+    }
+  }
+
+  const capacities = {};
+  for (const slotId of ["A", "B", "C", "D"]) {
+    const cleanersInSlot = counts[slotId] || 0;
+    const primaryCapacity = Math.max(cleanersInSlot - 1, 0) * 3 * 2;
+    const bufferCapacity = 1 * 3 * 2;
+    capacities[slotId] = { primaryCapacity, bufferCapacity };
+  }
+  return capacities;
 }
 
 /**
@@ -183,15 +200,13 @@ const getAvailability = async (req, res) => {
 
     const hostelId = user.hostel;
     const hostel = await Hostel.findById(hostelId)
-      .select("roomCleaners hostel_name")
+      .select("hostel_name")
       .lean();
     if (!hostel) {
       return res.status(404).json({ message: "Hostel not found" });
     }
 
-    const N = typeof hostel.roomCleaners === "number" ? hostel.roomCleaners : 0;
-    const primaryCapacity = Math.max(N - 1, 0) * 3 * 2;
-    const bufferCapacity = 1 * 3 * 2;
+    const slotCapacities = await getSlotCapacitiesForHostel(hostelId);
 
     const now = getISTNow();
     const today = startOfDayIST(now);
@@ -268,10 +283,13 @@ const getAvailability = async (req, res) => {
         const bufferUsed = forSlot.filter(
           (b) => b.status === "Buffered",
         ).length;
-
-        const slotsLeft = Math.max(primaryCapacity - primaryUsed, 0);
+        const { primaryCapacity, bufferCapacity } =
+          slotCapacities[slotId] || {};
+        const slotsLeft = Math.max((primaryCapacity || 0) - primaryUsed, 0);
         const bufferSlotsLeft =
-          slotsLeft > 0 ? 0 : Math.max(bufferCapacity - bufferUsed, 0);
+          slotsLeft > 0
+            ? 0
+            : Math.max((bufferCapacity || 0) - bufferUsed, 0);
 
         return {
           slot: slotId,
@@ -315,6 +333,152 @@ const getAvailability = async (req, res) => {
 };
 
 /**
+ * Hostel frontend: CRUD for RcCleaner
+ * All handlers assume authenticateMessManagerJWT has set req.managerHostel.
+ */
+
+const getRcCleaners = async (req, res) => {
+  try {
+    const hostel = req.managerHostel;
+    if (!hostel) {
+      return res.status(403).json({ message: "Manager hostel not set" });
+    }
+
+    const cleaners = await RcCleaner.find({ hostelId: hostel._id })
+      .sort({ createdAt: 1 })
+      .lean();
+
+    return res.status(200).json({
+      cleaners: cleaners.map((c) => ({
+        _id: c._id,
+        name: c.name,
+        slots: c.slots,
+      })),
+    });
+  } catch (err) {
+    console.error("getRcCleaners error:", err);
+    return res.status(500).json({
+      message: "Failed to fetch room cleaners",
+      error: String(err?.message || err),
+    });
+  }
+};
+
+const postRcCleaner = async (req, res) => {
+  try {
+    const hostel = req.managerHostel;
+    if (!hostel) {
+      return res.status(403).json({ message: "Manager hostel not set" });
+    }
+
+    const { name, slots } = req.body || {};
+    if (!name || !Array.isArray(slots) || slots.length === 0) {
+      return res.status(400).json({
+        message: "name and non-empty slots array are required",
+      });
+    }
+
+    const cleaner = await RcCleaner.create({
+      hostelId: hostel._id,
+      name: String(name).trim(),
+      slots,
+    });
+
+    return res.status(201).json({
+      cleaner: {
+        _id: cleaner._id,
+        name: cleaner.name,
+        slots: cleaner.slots,
+      },
+    });
+  } catch (err) {
+    console.error("postRcCleaner error:", err);
+    return res.status(500).json({
+      message: "Failed to create room cleaner",
+      error: String(err?.message || err),
+    });
+  }
+};
+
+const putRcCleaner = async (req, res) => {
+  try {
+    const hostel = req.managerHostel;
+    if (!hostel) {
+      return res.status(403).json({ message: "Manager hostel not set" });
+    }
+
+    const cleanerId = req.params.id;
+    if (!cleanerId) {
+      return res.status(400).json({ message: "Cleaner id is required" });
+    }
+
+    const { name, slots } = req.body || {};
+
+    const update = {};
+    if (name != null) update.name = String(name).trim();
+    if (Array.isArray(slots)) update.slots = slots;
+
+    const cleaner = await RcCleaner.findOneAndUpdate(
+      { _id: cleanerId, hostelId: hostel._id },
+      { $set: update },
+      { new: true },
+    ).lean();
+
+    if (!cleaner) {
+      return res.status(404).json({ message: "Cleaner not found" });
+    }
+
+    return res.status(200).json({
+      cleaner: {
+        _id: cleaner._id,
+        name: cleaner.name,
+        slots: cleaner.slots,
+      },
+    });
+  } catch (err) {
+    console.error("putRcCleaner error:", err);
+    return res.status(500).json({
+      message: "Failed to update room cleaner",
+      error: String(err?.message || err),
+    });
+  }
+};
+
+const deleteRcCleaner = async (req, res) => {
+  try {
+    const hostel = req.managerHostel;
+    if (!hostel) {
+      return res.status(403).json({ message: "Manager hostel not set" });
+    }
+
+    const cleanerId = req.params.id;
+    if (!cleanerId) {
+      return res.status(400).json({ message: "Cleaner id is required" });
+    }
+
+    const cleaner = await RcCleaner.findOneAndDelete({
+      _id: cleanerId,
+      hostelId: hostel._id,
+    }).lean();
+
+    if (!cleaner) {
+      return res.status(404).json({ message: "Cleaner not found" });
+    }
+
+    // Note: we intentionally do NOT clear existing RoomCleaningBooking.assignedTo
+    // references here; historical data can still point to deleted cleaners.
+
+    return res.status(200).json({ message: "Cleaner deleted" });
+  } catch (err) {
+    console.error("deleteRcCleaner error:", err);
+    return res.status(500).json({
+      message: "Failed to delete room cleaner",
+      error: String(err?.message || err),
+    });
+  }
+};
+
+/**
  * POST /api/room-cleaning/booking
  *
  * Body:
@@ -346,13 +510,11 @@ const createBooking = async (req, res) => {
       allowWindowBypass: false,
     });
 
-    const {
-      targetDate,
-      hostelId,
-      hostel,
-      primaryCapacity,
-      bufferCapacity,
-    } = context;
+    const { targetDate, hostelId, hostel } = context;
+
+    const slotCapacities = await getSlotCapacitiesForHostel(hostelId);
+    const { primaryCapacity = 0, bufferCapacity = 0 } =
+      slotCapacities[slot] || {};
 
     // Enforce "1 booking every 14 days" rule (Booked, Buffered, Cleaned).
     const windowEnd = new Date(targetDate);
@@ -741,9 +903,10 @@ const getRcTomorrow = async (req, res) => {
       }
     }
 
-    const totalCleaners = typeof hostel.roomCleaners === "number" ? hostel.roomCleaners : 0;
+    const cleaners = await RcCleaner.find({ hostelId: hostel._id })
+      .select("_id name slots")
+      .lean();
     const slotMap = Object.fromEntries(SLOTS.map((s) => [s.id, s.timeRange]));
-
     const list = bookings.map((b) => {
       const u = userMap[b.userId?.toString()];
       return {
@@ -758,7 +921,14 @@ const getRcTomorrow = async (req, res) => {
       };
     });
 
-    return res.status(200).json({ bookings: list, totalCleaners });
+    return res.status(200).json({
+      bookings: list,
+      cleaners: cleaners.map((c) => ({
+        _id: c._id,
+        name: c.name,
+        slots: c.slots,
+      })),
+    });
   } catch (err) {
     console.error("getRcTomorrow error:", err);
     return res.status(500).json({
@@ -772,7 +942,7 @@ const getRcTomorrow = async (req, res) => {
  * RC Manager: POST to save assignments for tomorrow.
  * Requires authenticateMessManagerJWT.
  * Body: { date? (YYYY-MM-DD), assignments: [ { bookingId, assignedTo } ] }
- * assignedTo: number 1..N or null/omit for unassigned.
+ * assignedTo: cleanerId (RcCleaner._id) or null/omit for unassigned.
  */
 const postRcTomorrowAssign = async (req, res) => {
   try {
@@ -800,7 +970,10 @@ const postRcTomorrowAssign = async (req, res) => {
       tomorrowStart = startOfDayIST(tomorrow);
     }
 
-    const N = typeof hostel.roomCleaners === "number" ? hostel.roomCleaners : 0;
+    const cleaners = await RcCleaner.find({ hostelId: hostel._id })
+      .select("_id")
+      .lean();
+    const cleanerIdSet = new Set(cleaners.map((c) => c._id.toString()));
 
     for (const item of assignments) {
       const { bookingId, assignedTo } = item;
@@ -815,13 +988,15 @@ const postRcTomorrowAssign = async (req, res) => {
       if (assignedTo == null || assignedTo === "" || assignedTo === 0) {
         await RoomCleaningBooking.updateOne(filter, { $unset: { assignedTo: 1 } });
       } else {
-        const num = Number(assignedTo);
-        if (num < 1 || num > N) {
+        const cleanerId = String(assignedTo);
+        if (!cleanerIdSet.has(cleanerId)) {
           return res.status(400).json({
-            message: `assignedTo must be between 1 and ${N} for booking ${bookingId}`,
+            message: `assignedTo must be a valid RcCleaner id for booking ${bookingId}`,
           });
         }
-        await RoomCleaningBooking.updateOne(filter, { $set: { assignedTo: num } });
+        await RoomCleaningBooking.updateOne(filter, {
+          $set: { assignedTo: cleanerId },
+        });
       }
     }
 
@@ -951,5 +1126,9 @@ module.exports = {
   getRcTomorrow,
   postRcTomorrowAssign,
   postRcFinalizeStatuses,
+   getRcCleaners,
+   postRcCleaner,
+   putRcCleaner,
+   deleteRcCleaner,
 };
 

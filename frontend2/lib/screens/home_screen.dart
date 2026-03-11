@@ -118,6 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: _quickActionCard(
                 iconPath: 'assets/icon/qrscan.svg',
                 label: "Scan QR",
+                iconData: null,
               ),
             ),
           ),
@@ -138,9 +139,12 @@ class _HomeScreenState extends State<HomeScreen> {
               child: _quickActionCard(
                 iconPath: 'assets/icon/cleaning.svg',
                 label: "Room Cleaning",
+                iconData: Icons.cleaning_services_rounded,
               ),
             ),
           ),
+
+          const SizedBox(width: 12),
           /// MESS CHANGE
           Expanded(
             child: InkWell(
@@ -173,12 +177,10 @@ class _HomeScreenState extends State<HomeScreen> {
               child: _quickActionCard(
                 iconPath: 'assets/icon/messicon.svg',
                 label: "Mess Change",
+                iconData: null,
               ),
             ),
           ),
-
-          const SizedBox(width: 12),
-
         ],
       ),
     );
@@ -187,6 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _quickActionCard({
     required String iconPath,
     required String label,
+    IconData? iconData,
   }) {
     return Container(
       height: 90,
@@ -204,11 +207,22 @@ class _HomeScreenState extends State<HomeScreen> {
               color: Color(0xFF3754DB),
               shape: BoxShape.circle,
             ),
-            child: const Center(
-              child: Icon(
-                Icons.cleaning_services_sharp,
-                size: 22,
-              ),
+            child: Center(
+              child: iconData != null
+                  ? Icon(
+                      iconData,
+                      size: 22,
+                      color: Colors.white,
+                    )
+                  : SvgPicture.asset(
+                      iconPath,
+                      colorFilter: const ColorFilter.mode(
+                        Colors.white,
+                        BlendMode.srcIn,
+                      ),
+                      width: 22,
+                      height: 22,
+                    ),
             ),
           ),
           const SizedBox(height: 8),

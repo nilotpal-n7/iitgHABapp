@@ -55,6 +55,23 @@ class RoomCleaningProvider extends ChangeNotifier {
     return raw;
   }
 
+  String _normalizeAvailabilityError(Object value) {
+    var raw = value.toString();
+    if (raw.startsWith('Exception:')) {
+      raw = raw.substring('Exception:'.length).trimLeft();
+    }
+
+    // Common networking / base URL issues.
+    if (raw.contains('Connection refused') ||
+        raw.contains('SocketException') ||
+        raw.contains('Failed host lookup') ||
+        raw.contains('ClientException with SocketException')) {
+      return 'Could not reach the server. Please check your internet connection and try again.';
+    }
+
+    return 'Something went wrong while loading room-cleaning availability. Please try again.\n\nDetails: $raw';
+  }
+
   Future<void> loadAvailability() async {
     isAvailabilityLoading = true;
     availabilityError = null;
@@ -64,7 +81,7 @@ class RoomCleaningProvider extends ChangeNotifier {
       availability = await _api.fetchAvailability();
     } catch (e) {
       availability = null;
-      availabilityError = e.toString();
+      availabilityError = _normalizeAvailabilityError(e);
     } finally {
       isAvailabilityLoading = false;
       notifyListeners();

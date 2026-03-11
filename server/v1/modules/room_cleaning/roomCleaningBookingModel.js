@@ -35,10 +35,10 @@ const roomCleaningBookingSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    // Optional numeric assignment to a specific room cleaner (1..N).
+    // Optional assignment to a specific room cleaner (RcCleaner._id).
     assignedTo: {
-      type: Number,
-      min: 1,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "RcCleaner",
       default: null,
       index: true,
     },
@@ -78,10 +78,16 @@ const roomCleaningBookingSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// Prevent duplicate booking for same user + date + slot (per hostel).
+// Prevent duplicate *active* booking for same user + date + slot (per hostel).
+// Cancelled / CouldNotBeCleaned bookings should not block a new booking.
 roomCleaningBookingSchema.index(
   { userId: 1, hostelId: 1, bookingDate: 1, slot: 1 },
-  { unique: true },
+  {
+    unique: true,
+    partialFilterExpression: {
+      status: { $in: ["Booked", "Buffered", "Cleaned"] },
+    },
+  },
 );
 
 const RoomCleaningBooking = mongoose.model(

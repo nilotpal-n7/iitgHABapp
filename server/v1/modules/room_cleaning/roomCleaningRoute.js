@@ -8,6 +8,10 @@ const {
   getRcTomorrow,
   postRcTomorrowAssign,
   postRcFinalizeStatuses,
+  getRcCleaners,
+  postRcCleaner,
+  putRcCleaner,
+  deleteRcCleaner,
 } = require("./roomCleaningController");
 const {
   authenticateJWT,
@@ -52,6 +56,28 @@ roomCleaningRouter.post(
   "/rc/status/finalize",
   authenticateMessManagerJWT,
   postRcFinalizeStatuses,
+);
+
+// Hostel frontend: manage room cleaners
+roomCleaningRouter.get(
+  "/rc/cleaners",
+  authenticateMessManagerJWT,
+  getRcCleaners,
+);
+roomCleaningRouter.post(
+  "/rc/cleaners",
+  authenticateMessManagerJWT,
+  postRcCleaner,
+);
+roomCleaningRouter.put(
+  "/rc/cleaners/:id",
+  authenticateMessManagerJWT,
+  putRcCleaner,
+);
+roomCleaningRouter.delete(
+  "/rc/cleaners/:id",
+  authenticateMessManagerJWT,
+  deleteRcCleaner,
 );
 
 module.exports = roomCleaningRouter;

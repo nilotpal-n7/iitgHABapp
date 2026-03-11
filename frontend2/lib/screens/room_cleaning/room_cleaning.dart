@@ -107,10 +107,65 @@ class _BookSlotTabState extends State<_BookSlotTab> {
         final availability = provider.availability;
 
         if (provider.availabilityError != null) {
-          return Center(
-            child: Text(
-              'Failed to load availability:\n${provider.availabilityError}',
-              textAlign: TextAlign.center,
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.wifi_off_rounded,
+                  size: 40,
+                  color: Color(0xFF9CA3AF),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Unable to load room-cleaning info',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'OpenSans_regular',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  provider.availabilityError!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontFamily: 'OpenSans_regular',
+                    fontSize: 13,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    Provider.of<RoomCleaningProvider>(context, listen: false)
+                        .loadAvailability();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3754DB),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
+                  ),
+                  child: const Text(
+                    'Retry',
+                    style: TextStyle(
+                      fontFamily: 'OpenSans_regular',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         }
@@ -318,19 +373,22 @@ class _SlotTile extends StatelessWidget {
 
     final shouldBook = await showDialog<bool>(
       context: context,
+      barrierColor: Colors.black26,
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.transparent,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18),
               ),
               titlePadding: const EdgeInsets.only(
-                  left: 20, right: 20, top: 18, bottom: 4),
+                  left: 20, right: 20, top: 20, bottom: 8),
               contentPadding: const EdgeInsets.only(
-                  left: 20, right: 20, top: 0, bottom: 4),
+                  left: 20, right: 20, top: 0, bottom: 8),
               actionsPadding: const EdgeInsets.only(
-                  left: 12, right: 12, bottom: 12, top: 4),
+                  left: 20, right: 20, bottom: 16, top: 8),
               title: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -339,7 +397,7 @@ class _SlotTile extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: 'OpenSans_regular',
                       fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                      fontSize: 17,
                       color: Color(0xFF111827),
                     ),
                   ),
@@ -354,105 +412,167 @@ class _SlotTile extends StatelessWidget {
                   ),
                 ],
               ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 8),
-                  const _InstructionBullet(
-                    text:
-                        'Please verify your room number and phone number before confirming this booking.',
-                  ),
-                  const _InstructionBullet(
-                    text:
-                        'You can place at most one room cleaning request in any 2‑week period (roughly twice a month).',
-                  ),
-                  const _InstructionBullet(
-                    text:
-                        'If you choose a buffer slot, the request may or may not be fulfilled depending on staff availability.',
-                  ),
-                  const _InstructionBullet(
-                    text:
-                        'Make sure you are present in your room during the selected time slot.',
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Room number',
-                    style: TextStyle(
-                      fontFamily: 'OpenSans_regular',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 13,
-                      color: Color(0xFF374151),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  TextField(
-                    controller: roomController,
-                    decoration: InputDecoration(
-                      hintText: 'Enter your room number',
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 10,
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF9FAFB),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFFE5E7EB),
+                        ),
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          _InstructionBullet(
+                            text:
+                                'Please verify your room number and phone number before confirming this booking.',
+                          ),
+                          _InstructionBullet(
+                            text:
+                                'You can place at most one room cleaning request in any 2‑week period (roughly twice a month).',
+                          ),
+                          _InstructionBullet(
+                            text:
+                                'If you choose a buffer slot, the request may or may not be fulfilled depending on staff availability.',
+                          ),
+                          _InstructionBullet(
+                            text:
+                                'Make sure you are present in your room during the selected time slot.',
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Phone number',
-                    style: TextStyle(
-                      fontFamily: 'OpenSans_regular',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 13,
-                      color: Color(0xFF374151),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  TextField(
-                    controller: phoneController,
-                    keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(
-                      hintText: 'Enter your phone number',
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 10,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                  if (localError != null) ...[
-                    const SizedBox(height: 6),
-                    Text(
-                      localError!,
-                      style: const TextStyle(
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Room number',
+                      style: TextStyle(
                         fontFamily: 'OpenSans_regular',
-                        fontSize: 12,
-                        color: Color(0xFFDC2626),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 13,
+                        color: Color(0xFF374151),
                       ),
                     ),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: roomController,
+                      decoration: InputDecoration(
+                        hintText: 'Enter your room number',
+                        isDense: true,
+                        filled: true,
+                        fillColor: const Color(0xFFF9FAFB),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE5E7EB),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE5E7EB),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF3754DB),
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Phone number',
+                      style: TextStyle(
+                        fontFamily: 'OpenSans_regular',
+                        fontWeight: FontWeight.w500,
+                        fontSize: 13,
+                        color: Color(0xFF374151),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: phoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                        hintText: 'Enter your phone number',
+                        isDense: true,
+                        filled: true,
+                        fillColor: const Color(0xFFF9FAFB),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE5E7EB),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE5E7EB),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF3754DB),
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (localError != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        localError!,
+                        style: const TextStyle(
+                          fontFamily: 'OpenSans_regular',
+                          fontSize: 12,
+                          color: Color(0xFFDC2626),
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
               actions: [
-                TextButton(
+                OutlinedButton(
                   onPressed: () {
                     Navigator.of(dialogContext).pop(false);
                   },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF6B7280),
+                    side: const BorderSide(color: Color(0xFF9CA3AF)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
                   child: const Text(
                     'Go Back',
                     style: TextStyle(
                       fontFamily: 'OpenSans_regular',
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF6B7280),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
                     ),
                   ),
                 ),
+                const SizedBox(width: 10),
                 ElevatedButton(
                   onPressed: () {
                     final room = roomController.text.trim();
@@ -470,7 +590,7 @@ class _SlotTile extends StatelessWidget {
                     backgroundColor: const Color(0xFF3754DB),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 10),
+                        horizontal: 20, vertical: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -478,9 +598,10 @@ class _SlotTile extends StatelessWidget {
                   ),
                   child: const Text(
                     'Book Slot',
-                style: TextStyle(
+                    style: TextStyle(
                       fontFamily: 'OpenSans_regular',
                       fontWeight: FontWeight.w600,
+                      fontSize: 14,
                     ),
                   ),
                 ),
@@ -605,17 +726,22 @@ class _InstructionBullet extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             '• ',
-            style: TextStyle(fontSize: 13),
+            style: TextStyle(
+              fontSize: 13,
+              color: const Color(0xFF6B7280),
+              height: 1.4,
+            ),
           ),
           Expanded(
-                        child: Text(
+            child: Text(
               text,
               style: const TextStyle(
                 fontFamily: 'OpenSans_regular',
                 fontSize: 13,
-                color: Color(0xFF4B5563),
+                height: 1.4,
+                color: Color(0xFF374151),
               ),
             ),
           ),
@@ -701,177 +827,238 @@ class _MyBookingsTab extends StatelessWidget {
               }
 
               return Container(
-                margin: const EdgeInsets.only(bottom: 16.0),
+                margin: const EdgeInsets.only(bottom: 14),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: const Color(0xFFE5E7EB)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.04),
-                      blurRadius: 8,
+                      blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18.0,
-                    vertical: 16.0,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Header row: date + slot left, status badge right (top-aligned)
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                dateLabel,
-                                style: const TextStyle(
-                                  fontFamily: 'OpenSans_regular',
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16,
-                                  color: Color(0xFF111827),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                _slotTimeRange[booking.slot] ??
-                                    'Slot ${booking.slot}',
-                                style: const TextStyle(
-                                  fontFamily: 'OpenSans_regular',
-                                  fontSize: 13,
-                                  color: Color(0xFF6B7280),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: statusColor.withOpacity(0.12),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                              statusLabel,
-                              style: TextStyle(
-                                fontFamily: 'OpenSans_regular',
-                                color: statusColor,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 12,
-                              ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Status accent bar
+                        Container(
+                          width: 4,
+                          decoration: BoxDecoration(
+                            color: statusColor,
+                            borderRadius: const BorderRadius.horizontal(
+                              left: Radius.circular(16),
                             ),
                           ),
-                        ],
-                      ),
-                      // Description and actions on one row: description left, buttons right
-                      if (subtitle != null ||
-                          (status == 'Cleaned' && !hasFeedback) ||
-                          canCancel) ...[
-                        const SizedBox(height: 12),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: subtitle != null
-                                  ? Text(
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          // Top row: date + status chip
+                                          Row(
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.calendar_today_rounded,
+                                                size: 16,
+                                                color: const Color(0xFF6B7280),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                dateLabel,
+                                                style: const TextStyle(
+                                                  fontFamily: 'OpenSans_regular',
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 15,
+                                                  color: Color(0xFF111827),
+                                                ),
+                                              ),
+                                              const Spacer(),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 10,
+                                                  vertical: 5,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: statusColor.withOpacity(0.14),
+                                                  borderRadius:
+                                                      BorderRadius.circular(999),
+                                                ),
+                                                child: Text(
+                                                  statusLabel,
+                                                  style: TextStyle(
+                                                    fontFamily: 'OpenSans_regular',
+                                                    color: statusColor,
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.schedule_rounded,
+                                                size: 16,
+                                                color: const Color(0xFF6B7280),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                _slotTimeRange[booking.slot] ??
+                                                    'Slot ${booking.slot}',
+                                                style: const TextStyle(
+                                                  fontFamily: 'OpenSans_regular',
+                                                  fontSize: 13,
+                                                  color: Color(0xFF6B7280),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if ((status == 'Cleaned' && !hasFeedback) ||
+                                        canCancel) ...[
+                                      const SizedBox(width: 12),
+                                      Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      if (status == 'Cleaned' && !hasFeedback)
+                                        OutlinedButton.icon(
+                                          onPressed: () async {
+                                            await _showFeedbackDialog(
+                                                context, booking.id);
+                                          },
+                                          icon: const Icon(
+                                            Icons.rate_review_outlined,
+                                            size: 16,
+                                          ),
+                                          label: const Text(
+                                            'Share feedback',
+                                            style: TextStyle(
+                                              fontFamily: 'OpenSans_regular',
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor:
+                                                const Color(0xFF4C4EDB),
+                                            side: const BorderSide(
+                                              color: Color(0xFF4C4EDB),
+                                            ),
+                                            padding: const EdgeInsets
+                                                .symmetric(
+                                              horizontal: 12,
+                                              vertical: 8,
+                                            ),
+                                            minimumSize: Size.zero,
+                                            tapTargetSize:
+                                                MaterialTapTargetSize
+                                                    .shrinkWrap,
+                                          ),
+                                        ),
+                                      if (canCancel)
+                                        OutlinedButton.icon(
+                                          onPressed: () async {
+                                            final result = await Provider.of<
+                                                    RoomCleaningProvider>(
+                                                context,
+                                                listen: false)
+                                                .cancelBooking(booking.id);
+                                            if (!context.mounted) return;
+                                            _showRoomCleaningSnackBar(
+                                              context,
+                                              result.message,
+                                              isError: !result.success,
+                                            );
+                                          },
+                                          icon: const Icon(
+                                            Icons.close_rounded,
+                                            size: 16,
+                                          ),
+                                          label: const Text(
+                                            'Cancel booking',
+                                            style: TextStyle(
+                                              fontFamily: 'OpenSans_regular',
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor:
+                                                const Color(0xFF6B7280),
+                                            side: const BorderSide(
+                                              color: Color(0xFF9CA3AF),
+                                            ),
+                                            padding: const EdgeInsets
+                                                .symmetric(
+                                              horizontal: 12,
+                                              vertical: 8,
+                                            ),
+                                            minimumSize: Size.zero,
+                                            tapTargetSize:
+                                                MaterialTapTargetSize
+                                                    .shrinkWrap,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ],
+                                ],
+                                ),
+                                if (subtitle != null) ...[
+                                  const SizedBox(height: 10),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 10,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF9FAFB),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: const Color(0xFFF3F4F6),
+                                      ),
+                                    ),
+                                    child: Text(
                                       subtitle,
                                       style: const TextStyle(
                                         fontFamily: 'OpenSans_regular',
-                                        fontSize: 13,
-                                        height: 1.35,
+                                        fontSize: 12,
+                                        height: 1.4,
                                         color: Color(0xFF6B7280),
                                       ),
-                                    )
-                                  : const SizedBox.shrink(),
-                            ),
-                            if ((status == 'Cleaned' && !hasFeedback) ||
-                                canCancel) ...[
-                              const SizedBox(width: 12),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 4,
-                                alignment: WrapAlignment.end,
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                children: [
-                                  if (status == 'Cleaned' && !hasFeedback)
-                                    TextButton(
-                                      onPressed: () async {
-                                        await _showFeedbackDialog(
-                                            context, booking.id);
-                                      },
-                                      style: TextButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 6,
-                                        ),
-                                        minimumSize: Size.zero,
-                                        tapTargetSize:
-                                            MaterialTapTargetSize.shrinkWrap,
-                                        foregroundColor:
-                                            const Color(0xFF4C4EDB),
-                                      ),
-                                      child: const Text(
-                                        'Share feedback',
-                                        style: TextStyle(
-                                          fontFamily: 'OpenSans_regular',
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 13,
-                                        ),
-                                      ),
                                     ),
-                                  if (canCancel)
-                                    TextButton(
-                                      onPressed: () async {
-                                        final result = await Provider.of<
-                                                RoomCleaningProvider>(
-                                            context,
-                                            listen: false)
-                                            .cancelBooking(booking.id);
-                                        if (!context.mounted) return;
-                                        _showRoomCleaningSnackBar(
-                                          context,
-                                          result.message,
-                                          isError: !result.success,
-                                        );
-                                      },
-                                      style: TextButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 6,
-                                        ),
-                                        minimumSize: Size.zero,
-                                        tapTargetSize:
-                                            MaterialTapTargetSize.shrinkWrap,
-                                        foregroundColor:
-                                            const Color(0xFF6B7280),
-                                      ),
-                                      child: const Text(
-                                        'Cancel booking',
-                                        style: TextStyle(
-                                          fontFamily: 'OpenSans_regular',
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ),
+                                  ),
                                 ],
-                              ),
-                            ],
-                          ],
+                              ],
+                            ),
+                          ),
                         ),
                       ],
-                    ],
+                    ),
                   ),
                 ),
               );

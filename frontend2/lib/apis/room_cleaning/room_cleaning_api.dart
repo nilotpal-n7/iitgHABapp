@@ -122,9 +122,15 @@ class RoomCleaningBooking {
   });
 
   factory RoomCleaningBooking.fromJson(Map<String, dynamic> json) {
+    // Backend stores bookingDate as IST start-of-day in UTC (e.g. 2026-03-12T18:30:00Z == 13 Mar IST).
+    // Convert to an IST calendar date so the UI doesn't shift based on device timezone.
+    final rawBookingDate = json['bookingDate'] as String;
+    final parsed = DateTime.parse(rawBookingDate);
+    final ist = parsed.toUtc().add(const Duration(hours: 5, minutes: 30));
+    final istDateOnly = DateTime(ist.year, ist.month, ist.day);
     return RoomCleaningBooking(
       id: json['_id']?.toString() ?? '',
-      bookingDate: DateTime.parse(json['bookingDate'] as String),
+      bookingDate: istDateOnly,
       slot: json['slot']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
       feedbackId: json['feedbackId']?.toString(),
