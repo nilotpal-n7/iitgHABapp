@@ -1,9 +1,14 @@
 // server/index.js (The Gateway)
 require("dotenv").config();
+const { installProcessHandlers } = require("./processHandlers.js");
+installProcessHandlers();
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const cors = require("cors");
-const appVersionRoute = require("./modules/app_version/appVersionRoute.js");
+const {
+  appVersionRouter,
+  hqAppVersionRouter,
+} = require("./modules/app_version/appVersionRoute.js");
 
 const app = express();
 const PORT = process.env.PORT || 3000; // The public port
@@ -63,8 +68,9 @@ const selectProxyTarget = (req) => {
   return targets.v1;
 };
 
-// 2.5. Centralized App Version Route (Before Proxy)
-app.use("/api/app-version", appVersionRoute);
+// 2.5. Centralized App Version Routes (Before Proxy)
+app.use("/api/app-version", appVersionRouter);
+app.use("/api/hq-app-version", hqAppVersionRouter);
 
 // 3. Proxy Setup - http-proxy-middleware automatically handles multipart/form-data streaming
 const apiProxy = createProxyMiddleware({
@@ -80,8 +86,8 @@ const apiProxy = createProxyMiddleware({
 // 4. Forward everything to the proxy (but don't parse body - proxy handles it)
 app.use("/", apiProxy);
 
-app.listen(PORT, () => {
-  console.log(`🚀 Gateway running on PORT ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Gateway running on PORT ${PORT} (0.0.0.0)`);
   console.log(`   -> V1 (Legacy) upstream: ${targets.v1}`);
   console.log(`   -> V2 (New) upstream:    ${targets.v2}`);
 });

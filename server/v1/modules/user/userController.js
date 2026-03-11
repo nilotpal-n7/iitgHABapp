@@ -175,33 +175,24 @@ const getUserComplaints = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find();
+    const users = await User.find().lean();
+    const hostels = await Hostel.find().lean();
 
-    // Map over users and populate both hostel and mess names
-    const updatedUsers = await Promise.all(
-      users.map(async (user) => {
-        const hostelId = user.hostel;
-        const messId = user.curr_subscribed_mess;
-        let hostelName = null;
-        let messName = null;
+    const hostelMap = hostels.reduce((acc, curr) => {
+      acc[curr._id.toString()] = curr.hostel_name;
+      return acc;
+    }, {});
 
-        if (hostelId) {
-          const hostel = await Hostel.findById(hostelId);
-          hostelName = hostel ? hostel.hostel_name : null;
-        }
+    const updatedUsers = users.map((user) => {
+      const hostelId = user.hostel ? user.hostel.toString() : null;
+      const messId = user.curr_subscribed_mess ? user.curr_subscribed_mess.toString() : null;
 
-        if (messId) {
-          const mess = await Hostel.findById(messId);
-          messName = mess ? mess.hostel_name : null;
-        }
-
-        const userObj = user.toObject();
-        userObj.hostel_name = hostelName;
-        userObj.curr_subscribed_mess_name = messName;
-
-        return userObj;
-      }),
-    );
+      return {
+        ...user,
+        hostel_name: hostelId ? hostelMap[hostelId] || null : null,
+        curr_subscribed_mess_name: messId ? hostelMap[messId] || null : null,
+      };
+    });
 
     res.status(200).json(updatedUsers);
   } catch (err) {
@@ -217,6 +208,51 @@ const getUserCount = async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Error fetching user count" });
+  }
+};
+
+// Mess-manager (HABit HQ): get basic user profile by ID, restricted to users
+// whose curr_subscribed_mess matches the manager's hostel (hostel _id).
+const getUserForManager = async (req, res, next) => {
+  try {
+    const managerHostel = req.managerHostel;
+    const { userId } = req.params;
+
+    if (!managerHostel || !managerHostel._id) {
+      return res
+        .status(400)
+        .json({ message: "Manager hostel not found" });
+    }
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid userId" });
+    }
+
+    const hostelId = managerHostel._id.toString();
+
+    const user = await User.findById(userId)
+      .select(
+        "name rollNumber email roomNumber phoneNumber hostel curr_subscribed_mess",
+      )
+      .populate("hostel", "hostel_name")
+      .populate("curr_subscribed_mess", "hostel_name");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({
+      _id: user._id,
+      name: user.name,
+      rollNumber: user.rollNumber,
+      email: user.email,
+      roomNumber: user.roomNumber || "",
+      phoneNumber: user.phoneNumber || "",
+      hostelName: user.hostel?.hostel_name || "",
+      messName: user.curr_subscribed_mess?.hostel_name || "",
+    });
+  } catch (err) {
+    console.error("getUserForManager error:", err);
+    return next(new AppError(500, "Failed to fetch user profile"));
   }
 };
 
@@ -405,4 +441,5 @@ module.exports = {
   getUserCount,
   getUsersByHostelForMess,
   deleteUserAccount,
+  getUserForManager,
 };

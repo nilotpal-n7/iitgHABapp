@@ -7,6 +7,8 @@ const { FeedbackSettings } = require("./feedbackSettingsModel");
 const {
   sendNotificationMessage,
 } = require("../notification/notificationController");
+const NodeCache = require("node-cache");
+const feedbackCache = new NodeCache({ stdTTL: 60 });
 
 const ratingMap = {
   "Very Poor": 1,
@@ -450,7 +452,7 @@ const enableFeedback = async (req, res) => {
       "Mess Feedback for this month is enabled",
       "All_Hostels",
       { redirectType: "mess_screen", isAlert: "true" },
-    );
+    ).catch((err) => console.error("Feedback enabled notification failed:", err));
     return res.status(200).json({ message: "Feedback enabled", data: s });
   } catch (e) {
     return res
@@ -509,7 +511,7 @@ const enableFeedbackAutomatic = async () => {
       "Mess Feedback for this month is enabled",
       "All_Hostels",
       { redirectType: "mess_screen", isAlert: "true" },
-    );
+    ).catch((err) => console.error("Feedback enabled notification failed:", err));
     console.log("✅ Feedback enabled automatically");
     return { success: true, settings: s };
   } catch (e) {
@@ -545,6 +547,9 @@ const disableFeedbackAutomatic = async () => {
 // ==========================================
 const getFeedbackSettings = async (req, res) => {
   try {
+    const cachedSettings = feedbackCache.get("feedback_settings");
+    if (cachedSettings) return res.status(200).json(cachedSettings);
+
     let s = await FeedbackSettings.findOne();
     if (s?.isEnabled && s.enabledAt) {
       const expiresAt = new Date(
@@ -556,14 +561,16 @@ const getFeedbackSettings = async (req, res) => {
         await s.save();
       }
     }
-    return res.status(200).json(
-      s || {
-        isEnabled: false,
-        enabledAt: null,
-        disabledAt: null,
-        currentWindowNumber: 1,
-      },
-    );
+
+    const responseData = s || {
+      isEnabled: false,
+      enabledAt: null,
+      disabledAt: null,
+      currentWindowNumber: 1,
+    };
+
+    feedbackCache.set("feedback_settings", responseData);
+    return res.status(200).json(responseData);
   } catch (e) {
     return res.status(500).json({
       message: "Failed to fetch settings",
@@ -577,6 +584,9 @@ const getFeedbackSettings = async (req, res) => {
 // ==========================================
 const getFeedbackSettingsPublic = async (req, res) => {
   try {
+    const cachedSettings = feedbackCache.get("feedback_settings");
+    if (cachedSettings) return res.status(200).json(cachedSettings);
+
     let s = await FeedbackSettings.findOne();
     if (s?.isEnabled && s.enabledAt) {
       const expiresAt = new Date(
@@ -588,14 +598,16 @@ const getFeedbackSettingsPublic = async (req, res) => {
         await s.save();
       }
     }
-    return res.status(200).json(
-      s || {
-        isEnabled: false,
-        enabledAt: null,
-        disabledAt: null,
-        currentWindowNumber: 1,
-      },
-    );
+
+    const responseData = s || {
+      isEnabled: false,
+      enabledAt: null,
+      disabledAt: null,
+      currentWindowNumber: 1,
+    };
+
+    feedbackCache.set("feedback_settings", responseData);
+    return res.status(200).json(responseData);
   } catch (e) {
     return res.status(500).json({
       message: "Failed to fetch settings",

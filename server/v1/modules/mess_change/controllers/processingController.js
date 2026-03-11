@@ -161,21 +161,32 @@ const processUsersInIterations = async (users, capacityTracker) => {
  * Reset all users back to hostel
  */
 const resetAllUsersToHostel = async () => {
-  const allocations = await UserAllocHostel.find({});
+  const allocations = await UserAllocHostel.find({}).lean();
+  if (!allocations.length) return;
 
-  for (const allocation of allocations) {
-    allocation.current_subscribed_mess = allocation.hostel;
-    await allocation.save();
+  const bulkAllocOps = allocations.map(alloc => ({
+    updateOne: {
+      filter: { _id: alloc._id },
+      update: { $set: { current_subscribed_mess: alloc.hostel } }
+    }
+  }));
+  if (bulkAllocOps.length > 0) {
+    await UserAllocHostel.bulkWrite(bulkAllocOps);
+  }
 
-    await User.updateOne(
-      { rollNumber: allocation.rollno },
-      {
+  const bulkUserOps = allocations.map(alloc => ({
+    updateOne: {
+      filter: { rollNumber: alloc.rollno },
+      update: {
         $set: {
-          curr_subscribed_mess: allocation.hostel,
+          curr_subscribed_mess: alloc.hostel,
           got_mess_changed: false,
         },
       },
-    );
+    },
+  }));
+  if (bulkUserOps.length > 0) {
+    await User.bulkWrite(bulkUserOps);
   }
 };
 
@@ -309,7 +320,7 @@ const processAllMessChangeRequests = async (req, res) => {
       "Mess Change is Disabled",
       "All_Hostels",
       { redirectType: "mess_change", isAlert: "true" },
-    );
+    ).catch((err) => console.error("Mess change disabled notification failed:", err));
 
     res.status(200).json({
       message: `${acceptedUsers.length} accepted, ${rejectedUsers.length} rejected`,
@@ -348,7 +359,7 @@ const rejectAllMessChangeRequests = async (req, res) => {
       "Mess Change is Disabled",
       "All_Hostels",
       { redirectType: "mess_change", isAlert: "true" },
-    );
+    ).catch((err) => console.error("Mess change disabled notification failed:", err));
 
     res.status(200).json({
       message: `Rejected ${users.length} pending requests. Mess change has been automatically disabled.`,
