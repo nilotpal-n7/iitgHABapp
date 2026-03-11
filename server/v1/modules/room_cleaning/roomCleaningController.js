@@ -165,8 +165,9 @@ async function getSlotCapacitiesForHostel(hostelId) {
   const capacities = {};
   for (const slotId of ["A", "B", "C", "D"]) {
     const cleanersInSlot = counts[slotId] || 0;
-    const primaryCapacity = Math.max(cleanersInSlot - 1, 0) * 3 * 2;
-    const bufferCapacity = 1 * 3 * 2;
+    const primaryCapacity =
+      cleanersInSlot === 0 ? 0 : Math.max(cleanersInSlot - 1, 0) * 3 * 2;
+    const bufferCapacity = cleanersInSlot === 0 ? 0 : 1 * 3 * 2;
     capacities[slotId] = { primaryCapacity, bufferCapacity };
   }
   return capacities;
@@ -299,7 +300,10 @@ const getAvailability = async (req, res) => {
           slotsLeft,
           bufferSlotsLeft,
         };
-      });
+      }).filter(
+        (s) =>
+          (s.primaryCapacity || 0) + (s.bufferCapacity || 0) > 0,
+      );
 
       const dateIst = startOfDayIST(targetDate);
       const yyyy = dateIst.getFullYear();

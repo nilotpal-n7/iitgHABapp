@@ -191,11 +191,11 @@ class _BookSlotTabState extends State<_BookSlotTab> {
         }
 
         return SingleChildScrollView(
-        child: Padding(
+          child: Padding(
             padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 if (!availability.canBook)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12.0),
@@ -205,9 +205,9 @@ class _BookSlotTabState extends State<_BookSlotTab> {
                         const Expanded(
                           child: Text(
                             'You already have a booking in the last 2 weeks.',
-                style: TextStyle(
+                            style: TextStyle(
                               fontFamily: 'OpenSans_regular',
-                  fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -269,7 +269,7 @@ class _DayCard extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE5E7EB)),
@@ -292,15 +292,15 @@ class _DayCard extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                          child: Text(
-                          dateLabel,
-                          style: const TextStyle(
-                            fontFamily: 'OpenSans_regular',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            color: Colors.black,
-                          ),
-                        ),
+                    child: Text(
+                      dateLabel,
+                      style: const TextStyle(
+                        fontFamily: 'OpenSans_regular',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                    ),
                   ),
                   Icon(
                     isExpanded
@@ -355,8 +355,7 @@ class _SlotTile extends StatelessWidget {
   Future<void> _handleBook(BuildContext context) async {
     if (!canBook) return;
 
-    final provider =
-        Provider.of<RoomCleaningProvider>(context, listen: false);
+    final provider = Provider.of<RoomCleaningProvider>(context, listen: false);
 
     // Load default room & phone from profile (SharedPreferences).
     final prefs = await SharedPreferences.getInstance();
@@ -385,8 +384,8 @@ class _SlotTile extends StatelessWidget {
               ),
               titlePadding: const EdgeInsets.only(
                   left: 20, right: 20, top: 20, bottom: 8),
-              contentPadding: const EdgeInsets.only(
-                  left: 20, right: 20, top: 0, bottom: 8),
+              contentPadding:
+                  const EdgeInsets.only(left: 20, right: 20, top: 0, bottom: 8),
               actionsPadding: const EdgeInsets.only(
                   left: 20, right: 20, bottom: 16, top: 8),
               title: Column(
@@ -673,21 +672,16 @@ class _SlotTile extends StatelessWidget {
                 label: '${slot.slotsLeft} Left',
                 color: Colors.green.shade600,
               )
-            else ...[
+            else if (hasBuffer)
               _pill(
-                label: 'Slot Full',
+                label: '${slot.bufferSlotsLeft} Buffer Left',
+                color: Colors.orange.shade600,
+              )
+            else
+              _pill(
+                label: 'Full',
                 color: Colors.red.shade600,
               ),
-              const SizedBox(width: 6),
-              _pill(
-                label: hasBuffer
-                    ? '${slot.bufferSlotsLeft} Buffer Left'
-                    : 'No Buffer',
-                color: hasBuffer
-                    ? Colors.orange.shade600
-                    : Colors.grey.shade600,
-              ),
-            ],
           ],
         ),
       ),
@@ -751,7 +745,6 @@ class _InstructionBullet extends StatelessWidget {
   }
 }
 
-
 class _MyBookingsTab extends StatelessWidget {
   const _MyBookingsTab();
 
@@ -765,12 +758,12 @@ class _MyBookingsTab extends StatelessWidget {
 
         if (provider.bookingsError != null) {
           return Center(
-                        child: Text(
+            child: Text(
               'Failed to load bookings:\n${provider.bookingsError}',
-                          textAlign: TextAlign.center,
-                        ),
-                      );
-                    }
+              textAlign: TextAlign.center,
+            ),
+          );
+        }
 
         final bookings = provider.myBookings;
         if (bookings.isEmpty) {
@@ -782,13 +775,13 @@ class _MyBookingsTab extends StatelessWidget {
           child: ListView.builder(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
             itemCount: bookings.length,
-                      itemBuilder: (context, index) {
+            itemBuilder: (context, index) {
               final booking = bookings[index];
               final dateLabel =
                   DateFormat('EEE, MMM d').format(booking.bookingDate);
               final status = booking.status;
-              final hasFeedback = booking.feedbackId != null &&
-                  booking.feedbackId!.isNotEmpty;
+              final hasFeedback =
+                  booking.feedbackId != null && booking.feedbackId!.isNotEmpty;
 
               final statusColor = switch (status) {
                 'Cleaned' => Colors.green,
@@ -868,12 +861,14 @@ class _MyBookingsTab extends StatelessWidget {
                                   children: [
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           // Top row: date + status chip
                                           Row(
-                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
                                             children: [
                                               Icon(
                                                 Icons.calendar_today_rounded,
@@ -884,7 +879,8 @@ class _MyBookingsTab extends StatelessWidget {
                                               Text(
                                                 dateLabel,
                                                 style: const TextStyle(
-                                                  fontFamily: 'OpenSans_regular',
+                                                  fontFamily:
+                                                      'OpenSans_regular',
                                                   fontWeight: FontWeight.w700,
                                                   fontSize: 15,
                                                   color: Color(0xFF111827),
@@ -892,19 +888,23 @@ class _MyBookingsTab extends StatelessWidget {
                                               ),
                                               const Spacer(),
                                               Container(
-                                                padding: const EdgeInsets.symmetric(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
                                                   horizontal: 10,
                                                   vertical: 5,
                                                 ),
                                                 decoration: BoxDecoration(
-                                                  color: statusColor.withOpacity(0.14),
+                                                  color: statusColor
+                                                      .withOpacity(0.14),
                                                   borderRadius:
-                                                      BorderRadius.circular(999),
+                                                      BorderRadius.circular(
+                                                          999),
                                                 ),
                                                 child: Text(
                                                   statusLabel,
                                                   style: TextStyle(
-                                                    fontFamily: 'OpenSans_regular',
+                                                    fontFamily:
+                                                        'OpenSans_regular',
                                                     color: statusColor,
                                                     fontWeight: FontWeight.w600,
                                                     fontSize: 12,
@@ -926,7 +926,8 @@ class _MyBookingsTab extends StatelessWidget {
                                                 _slotTimeRange[booking.slot] ??
                                                     'Slot ${booking.slot}',
                                                 style: const TextStyle(
-                                                  fontFamily: 'OpenSans_regular',
+                                                  fontFamily:
+                                                      'OpenSans_regular',
                                                   fontSize: 13,
                                                   color: Color(0xFF6B7280),
                                                 ),
@@ -940,92 +941,96 @@ class _MyBookingsTab extends StatelessWidget {
                                         canCancel) ...[
                                       const SizedBox(width: 12),
                                       Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      if (status == 'Cleaned' && !hasFeedback)
-                                        OutlinedButton.icon(
-                                          onPressed: () async {
-                                            await _showFeedbackDialog(
-                                                context, booking.id);
-                                          },
-                                          icon: const Icon(
-                                            Icons.rate_review_outlined,
-                                            size: 16,
-                                          ),
-                                          label: const Text(
-                                            'Share feedback',
-                                            style: TextStyle(
-                                              fontFamily: 'OpenSans_regular',
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 12,
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          if (status == 'Cleaned' &&
+                                              !hasFeedback)
+                                            OutlinedButton.icon(
+                                              onPressed: () async {
+                                                await _showFeedbackDialog(
+                                                    context, booking.id);
+                                              },
+                                              icon: const Icon(
+                                                Icons.rate_review_outlined,
+                                                size: 16,
+                                              ),
+                                              label: const Text(
+                                                'Feedback',
+                                                style: TextStyle(
+                                                  fontFamily:
+                                                      'OpenSans_regular',
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                              style: OutlinedButton.styleFrom(
+                                                foregroundColor:
+                                                    const Color(0xFF4C4EDB),
+                                                side: const BorderSide(
+                                                  color: Color(0xFF4C4EDB),
+                                                ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 12,
+                                                  vertical: 8,
+                                                ),
+                                                minimumSize: Size.zero,
+                                                tapTargetSize:
+                                                    MaterialTapTargetSize
+                                                        .shrinkWrap,
+                                              ),
                                             ),
-                                          ),
-                                          style: OutlinedButton.styleFrom(
-                                            foregroundColor:
-                                                const Color(0xFF4C4EDB),
-                                            side: const BorderSide(
-                                              color: Color(0xFF4C4EDB),
+                                          if (canCancel)
+                                            OutlinedButton.icon(
+                                              onPressed: () async {
+                                                final result = await Provider
+                                                        .of<RoomCleaningProvider>(
+                                                            context,
+                                                            listen: false)
+                                                    .cancelBooking(booking.id);
+                                                if (!context.mounted) return;
+                                                _showRoomCleaningSnackBar(
+                                                  context,
+                                                  result.message,
+                                                  isError: !result.success,
+                                                );
+                                              },
+                                              icon: const Icon(
+                                                Icons.close_rounded,
+                                                size: 16,
+                                              ),
+                                              label: const Text(
+                                                'Cancel',
+                                                style: TextStyle(
+                                                  fontFamily:
+                                                      'OpenSans_regular',
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                              style: OutlinedButton.styleFrom(
+                                                foregroundColor:
+                                                    const Color(0xFF6B7280),
+                                                side: const BorderSide(
+                                                  color: Color(0xFF9CA3AF),
+                                                ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 12,
+                                                  vertical: 8,
+                                                ),
+                                                minimumSize: Size.zero,
+                                                tapTargetSize:
+                                                    MaterialTapTargetSize
+                                                        .shrinkWrap,
+                                              ),
                                             ),
-                                            padding: const EdgeInsets
-                                                .symmetric(
-                                              horizontal: 12,
-                                              vertical: 8,
-                                            ),
-                                            minimumSize: Size.zero,
-                                            tapTargetSize:
-                                                MaterialTapTargetSize
-                                                    .shrinkWrap,
-                                          ),
-                                        ),
-                                      if (canCancel)
-                                        OutlinedButton.icon(
-                                          onPressed: () async {
-                                            final result = await Provider.of<
-                                                    RoomCleaningProvider>(
-                                                context,
-                                                listen: false)
-                                                .cancelBooking(booking.id);
-                                            if (!context.mounted) return;
-                                            _showRoomCleaningSnackBar(
-                                              context,
-                                              result.message,
-                                              isError: !result.success,
-                                            );
-                                          },
-                                          icon: const Icon(
-                                            Icons.close_rounded,
-                                            size: 16,
-                                          ),
-                                          label: const Text(
-                                            'Cancel booking',
-                                            style: TextStyle(
-                                              fontFamily: 'OpenSans_regular',
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                          style: OutlinedButton.styleFrom(
-                                            foregroundColor:
-                                                const Color(0xFF6B7280),
-                                            side: const BorderSide(
-                                              color: Color(0xFF9CA3AF),
-                                            ),
-                                            padding: const EdgeInsets
-                                                .symmetric(
-                                              horizontal: 12,
-                                              vertical: 8,
-                                            ),
-                                            minimumSize: Size.zero,
-                                            tapTargetSize:
-                                                MaterialTapTargetSize
-                                                    .shrinkWrap,
-                                          ),
-                                        ),
+                                        ],
+                                      ),
                                     ],
-                                  ),
-                                ],
-                                ],
+                                  ],
                                 ),
                                 if (subtitle != null) ...[
                                   const SizedBox(height: 10),
@@ -1092,14 +1097,11 @@ class _FeedbackChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: selected
-                ? const Color(0xFF4C4EDB)
-                : Colors.white,
+            color: selected ? const Color(0xFF4C4EDB) : Colors.white,
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
-              color: selected
-                  ? const Color(0xFF4C4EDB)
-                  : const Color(0xFFE5E7EB),
+              color:
+                  selected ? const Color(0xFF4C4EDB) : const Color(0xFFE5E7EB),
               width: selected ? 0 : 1,
             ),
           ),
@@ -1306,7 +1308,8 @@ Future<void> _showFeedbackDialog(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(0xFF6B7280),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 ),
                 child: const Text(
                   'Skip',
@@ -1323,7 +1326,8 @@ Future<void> _showFeedbackDialog(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4C4EDB),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -1347,8 +1351,7 @@ Future<void> _showFeedbackDialog(
 
   if (result != true || !context.mounted) return;
 
-  final provider =
-      Provider.of<RoomCleaningProvider>(context, listen: false);
+  final provider = Provider.of<RoomCleaningProvider>(context, listen: false);
   final action = await provider.submitFeedback(
     bookingId: bookingId,
     reachedInSlot: reachedInSlot,
@@ -1409,10 +1412,9 @@ void _showRoomCleaningSnackBar(
                 ),
               ),
             ),
-            ],
-          ),
+          ],
         ),
       ),
-    );
-  }
-
+    ),
+  );
+}
