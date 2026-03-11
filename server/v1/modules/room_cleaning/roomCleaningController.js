@@ -4,6 +4,11 @@ const { RcCleaner } = require("./rcCleanerModel");
 const { Hostel } = require("../hostel/hostelModel");
 const { User } = require("../user/userModel");
 
+// In-memory cache for per-hostel slot capacities.
+// Shape: { [hostelId]: { value, expiresAt } }
+const slotCapacityCache = Object.create(null);
+const SLOT_CAPACITY_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
 const SLOTS = [
   { id: "A", timeRange: "12:00-14:00" },
   { id: "B", timeRange: "14:00-16:00" },
@@ -161,7 +166,6 @@ async function getSlotCapacitiesForHostel(hostelId) {
       if (counts[s] != null) counts[s] += 1;
     }
   }
-
   const capacities = {};
   for (const slotId of ["A", "B", "C", "D"]) {
     const cleanersInSlot = counts[slotId] || 0;
@@ -171,6 +175,28 @@ async function getSlotCapacitiesForHostel(hostelId) {
     capacities[slotId] = { primaryCapacity, bufferCapacity };
   }
   return capacities;
+}
+
+async function getCachedSlotCapacitiesForHostel(hostelId) {
+  const key = String(hostelId);
+  const cached = slotCapacityCache[key];
+  const now = Date.now();
+  if (cached && cached.expiresAt > now) {
+    return cached.value;
+  }
+  const value = await getSlotCapacitiesForHostel(hostelId);
+  slotCapacityCache[key] = {
+    value,
+    expiresAt: now + SLOT_CAPACITY_TTL_MS,
+  };
+  return value;
+}
+
+function invalidateSlotCapacityCache(hostelId) {
+  const key = String(hostelId);
+  if (slotCapacityCache[key]) {
+    delete slotCapacityCache[key];
+  }
 }
 
 /**
@@ -207,16 +233,20 @@ const getAvailability = async (req, res) => {
       return res.status(404).json({ message: "Hostel not found" });
     }
 
-    const slotCapacities = await getSlotCapacitiesForHostel(hostelId);
+    const slotCapacities = await getCachedSlotCapacitiesForHostel(hostelId);
 
     const now = getISTNow();
     const today = startOfDayIST(now);
 
     // Global 14-day rule: if user has any Cleaned/Booked/Buffered booking
-    // in the last 14 days (including today), canBook is false.
-    const windowEnd = new Date(today);
+    // in the 14-day window around D+3, they cannot create a new booking,
+    // but we still return availability so the UI can show disabled slots.
+    const dPlus3 = new Date(today);
+    dPlus3.setDate(dPlus3.getDate() + 3);
+
+    const windowEnd = new Date(dPlus3);
     windowEnd.setDate(windowEnd.getDate() + 1); // exclusive
-    const windowStart = new Date(today);
+    const windowStart = new Date(dPlus3);
     windowStart.setDate(windowStart.getDate() - 13);
 
     const recentCount = await RoomCleaningBooking.countDocuments({
@@ -225,16 +255,6 @@ const getAvailability = async (req, res) => {
       bookingDate: { $gte: windowStart, $lt: windowEnd },
       status: { $in: ["Booked", "Buffered", "Cleaned"] },
     });
-
-    if (recentCount >= 1) {
-      return res.status(200).json({
-        hostelId,
-        hostelName: hostel.hostel_name || null,
-        now,
-        canBook: false,
-        days: [],
-      });
-    }
 
     // Candidate target days: D+2 and D+3 relative to today.
     const deltas = [2, 3];
@@ -324,7 +344,8 @@ const getAvailability = async (req, res) => {
       hostelId,
       hostelName: hostel.hostel_name || null,
       now,
-      canBook: dayResults.length > 0,
+      canBook: recentCount === 0 && dayResults.length > 0,
+      bookingLimitExceeded: recentCount >= 1,
       days: dayResults,
     });
   } catch (error) {
@@ -388,6 +409,8 @@ const postRcCleaner = async (req, res) => {
       slots,
     });
 
+    invalidateSlotCapacityCache(hostel._id);
+
     return res.status(201).json({
       cleaner: {
         _id: cleaner._id,
@@ -432,6 +455,8 @@ const putRcCleaner = async (req, res) => {
       return res.status(404).json({ message: "Cleaner not found" });
     }
 
+    invalidateSlotCapacityCache(hostel._id);
+
     return res.status(200).json({
       cleaner: {
         _id: cleaner._id,
@@ -469,6 +494,8 @@ const deleteRcCleaner = async (req, res) => {
       return res.status(404).json({ message: "Cleaner not found" });
     }
 
+    invalidateSlotCapacityCache(hostel._id);
+
     // Note: we intentionally do NOT clear existing RoomCleaningBooking.assignedTo
     // references here; historical data can still point to deleted cleaners.
 
@@ -499,10 +526,15 @@ const deleteRcCleaner = async (req, res) => {
  *    otherwise "Buffered" if buffer slots left; otherwise rejects.
  */
 const createBooking = async (req, res) => {
+  const session = await RoomCleaningBooking.startSession();
+  session.startTransaction();
+
   try {
     const { slot } = req.body || {};
 
     if (!SLOTS.some((s) => s.id === slot)) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({
         message: 'Invalid slot. Expected one of "A", "B", "C", "D".',
       });
@@ -516,7 +548,7 @@ const createBooking = async (req, res) => {
 
     const { targetDate, hostelId, hostel } = context;
 
-    const slotCapacities = await getSlotCapacitiesForHostel(hostelId);
+    const slotCapacities = await getCachedSlotCapacitiesForHostel(hostelId);
     const { primaryCapacity = 0, bufferCapacity = 0 } =
       slotCapacities[slot] || {};
 
@@ -531,9 +563,11 @@ const createBooking = async (req, res) => {
       hostelId,
       bookingDate: { $gte: windowStart, $lt: windowEnd },
       status: { $in: ["Booked", "Buffered", "Cleaned"] },
-    });
+    }).session(session);
 
     if (recentCount >= 1) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({
         message:
           "You can only have one room cleaning booking in any 14-day period.",
@@ -541,14 +575,16 @@ const createBooking = async (req, res) => {
     }
 
     // Capacity check for the chosen slot on the target date.
-    const bookingsForSlot = await RoomCleaningBooking.find({
-      hostelId,
-      bookingDate: targetDate,
-      slot,
-      status: { $in: ["Booked", "Buffered"] },
-    })
-      .select("status")
-      .lean();
+    const bookingsForSlot = await RoomCleaningBooking.find(
+      {
+        hostelId,
+        bookingDate: targetDate,
+        slot,
+        status: { $in: ["Booked", "Buffered"] },
+      },
+      "status",
+      { session },
+    ).lean();
 
     const primaryUsed = bookingsForSlot.filter(
       (b) => b.status === "Booked",
@@ -562,6 +598,8 @@ const createBooking = async (req, res) => {
       slotsLeft > 0 ? 0 : Math.max(bufferCapacity - bufferUsed, 0);
 
     if (slotsLeft <= 0 && bufferSlotsLeft <= 0) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({
         message: "No capacity left for this slot on the selected date.",
       });
@@ -569,35 +607,25 @@ const createBooking = async (req, res) => {
 
     const status = slotsLeft > 0 ? "Booked" : "Buffered";
 
+    let booking;
     try {
-      const booking = await RoomCleaningBooking.create({
-        userId: req.user._id,
-        hostelId,
-        bookingDate: targetDate,
-        slot,
-        status,
-      });
-
-      return res.status(201).json({
-        message: "Room cleaning booking created successfully.",
-        booking,
-        availability: {
-          hostelId,
-          hostelName: hostel.hostel_name || null,
-          date: targetDate,
-          slot,
-          primaryCapacity,
-          bufferCapacity,
-          slotsLeft:
-            status === "Booked" ? Math.max(slotsLeft - 1, 0) : slotsLeft,
-          bufferSlotsLeft:
-            status === "Buffered"
-              ? Math.max(bufferSlotsLeft - 1, 0)
-              : bufferSlotsLeft,
-        },
-      });
+      const created = await RoomCleaningBooking.create(
+        [
+          {
+            userId: req.user._id,
+            hostelId,
+            bookingDate: targetDate,
+            slot,
+            status,
+          },
+        ],
+        { session },
+      );
+      booking = created[0];
     } catch (err) {
       if (err?.code === 11000) {
+        await session.abortTransaction();
+        session.endSession();
         return res.status(409).json({
           message:
             "You already have a booking for this slot on this date in this hostel.",
@@ -605,10 +633,42 @@ const createBooking = async (req, res) => {
       }
       throw err;
     }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    const finalSlotsLeft =
+      status === "Booked" ? Math.max(slotsLeft - 1, 0) : slotsLeft;
+    const finalBufferSlotsLeft =
+      status === "Buffered"
+        ? Math.max(bufferSlotsLeft - 1, 0)
+        : bufferSlotsLeft;
+
+    return res.status(201).json({
+      message: "Room cleaning booking created successfully.",
+      booking,
+      availability: {
+        hostelId,
+        hostelName: hostel.hostel_name || null,
+        date: targetDate,
+        slot,
+        primaryCapacity,
+        bufferCapacity,
+        slotsLeft: finalSlotsLeft,
+        bufferSlotsLeft: finalBufferSlotsLeft,
+      },
+    });
   } catch (error) {
+    try {
+      await session.abortTransaction();
+    } catch (e) {
+      // ignore
+    }
+    session.endSession();
+
     const status = error.statusCode || 500;
     if (status >= 500) {
-      console.error("createBooking error:", error);
+      console.error("createBooking error (transaction):", error);
     }
     return res.status(status).json({
       message: error.message || "Failed to create room-cleaning booking",
