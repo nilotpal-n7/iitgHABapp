@@ -1,8 +1,7 @@
-// server/v2/index.js
 //import authRoutes from "./modules/auth/auth.routes.js";
 
-require("dotenv").config({ path: "../.env" });
-const { installProcessHandlers } = require("../processHandlers.js");
+require("dotenv").config({ path: "./.env" });
+const { installProcessHandlers } = require("./processHandlers.js");
 installProcessHandlers();
 console.log("MONGODB_URI from env:", process.env.MONGODB_URI);
 const authRoutes = require("./modules/auth/auth.routes.js");
@@ -17,6 +16,7 @@ const messRoute = require("./modules/mess/messRoute.js");
 const logsRoute = require("./modules/mess/ScanLogsRoute.js");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const schedule = require("node-schedule"); // Required for the Kill Switch
 const {
   setDelegatedTokens,
   tokenFilePath,
@@ -25,14 +25,15 @@ const {
 // New: build delegated auth URLs for starting consent
 const onedrive = require("./config/onedrive.js");
 function buildAuthorizeUrl() {
+  // For delegated token flow, use a dedicated callback endpoint
+  // Use PUBLIC_BASE_URL if available, otherwise try to construct from request
+  const baseUrl = process.env.PUBLIC_BASE_URL || "https://hab.codingclub.in";
+  const delegatedRedirectUri = `${baseUrl}/api/_debug/graph/callback`;
+
   const params = new URLSearchParams({
     client_id: onedrive.clientId,
     response_type: "code",
-    redirect_uri:
-      onedrive.redirectUri ||
-      `${
-        process.env.PUBLIC_BASE_URL || "https://hab.codingclub.in"
-      }/api/_debug/graph/callback`,
+    redirect_uri: delegatedRedirectUri,
     scope:
       (onedrive.graphUserScopes || []).join(" ") || "offline_access User.Read",
     prompt: "consent",
@@ -44,17 +45,6 @@ function buildAuthorizeUrl() {
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 
-const {
-  wednesdayScheduler,
-  sundayScheduler,
-} = require("./modules/hostel/hostelScheduler.js");
-const {
-  initializeFeedbackAutoScheduler,
-} = require("./modules/feedback/autoFeedbackScheduler.js");
-
-const {
-  initializeMessChangeAutoScheduler,
-} = require("./modules/mess_change/autoMessChangeScheduler.js");
 const messChangeRouter = require("./modules/mess_change/messchangeRoute.js");
 require("dotenv").config();
 
@@ -62,7 +52,8 @@ const app = express();
 app.use(bodyParser.json({ limit: "1mb" }));
 
 const MONGOdb_uri = process.env.MONGODB_URI;
-const PORT = process.env.PORT || 3002;
+// Using 3000 as default since Docker routes it internally on this port now
+const PORT = process.env.PORT || 3000;
 
 const swaggerOptions = {
   definition: {
@@ -141,77 +132,94 @@ mongoose
   .then(() => {
     console.log("MongoDB connected");
 
-    // wednesdayScheduler();
+    // ==========================================
+    // PROD UPGRADE: Docker Environment Scheduler Init
+    // ==========================================
+    if (process.env.IS_ACTIVE_SCHEDULER_NODE === "true") {
+      console.log("🌟 Primary Node detected. Starting schedulers...");
 
-    // sundayScheduler();
+      const {
+        wednesdayScheduler,
+        sundayScheduler,
+      } = require("./modules/hostel/hostelScheduler.js");
+      wednesdayScheduler();
+      sundayScheduler();
 
-    // // Initialize automatic schedulers for feedback and mess change
-    // initializeFeedbackAutoScheduler();
-    // initializeMessChangeAutoScheduler();
-    console.log("⚠️ V2 Schedulers DISABLED (Running on V1 only)");
+      // Initialize automatic schedulers for feedback, mess change, and guest cleanup
+      const {
+        initializeFeedbackAutoScheduler,
+      } = require("./modules/feedback/autoFeedbackScheduler.js");
+      const {
+        initializeMessChangeAutoScheduler,
+      } = require("./modules/mess_change/autoMessChangeScheduler.js");
+
+      initializeFeedbackAutoScheduler();
+      initializeMessChangeAutoScheduler();
+    } else {
+      console.log("⚠️ Standby/Old Node detected. Schedulers disabled here.");
+    }
   })
   .catch((err) => console.log(err));
+
+// ==========================================
+// PROD UPGRADE: Health Check & Kill Switch
+// ==========================================
+
+/**
+ * @swagger
+ * /health:
+ * get:
+ * summary: "Active Health check endpoint for Docker"
+ */
+app.get("/health", (req, res) => {
+  if (mongoose.connection.readyState === 1) {
+    return res.status(200).send("OK");
+  }
+  return res.status(503).send("Database booting...");
+});
+
+// Internal endpoint triggered by the deploy.js script during an update
+app.post("/api/internal/schedulers/stop", (req, res) => {
+  console.log("🛑 Received command to halt schedulers. Handoff in progress.");
+  try {
+    for (const jobName in schedule.scheduledJobs) {
+      schedule.scheduledJobs[jobName].cancel();
+    }
+    console.log("✅ All schedulers halted successfully on this container.");
+  } catch (e) {
+    console.warn("⚠️ Error halting schedulers:", e);
+  }
+  res.status(200).send("Schedulers halted.");
+});
+
 
 /**
  * @swagger
  * /:
- *  get:
- *     summary: "Health check endpoint"
- *     tags: ["Health"]
- *     responses:
- *      200:
- *       description: "Backend is running"
+ * get:
+ * summary: "Basic endpoint"
  */
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });
 
-/**
- * @swagger
- * /hello:
- *    get:
- *      summary: "Health check hello endpoint"
- *      tags: ["Health"]
- *      responses:
- *        200:
- *          description: "Hello from server"
- */
 app.get("/hello", (req, res) => {
   res.send("Hello from server");
 });
 
 // user route
 app.use("/api/users", userRoute);
-
-// app.use("/api/complaints", complaintRoute);
-
-// Feedback route
 app.use("/api/feedback", feedbackRoute);
-
-//auth route
 app.use("/api/auth", authRoutes);
-
-//hostel route
 app.use("/api/hostel", hostelRoute);
-
-//notification route
 app.use("/api/notification", notificationRoute);
-
-// Mess route
 app.use("/api/mess", messRoute);
-
-//mess change route
 app.use("/api/mess-change", messChangeRouter);
-
-// profile route
 const profileRouter = require("./modules/profile/profileRoute.js");
 app.use("/api/profile", profileRouter);
-
-//scanlogs route
 app.use("/api/logs", logsRoute);
 
 // Debug route: accept delegated tokens and save to disk for server use
-// WARNING: Protect this route in production (e.g., require admin auth, restrict IPs)
 app.post("/api/_debug/graph/delegated-token", async (req, res) => {
   try {
     const { access_token, refresh_token, expires_at } = req.body || {};
@@ -255,13 +263,9 @@ app.get("/api/_debug/graph/callback", async (req, res) => {
       params.append("client_secret", onedrive.clientSecret);
     params.append("grant_type", "authorization_code");
     params.append("code", code);
-    params.append(
-      "redirect_uri",
-      onedrive.redirectUri ||
-        `${
-          process.env.PUBLIC_BASE_URL || "https://hab.codingclub.in"
-        }/api/_debug/graph/callback`,
-    );
+    const baseUrl = process.env.PUBLIC_BASE_URL || "https://hab.codingclub.in";
+    const delegatedRedirectUri = `${baseUrl}/api/_debug/graph/callback`;
+    params.append("redirect_uri", delegatedRedirectUri);
     params.append(
       "scope",
       (onedrive.graphUserScopes || []).join(" ") || "offline_access User.Read",
@@ -287,14 +291,39 @@ app.get("/api/_debug/graph/callback", async (req, res) => {
   }
 });
 
-// Global error handler (must be after all routes). Catches errors passed to next(err).
+// Global error handler
 app.use((err, req, res, next) => {
   console.error("[Express error]", err);
   res.status(500).json({ message: "Internal server error" });
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+});
+
+// ==========================================
+// PROD UPGRADE: Graceful Shutdown Hook
+// ==========================================
+process.on('SIGTERM', () => {
+  console.log('💀 SIGTERM received. Shutting down gracefully...');
+  
+  // 1. Force halt any lingering schedulers
+  try {
+    for (const jobName in schedule.scheduledJobs) {
+      schedule.scheduledJobs[jobName].cancel();
+    }
+  } catch(e) {}
+
+  // 2. Stop taking new HTTP requests, finish existing ones
+  server.close(() => {
+    console.log('✅ All pending HTTP requests finished.');
+    
+    // 3. Cleanly close database connections
+    mongoose.connection.close(false).then(() => {
+      console.log('✅ MongoDB connection closed. Exiting.');
+      process.exit(0);
+    });
+  });
 });
 
 module.exports = app;

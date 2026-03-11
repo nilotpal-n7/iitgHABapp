@@ -1,0 +1,5 @@
+{
+  "v1": "http://api-v1:3000",
+  "default": "http://api-v2:3000",
+  "v2": "http://api-v2:3000"
+}
