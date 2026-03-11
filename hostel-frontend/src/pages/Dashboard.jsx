@@ -2,7 +2,15 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthProvider";
 import { API_BASE_URL } from "../apis";
 import axios from "axios";
-import { Users, FileText, UserCheck, Building2, LogOut } from "lucide-react";
+import {
+  Users,
+  FileText,
+  UserCheck,
+  Building2,
+  LogOut,
+  Pencil,
+  X,
+} from "lucide-react";
 // NotificationSender and notification tab hidden for now
 import Card from "../components/ui/Card";
 import Tabs from "../components/ui/Tabs";
@@ -23,6 +31,20 @@ const Dashboard = () => {
   const [cleaners, setCleaners] = useState([]);
   const [newCleanerName, setNewCleanerName] = useState("");
   const [newCleanerSlots, setNewCleanerSlots] = useState([]);
+  const [cleanerFormOpen, setCleanerFormOpen] = useState(false);
+  const [editingCleanerId, setEditingCleanerId] = useState(null);
+  const [selectedCleanerId, setSelectedCleanerId] = useState("");
+
+  const [bookingsDate, setBookingsDate] = useState(() => {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  });
+  const [rcBookings, setRcBookings] = useState([]);
+  const [rcBookingsLoading, setRcBookingsLoading] = useState(false);
+  const [rcBookingsError, setRcBookingsError] = useState("");
 
   const [smcSearch, setSmcSearch] = useState("");
 
@@ -85,23 +107,32 @@ const Dashboard = () => {
     }
   };
 
-  const handleCreateCleaner = async () => {
+  const handleSubmitCleaner = async () => {
     if (!newCleanerName.trim() || newCleanerSlots.length === 0) {
       alert("Please enter a name and select at least one slot.");
       return;
     }
     try {
       setLoading(true);
-      await axios.post(`${API_BASE_URL}/room-cleaning/rc/cleaners`, {
-        name: newCleanerName.trim(),
-        slots: newCleanerSlots,
-      });
-      setNewCleanerName("");
-      setNewCleanerSlots([]);
+      if (editingCleanerId) {
+        await axios.put(
+          `${API_BASE_URL}/room-cleaning/rc/cleaners/${editingCleanerId}`,
+          {
+            name: newCleanerName.trim(),
+            slots: newCleanerSlots,
+          }
+        );
+      } else {
+        await axios.post(`${API_BASE_URL}/room-cleaning/rc/cleaners`, {
+          name: newCleanerName.trim(),
+          slots: newCleanerSlots,
+        });
+      }
       await fetchCleaners();
+      closeCleanerForm();
     } catch (err) {
       alert(
-        "Failed to create cleaner: " +
+        `Failed to ${editingCleanerId ? "update" : "create"} cleaner: ` +
           (err.response?.data?.message || err.message)
       );
     } finally {
@@ -115,50 +146,43 @@ const Dashboard = () => {
     );
   };
 
-  const updateCleanerLocal = (id, updates) => {
-    setCleaners((prev) =>
-      prev.map((c) => (c._id === id ? { ...c, ...updates } : c))
-    );
+  const openAddCleanerForm = () => {
+    setEditingCleanerId(null);
+    setNewCleanerName("");
+    setNewCleanerSlots([]);
+    setCleanerFormOpen(true);
   };
 
-  const toggleCleanerSlot = (id, slot) => {
-    setCleaners((prev) =>
-      prev.map((c) => {
-        if (c._id !== id) return c;
-        const slots = Array.isArray(c.slots) ? [...c.slots] : [];
-        const idx = slots.indexOf(slot);
-        if (idx >= 0) {
-          slots.splice(idx, 1);
-        } else {
-          slots.push(slot);
-        }
-        return { ...c, slots };
-      })
-    );
+  const openEditCleanerForm = (cleaner) => {
+    setEditingCleanerId(cleaner?._id || null);
+    setNewCleanerName(cleaner?.name || "");
+    setNewCleanerSlots(Array.isArray(cleaner?.slots) ? cleaner.slots : []);
+    setCleanerFormOpen(true);
   };
 
-  const handleSaveCleaner = async (cleaner) => {
-    if (!cleaner.name.trim() || !cleaner.slots || cleaner.slots.length === 0) {
-      alert("Cleaner must have a name and at least one slot.");
-      return;
-    }
+  const closeCleanerForm = () => {
+    setCleanerFormOpen(false);
+    setEditingCleanerId(null);
+    setNewCleanerName("");
+    setNewCleanerSlots([]);
+  };
+
+  const fetchBookingsForDate = async (dateStr) => {
     try {
-      setLoading(true);
-      await axios.put(
-        `${API_BASE_URL}/room-cleaning/rc/cleaners/${cleaner._id}`,
-        {
-          name: cleaner.name.trim(),
-          slots: cleaner.slots,
-        }
-      );
-      await fetchCleaners();
+      setRcBookingsError("");
+      setRcBookingsLoading(true);
+      const resp = await axios.get(`${API_BASE_URL}/room-cleaning/rc/tomorrow`, {
+        params: { date: dateStr },
+      });
+      setRcBookings(resp.data?.bookings || []);
     } catch (err) {
-      alert(
-        "Failed to update cleaner: " +
+      setRcBookingsError(
+        "Failed to fetch room-cleaning bookings: " +
           (err.response?.data?.message || err.message)
       );
+      setRcBookings([]);
     } finally {
-      setLoading(false);
+      setRcBookingsLoading(false);
     }
   };
 
@@ -245,8 +269,47 @@ const Dashboard = () => {
       fetchSMCMembers();
     } else if (activeTab === "cleaners") {
       fetchCleaners();
+      fetchBookingsForDate(bookingsDate);
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== "cleaners") return;
+    if (selectedCleanerId) return;
+    if (cleaners.length > 0) setSelectedCleanerId(cleaners[0]._id);
+  }, [activeTab, cleaners, selectedCleanerId]);
+
+  useEffect(() => {
+    if (activeTab !== "cleaners") return;
+    fetchBookingsForDate(bookingsDate);
+  }, [activeTab, bookingsDate]);
+
+  const selectedCleaner =
+    cleaners.find((c) => c._id === selectedCleanerId) || null;
+
+  const dateOptions = (() => {
+    const opts = [];
+    const base = new Date();
+    for (let i = -2; i <= 5; i++) {
+      const d = new Date(base);
+      d.setDate(d.getDate() + i);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      const value = `${yyyy}-${mm}-${dd}`;
+      const label =
+        i === 0 ? `Today (${value})` : i === 1 ? `Tomorrow (${value})` : value;
+      opts.push({ value, label });
+    }
+    if (!opts.some((o) => o.value === bookingsDate)) {
+      opts.unshift({ value: bookingsDate, label: bookingsDate });
+    }
+    return opts;
+  })();
+
+  const bookingsForCleaner = selectedCleanerId
+    ? rcBookings.filter((b) => String(b.assignedTo || "") === selectedCleanerId)
+    : [];
 
   const tabItems = [
     { label: "Boarders", value: "boarders", icon: Users },
@@ -668,130 +731,236 @@ const Dashboard = () => {
             {activeTab === "cleaners" && (
               <Card>
                 <div className="p-6 space-y-6">
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    Room Cleaners &amp; Slots
-                  </h2>
-
-                  {/* Add cleaner form */}
-                  <div className="border border-gray-200 rounded-lg p-4 space-y-4 bg-gray-50">
-                    <h3 className="text-sm font-semibold text-gray-700">
-                      Add New Cleaner
-                    </h3>
-                    <div className="flex flex-col md:flex-row md:items-center md:gap-4 gap-3">
-                      <input
-                        type="text"
-                        className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
-                        placeholder="Cleaner name"
-                        value={newCleanerName}
-                        onChange={(e) => setNewCleanerName(e.target.value)}
-                      />
-                      <div className="flex flex-wrap gap-3 items-center">
-                        {["A", "B", "C", "D"].map((slot) => (
-                          <label
-                            key={slot}
-                            className="flex items-center gap-1 text-sm text-gray-700"
-                          >
-                            <input
-                              type="checkbox"
-                              className="h-4 w-4"
-                              checked={newCleanerSlots.includes(slot)}
-                              onChange={() => toggleNewCleanerSlot(slot)}
-                            />
-                            <span>Slot {slot}</span>
-                          </label>
-                        ))}
-                      </div>
-                      <Button onClick={handleCreateCleaner} disabled={loading}>
-                        Add Cleaner
-                      </Button>
-                    </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <h2 className="text-2xl font-bold text-gray-800">
+                      Room Cleaners
+                    </h2>
+                    <Button onClick={openAddCleanerForm} disabled={loading}>
+                      Add Cleaner
+                    </Button>
                   </div>
 
-                  {/* Existing cleaners table */}
+                  {cleanerFormOpen && (
+                    <div className="border border-gray-200 rounded-lg p-4 space-y-4 bg-gray-50">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-semibold text-gray-700">
+                          {editingCleanerId ? "Edit Cleaner" : "Add New Cleaner"}
+                        </h3>
+                        <button
+                          onClick={closeCleanerForm}
+                          className="p-2 rounded-md hover:bg-gray-100"
+                          title="Close"
+                        >
+                          <X className="w-4 h-4 text-gray-600" />
+                        </button>
+                      </div>
+
+                      <div className="flex flex-col md:flex-row md:items-end gap-4">
+                        <div className="w-full md:flex-1 min-w-[220px]">
+                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                            Cleaner name
+                          </label>
+                          <input
+                            type="text"
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white"
+                            placeholder="Cleaner name"
+                            value={newCleanerName}
+                            onChange={(e) => setNewCleanerName(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="w-full md:flex-1">
+                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                            Slots
+                          </label>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            {["A", "B", "C", "D"].map((slot) => (
+                              <label
+                                key={slot}
+                                className="flex items-center gap-2 text-sm text-gray-700"
+                              >
+                                <input
+                                  type="checkbox"
+                                  className="h-4 w-4"
+                                  checked={newCleanerSlots.includes(slot)}
+                                  onChange={() => toggleNewCleanerSlot(slot)}
+                                />
+                                <span>Slot {slot}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="w-full md:w-auto flex items-center md:justify-end gap-2">
+                          <Button
+                            onClick={handleSubmitCleaner}
+                            disabled={loading}
+                            className="w-full md:w-auto"
+                          >
+                            {editingCleanerId ? "Save Cleaner" : "Create Cleaner"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={closeCleanerForm}
+                            disabled={loading}
+                            className="w-full md:w-auto"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {loading && cleaners.length === 0 ? (
                     <div className="flex items-center justify-center py-12">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
                     </div>
                   ) : cleaners.length === 0 ? (
                     <p className="text-gray-500 text-sm">
-                      No cleaners configured yet. Add your first cleaner above.
+                      No cleaners configured yet. Click “Add Cleaner” to create
+                      the first cleaner.
                     </p>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full border border-gray-200 text-sm">
-                        <thead className="bg-gray-100">
-                          <tr>
-                            <th className="border border-gray-200 px-3 py-2 text-left">
-                              Name
-                            </th>
-                            <th className="border border-gray-200 px-3 py-2 text-left">
-                              Slots
-                            </th>
-                            <th className="border border-gray-200 px-3 py-2 text-right">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {cleaners.map((cleaner) => (
-                            <tr key={cleaner._id}>
-                              <td className="border border-gray-200 px-3 py-2 align-middle">
-                                <input
-                                  type="text"
-                                  className="w-full border border-gray-300 rounded-md px-2 py-1 text-sm"
-                                  value={cleaner.name || ""}
-                                  onChange={(e) =>
-                                    updateCleanerLocal(cleaner._id, {
-                                      name: e.target.value,
-                                    })
-                                  }
-                                />
-                              </td>
-                              <td className="border border-gray-200 px-3 py-2 align-middle">
-                                <div className="flex flex-wrap gap-2">
-                                  {["A", "B", "C", "D"].map((slot) => (
-                                    <label
-                                      key={slot}
-                                      className="flex items-center gap-1 text-xs text-gray-700"
-                                    >
-                                      <input
-                                        type="checkbox"
-                                        className="h-4 w-4"
-                                        checked={
-                                          Array.isArray(cleaner.slots) &&
-                                          cleaner.slots.includes(slot)
-                                        }
-                                        onChange={() =>
-                                          toggleCleanerSlot(cleaner._id, slot)
-                                        }
-                                      />
-                                      <span>Slot {slot}</span>
-                                    </label>
-                                  ))}
-                                </div>
-                              </td>
-                              <td className="border border-gray-200 px-3 py-2 align-middle text-right space-x-2">
-                                <Button
-                                  variant="secondary"
-                                  onClick={() => handleSaveCleaner(cleaner)}
-                                  disabled={loading}
-                                >
-                                  Save
-                                </Button>
-                                <Button
-                                  variant="destructive"
-                                  onClick={() =>
-                                    handleDeleteCleaner(cleaner._id)
-                                  }
-                                  disabled={loading}
-                                >
-                                  Delete
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="md:col-span-1">
+                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                            Select cleaner
+                          </label>
+                          <select
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white"
+                            value={selectedCleanerId}
+                            onChange={(e) => setSelectedCleanerId(e.target.value)}
+                          >
+                            {cleaners.map((c) => (
+                              <option key={c._id} value={c._id}>
+                                {c.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {selectedCleaner && (
+                        <div className="border border-gray-200 rounded-lg p-4 bg-white">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="space-y-1">
+                              <div className="text-sm font-semibold text-gray-800">
+                                {selectedCleaner.name}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                Slots:{" "}
+                                {Array.isArray(selectedCleaner.slots) &&
+                                selectedCleaner.slots.length > 0
+                                  ? selectedCleaner.slots
+                                      .slice()
+                                      .sort()
+                                      .join(", ")
+                                  : "—"}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditCleanerForm(selectedCleaner)}
+                                disabled={loading}
+                                className="gap-2"
+                              >
+                                <Pencil className="w-4 h-4" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteCleaner(selectedCleaner._id)}
+                                disabled={loading}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="border border-gray-200 rounded-lg p-4 bg-white space-y-3">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                          <div>
+                            <div className="text-sm font-semibold text-gray-800">
+                              Assigned bookings
+                            </div>
+                            <div className="text-xs text-gray-600">
+                              Shows bookings assigned to the selected cleaner for the chosen date.
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <label className="text-xs font-medium text-gray-600">
+                              Date
+                            </label>
+                            <select
+                              className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white"
+                              value={bookingsDate}
+                              onChange={(e) => setBookingsDate(e.target.value)}
+                            >
+                              {dateOptions.map((o) => (
+                                <option key={o.value} value={o.value}>
+                                  {o.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        {rcBookingsLoading ? (
+                          <div className="flex items-center justify-center py-10">
+                            <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-blue-600" />
+                          </div>
+                        ) : rcBookingsError ? (
+                          <p className="text-sm text-red-600">{rcBookingsError}</p>
+                        ) : !selectedCleanerId ? (
+                          <p className="text-sm text-gray-600">
+                            Select a cleaner to view bookings.
+                          </p>
+                        ) : bookingsForCleaner.length === 0 ? (
+                          <p className="text-sm text-gray-600">
+                            No bookings assigned to this cleaner for {bookingsDate}.
+                          </p>
+                        ) : (
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full border border-gray-200 text-sm">
+                              <thead className="bg-gray-50">
+                                <tr>
+                                  <th className="border border-gray-200 px-3 py-2 text-left">
+                                    Room
+                                  </th>
+                                  <th className="border border-gray-200 px-3 py-2 text-left">
+                                    Slot
+                                  </th>
+                                  <th className="border border-gray-200 px-3 py-2 text-left">
+                                    Status
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {bookingsForCleaner.map((b) => (
+                                  <tr key={b._id}>
+                                    <td className="border border-gray-200 px-3 py-2">
+                                      {b.roomNumber || "—"}
+                                    </td>
+                                    <td className="border border-gray-200 px-3 py-2">
+                                      {b.timeRange || `Slot ${b.slot || "—"}`}
+                                    </td>
+                                    <td className="border border-gray-200 px-3 py-2">
+                                      {b.status || "—"}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
