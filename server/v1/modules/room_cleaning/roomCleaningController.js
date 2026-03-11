@@ -345,7 +345,6 @@ const getAvailability = async (req, res) => {
       hostelName: hostel.hostel_name || null,
       now,
       canBook: recentCount === 0 && dayResults.length > 0,
-      bookingLimitExceeded: recentCount >= 1,
       days: dayResults,
     });
   } catch (error) {
