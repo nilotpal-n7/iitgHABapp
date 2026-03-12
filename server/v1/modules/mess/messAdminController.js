@@ -1,18 +1,7 @@
-const { Mess } = require("./messModel");
 const { Menu } = require("./menuModel");
 const { MenuItem } = require("./menuItemModel");
-const { User } = require("../user/userModel");
-const { Hostel } = require("../hostel/hostelModel");
-const { ScanLogs } = require("./ScanLogsModel.js");
-const mongoose = require("mongoose");
-const {
-  getCurrentDate,
-  getCurrentTime,
-  getCurrentDay,
-} = require("../../utils/date.js");
 
-const NodeCache = require("node-cache");
-const menuCache = new NodeCache({ stdTTL: 300 });
+const redisClient = require("../../utils/redisClient.js");
 
 const getMessMenuByDayForAdmin = async (req, res) => {
   try {
@@ -23,10 +12,13 @@ const getMessMenuByDayForAdmin = async (req, res) => {
     }
 
     const cacheKey = `menu_${messId}_${day}`;
-    let populatedMenus = menuCache.get(cacheKey);
+    let populatedMenus = await redisClient.get(cacheKey);
+    if (populatedMenus) populatedMenus = JSON.parse(populatedMenus);
 
     if (!populatedMenus) {
-      const menu = await Menu.find({ messId: messId, day: day }).sort({ startTime: 1 });
+      const menu = await Menu.find({ messId: messId, day: day }).sort({
+        startTime: 1,
+      });
       if (!menu || menu.length === 0) {
         return res.status(200).json("DoesntExist");
       }
@@ -41,9 +33,14 @@ const getMessMenuByDayForAdmin = async (req, res) => {
 
           menuObj.items = menuItemDetails;
           return menuObj;
-        })
+        }),
       );
-      menuCache.set(cacheKey, populatedMenus);
+      await redisClient.set(
+        cacheKey,
+        JSON.stringify(populatedMenus),
+        "EX",
+        300,
+      );
     }
 
     const specificMenus = populatedMenus.map((m) => {
@@ -80,6 +77,10 @@ const modifyMenuItem = async (req, res) => {
     menuItem.name = name || menuItem.name;
 
     await menuItem.save();
+    const menu = await Menu.findOne({ items: _Id });
+    if (menu) {
+      await redisClient.del(`menu_${menu.messId}_${menu.day}`);
+    }
 
     return res
       .status(200)
@@ -131,6 +132,7 @@ const updateTime = async (req, res) => {
     menu.endTime = end;
 
     await menu.save();
+    await redisClient.del(`menu_${messId}_${day}`);
 
     return res
       .status(200)
@@ -190,6 +192,7 @@ const updateTimeSMC = async (req, res) => {
     menu.startTime = start;
     menu.endTime = end;
     await menu.save();
+    await redisClient.del(`menu_${messId}_${day}`);
 
     return res
       .status(200)
@@ -220,10 +223,13 @@ const getMessMenuByDayForSMC = async (req, res) => {
     }
 
     const cacheKey = `menu_${messId}_${day}`;
-    let populatedMenus = menuCache.get(cacheKey);
+    let populatedMenus = await redisClient.get(cacheKey);
+    if (populatedMenus) populatedMenus = JSON.parse(populatedMenus);
 
     if (!populatedMenus) {
-      const menu = await Menu.find({ messId: messId, day: day }).sort({ startTime: 1 });
+      const menu = await Menu.find({ messId: messId, day: day }).sort({
+        startTime: 1,
+      });
       if (!menu || menu.length === 0) {
         return res.status(200).json("DoesntExist");
       }
@@ -238,9 +244,14 @@ const getMessMenuByDayForSMC = async (req, res) => {
 
           menuObj.items = menuItemDetails;
           return menuObj;
-        })
+        }),
       );
-      menuCache.set(cacheKey, populatedMenus);
+      await redisClient.set(
+        cacheKey,
+        JSON.stringify(populatedMenus),
+        "EX",
+        300,
+      );
     }
 
     const specificMenus = populatedMenus.map((m) => {
@@ -284,6 +295,10 @@ const modifyMenuItemSMC = async (req, res) => {
     menuItem.name = name || menuItem.name;
 
     await menuItem.save();
+    const menu = await Menu.findOne({ items: _Id });
+    if (menu) {
+      await redisClient.del(`menu_${menu.messId}_${menu.day}`);
+    }
 
     return res
       .status(200)

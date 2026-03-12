@@ -7,8 +7,7 @@ const { FeedbackSettings } = require("./feedbackSettingsModel");
 const {
   sendNotificationMessage,
 } = require("../notification/notificationController");
-const NodeCache = require("node-cache");
-const feedbackCache = new NodeCache({ stdTTL: 60 });
+const redisClient = require("../../utils/redisClient.js");
 
 const ratingMap = {
   "Very Poor": 1,
@@ -453,6 +452,7 @@ const enableFeedback = async (req, res) => {
       "All_Hostels",
       { redirectType: "mess_screen", isAlert: "true" },
     ).catch((err) => console.error("Feedback enabled notification failed:", err));
+    await redisClient.del("feedback_settings");
     return res.status(200).json({ message: "Feedback enabled", data: s });
   } catch (e) {
     return res
@@ -472,6 +472,7 @@ const disableFeedback = async (req, res) => {
     if (typeof s.currentWindowNumber === "number") {
       await updateAllMessRatingsAndRankings(s.currentWindowNumber);
     }
+    await redisClient.del("feedback_settings");
     return res.status(200).json({ message: "Feedback disabled", data: s });
   } catch (e) {
     return res
@@ -513,6 +514,7 @@ const enableFeedbackAutomatic = async () => {
       { redirectType: "mess_screen", isAlert: "true" },
     ).catch((err) => console.error("Feedback enabled notification failed:", err));
     console.log("✅ Feedback enabled automatically");
+    await redisClient.del("feedback_settings");
     return { success: true, settings: s };
   } catch (e) {
     console.error("❌ Error enabling feedback automatically:", e);
@@ -535,6 +537,7 @@ const disableFeedbackAutomatic = async () => {
     }
 
     console.log("✅ Feedback disabled automatically");
+    await redisClient.del("feedback_settings");
     return { success: true, settings: s };
   } catch (e) {
     console.error("❌ Error disabling feedback automatically:", e);
@@ -547,8 +550,8 @@ const disableFeedbackAutomatic = async () => {
 // ==========================================
 const getFeedbackSettings = async (req, res) => {
   try {
-    const cachedSettings = feedbackCache.get("feedback_settings");
-    if (cachedSettings) return res.status(200).json(cachedSettings);
+    const cachedSettings = await redisClient.get("feedback_settings");
+    if (cachedSettings) return res.status(200).json(JSON.parse(cachedSettings));
 
     let s = await FeedbackSettings.findOne();
     if (s?.isEnabled && s.enabledAt) {
@@ -569,7 +572,7 @@ const getFeedbackSettings = async (req, res) => {
       currentWindowNumber: 1,
     };
 
-    feedbackCache.set("feedback_settings", responseData);
+    await redisClient.set("feedback_settings", JSON.stringify(responseData), "EX", 60);
     return res.status(200).json(responseData);
   } catch (e) {
     return res.status(500).json({
@@ -584,8 +587,8 @@ const getFeedbackSettings = async (req, res) => {
 // ==========================================
 const getFeedbackSettingsPublic = async (req, res) => {
   try {
-    const cachedSettings = feedbackCache.get("feedback_settings");
-    if (cachedSettings) return res.status(200).json(cachedSettings);
+    const cachedSettings = await redisClient.get("feedback_settings");
+    if (cachedSettings) return res.status(200).json(JSON.parse(cachedSettings));
 
     let s = await FeedbackSettings.findOne();
     if (s?.isEnabled && s.enabledAt) {
@@ -606,7 +609,7 @@ const getFeedbackSettingsPublic = async (req, res) => {
       currentWindowNumber: 1,
     };
 
-    feedbackCache.set("feedback_settings", responseData);
+    await redisClient.set("feedback_settings", JSON.stringify(responseData), "EX", 60);
     return res.status(200).json(responseData);
   } catch (e) {
     return res.status(500).json({

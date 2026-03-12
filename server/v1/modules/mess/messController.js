@@ -9,9 +9,7 @@ const { QR } = require("../qr/qrModel.js");
 const qrcode = require("qrcode");
 const { MessClosure } = require("../hostel/messClosureModel");
 
-const NodeCache = require("node-cache");
-const menuCache = new NodeCache({ stdTTL: 300 });
-const messInfoCache = new NodeCache({ stdTTL: 300 });
+const redisClient = require("../../utils/redisClient.js");
 
 const QR_CODE_DATA_URL_OPTIONS = {
   width: 1024,
@@ -168,7 +166,7 @@ const createMenuItem = async (req, res) => {
       type,
     });
     const newItem = await newMenuItem.save();
-    const menu = await Menu.findOne({ messId: messId, day: day, type: meal });
+    let menu = await Menu.findOne({ messId: messId, day: day, type: meal });
     if (!menu) {
       const newMenu = new Menu({
         messId,
@@ -245,9 +243,9 @@ const getUserMessInfo = async (req, res) => {
 
 const getAllMessInfo = async (req, res) => {
   try {
-    const cachedData = messInfoCache.get("all_mess_info");
+    const cachedData = await redisClient.get("all_mess_info");
     if (cachedData) {
-      return res.status(200).json(cachedData);
+      return res.status(200).json(JSON.parse(cachedData));
     }
 
     const messes = await Mess.find().lean();
@@ -285,7 +283,12 @@ const getAllMessInfo = async (req, res) => {
       };
     });
 
-    messInfoCache.set("all_mess_info", messesWithHostelName);
+    await redisClient.set(
+      "all_mess_info",
+      JSON.stringify(messesWithHostelName),
+      "EX",
+      300,
+    );
 
     return res.status(200).json(messesWithHostelName);
   } catch (error) {
@@ -328,7 +331,8 @@ const getMessMenuByDay = async (req, res) => {
     }
 
     const cacheKey = `menu_${messId}_${day}`;
-    let populatedMenus = menuCache.get(cacheKey);
+    let populatedMenus = await redisClient.get(cacheKey);
+    if (populatedMenus) populatedMenus = JSON.parse(populatedMenus);
 
     if (!populatedMenus) {
       const menu = await Menu.find({ messId, day }).sort({ startTime: 1 });
@@ -349,7 +353,12 @@ const getMessMenuByDay = async (req, res) => {
         }),
       );
 
-      menuCache.set(cacheKey, populatedMenus);
+      await redisClient.set(
+        cacheKey,
+        JSON.stringify(populatedMenus),
+        "EX",
+        300,
+      );
     }
 
     // Apply user-specific logic (likes) to cached data
@@ -404,7 +413,8 @@ const getMessMenuByDayForAdminHAB = async (req, res) => {
     }
 
     const cacheKey = `menu_${messId}_${day}`;
-    let populatedMenus = menuCache.get(cacheKey);
+    let populatedMenus = await redisClient.get(cacheKey);
+    if (populatedMenus) populatedMenus = JSON.parse(populatedMenus);
 
     if (!populatedMenus) {
       const menu = await Menu.find({ messId, day }).sort({ startTime: 1 });
@@ -425,7 +435,12 @@ const getMessMenuByDayForAdminHAB = async (req, res) => {
         }),
       );
 
-      menuCache.set(cacheKey, populatedMenus);
+      await redisClient.set(
+        cacheKey,
+        JSON.stringify(populatedMenus),
+        "EX",
+        300,
+      );
     }
 
     // Apply formatting to cached data
@@ -643,7 +658,7 @@ const ScanMess = async (req, res) => {
     const todayMenus = await Menu.find({
       messId,
       day: currentDay,
-      type: { $in: ["Breakfast", "Lunch", "Dinner"] }
+      type: { $in: ["Breakfast", "Lunch", "Dinner"] },
     }).lean();
 
     const breakfast = todayMenus.find((m) => m.type === "Breakfast");

@@ -3,6 +3,7 @@ const fsp = require("fs").promises;
 const path = require("path");
 const axios = require("axios");
 const onedrive = require("../config/onedrive.js");
+const redisClient = require("./redisClient.js");
 
 const tokenFilePath =
   process.env.GRAPH_DELEGATED_TOKEN_PATH ||
@@ -19,42 +20,15 @@ let inMemory = {
   expires_at: 0, // epoch ms
 };
 
-let redisClient = null;
 let redisDisabled = false;
 
 function getRedisClient() {
   if (redisDisabled) return null;
-  if (redisClient) return redisClient;
-  const url = process.env.REDIS_URL;
-  if (!url) return null;
-  try {
-    const Redis = require("ioredis");
-    redisClient = new Redis(url, {
-      maxRetriesPerRequest: 0,
-      enableOfflineQueue: false,
-      retryStrategy: () => null,
-    });
-    redisClient.on("error", (err) => {
-      if (redisDisabled) return;
-      redisDisabled = true;
-      if (redisClient) {
-        try {
-          redisClient.disconnect();
-        } catch (_) {}
-        redisClient = null;
-        console.warn("[Graph Delegated] Redis unavailable:", err?.message || err?.code, "- using file+memory for token.");
-      }
-    });
-    redisClient.once("ready", () => {
-      if (redisDisabled || !redisClient || redisClient.status !== "ready") return;
-      loadFromDisk().then(() => {
-        if (hasValidToken()) saveToRedis();
-      });
-    });
-    return redisClient;
-  } catch (e) {
-    return null;
+  const client = redisClient.getInstance();
+  if (client && redisClient.getIsConnected()) {
+    return client;
   }
+  return null;
 }
 
 function tokenEndpoint() {
@@ -91,15 +65,15 @@ async function saveToDisk() {
   await fsp.writeFile(tokenFilePath, JSON.stringify(inMemory, null, 2), "utf8");
   console.log(
     `[Graph Delegated] Saved token to ${tokenFilePath}. Expires at: ${new Date(
-      inMemory.expires_at
-    ).toISOString()}`
+      inMemory.expires_at,
+    ).toISOString()}`,
   );
 }
 
 /** Write current inMemory token to Redis so other instances see it. */
 async function saveToRedis() {
   const redis = getRedisClient();
-  if (!redis || redis.status !== "ready") return;
+  if (!redis) return;
   try {
     await redis.set(
       REDIS_KEY_TOKEN,
@@ -107,24 +81,17 @@ async function saveToRedis() {
         access_token: inMemory.access_token,
         refresh_token: inMemory.refresh_token,
         expires_at: inMemory.expires_at,
-      })
+      }),
     );
   } catch (e) {
-    if (!redisDisabled) {
-      redisDisabled = true;
-      try {
-        redis.disconnect();
-      } catch (_) {}
-      redisClient = null;
-      console.warn("[Graph Delegated] Redis write failed:", e?.message, "- using file+memory for token.");
-    }
+    console.warn("[Graph Delegated] Redis write failed:", e?.message);
   }
 }
 
 /** Try to get token from Redis. Returns token object or null. */
 async function loadFromRedis() {
   const redis = getRedisClient();
-  if (!redis || redis.status !== "ready") return null;
+  if (!redis) return null;
   try {
     const raw = await redis.get(REDIS_KEY_TOKEN);
     if (!raw) return null;
@@ -138,7 +105,6 @@ async function loadFromRedis() {
 async function acquireRefreshLock() {
   const redis = getRedisClient();
   if (!redis) return true; // no Redis => single instance, no lock needed
-  if (redis.status !== "ready") return false;
   try {
     const ok = await redis.set(REDIS_KEY_LOCK, "1", "EX", LOCK_TTL_SEC, "NX");
     return ok === "OK";
@@ -158,7 +124,7 @@ function hasValidToken() {
 async function doRefresh() {
   if (!inMemory.refresh_token) {
     throw new Error(
-      "No refresh_token available. Start delegated OAuth and save tokens."
+      "No refresh_token available. Start delegated OAuth and save tokens.",
     );
   }
   if (!onedrive.clientId) throw new Error("CLIENT_ID missing");
@@ -187,7 +153,7 @@ async function doRefresh() {
     throw new Error(
       `Failed to refresh delegated token: ${data.error || "unknown_error"} ${
         data.error_description || ""
-      }. ${hint}`
+      }. ${hint}`,
     );
   }
   const expiresInSec = Number(data.expires_in || 3600);
@@ -197,8 +163,8 @@ async function doRefresh() {
 
   console.log(
     `[Graph Delegated] New access token acquired. Expires at: ${new Date(
-      inMemory.expires_at
-    ).toISOString()}`
+      inMemory.expires_at,
+    ).toISOString()}`,
   );
   await saveToDisk();
   await saveToRedis();
@@ -263,7 +229,7 @@ async function getDelegatedAccessToken() {
 async function setDelegatedTokens({ access_token, refresh_token, expires_at }) {
   if (!access_token || !refresh_token || !expires_at) {
     throw new Error(
-      "setDelegatedTokens requires access_token, refresh_token, expires_at (epoch ms)."
+      "setDelegatedTokens requires access_token, refresh_token, expires_at (epoch ms).",
     );
   }
   inMemory = {
@@ -277,7 +243,14 @@ async function setDelegatedTokens({ access_token, refresh_token, expires_at }) {
 
 /** Call at worker startup so Redis client connects and backfills from disk early. */
 function initDelegatedGraphRedis() {
-  getRedisClient();
+  loadFromDisk().then(() => {
+    if (hasValidToken()) saveToRedis();
+  });
 }
 
-module.exports = { getDelegatedAccessToken, setDelegatedTokens, tokenFilePath, initDelegatedGraphRedis };
+module.exports = {
+  getDelegatedAccessToken,
+  setDelegatedTokens,
+  tokenFilePath,
+  initDelegatedGraphRedis,
+};
