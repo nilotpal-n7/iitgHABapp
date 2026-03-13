@@ -1,9 +1,9 @@
 const String baseUrl = "https://hab.codingclub.in/api";
-const String authUrl = "https://hab.codingclub.in/api";
+const String authUrl = "https://hab.codingclub.inz/api";
 
 class MessRebateEndpoints {
   static const String sendApplication = '$baseUrl/leave/apply';
-  static const String getApplications = '$baseUrl/leave/get';
+  static const String getApplications = '$baseUrl/leave/my-applications';
 }
 
 class NotificationEndpoints {

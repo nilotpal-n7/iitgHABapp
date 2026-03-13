@@ -70,7 +70,7 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
         "bankAccountNumber": _accountNumberController.text,
         "bankIFSCCode": _ifscController.text,
         "bankName": _bankNameController.text,
-        "accountHoldersName": _accountHolderController.text,
+        "bankAccountHoldersName": _accountHolderController.text,
       });
 
       final response = await dio.post(
