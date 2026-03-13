@@ -642,9 +642,9 @@ class _SlotTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasPrimary = slot.slotsLeft > 0;
-    final hasBuffer = slot.bufferSlotsLeft > 0;
+    final hasExtra = slot.extraSlotsLeft > 0;
 
-    final isBookable = canBook && (hasPrimary || hasBuffer);
+    final isBookable = canBook && (hasPrimary || hasExtra);
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6.0),
@@ -672,9 +672,9 @@ class _SlotTile extends StatelessWidget {
                 label: '${slot.slotsLeft} Left',
                 color: Colors.green.shade600,
               )
-            else if (hasBuffer)
+            else if (hasExtra)
               _pill(
-                label: '${slot.bufferSlotsLeft} Buffer Left',
+                label: '${slot.extraSlotsLeft} Extra Left',
                 color: Colors.orange.shade600,
               )
             else
@@ -785,13 +785,16 @@ class _MyBookingsTab extends StatelessWidget {
 
               final statusColor = switch (status) {
                 'Cleaned' => Colors.green,
-                'Booked' || 'Buffered' => Colors.blue,
+                'Booked' || 'Waitlisted' => Colors.blue,
                 'Cancelled' => Colors.grey,
                 'CouldNotBeCleaned' => Colors.red,
                 _ => Colors.black,
               };
-              final statusLabel =
-                  status == 'CouldNotBeCleaned' ? 'Not Cleaned' : status;
+              final statusLabel = switch (status) {
+                'CouldNotBeCleaned' => 'Not Cleaned',
+                'Buffered' => 'Waitlisted',
+                _ => status,
+              };
 
               final canCancel = booking.canCancel;
 
