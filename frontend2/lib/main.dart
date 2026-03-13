@@ -116,8 +116,8 @@ class _MyAppState extends State<MyApp> {
 
     // Use `.map()` to transform the stream into a stream of ConnectivityResult
     _connectivityStream = _connectivity.onConnectivityChanged.map(
-        (List<ConnectivityResult> results) =>
-            results.isNotEmpty ? results[0] : ConnectivityResult.none);
+            (List<ConnectivityResult> results) =>
+        results.isNotEmpty ? results[0] : ConnectivityResult.none);
 
     _connectivityStream.listen((ConnectivityResult result) {
       _handleConnectivityChange(result);
@@ -165,12 +165,13 @@ class _MyAppState extends State<MyApp> {
       navigatorKey: navigatorKey,
 
       home: widget.updateRequired
-          ? const UpdateRequiredScreen()
-          : (widget.isLoggedIn
-              ? const MainNavigationScreen()
-              : const LoginScreen()),
+          ? const UpdateRequiredScreen() :
+      (widget.isLoggedIn
+          ?
+      const MainNavigationScreen()
+          : const LoginScreen()),
 
-      //home:  ProfileScreen(),
+      // home:  ProfileScreen(),
       builder: EasyLoading.init(),
       routes: {
         '/home': (context) => const MainNavigationScreen(),

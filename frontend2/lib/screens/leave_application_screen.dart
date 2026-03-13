@@ -20,6 +20,10 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
   int? _selectedValue;
   DateTimeRange? _selectedDateRange;
   PlatformFile? _pickedFile;
+  final TextEditingController _accountNumberController = TextEditingController();
+  final TextEditingController _ifscController = TextEditingController();
+  final TextEditingController _bankNameController = TextEditingController();
+  final TextEditingController _accountHolderController = TextEditingController();
 
 
   Future<void> _selectDateRange() async {
@@ -55,25 +59,40 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
     final dio = DioClient().dio;
 
     try {
+      FormData formData = FormData.fromMap({
+        "leaveType": reason == 1 ? 'Academic' : 'Medical',
+        "startDate": DateFormat("yyyy-MM-dd").format(range.start),
+        "endDate": DateFormat("yyyy-MM-dd").format(range.end),
+        "proofDocument": await MultipartFile.fromFile(
+          file.path!,
+          filename: file.name,
+        ),
+        "bankAccountNumber": _accountNumberController.text,
+        "bankIFSCCode": _ifscController.text,
+        "bankName": _bankNameController.text,
+        "accountHoldersName": _accountHolderController.text,
+      });
+
       final response = await dio.post(
         MessRebateEndpoints.sendApplication,
-        data: {
-          "leaveType": reason == 1 ? 'Academic' : 'Medical',
-          "startDate": DateFormat("yyyy-MM-dd").format(range.start).toString(),
-          "endDate": DateFormat("yyyy-MM-dd").format(range.end).toString(),
-          "proofDocument": await MultipartFile.fromFile(
-              file.path!,
-              filename: file.name
-          )
-        },
-        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+        data: formData,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $accessToken',
+            "Content-Type": "multipart/form-data"
+          },
+        ),
       );
-      ScaffoldMessenger.of(context).showSnackBar(
+      if(response.statusCode==200) {
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Application Request Successful!")),
-      );
-    } catch(e){
+        );
+      }
+
+    } catch (e) {
+      print(e); // IMPORTANT for debugging
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Error")),
+        const SnackBar(content: Text("Error")),
       );
     }
   }
@@ -151,6 +170,55 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
                 subtitle: _pickedFile != null ? Text("${(_pickedFile!.size / 1024).toStringAsFixed(2)} KB") : null,
                 trailing: const Icon(Icons.attach_file),
                 onTap: _pickFile,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            _buildSection(
+              title: "Bank Details",
+              child: Column(
+                children: [
+
+                  TextField(
+                    controller: _accountNumberController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: "Bank Account Number",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  TextField(
+                    controller: _ifscController,
+                    decoration: const InputDecoration(
+                      labelText: "IFSC Code",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  TextField(
+                    controller: _bankNameController,
+                    decoration: const InputDecoration(
+                      labelText: "Bank Name",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  TextField(
+                    controller: _accountHolderController,
+                    decoration: const InputDecoration(
+                      labelText: "Account Holder Name",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+
+                ],
               ),
             ),
 

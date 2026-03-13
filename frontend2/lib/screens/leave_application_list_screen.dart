@@ -29,24 +29,28 @@ class _LeaveApplicationListScreenState extends State<LeaveApplicationListScreen>
 
   Future<void> _fetchHistory ()async{
     final accessToken = await getAccessToken();
-    if (accessToken == 'error') return;
-    final dio = DioClient().dio;
-    final response = await dio.get(
-      MessRebateEndpoints.getApplications,
-      options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
-    );
-    if (response.statusCode == 200) {
-      final data = response.data as Map;
-      setState(() {
-        myApplications = data['myApplications'] ?? [];
-        isLoading = false;
-      });
-    } else {
+    if (accessToken == 'error') {
       setState(() {
         isLoading = false;
       });
+      return;}
+      final dio = DioClient().dio;
+      final response = await dio.get(
+        MessRebateEndpoints.getApplications,
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
+      if (response.statusCode == 200) {
+        final data = response.data as Map;
+        setState(() {
+          myApplications = data['myApplications'] ?? [];
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
-  }
 
   @override
   Widget build(BuildContext context) {
