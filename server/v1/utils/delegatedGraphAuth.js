@@ -75,6 +75,7 @@ async function saveToRedis() {
   const redis = getRedisClient();
   if (!redis) return;
   try {
+    const ttl = Math.max(1, Math.floor((inMemory.expires_at - Date.now()) / 1000));
     await redis.set(
       REDIS_KEY_TOKEN,
       JSON.stringify({
@@ -82,6 +83,8 @@ async function saveToRedis() {
         refresh_token: inMemory.refresh_token,
         expires_at: inMemory.expires_at,
       }),
+      "EX",
+      ttl
     );
   } catch (e) {
     console.warn("[Graph Delegated] Redis write failed:", e?.message);

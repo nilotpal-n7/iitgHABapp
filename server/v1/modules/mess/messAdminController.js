@@ -39,7 +39,7 @@ const getMessMenuByDayForAdmin = async (req, res) => {
         cacheKey,
         JSON.stringify(populatedMenus),
         "EX",
-        300,
+        86400,
       );
     }
 
@@ -250,7 +250,7 @@ const getMessMenuByDayForSMC = async (req, res) => {
         cacheKey,
         JSON.stringify(populatedMenus),
         "EX",
-        300,
+        86400,
       );
     }
 

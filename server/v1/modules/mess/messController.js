@@ -52,6 +52,8 @@ const createMess = async (req, res) => {
     newMess.qrCode = QRres._id;
     await newMess.save();
 
+    await redisClient.del("all_mess_info");
+
     return res.status(201).json(newMess);
   } catch (error) {
     console.error(error);
@@ -179,6 +181,7 @@ const createMenuItem = async (req, res) => {
 
     menu.items.push(newItem._id);
     await menu.save();
+    await redisClient.del(`menu_${messId}_${day}`);
     return res.status(201).json(newItem);
   } catch (error) {
     console.error(error);
@@ -189,9 +192,13 @@ const createMenuItem = async (req, res) => {
 const deleteMenuItem = async (req, res) => {
   try {
     const _Id = req.body._Id;
+    const menuToInvalidate = await Menu.findOne({ items: _Id });
     const deletedMenuItem = await MenuItem.findByIdAndDelete(_Id);
     if (!deletedMenuItem) {
       return res.status(404).json({ message: "Menu item not found" });
+    }
+    if (menuToInvalidate) {
+      await redisClient.del(`menu_${menuToInvalidate.messId}_${menuToInvalidate.day}`);
     }
     /*const menu = await Menu.findById(deletedMenuItem.menuId);
     if (!menu) {
@@ -357,7 +364,7 @@ const getMessMenuByDay = async (req, res) => {
         cacheKey,
         JSON.stringify(populatedMenus),
         "EX",
-        300,
+        86400,
       );
     }
 
@@ -439,7 +446,7 @@ const getMessMenuByDayForAdminHAB = async (req, res) => {
         cacheKey,
         JSON.stringify(populatedMenus),
         "EX",
-        300,
+        86400,
       );
     }
 
@@ -498,12 +505,20 @@ const toggleLikeMenuItem = async (req, res) => {
         (id) => id.toString() !== userId.toString(),
       );
       await menuItem.save();
+      const menuToInvalidate = await Menu.findOne({ items: menuItemId });
+      if (menuToInvalidate) {
+        await redisClient.del(`menu_${menuToInvalidate.messId}_${menuToInvalidate.day}`);
+      }
       return res
         .status(200)
         .json({ message: "Menu item unliked successfully" });
     } else {
       menuItem.likes.push(userId);
       await menuItem.save();
+      const menuToInvalidate = await Menu.findOne({ items: menuItemId });
+      if (menuToInvalidate) {
+        await redisClient.del(`menu_${menuToInvalidate.messId}_${menuToInvalidate.day}`);
+      }
       return res.status(200).json({ message: "Menu item liked successfully" });
     }
   } catch (error) {
@@ -940,6 +955,8 @@ const unassignMess = async (req, res) => {
       );
       console.log("Updated hostel:", updatedHostel);
     }
+
+    await redisClient.del("all_mess_info");
 
     return res.status(200).json({
       message: "Mess unassigned successfully",
