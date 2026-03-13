@@ -241,37 +241,57 @@ const getUserMessInfo = async (req, res) => {
 
 const getAllMessInfo = async (req, res) => {
   try {
-    const messes = await Mess.find();
+    const messesWithHostelName = await Mess.aggregate([
+      {
+        $lookup: {
+          from: "hostels",
+          localField: "hostelId",
+          foreignField: "_id",
+          as: "hostelInfo"
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: { hId: "$hostelId" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$curr_subscribed_mess", "$$hId"] } } },
+            { $count: "count" }
+          ],
+          as: "subscribers"
+        }
+      },
+      {
+        $addFields: {
+          hostelName: { 
+            $ifNull: [{ $arrayElemAt: ["$hostelInfo.hostel_name", 0] }, null] 
+          },
+          user_count: { 
+            $ifNull: [{ $arrayElemAt: ["$subscribers.count", 0] }, 0] 
+          },
+          rating: { 
+            $round: [{ $ifNull: ["$rating", 0] }, 0] 
+          },
+          ranking: { 
+            $round: [{ $ifNull: ["$ranking", 0] }, 0] 
+          }
+        }
+      },
+      {
+        $project: {
+          hostelInfo: 0,
+          subscribers: 0
+        }
+      }
+    ]);
 
-    if (!messes || messes.length === 0) {
+    if (!messesWithHostelName || messesWithHostelName.length === 0) {
       return res.status(404).json({ message: "No mess found" });
     }
 
-    const messesWithHostelName = await Promise.all(
-      messes.map(async (mess) => {
-        const messObj = mess.toObject();
-        if (messObj.hostelId) {
-          const hostel = await Hostel.findById(messObj.hostelId);
-          messObj.hostelName = hostel ? hostel.hostel_name : null;
-        } else {
-          messObj.hostelName = null;
-        }
-
-        // Ensure rating and ranking are always integers
-        messObj.rating = messObj.rating ? Math.round(messObj.rating) : 0;
-        messObj.ranking = messObj.ranking ? Math.round(messObj.ranking) : 0;
-
-        const userCount = await User.find({
-          curr_subscribed_mess: messObj.hostelId,
-        });
-        messObj.user_count = userCount.length;
-
-        return messObj;
-      }),
-    );
     console.log("All messes with hostel names:", messesWithHostelName);
-
     return res.status(200).json(messesWithHostelName);
+
   } catch (error) {
     console.error("Error in getAllMessInfo:", error);
     return res.status(500).json({ message: "Internal server error" });
@@ -395,15 +415,17 @@ const getMessMenuByDayForAdminHAB = async (req, res) => {
 const getMessMenuItemById = async (req, res) => {
   try {
     const menuItemId = req.params.menuItemId;
-    const menuItemDoc = await MenuItem.findById(menuItemId);
     const userId = req.user.id;
 
-    if (!menuItemDoc) {
+    const menuItem = await MenuItem.findById(menuItemId).lean();
+
+    if (!menuItem) {
       return res.status(404).json({ message: "Menu item not found" });
     }
 
-    const menuItem = menuItemDoc.toObject(); // Convert to plain object
-    menuItem.isLiked = menuItem.likes.includes(userId);
+    menuItem.isLiked = menuItem.likes.some(
+      (id) => id.toString() === userId.toString()
+    );
 
     return res.status(200).json(menuItem);
   } catch (error) {
