@@ -311,8 +311,6 @@ const getAllMessInfo = async (req, res) => {
       "EX",
       300,
     );
-
-    console.log("All messes with hostel names:", messesWithHostelName);
     return res.status(200).json(messesWithHostelName);
   } catch (error) {
     console.error("Error in getAllMessInfo:", error);
