@@ -32,14 +32,11 @@ Future<void> authenticate() async {
     }
 
     prefs.setString('access_token', accessToken);
-
-    await Future.wait([
-      fetchUserDetails(),
-      fetchUserProfilePicture(),
-      getUserMessInfo(),
-      HostelsNotifier.init()
-    ]);
-    // registerFcmToken();
+    await fetchUserDetails();
+    await fetchUserProfilePicture();
+    await getUserMessInfo();
+    // await registerFcmToken();
+    await HostelsNotifier.init();
     ProfilePictureProvider.init();
   } on PlatformException catch (_) {
     rethrow;

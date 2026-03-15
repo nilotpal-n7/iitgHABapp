@@ -29,7 +29,7 @@ class _MessChangePreferenceScreenState
   String? defaultMess; // Now represents current hostel
   bool? isMessChangeEnabled;
   bool isSMC = false; // Track if user is SMC
-  bool started_loading = false;
+
   bool loadingStatus = true; // track API loading state
 
   final dio = DioClient().dio;
@@ -37,16 +37,9 @@ class _MessChangePreferenceScreenState
   @override
   void initState() {
     super.initState();
-  }
-
-  bool __isloading() {
-    if (!started_loading) {
-      started_loading = true;
-      _checkMicrosoftLink();
-      checkMessChangeStatus();
-      checkSMCStatus();
-    }
-    return loadingStatus;
+    _checkMicrosoftLink();
+    checkMessChangeStatus();
+    checkSMCStatus();
   }
 
   Future<void> _checkMicrosoftLink() async {
@@ -276,7 +269,7 @@ class _MessChangePreferenceScreenState
         leading: const BackButton(),
       ),
       body: SafeArea(
-        child: __isloading()
+        child: loadingStatus
             ? const Center(child: CircularProgressIndicator())
             : Padding(
                 padding:

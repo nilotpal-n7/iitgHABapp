@@ -16,8 +16,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend2/utilities/startupitem.dart';
 import 'home_screen.dart';
 import 'mess_screen.dart';
-import '../utilities/notifications.dart';
-import '../widgets/common/bottom_nav_bar.dart';
 
 final _dio = DioClient().dio;
 
@@ -68,7 +66,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void _runPhase3Background() {
-    registerFcmToken();
+    // registerFcmToken();
     FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
     HostelsNotifier.init();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -180,26 +178,58 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // final screens = 
-    return ValueListenableBuilder(
-      valueListenable: ProfilePictureProvider.isSetupDone,
-      builder: (context, setupDone, child) => Scaffold(
-        body: (setupDone == true)
-            ? IndexedStack(
-                index: _selectedIndex,
-                children: [
-                  HomeScreen(onNavigateToTab: _handleNavTap),
-                  MessScreen(active: _selectedIndex == 1),
-                ],
-              )
-            : const InitialSetupScreen(),
-        bottomNavigationBar: (setupDone == true)
-            ? BottomNavBar(
-                currentIndex: _selectedIndex,
-                onTap: _handleNavTap,
-              )
-            : const SizedBox(),
-      ),
+    final screens = [
+      HomeScreen(onNavigateToTab: _handleNavTap),
+      const MessScreen(),
+      const GalaDinnerScreen(),
+    ];
+    return Stack(
+      children: [
+        ValueListenableBuilder(
+          valueListenable: ProfilePictureProvider.isSetupDone,
+          builder: (context, setupDone, child) => Scaffold(
+            body: (setupDone == true)
+                ? IndexedStack(
+                    index: _selectedIndex,
+                    children: [
+                      HomeScreen(onNavigateToTab: _handleNavTap),
+                      MessScreen(active: _selectedIndex == 1),
+                      GalaDinnerScreen(active: _selectedIndex == 2),
+                    ],
+                  )
+                : const InitialSetupScreen(),
+            bottomNavigationBar: (setupDone == true)
+                ? BottomNavBar(
+                    currentIndex: _selectedIndex,
+                    onTap: _handleNavTap,
+                    showGalaTab: _showGalaTab,
+                  )
+                : const SizedBox(),
+          ),
+        ),
+        if (!_homeDataReady)
+          Positioned.fill(
+            child: Container(
+              color: Colors.white,
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text(
+                      'Loading...',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF676767),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

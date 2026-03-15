@@ -23,50 +23,13 @@ import 'package:provider/provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Check device type and app version on startup
-  await VersionChecker.init();
-
-  // Check if update is required
-  final bool updateRequired = await VersionChecker.checkForUpdate();
-  // final bool updateRequired = false;
-
-  final bool asLoggedIn = await auth.isLoggedIn();
   await Firebase.initializeApp();
 
-  // initialize listeners & local notifications
-  //await listenNotifications();
-
-  // On iOS, wait a bit for AppDelegate to initialize and register for remote notifications
-  if (Platform.isIOS) {
-    await Future.delayed(const Duration(milliseconds: 1500));
-  }
-
-  // register token with backend (will also attach the refresh listener)
-  // await registerFcmToken();
-
-  // Initialize Firebase Analytics
-  await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
-
-  HostelsNotifier.init();
-  // Ensure prefs have latest isSetupDone from server before initializing provider
-  if (asLoggedIn) {
-    try {
-      await fetchUserDetails();
-      // After fetching user metadata, fetch the profile picture bytes (base64)
-      // from the backend and cache it in SharedPreferences.
-      try {
-        await fetchUserProfilePicture();
-      } catch (_) {
-        // ignore failures here; provider/init or UI will fallback to default
-      }
-    } catch (_) {}
-  }
-  ProfilePictureProvider.init();
-
-  await getUserMessInfo();
-
-  // NotificationNotifier.init(); // No longer needed - handled by listenNotifications()
+  // Phase 1: run while native splash is visible (single logo screen)
+  await VersionChecker.init();
+  final updateRequired = await VersionChecker.checkForUpdate();
+  final isLoggedIn = await auth.isLoggedIn();
+  await ProfilePictureProvider.init();
 
   runApp(
     MultiProvider(
