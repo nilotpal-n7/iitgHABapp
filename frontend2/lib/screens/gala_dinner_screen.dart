@@ -12,7 +12,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 final _dio = DioClient().dio;
 
 class GalaDinnerScreen extends StatefulWidget {
-  const GalaDinnerScreen({super.key});
+  final bool active;
+  const GalaDinnerScreen({super.key, this.active = false});
 
   @override
   State<GalaDinnerScreen> createState() => _GalaDinnerScreenState();
@@ -24,11 +25,20 @@ class _GalaDinnerScreenState extends State<GalaDinnerScreen> {
   Map<String, dynamic>? _scanStatusData;
   String? _error;
   String? _hostelDisplayName;
+  bool started_loading = false;
 
   @override
   void initState() {
     super.initState();
-    _fetchAll();
+  }
+
+  bool __isloading() {
+    if (widget.active && !started_loading) {
+      print("Loading Gala Screen Data!");
+      started_loading = true;
+      _fetchAll();
+    }
+    return _loading;
   }
 
   /// Backend Gala APIs expect Hostel ObjectId (24-char hex). GalaDinnerMenu.hostelId = Hostel._id (not Mess._id).
@@ -209,7 +219,7 @@ class _GalaDinnerScreenState extends State<GalaDinnerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
+    if (__isloading()) {
       return const Scaffold(
         backgroundColor: Colors.white,
         body: Center(child: CircularProgressIndicator()),
