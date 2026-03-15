@@ -69,3 +69,8 @@ class GalaEndpoints {
   static const String scanStatus = "$baseUrl/gala/scan-status";
   static const String scan = "$baseUrl/gala/scan";
 }
+
+class LaundryEndpoints {
+  static const String status = "$baseUrl/laundry/status";
+  static const String scan = "$baseUrl/laundry/scan";
+}
