@@ -138,7 +138,68 @@ const scan = async (req, res) => {
   }
 };
 
+/**
+ * GET /api/laundry/hostel/dashboard
+ * For hostel office portal. Requires hostel JWT (authenticateAdminJWT).
+ * Returns QR payload, isLaundryAvailable, stats (total + by date), and recent logs.
+ */
+const getHostelDashboard = async (req, res) => {
+  try {
+    const hostel = req.hostel;
+    if (!hostel) {
+      return res.status(403).json({ message: "Hostel authentication required" });
+    }
+
+    const hostelId = hostel._id.toString();
+    const isLaundryAvailable = hostel.isLaundryAvailable === true;
+
+    const userIds = await User.find({ hostel: hostel._id }).select("_id").lean();
+    const ids = userIds.map((u) => u._id);
+
+    const byMonth = await LaundryBooking.aggregate([
+      { $match: { userId: { $in: ids } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m", date: "$usedAt" } },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: -1 } },
+    ]);
+
+    const logs = await LaundryBooking.find({ userId: { $in: ids } })
+      .sort({ usedAt: -1 })
+      .limit(100)
+      .populate("userId", "name rollNumber")
+      .lean();
+
+    return res.status(200).json({
+      hostelId,
+      qrPayload: hostelId,
+      isLaundryAvailable,
+      stats: {
+        byMonth: byMonth.map((d) => ({
+          yearMonth: d._id,
+          year: parseInt(d._id.slice(0, 4), 10),
+          month: parseInt(d._id.slice(5, 7), 10),
+          count: d.count,
+        })),
+      },
+      logs: logs.map((b) => ({
+        _id: b._id,
+        usedAt: b.usedAt,
+        userName: b.userId?.name ?? "—",
+        rollNumber: b.userId?.rollNumber ?? "—",
+      })),
+    });
+  } catch (err) {
+    console.error("laundry getHostelDashboard error:", err);
+    return res.status(500).json({ message: "Error fetching laundry dashboard" });
+  }
+};
+
 module.exports = {
   getStatus,
   scan,
+  getHostelDashboard,
 };
