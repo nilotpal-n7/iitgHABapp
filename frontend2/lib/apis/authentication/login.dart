@@ -32,14 +32,11 @@ Future<void> authenticate() async {
     }
 
     prefs.setString('access_token', accessToken);
-
-    await Future.wait([
-      fetchUserDetails(),
-      fetchUserProfilePicture(),
-      getUserMessInfo(),
-      HostelsNotifier.init()
-    ]);
-    // registerFcmToken();
+    await fetchUserDetails();
+    await fetchUserProfilePicture();
+    await getUserMessInfo();
+    await registerFcmToken();
+    await HostelsNotifier.init();
     ProfilePictureProvider.init();
   } on PlatformException catch (_) {
     rethrow;
@@ -75,7 +72,7 @@ Future<void> guestAuthenticate() async {
     // Reuse post-login initialization
     await fetchUserDetails();
     await getUserMessInfo();
-    // await registerFcmToken();
+    await registerFcmToken();
     await HostelsNotifier.init();
     ProfilePictureProvider.init();
   } catch (e) {
@@ -165,7 +162,7 @@ Future<void> signInWithApple() async {
     if (hasMicrosoftLinked) {
       await getUserMessInfo();
     }
-    // await registerFcmToken();
+    await registerFcmToken();
     await HostelsNotifier.init();
     ProfilePictureProvider.init();
   } on SignInWithAppleAuthorizationException catch (e) {
@@ -231,7 +228,7 @@ Future<void> linkMicrosoftAccount() async {
     await getUserMessInfo();
 
     // Re-register FCM token to subscribe to hostel/mess-specific topics
-    // await registerFcmToken();
+    await registerFcmToken();
 
     // Trigger home screen refresh to update displayed name
     homeScreenRefreshNotifier.value = true;
