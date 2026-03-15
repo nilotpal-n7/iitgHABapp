@@ -1,11 +1,25 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend2/apis/dio_client.dart';
+import 'package:frontend2/apis/mess/user_mess_info.dart';
+import 'package:frontend2/apis/users/user.dart';
+import 'package:frontend2/constants/endpoint.dart';
+import 'package:frontend2/providers/hostels.dart';
+import 'package:frontend2/screens/gala_dinner_screen.dart';
 import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/screens/mess_preference.dart';
 import 'package:frontend2/screens/profile_screen.dart';
+import 'package:frontend2/utilities/notifications.dart';
+import 'package:frontend2/widgets/common/bottom_nav_bar.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:frontend2/utilities/startupitem.dart';
 import 'home_screen.dart';
 import 'mess_screen.dart';
 import '../utilities/notifications.dart';
 import '../widgets/common/bottom_nav_bar.dart';
+
+final _dio = DioClient().dio;
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -16,6 +30,8 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 0;
+  bool _showGalaTab = false;
+  bool _homeDataReady = false;
 
   void _handleNavTap(int index) {
     setState(() {
@@ -26,9 +42,90 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   void initState() {
     super.initState();
-    // Listen for navigation from notifications
+    _resolveGalaTabVisibility();
     tabNavigationNotifier.addListener(_onTabNavigationRequested);
     deepNavigationNotifier.addListener(_onDeepNavigationRequested);
+    _runPhase2AndPhase3();
+  }
+
+  /// Phase 2: fetch user details, mess info, profile picture (loader until done).
+  /// Phase 3: FCM, hostels, analytics, mess list (background).
+  Future<void> _runPhase2AndPhase3() async {
+    // Phase 3 (background) – start immediately, don't block
+    _runPhase3Background();
+
+    // Phase 2 – must complete before hiding home loader
+    try {
+      await fetchUserDetails();
+    } catch (_) {}
+    try {
+      await fetchUserProfilePicture();
+    } catch (_) {}
+    try {
+      await getUserMessInfo();
+    } catch (_) {}
+    if (mounted) setState(() => _homeDataReady = true);
+  }
+
+  void _runPhase3Background() {
+    registerFcmToken();
+    FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
+    HostelsNotifier.init();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<MessInfoProvider>().fetchMessID();
+    });
+  }
+
+  /// Gala tab: for SMC show when any upcoming gala; for non-SMC show only when
+  /// gala date is within 3 days (visible from galaDate-2 days through gala date).
+  Future<void> _resolveGalaTabVisibility() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final isSMC = prefs.getBool('isSMC') ?? false;
+      final hasMicrosoftLinked = prefs.getBool('hasMicrosoftLinked') ?? false;
+
+      // Only users who have linked their Microsoft (student) account
+      // should see the Gala tab at all.
+      if (!hasMicrosoftLinked) {
+        if (mounted) {
+          setState(() => _showGalaTab = false);
+        }
+        return;
+      }
+
+      final response = await _dio.get(GalaEndpoints.upcoming);
+      final galaData = response.data;
+      final galaDateRaw = galaData is Map ? galaData['date'] : null;
+      if (galaDateRaw == null) {
+        if (mounted) setState(() => _showGalaTab = false);
+        return;
+      }
+      DateTime? galaDate;
+      if (galaDateRaw is String) {
+        galaDate = DateTime.tryParse(galaDateRaw)?.toLocal();
+      } else if (galaDateRaw is DateTime) {
+        galaDate = galaDateRaw.toLocal();
+      }
+      if (galaDate == null) {
+        if (mounted) setState(() => _showGalaTab = false);
+        return;
+      }
+      final galaDay = DateTime(galaDate.year, galaDate.month, galaDate.day);
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final daysUntil = galaDay.difference(today).inDays;
+      // Non-SMC: show only when 0 <= daysUntil <= 2 (i.e. within 3 days: today, tomorrow, day after)
+      final show = isSMC ? (daysUntil >= 0) : (daysUntil >= 0 && daysUntil <= 2);
+      if (mounted) {
+        setState(() {
+          _showGalaTab = show;
+          if (!show && _selectedIndex == 2) _selectedIndex = 0;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _showGalaTab = false);
+    }
   }
 
   void _onTabNavigationRequested() {

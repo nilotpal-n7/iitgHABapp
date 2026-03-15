@@ -1,17 +1,13 @@
-import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:frontend2/apis/authentication/login.dart';
-import 'package:frontend2/apis/mess/user_mess_info.dart';
-import 'package:frontend2/apis/users/user.dart';
+import 'package:frontend2/apis/authentication/login.dart' as auth;
 import 'package:frontend2/providers/feedback_provider.dart';
-import 'package:frontend2/providers/hostels.dart';
-import 'package:frontend2/screens/main_navigation_screen.dart';
+import 'package:frontend2/providers/room_cleaning_provider.dart';
 import 'package:frontend2/screens/initial_setup_screen.dart';
+import 'package:frontend2/screens/main_navigation_screen.dart';
 import 'package:frontend2/screens/login_screen.dart';
 import 'package:frontend2/screens/mess_screen.dart';
 import 'package:frontend2/utilities/notifications.dart';
@@ -71,8 +67,9 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => MessInfoProvider()),
         ChangeNotifierProvider(create: (_) => FeedbackProvider()),
+        ChangeNotifierProvider(create: (_) => RoomCleaningProvider()),
       ],
-      child: MyApp(isLoggedIn: asLoggedIn, updateRequired: updateRequired),
+      child: MyApp(isLoggedIn: isLoggedIn, updateRequired: updateRequired),
     ),
   );
 }
@@ -83,8 +80,11 @@ class MyApp extends StatefulWidget {
   final bool isLoggedIn;
   final bool updateRequired;
 
-  const MyApp(
-      {super.key, required this.isLoggedIn, required this.updateRequired});
+  const MyApp({
+    super.key,
+    required this.isLoggedIn,
+    required this.updateRequired,
+  });
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -98,21 +98,8 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-
-    isLoggedIn().then((asLoggedIn) => {if (asLoggedIn) registerFcmToken()});
     listenNotifications();
     setNavigatorKey(navigatorKey); // Set global navigator key for notifications
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Show update dialog if required
-      if (widget.updateRequired) {
-        return; // Don't proceed with other initialization if update is required
-      }
-
-      // This ensures it runs after the first frame
-      await context.read<MessInfoProvider>().fetchMessID();
-    });
-
     _connectivity = Connectivity();
 
     // Use `.map()` to transform the stream into a stream of ConnectivityResult
@@ -164,14 +151,11 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
-
       home: widget.updateRequired
           ? const UpdateRequiredScreen()
           : (widget.isLoggedIn
               ? const MainNavigationScreen()
               : const LoginScreen()),
-
-      //home:  ProfileScreen(),
       builder: EasyLoading.init(),
       routes: {
         '/home': (context) => const MainNavigationScreen(),
