@@ -66,7 +66,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void _runPhase3Background() {
-    registerFcmToken();
+    // registerFcmToken();
     FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
     HostelsNotifier.init();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -191,7 +191,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             body: (setupDone == true)
                 ? IndexedStack(
                     index: _selectedIndex,
-                    children: screens,
+                    children: [
+                      HomeScreen(onNavigateToTab: _handleNavTap),
+                      MessScreen(active: _selectedIndex == 1),
+                      GalaDinnerScreen(active: _selectedIndex == 2),
+                    ],
                   )
                 : const InitialSetupScreen(),
             bottomNavigationBar: (setupDone == true)
