@@ -42,20 +42,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _phoneController = TextEditingController();
   bool _uploading = false;
   bool _saving = false;
-  bool started_loading = false;
 
   @override
   void initState() {
     super.initState();
-  }
-
-  bool __isloading() {
-    if (!started_loading) {
-      started_loading = true;
-      _initializeData();
-      _fetchProfileSettings();
-    }
-    return _isloading;
+    _initializeData();
+    _fetchProfileSettings();
   }
 
   @override
@@ -331,7 +323,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         centerTitle: false,
       ),
-      body: __isloading()
+      body: _isloading
           ? const Center(
               child: CustomLinearProgress(
                 text: 'Loading your details, please wait...',
