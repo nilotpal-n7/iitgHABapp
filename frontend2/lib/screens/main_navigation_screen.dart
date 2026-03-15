@@ -5,7 +5,6 @@ import 'package:frontend2/screens/profile_screen.dart';
 import 'home_screen.dart';
 import 'mess_screen.dart';
 import '../utilities/notifications.dart';
-
 import '../widgets/common/bottom_nav_bar.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -84,17 +83,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screens = [
-      HomeScreen(onNavigateToTab: _handleNavTap),
-      const MessScreen(),
-    ];
+    // final screens = 
     return ValueListenableBuilder(
       valueListenable: ProfilePictureProvider.isSetupDone,
       builder: (context, setupDone, child) => Scaffold(
         body: (setupDone == true)
             ? IndexedStack(
                 index: _selectedIndex,
-                children: screens,
+                children: [
+                  HomeScreen(onNavigateToTab: _handleNavTap),
+                  MessScreen(active: _selectedIndex == 1),
+                ],
               )
             : const InitialSetupScreen(),
         bottomNavigationBar: (setupDone == true)

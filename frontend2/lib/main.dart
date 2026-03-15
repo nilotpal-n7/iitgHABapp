@@ -27,6 +27,7 @@ Future<void> main() async {
 
   // Check if update is required
   final bool updateRequired = await VersionChecker.checkForUpdate();
+  // final bool updateRequired = false;
 
   final bool asLoggedIn = await isLoggedIn();
   await Firebase.initializeApp();
@@ -40,7 +41,7 @@ Future<void> main() async {
   }
 
   // register token with backend (will also attach the refresh listener)
-  await registerFcmToken();
+  // await registerFcmToken();
 
   // Initialize Firebase Analytics
   await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
