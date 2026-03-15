@@ -38,7 +38,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => FeedbackProvider()),
         ChangeNotifierProvider(create: (_) => RoomCleaningProvider()),
       ],
-      child: MyApp(isLoggedIn: asLoggedIn, updateRequired: updateRequired),
+      child: MyApp(isLoggedIn: isLoggedIn, updateRequired: updateRequired),
     ),
   );
 }

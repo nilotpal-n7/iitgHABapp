@@ -79,6 +79,13 @@ class _LaundryScreenState extends State<LaundryScreen> {
     return days == 1 ? '1 day' : '$days days';
   }
 
+  /// Days left for display: day-of-use counts as day 1, so show 14 (not 13).
+  int? _daysLeftForDisplay(LaundryStatus s) {
+    final daysSince = _daysSince(s.lastUsed);
+    if (daysSince == 0) return _cooldownDays; // used today = 14 days left
+    return _daysUntil(s.nextAvailable);
+  }
+
   String _buildStatusTitle(LaundryStatus s) {
     if (!s.hostelHasLaundry) return 'Not available for your hostel.';
     if (s.canUse) {
@@ -86,7 +93,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
       return "You're eligible to wash again.";
     }
     final daysAgo = _daysSince(s.lastUsed);
-    final daysLeft = _daysUntil(s.nextAvailable);
+    final daysLeft = _daysLeftForDisplay(s);
     if (daysLeft != null && daysLeft > 0) {
       return 'Used ${_daysAgoText(daysAgo)}. Next wash in ${_daysLeftText(daysLeft)}.';
     }
@@ -202,8 +209,10 @@ class _LaundryScreenState extends State<LaundryScreen> {
     final subtitle = _buildStatusSubtitle(s);
 
     final daysSinceLastUse = _daysSince(s.lastUsed);
+    // Day of use = day 1 (not 0): progress 1/14, "1 of 14 days", "14 days left"
+    final dayNumber = daysSinceLastUse != null ? (daysSinceLastUse + 1) : 0;
     final cooldownProgress = (!canScan && daysSinceLastUse != null)
-        ? (daysSinceLastUse / _cooldownDays).clamp(0.0, 1.0)
+        ? (dayNumber / _cooldownDays).clamp(0.0, 1.0)
         : null;
 
     final showLastUsedChip = canScan && s.lastUsed != null;
@@ -312,7 +321,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '${daysSinceLastUse ?? 0} of $_cooldownDays days',
+                        '${dayNumber.clamp(1, _cooldownDays)} of $_cooldownDays days',
                         style: const TextStyle(
                           fontFamily: 'OpenSans_regular',
                           fontSize: 11,
@@ -320,7 +329,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
                         ),
                       ),
                       Text(
-                        '${_daysLeftText(_daysUntil(s.nextAvailable))} left',
+                        '${_daysLeftText(_daysLeftForDisplay(s))} left',
                         style: const TextStyle(
                           fontFamily: 'OpenSans_regular',
                           fontSize: 11,
