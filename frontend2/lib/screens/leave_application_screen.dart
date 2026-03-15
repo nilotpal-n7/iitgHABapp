@@ -50,7 +50,10 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
     }
   }
 
-  Future<void> _sendRequest({required int reason, required DateTimeRange range, required PlatformFile file}) async {
+  Future<void> _sendRequest({required int reason, 
+  required DateTimeRange range, 
+  required PlatformFile file,
+  }) async {
 
     if (file.path == null) { return; }
 
@@ -233,7 +236,7 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
               ),
               onPressed: () {
 
-                if (_selectedValue != null && _selectedDateRange != null && _pickedFile!=null) {
+                if (_selectedValue != null && _selectedDateRange != null && _pickedFile!=null&&_accountNumberController.text!=""&&_ifscController.text!=""&&_bankNameController.text!=""&&_accountHolderController.text!="") {
                   if ((_pickedFile!.size)/(1024*1024)>=5) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("File size limit - 5MB")),
@@ -246,6 +249,9 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
                     _sendRequest(reason: _selectedValue!,
                         range: _selectedDateRange!,
                         file: _pickedFile!);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Success!")),
+                    );
                   }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -274,6 +280,8 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
               },
               child: const Text("View history", style: TextStyle(color: Colors.blueAccent, fontSize: 14)),
           ),
+
+           const SizedBox(height: 32),
           ],
         ),
       ),

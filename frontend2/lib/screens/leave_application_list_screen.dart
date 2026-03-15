@@ -122,6 +122,8 @@ class _LeaveApplicationListScreenState extends State<LeaveApplicationListScreen>
 
           final status = application['status'] ?? '';
 
+          final fb = application['feedback']??'N/A';
+
           Color statusColor;
           if (status.toLowerCase() == 'approved') {
             statusColor = Colors.green;
@@ -152,7 +154,7 @@ class _LeaveApplicationListScreenState extends State<LeaveApplicationListScreen>
               subtitle: Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: Text(
-                  "$startDate  →  $endDate",
+                  "$startDate  →  $endDate"+((status.toLowerCase() == 'rejected')?"\nFeedback: $fb":""),
                   style: TextStyle(
                     color: Colors.grey[700],
                   ),
