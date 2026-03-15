@@ -104,20 +104,27 @@ class _GalaQRScannerScreenState extends State<GalaQRScannerScreen> {
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Camera Access Required', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+        title: const Text('Camera Access Required',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
         content: const Text(
           'Camera access is required to scan Gala QR codes. Please enable camera permission in Settings.',
           style: TextStyle(fontSize: 14),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
               openAppSettings();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4C4EDB), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-            child: const Text('Open Settings', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4C4EDB),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16))),
+            child: const Text('Open Settings',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -134,7 +141,9 @@ class _GalaQRScannerScreenState extends State<GalaQRScannerScreen> {
     if (_isProcessing) return;
     setState(() => _isProcessing = true);
     final navigator = Navigator.of(context);
-    if (kDebugMode) debugPrint('GalaScan: expectedCategory=${widget.expectedCategory} galaDinnerMenuId=$galaDinnerMenuId');
+    if (kDebugMode)
+      debugPrint(
+          'GalaScan: expectedCategory=${widget.expectedCategory} galaDinnerMenuId=$galaDinnerMenuId');
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -144,7 +153,8 @@ class _GalaQRScannerScreenState extends State<GalaQRScannerScreen> {
       if (userId == null || accessToken == null) {
         if (kDebugMode) debugPrint('GalaScan: missing userId or accessToken');
         setState(() => _isProcessing = false);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please log in')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Please log in')));
         return;
       }
 
@@ -163,15 +173,19 @@ class _GalaQRScannerScreenState extends State<GalaQRScannerScreen> {
           },
         ),
       );
-      if (kDebugMode) debugPrint('GalaScan: response status=${response.statusCode} success=${response.data is Map ? (response.data as Map)['success'] : null} message=${response.data is Map ? (response.data as Map)['message'] : null}');
+      if (kDebugMode)
+        debugPrint(
+            'GalaScan: response status=${response.statusCode} success=${response.data is Map ? (response.data as Map)['success'] : null} message=${response.data is Map ? (response.data as Map)['message'] : null}');
 
       final hasVib = await Vibration.hasVibrator();
       if (hasVib == true) Vibration.vibrate(duration: 100);
 
       if (!mounted) return;
-      navigator.push(MaterialPageRoute(
+      navigator
+          .push(MaterialPageRoute(
         builder: (context) => GalaScanStatusPage(response: response),
-      )).then((_) {
+      ))
+          .then((_) {
         if (mounted) {
           setState(() {
             _hasScanned = false;
@@ -183,7 +197,9 @@ class _GalaQRScannerScreenState extends State<GalaQRScannerScreen> {
     } catch (e) {
       if (kDebugMode) {
         debugPrint('GalaScan: error=$e');
-        if (e is DioException) debugPrint('GalaScan: DioException status=${e.response?.statusCode} data=${e.response?.data}');
+        if (e is DioException)
+          debugPrint(
+              'GalaScan: DioException status=${e.response?.statusCode} data=${e.response?.data}');
       }
       if (!mounted) return;
       String msg = 'Unknown error';
@@ -191,17 +207,27 @@ class _GalaQRScannerScreenState extends State<GalaQRScannerScreen> {
         final d = e.response!.data as Map;
         msg = d['message']?.toString() ?? 'Server error';
       } else if (e is DioException) {
-        msg = e.message ?? 'Network error';
+        if (e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.receiveTimeout ||
+            e.type == DioExceptionType.sendTimeout) {
+          msg = 'Connection timeout. Please check your internet connection.';
+        } else if (e.type == DioExceptionType.connectionError) {
+          msg = 'Connection failed. Please check your internet connection.';
+        } else {
+          msg = e.message ?? 'Network error';
+        }
       }
-      navigator.push(MaterialPageRoute(
+      navigator
+          .push(MaterialPageRoute(
         builder: (context) => GalaScanStatusPage(
           response: Response(
             requestOptions: RequestOptions(path: ''),
-            statusCode: e is DioException ? e.response?.statusCode ?? 400 : 400,
+            statusCode: e is DioException ? e.response?.statusCode ?? 500 : 500,
             data: {'success': false, 'message': msg},
           ),
         ),
-      )).then((_) {
+      ))
+          .then((_) {
         if (mounted) {
           setState(() {
             _hasScanned = false;
@@ -228,7 +254,9 @@ class _GalaQRScannerScreenState extends State<GalaQRScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final title = widget.expectedCategory == 'Main Course' ? 'Main Course' : widget.expectedCategory;
+    final title = widget.expectedCategory == 'Main Course'
+        ? 'Main Course'
+        : widget.expectedCategory;
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -258,7 +286,9 @@ class _GalaQRScannerScreenState extends State<GalaQRScannerScreen> {
                 if (_isProcessing)
                   Container(
                     color: Colors.black54,
-                    child: const Center(child: CircularProgressIndicator(color: Color(0xFF4C4EDB))),
+                    child: const Center(
+                        child: CircularProgressIndicator(
+                            color: Color(0xFF4C4EDB))),
                   ),
               ],
             ),
@@ -274,11 +304,20 @@ class _GalaQRScannerScreenState extends State<GalaQRScannerScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.camera_alt_outlined, size: 80, color: Color(0xFF4C4EDB)),
+              const Icon(Icons.camera_alt_outlined,
+                  size: 80, color: Color(0xFF4C4EDB)),
               const SizedBox(height: 32),
-              const Text('Camera Access Needed', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w600), textAlign: TextAlign.center),
+              const Text('Camera Access Needed',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600),
+                  textAlign: TextAlign.center),
               const SizedBox(height: 16),
-              const Text('We need camera access to scan Gala QR codes.', style: TextStyle(color: Color.fromRGBO(255, 255, 255, 0.7), fontSize: 16), textAlign: TextAlign.center),
+              const Text('We need camera access to scan Gala QR codes.',
+                  style: TextStyle(
+                      color: Color.fromRGBO(255, 255, 255, 0.7), fontSize: 16),
+                  textAlign: TextAlign.center),
               const SizedBox(height: 40),
               _isCheckingPermission
                   ? const CircularProgressIndicator(color: Color(0xFF4C4EDB))
@@ -287,10 +326,14 @@ class _GalaQRScannerScreenState extends State<GalaQRScannerScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4C4EDB),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 48, vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                       ),
-                      child: const Text('Continue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      child: const Text('Continue',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w600)),
                     ),
             ],
           ),
@@ -307,7 +350,10 @@ class _GalaQRScannerScreenState extends State<GalaQRScannerScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 40),
           child: Text(
             'Scan ${widget.expectedCategory} QR',
-            style: const TextStyle(color: Color.fromRGBO(255, 255, 255, 0.9), fontSize: 22, fontWeight: FontWeight.w600),
+            style: const TextStyle(
+                color: Color.fromRGBO(255, 255, 255, 0.9),
+                fontSize: 22,
+                fontWeight: FontWeight.w600),
             textAlign: TextAlign.center,
           ),
         ),
@@ -316,7 +362,8 @@ class _GalaQRScannerScreenState extends State<GalaQRScannerScreen> {
           child: SizedBox(
             width: 250,
             height: 250,
-            child: CustomPaint(size: const Size(250, 250), painter: CornerPainter()),
+            child: CustomPaint(
+                size: const Size(250, 250), painter: CornerPainter()),
           ),
         ),
         const SizedBox(height: 40),

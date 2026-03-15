@@ -9,9 +9,7 @@ const { QR } = require("../qr/qrModel.js");
 const qrcode = require("qrcode");
 const { MessClosure } = require("../hostel/messClosureModel");
 
-const NodeCache = require("node-cache");
-const menuCache = new NodeCache({ stdTTL: 300 });
-const messInfoCache = new NodeCache({ stdTTL: 300 });
+const redisClient = require("../../utils/redisClient.js");
 
 const QR_CODE_DATA_URL_OPTIONS = {
   width: 1024,
@@ -53,6 +51,8 @@ const createMess = async (req, res) => {
     await QRres.save();
     newMess.qrCode = QRres._id;
     await newMess.save();
+
+    await redisClient.del("all_mess_info");
 
     return res.status(201).json(newMess);
   } catch (error) {
@@ -168,7 +168,7 @@ const createMenuItem = async (req, res) => {
       type,
     });
     const newItem = await newMenuItem.save();
-    const menu = await Menu.findOne({ messId: messId, day: day, type: meal });
+    let menu = await Menu.findOne({ messId: messId, day: day, type: meal });
     if (!menu) {
       const newMenu = new Menu({
         messId,
@@ -181,6 +181,7 @@ const createMenuItem = async (req, res) => {
 
     menu.items.push(newItem._id);
     await menu.save();
+    await redisClient.del(`menu_${messId}_${day}`);
     return res.status(201).json(newItem);
   } catch (error) {
     console.error(error);
@@ -191,9 +192,15 @@ const createMenuItem = async (req, res) => {
 const deleteMenuItem = async (req, res) => {
   try {
     const _Id = req.body._Id;
+    const menuToInvalidate = await Menu.findOne({ items: _Id });
     const deletedMenuItem = await MenuItem.findByIdAndDelete(_Id);
     if (!deletedMenuItem) {
       return res.status(404).json({ message: "Menu item not found" });
+    }
+    if (menuToInvalidate) {
+      await redisClient.del(
+        `menu_${menuToInvalidate.messId}_${menuToInvalidate.day}`,
+      );
     }
     /*const menu = await Menu.findById(deletedMenuItem.menuId);
     if (!menu) {
@@ -245,48 +252,65 @@ const getUserMessInfo = async (req, res) => {
 
 const getAllMessInfo = async (req, res) => {
   try {
-    const cachedData = messInfoCache.get("all_mess_info");
+    const cachedData = await redisClient.get("all_mess_info");
     if (cachedData) {
-      return res.status(200).json(cachedData);
+      return res.status(200).json(JSON.parse(cachedData));
     }
 
-    const messes = await Mess.find().lean();
-    if (!messes || messes.length === 0)
-      return res.status(404).json({ message: "No mess found" });
-
-    const userCounts = await User.aggregate([
-      { $match: { curr_subscribed_mess: { $ne: null } } },
-      { $group: { _id: "$curr_subscribed_mess", count: { $sum: 1 } } },
+    const messesWithHostelName = await Mess.aggregate([
+      {
+        $lookup: {
+          from: "hostels",
+          localField: "hostelId",
+          foreignField: "_id",
+          as: "hostelInfo",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: { hId: "$hostelId" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$curr_subscribed_mess", "$$hId"] } } },
+            { $count: "count" },
+          ],
+          as: "subscribers",
+        },
+      },
+      {
+        $addFields: {
+          hostelName: {
+            $ifNull: [{ $arrayElemAt: ["$hostelInfo.hostel_name", 0] }, null],
+          },
+          user_count: {
+            $ifNull: [{ $arrayElemAt: ["$subscribers.count", 0] }, 0],
+          },
+          rating: {
+            $round: [{ $ifNull: ["$rating", 0] }, 0],
+          },
+          ranking: {
+            $round: [{ $ifNull: ["$ranking", 0] }, 0],
+          },
+        },
+      },
+      {
+        $project: {
+          hostelInfo: 0,
+          subscribers: 0,
+        },
+      },
     ]);
 
-    // Create a fast lookup map
-    const countMap = userCounts.reduce((acc, curr) => {
-      acc[curr._id.toString()] = curr.count;
-      return acc;
-    }, {});
+    if (!messesWithHostelName || messesWithHostelName.length === 0) {
+      return res.status(404).json({ message: "No mess found" });
+    }
 
-    const hostels = await Hostel.find({
-      _id: { $in: messes.map((m) => m.hostelId).filter(Boolean) },
-    }).lean();
-    const hostelMap = hostels.reduce((acc, curr) => {
-      acc[curr._id.toString()] = curr.hostel_name;
-      return acc;
-    }, {});
-
-    const messesWithHostelName = messes.map((mess) => {
-      return {
-        ...mess,
-        hostelName: mess.hostelId
-          ? hostelMap[mess.hostelId.toString()] || null
-          : null,
-        rating: mess.rating ? Math.round(mess.rating) : 0,
-        ranking: mess.ranking ? Math.round(mess.ranking) : 0,
-        user_count: mess.hostelId ? countMap[mess.hostelId.toString()] || 0 : 0,
-      };
-    });
-
-    messInfoCache.set("all_mess_info", messesWithHostelName);
-
+    await redisClient.set(
+      "all_mess_info",
+      JSON.stringify(messesWithHostelName),
+      "EX",
+      300,
+    );
     return res.status(200).json(messesWithHostelName);
   } catch (error) {
     console.error("Error in getAllMessInfo:", error);
@@ -328,7 +352,8 @@ const getMessMenuByDay = async (req, res) => {
     }
 
     const cacheKey = `menu_${messId}_${day}`;
-    let populatedMenus = menuCache.get(cacheKey);
+    let populatedMenus = await redisClient.get(cacheKey);
+    if (populatedMenus) populatedMenus = JSON.parse(populatedMenus);
 
     if (!populatedMenus) {
       const menu = await Menu.find({ messId, day }).sort({ startTime: 1 });
@@ -349,7 +374,12 @@ const getMessMenuByDay = async (req, res) => {
         }),
       );
 
-      menuCache.set(cacheKey, populatedMenus);
+      await redisClient.set(
+        cacheKey,
+        JSON.stringify(populatedMenus),
+        "EX",
+        86400,
+      );
     }
 
     // Apply user-specific logic (likes) to cached data
@@ -404,7 +434,8 @@ const getMessMenuByDayForAdminHAB = async (req, res) => {
     }
 
     const cacheKey = `menu_${messId}_${day}`;
-    let populatedMenus = menuCache.get(cacheKey);
+    let populatedMenus = await redisClient.get(cacheKey);
+    if (populatedMenus) populatedMenus = JSON.parse(populatedMenus);
 
     if (!populatedMenus) {
       const menu = await Menu.find({ messId, day }).sort({ startTime: 1 });
@@ -425,7 +456,12 @@ const getMessMenuByDayForAdminHAB = async (req, res) => {
         }),
       );
 
-      menuCache.set(cacheKey, populatedMenus);
+      await redisClient.set(
+        cacheKey,
+        JSON.stringify(populatedMenus),
+        "EX",
+        86400,
+      );
     }
 
     // Apply formatting to cached data
@@ -451,15 +487,17 @@ const getMessMenuByDayForAdminHAB = async (req, res) => {
 const getMessMenuItemById = async (req, res) => {
   try {
     const menuItemId = req.params.menuItemId;
-    const menuItemDoc = await MenuItem.findById(menuItemId);
     const userId = req.user.id;
 
-    if (!menuItemDoc) {
+    const menuItem = await MenuItem.findById(menuItemId).lean();
+
+    if (!menuItem) {
       return res.status(404).json({ message: "Menu item not found" });
     }
 
-    const menuItem = menuItemDoc.toObject(); // Convert to plain object
-    menuItem.isLiked = menuItem.likes.includes(userId);
+    menuItem.isLiked = menuItem.likes.some(
+      (id) => id.toString() === userId.toString(),
+    );
 
     return res.status(200).json(menuItem);
   } catch (error) {
@@ -483,12 +521,24 @@ const toggleLikeMenuItem = async (req, res) => {
         (id) => id.toString() !== userId.toString(),
       );
       await menuItem.save();
+      const menuToInvalidate = await Menu.findOne({ items: menuItemId });
+      if (menuToInvalidate) {
+        await redisClient.del(
+          `menu_${menuToInvalidate.messId}_${menuToInvalidate.day}`,
+        );
+      }
       return res
         .status(200)
         .json({ message: "Menu item unliked successfully" });
     } else {
       menuItem.likes.push(userId);
       await menuItem.save();
+      const menuToInvalidate = await Menu.findOne({ items: menuItemId });
+      if (menuToInvalidate) {
+        await redisClient.del(
+          `menu_${menuToInvalidate.messId}_${menuToInvalidate.day}`,
+        );
+      }
       return res.status(200).json({ message: "Menu item liked successfully" });
     }
   } catch (error) {
@@ -643,7 +693,7 @@ const ScanMess = async (req, res) => {
     const todayMenus = await Menu.find({
       messId,
       day: currentDay,
-      type: { $in: ["Breakfast", "Lunch", "Dinner"] }
+      type: { $in: ["Breakfast", "Lunch", "Dinner"] },
     }).lean();
 
     const breakfast = todayMenus.find((m) => m.type === "Breakfast");
@@ -925,6 +975,8 @@ const unassignMess = async (req, res) => {
       );
       console.log("Updated hostel:", updatedHostel);
     }
+
+    await redisClient.del("all_mess_info");
 
     return res.status(200).json({
       message: "Mess unassigned successfully",
