@@ -1,3 +1,4 @@
+const redisClient = require("../../utils/redisClient.js");
 const { User } = require("./userModel.js");
 const { Hostel } = require("../hostel/hostelModel.js");
 const mongoose = require("mongoose");
@@ -10,12 +11,7 @@ const { MessChange } = require("../mess_change/messChangeModel.js");
 const UserAllocHostel = require("../hostel/hostelAllocModel.js");
 const AppError = require("../../utils/appError.js");
 const { clearCacheByPattern } = require("../../utils/redisUtils.js");
-const { createClient } = require("redis");
 
-const redis = createClient({ url: process.env.REDIS_URL || "redis://127.0.0.1:6379" });
-
-redis.on("error", (err) => console.error("Redis Client Error", err));
-redis.connect();
 
 const getUserData = async (req, res, next) => {
   if (req.user) {
@@ -41,7 +37,7 @@ const getUserByRoll = async (req, res) => {
 
   try {
     const cacheKey = `user_by_roll_${qr}`;
-    const cachedUser = await redis.get(cacheKey);
+    const cachedUser = await redisClient.get(cacheKey);
     if (cachedUser) {
       return res.status(200).json({ message: "User found", user: JSON.parse(cachedUser) });
     }
@@ -52,7 +48,7 @@ const getUserByRoll = async (req, res) => {
       return res.status(400).json({ message: "No such roll exists" });
     }
 
-    await redis.setEx(cacheKey, 3600, JSON.stringify(user));
+    await redisClient.set(cacheKey, JSON.stringify(user), 'EX', 3600);
     return res.status(200).json({ message: "User found", user: user });
   } catch (err) {
     console.log(err);
@@ -71,8 +67,8 @@ const createUser = async (req, res) => {
     const token = user.generateJWT();
 
     // Cache invalidation
-    await redis.del("all_users");
-    await redis.del("user_count");
+    await redisClient.del("all_users");
+    await redisClient.del("user_count");
 
     res.status(201).json({
       message: "User created successfully",
@@ -94,10 +90,10 @@ const deleteUser = async (req, res) => {
     }
 
     // Cache invalidation
-    await redis.del("all_users");
-    await redis.del("user_count");
-    await redis.del(`user_by_roll_${deletedUser.rollNumber}`);
-    await redis.del(`user_for_manager_${deletedUser._id}`);
+    await redisClient.del("all_users");
+    await redisClient.del("user_count");
+    await redisClient.del(`user_by_roll_${deletedUser.rollNumber}`);
+    await redisClient.del(`user_for_manager_${deletedUser._id}`);
     
     if (deletedUser.hostel) {
       await clearCacheByPattern(`hostel_${deletedUser.hostel}*`);
@@ -124,9 +120,9 @@ const updateUser = async (req, res) => {
     }
 
     // Cache invalidation
-    await redis.del("all_users");
-    await redis.del(`user_by_roll_${updatedUser.rollNumber}`);
-    await redis.del(`user_for_manager_${updatedUser._id}`);
+    await redisClient.del("all_users");
+    await redisClient.del(`user_by_roll_${updatedUser.rollNumber}`);
+    await redisClient.del(`user_for_manager_${updatedUser._id}`);
     
     // Invalidate related hostel caches if necessary
     if (updatedUser.hostel) {
@@ -168,9 +164,9 @@ const saveUserProfile = async (req, res) => {
       await user.save();
 
       // Cache invalidation
-      await redis.del("all_users");
-      await redis.del(`user_by_roll_${user.rollNumber}`);
-      await redis.del(`user_for_manager_${user._id}`);
+      await redisClient.del("all_users");
+      await redisClient.del(`user_by_roll_${user.rollNumber}`);
+      await redisClient.del(`user_for_manager_${user._id}`);
       
       if (user.hostel) {
         await clearCacheByPattern(`hostel_${user.hostel}*`);
@@ -235,7 +231,7 @@ const getUserComplaints = async (req, res) => {
 const getAllUsers = async (req, res) => {
   try {
     const cacheKey = "all_users";
-    const cachedUsers = await redis.get(cacheKey);
+    const cachedUsers = await redisClient.get(cacheKey);
     if (cachedUsers) {
       return res.status(200).json(JSON.parse(cachedUsers));
     }
@@ -251,7 +247,7 @@ const getAllUsers = async (req, res) => {
       curr_subscribed_mess_name: user.curr_subscribed_mess?.hostel_name || null,
     }));
 
-    await redis.setEx(cacheKey, 3600 * 24, JSON.stringify(updatedUsers));
+    await redisClient.set(cacheKey, JSON.stringify(updatedUsers), 'EX', 3600 * 24);
     res.status(200).json(updatedUsers);
   } catch (err) {
     console.error(err);
@@ -262,13 +258,13 @@ const getAllUsers = async (req, res) => {
 const getUserCount = async (req, res) => {
   try {
     const cacheKey = "user_count";
-    const cachedCount = await redis.get(cacheKey);
+    const cachedCount = await redisClient.get(cacheKey);
     if (cachedCount) {
       return res.status(200).json({ count: parseInt(cachedCount, 10) });
     }
 
     const count = await User.countDocuments();
-    await redis.setEx(cacheKey, 3600 * 24, count.toString());
+    await redisClient.set(cacheKey, count.toString(), 'EX', 3600 * 24);
 
     return res.status(200).json({ count });
   } catch (err) {
@@ -296,7 +292,7 @@ const getUserForManager = async (req, res, next) => {
     const hostelId = managerHostel._id.toString();
 
     const cacheKey = `user_for_manager_${userId}`;
-    const cachedUser = await redis.get(cacheKey);
+    const cachedUser = await redisClient.get(cacheKey);
     if (cachedUser) {
       return res.status(200).json(JSON.parse(cachedUser));
     }
@@ -324,7 +320,7 @@ const getUserForManager = async (req, res, next) => {
       messName: user.curr_subscribed_mess?.hostel_name || "",
     };
 
-    await redis.setEx(cacheKey, 3600, JSON.stringify(responsePayload));
+    await redisClient.set(cacheKey, JSON.stringify(responsePayload), 'EX', 3600);
     return res.status(200).json(responsePayload);
   } catch (err) {
     console.error("getUserForManager error:", err);
@@ -488,14 +484,14 @@ const deleteUserAccount = async (req, res, next) => {
       await session.commitTransaction();
 
       // Clear related cache data
-      await redis.del("all_users");
-      await redis.del("user_count");
+      await redisClient.del("all_users");
+      await redisClient.del("user_count");
       
       if (user.rollNumber) {
-        await redis.del(`user_by_roll_${user.rollNumber}`);
+        await redisClient.del(`user_by_roll_${user.rollNumber}`);
       }
       if (userId) {
-        await redis.del(`user_for_manager_${userId}`);
+        await redisClient.del(`user_for_manager_${userId}`);
       }
       
       if (user.hostel) {

@@ -1,3 +1,4 @@
+const redisClient = require("../../utils/redisClient.js");
 const bcrypt = require("bcrypt");
 const { User } = require("../user/userModel.js");
 const { Hostel } = require("./hostelModel.js");
@@ -5,21 +6,8 @@ const { Mess } = require("../mess/messModel.js");
 const UserAllocHostel = require("./hostelAllocModel.js");
 const { MessClosure } = require("./messClosureModel.js");
 const { getCurrentDate } = require("../../utils/date.js");
-const { createClient } = require("redis");
 
-const redis = createClient({ url: process.env.REDIS_URL || "redis://127.0.0.1:6379" });
 
-redis.on("error", (err) => console.error("Redis Client Error", err));
-
-// Connect asynchronously so it doesn't block or crash the main thread
-(async () => {
-  try {
-    await redis.connect();
-    console.log("Redis connected successfully.");
-  } catch (err) {
-    console.error("Failed to connect to Redis on startup. Running without cache.", err);
-  }
-})();
 
 
 const createHostel = async (req, res) => {
@@ -55,9 +43,9 @@ const createHostel = async (req, res) => {
     const hostel = await Hostel.create(hostelData);
 
     // Invalidate global hostel lists
-    await redis.del("all_hostels");
-    await redis.del("all_hostels_with_mess");
-    await redis.del("hostel_name_and_caterer");
+    await redisClient.del("all_hostels");
+    await redisClient.del("all_hostels_with_mess");
+    await redisClient.del("hostel_name_and_caterer");
 
     return res
       .status(201)
@@ -100,7 +88,7 @@ const setHostelPassword = async (req, res) => {
     await hostel.save();
 
     // Invalidate single hostel caches to reflect potential changes
-    await redis.del(`hostel_${hostelId}`);
+    await redisClient.del(`hostel_${hostelId}`);
     await clearCacheByPattern(`hostel_by_id_${hostelId}*`);
 
     return res
@@ -116,13 +104,13 @@ const getHostel = async (req, res) => {
   try {
     // Fetch the hostel with populated messId
     const cacheKey = `hostel_${req.hostel._id}`;
-    const cachedHostel = await redis.get(cacheKey);
+    const cachedHostel = await redisClient.get(cacheKey);
     if (cachedHostel) {
       return res.json({ hostel: JSON.parse(cachedHostel) });
     }
     const hostel = await Hostel.findById(req.hostel._id).populate("messId").lean();
     // Cache the hostel data for 1 hour
-    await redis.setEx(cacheKey, 3600, JSON.stringify(hostel));
+    await redisClient.set(cacheKey, JSON.stringify(hostel), 'EX', 3600);
     return res.json({ hostel });
   } catch (err) {
     console.log(err);
@@ -136,8 +124,8 @@ const getAllHostels = async (req, res) => {
 
     // Fail-safe Redis check
     try {
-      if (redis.isReady) {
-        const cachedHostels = await redis.get(cacheKey);
+      if (redisClient) {
+        const cachedHostels = await redisClient.get(cacheKey);
         if (cachedHostels) return res.json({ hostels: JSON.parse(cachedHostels) });
       }
     } catch (redisErr) {
@@ -148,7 +136,7 @@ const getAllHostels = async (req, res) => {
     const hostels = await Hostel.find().select("-managerPasswordHash").lean();
 
     try {
-      if (redis.isReady) await redis.setEx(cacheKey, 3600, JSON.stringify(hostels));
+      if (redisClient) await redisClient.set(cacheKey, JSON.stringify(hostels), 'EX', 3600);
     } catch (redisErr) {
       console.error("Redis set error:", redisErr);
     }
@@ -165,8 +153,8 @@ const getAllHostelsWithMess = async (req, res) => {
     const cacheKey = "all_hostels_with_mess";
 
     try {
-      if (redis.isReady) {
-        const cachedHostels = await redis.get(cacheKey);
+      if (redisClient) {
+        const cachedHostels = await redisClient.get(cacheKey);
         if (cachedHostels) return res.json({ hostels: JSON.parse(cachedHostels) });
       }
     } catch (redisErr) {
@@ -177,7 +165,7 @@ const getAllHostelsWithMess = async (req, res) => {
     const hostels = await Hostel.find().populate("messId").select("-managerPasswordHash").lean();
 
     try {
-      if (redis.isReady) await redis.setEx(cacheKey, 3600, JSON.stringify(hostels));
+      if (redisClient) await redisClient.set(cacheKey, JSON.stringify(hostels), 'EX', 3600);
     } catch (redisErr) {
       console.error("Redis set error:", redisErr);
     }
@@ -202,7 +190,7 @@ const getHostelbyId = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const cacheKey = `hostel_by_id_${hostelId}_pg${page}_limit${limit}`;
-    const cachedData = await redis.get(cacheKey);
+    const cachedData = await redisClient.get(cacheKey);
     if (cachedData) {
       return res.status(200).json({ message: "Hostel found", hostel: JSON.parse(cachedData) });
     }
@@ -246,7 +234,7 @@ const getHostelbyId = async (req, res) => {
       users: formattedUsers,
     };
 
-    await redis.setEx(cacheKey, 3600, JSON.stringify(hostelWithUsers));
+    await redisClient.set(cacheKey, JSON.stringify(hostelWithUsers), 'EX', 3600);
 
     return res
       .status(200)
@@ -262,7 +250,7 @@ const getHostelbyId = async (req, res) => {
 const getAllHostelNameAndCaterer = async (req, res) => {
   try {
     const cacheKey = "hostel_name_and_caterer";
-    const cachedData = await redis.get(cacheKey);
+    const cachedData = await redisClient.get(cacheKey);
     if (cachedData) {
       return res.status(200).json(JSON.parse(cachedData));
     }
@@ -293,7 +281,7 @@ const getAllHostelNameAndCaterer = async (req, res) => {
       user_count: countMap[hostel._id.toString()] || 0,
     }));
 
-    await redis.setEx(cacheKey, 3600, JSON.stringify(hostelDataWithUserCount));
+    await redisClient.set(cacheKey, JSON.stringify(hostelDataWithUserCount), 'EX', 3600);
 
     res.status(200).json(hostelDataWithUserCount);
   } catch (err) {
@@ -305,7 +293,7 @@ const getAllHostelNameAndCaterer = async (req, res) => {
 const getCatererInfo = async (req, res) => {
   try {
     const cacheKey = `hostel_${req.hostel._id}_caterer_info`;
-    const cachedInfo = await redis.get(cacheKey);
+    const cachedInfo = await redisClient.get(cacheKey);
     if (cachedInfo) {
       return res.json(JSON.parse(cachedInfo));
     }
@@ -322,7 +310,7 @@ const getCatererInfo = async (req, res) => {
       catererName: mess.name,
       hostelName: hostel.hostel_name,
     };
-    await redis.setEx(cacheKey, 3600, JSON.stringify(responsePayload));
+    await redisClient.set(cacheKey, JSON.stringify(responsePayload), 'EX', 3600);
     return res.status(200).json(responsePayload);
   } catch (err) {
     console.log(err);
@@ -344,7 +332,7 @@ const getBoarders = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const cacheKey = `hostel_${hostelId}_boarders_pg${page}_limit${limit}`;
-    const cachedBoarders = await redis.get(cacheKey);
+    const cachedBoarders = await redisClient.get(cacheKey);
     if (cachedBoarders) {
       return res.status(200).json(JSON.parse(cachedBoarders));
     }
@@ -376,7 +364,7 @@ const getBoarders = async (req, res) => {
       })),
     };
 
-    await redis.setEx(cacheKey, 3600, JSON.stringify(responsePayload));
+    await redisClient.set(cacheKey, JSON.stringify(responsePayload), 'EX', 3600);
     return res.status(200).json(responsePayload);
   } catch (err) {
     console.log(err);
@@ -430,7 +418,7 @@ const getMessSubscribers = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const cacheKey = `hostel_${hostelId}_mess_subscribers_pg${page}_limit${limit}`;
-    const cachedSubscribers = await redis.get(cacheKey);
+    const cachedSubscribers = await redisClient.get(cacheKey);
     if (cachedSubscribers) {
       return res.status(200).json(JSON.parse(cachedSubscribers));
     }
@@ -461,7 +449,7 @@ const getMessSubscribers = async (req, res) => {
       subscribers: subscribersList,
     };
 
-    await redis.setEx(cacheKey, 3600, JSON.stringify(responsePayload));
+    await redisClient.set(cacheKey, JSON.stringify(responsePayload), 'EX', 3600);
     return res.status(200).json(responsePayload);
   } catch (err) {
     console.log(err);
@@ -482,7 +470,7 @@ const getMessSubscribersByHostelId = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const cacheKey = `hostel_${hostelId}_mess_subscribers_public_pg${page}_limit${limit}`;
-    const cachedSubscribers = await redis.get(cacheKey);
+    const cachedSubscribers = await redisClient.get(cacheKey);
     if (cachedSubscribers) {
       return res.status(200).json(JSON.parse(cachedSubscribers));
     }
@@ -512,7 +500,7 @@ const getMessSubscribersByHostelId = async (req, res) => {
       subscribers: subscribersList,
     };
 
-    await redis.setEx(cacheKey, 3600, JSON.stringify(responsePayload));
+    await redisClient.set(cacheKey, JSON.stringify(responsePayload), 'EX', 3600);
     return res.status(200).json(responsePayload);
   } catch (err) {
     console.log(err);
@@ -546,7 +534,7 @@ const markAsSMC = async (req, res) => {
     await user.save();
 
     // Invalidate SMC cached list for this hostel
-    await redis.del(`hostel_${hostelId}_smc_members`);
+    await redisClient.del(`hostel_${hostelId}_smc_members`);
 
     return res.status(200).json({
       message: "User marked as SMC member successfully",
@@ -589,7 +577,7 @@ const unmarkAsSMC = async (req, res) => {
     await user.save();
 
     // Invalidate SMC cached list for this hostel
-    await redis.del(`hostel_${hostelId}_smc_members`);
+    await redisClient.del(`hostel_${hostelId}_smc_members`);
 
     return res.status(200).json({
       message: "User unmarked as SMC member successfully",
@@ -613,8 +601,8 @@ const getSMCMembers = async (req, res) => {
     const cacheKey = `hostel_${hostelId}_smc_members`;
 
     try {
-      if (redis.isReady) {
-        const cachedData = await redis.get(cacheKey);
+      if (redisClient) {
+        const cachedData = await redisClient.get(cacheKey);
         if (cachedData) return res.status(200).json(JSON.parse(cachedData));
       }
     } catch (redisErr) {
@@ -641,7 +629,7 @@ const getSMCMembers = async (req, res) => {
     };
 
     try {
-      if (redis.isReady) await redis.setEx(cacheKey, 3600, JSON.stringify(responsePayload));
+      if (redisClient) await redisClient.set(cacheKey, JSON.stringify(responsePayload), 'EX', 3600);
     } catch (redisErr) {
       console.error("Redis error:", redisErr);
     }
@@ -671,7 +659,7 @@ const finalizeMessClosure = async (req, res) => {
     );
 
     // Invalidate this month's closure date cache
-    await redis.del(`hostel_${hostelId}_closure_date_${month}_${year}`);
+    await redisClient.del(`hostel_${hostelId}_closure_date_${month}_${year}`);
 
     return res.status(200).json({
       message: "Mess closure date finalized successfully",

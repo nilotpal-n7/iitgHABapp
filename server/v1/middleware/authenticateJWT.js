@@ -2,6 +2,7 @@ const { User } = require("../modules/user/userModel.js");
 const { Hostel } = require("../modules/hostel/hostelModel.js");
 const AppError = require("../utils/appError.js");
 const jwt = require("jsonwebtoken");
+const redisClient = require("../utils/redisClient.js");
 
 function auth(Schema, param) {
   return async function (req, res, next) {
@@ -27,6 +28,9 @@ function auth(Schema, param) {
 
     // If token is missing, send error response
     if (!token) return next(new AppError(403, "Invalid token"));
+
+    const isBlacklisted = await redisClient.get(`bl_${token}`);
+    if (isBlacklisted) return next(new AppError(401, "Token has been revoked"));
 
     try {
       // Validate the token and find the element
@@ -60,6 +64,9 @@ const authenticateUserOrAdminJWT = async (req, res, next) => {
 
   if (!token) return next(new AppError(403, "Invalid token"));
 
+  const isBlacklisted = await redisClient.get(`bl_${token}`);
+  if (isBlacklisted) return next(new AppError(401, "Token has been revoked"));
+
   try {
     const user = await User.findByJWT(token);
     if (user) {
@@ -92,6 +99,9 @@ const authenticateHabJWT = async (req, res, next) => {
 
   if (!token) return next(new AppError(403, "Invalid token"));
 
+  const isBlacklisted = await redisClient.get(`bl_${token}`);
+  if (isBlacklisted) return next(new AppError(401, "Token has been revoked"));
+
   try {
     const decoded = jwt.verify(token, process.env.ADMIN_JWT_SECRET);
     if (!decoded?.hab) return next(new AppError(403, "Not Authenticated"));
@@ -118,6 +128,9 @@ const authenticateMessManagerJWT = async (req, res, next) => {
   }
 
   if (!token) return next(new AppError(403, "Invalid token"));
+
+  const isBlacklisted = await redisClient.get(`bl_${token}`);
+  if (isBlacklisted) return next(new AppError(401, "Token has been revoked"));
 
   try {
     const hostel = await Hostel.findByJWT(token);

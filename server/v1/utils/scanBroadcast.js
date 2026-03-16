@@ -8,17 +8,21 @@
  * When REDIS_URL is not set: calls the local broadcast only (single-instance behavior).
  */
 
+const redisClient = require("./redisClient.js");
+
 const REDIS_CHANNEL_MESS = "hab:mess:scan";
 const REDIS_CHANNEL_GALA = "hab:gala:scan";
 
-let redisPublisher = null;
 let redisSubscriber = null;
-let subscriberReady = false;
 let redisDisabled = false;
 
 function getLocalBroadcasts() {
-  const { broadcastMessScanToManagers } = require("../modules/mess/messManagerWs.js");
-  const { broadcastGalaScanToManagers } = require("../modules/gala/galaManagerWs.js");
+  const {
+    broadcastMessScanToManagers,
+  } = require("../modules/mess/messManagerWs.js");
+  const {
+    broadcastGalaScanToManagers,
+  } = require("../modules/gala/galaManagerWs.js");
   return { broadcastMessScanToManagers, broadcastGalaScanToManagers };
 }
 
@@ -28,8 +32,9 @@ function getLocalBroadcasts() {
  */
 function publishMessScan(payload) {
   const { broadcastMessScanToManagers } = getLocalBroadcasts();
-  if (redisPublisher && redisPublisher.status === "ready") {
-    redisPublisher.publish(REDIS_CHANNEL_MESS, JSON.stringify(payload)).catch((err) => {
+  const client = redisClient.getInstance();
+  if (client && redisClient.getIsConnected()) {
+    client.publish(REDIS_CHANNEL_MESS, JSON.stringify(payload)).catch((err) => {
       console.error("[scanBroadcast] Redis publish mess failed:", err);
       broadcastMessScanToManagers(payload);
     });
@@ -44,8 +49,9 @@ function publishMessScan(payload) {
  */
 function publishGalaScan(payload) {
   const { broadcastGalaScanToManagers } = getLocalBroadcasts();
-  if (redisPublisher && redisPublisher.status === "ready") {
-    redisPublisher.publish(REDIS_CHANNEL_GALA, JSON.stringify(payload)).catch((err) => {
+  const client = redisClient.getInstance();
+  if (client && redisClient.getIsConnected()) {
+    client.publish(REDIS_CHANNEL_GALA, JSON.stringify(payload)).catch((err) => {
       console.error("[scanBroadcast] Redis publish gala failed:", err);
       broadcastGalaScanToManagers(payload);
     });
@@ -56,23 +62,21 @@ function publishGalaScan(payload) {
 
 function disableRedis(reason) {
   redisDisabled = true;
-  if (redisPublisher) {
-    try {
-      redisPublisher.disconnect();
-    } catch (_) {}
-    redisPublisher = null;
-  }
   if (redisSubscriber) {
     try {
       redisSubscriber.disconnect();
     } catch (_) {}
     redisSubscriber = null;
   }
-  console.warn("[scanBroadcast] Redis unavailable:", reason, "- using direct broadcast (single-instance).");
+  console.warn(
+    "[scanBroadcast] Redis subscriber unavailable:",
+    reason,
+    "- using direct broadcast (single-instance).",
+  );
 }
 
 /**
- * Initialize Redis client(s) and subscribe to scan channels.
+ * Initialize Redis subscriber and subscribe to scan channels.
  * Call once after WebSocket servers are initialized (e.g. in index.js).
  * No-op if REDIS_URL is not set. If Redis connection fails, falls back to direct broadcast without spamming errors.
  */
@@ -84,9 +88,12 @@ function initScanBroadcast() {
 
   try {
     const Redis = require("ioredis");
-    const opts = { maxRetriesPerRequest: 0, enableOfflineQueue: false, retryStrategy: () => null };
+    const opts = {
+      maxRetriesPerRequest: 0,
+      enableOfflineQueue: false,
+      retryStrategy: () => null,
+    };
 
-    redisPublisher = new Redis(redisUrl, opts);
     redisSubscriber = new Redis(redisUrl, opts);
 
     const onError = (err) => {
@@ -94,11 +101,11 @@ function initScanBroadcast() {
       disableRedis(err?.message || err?.code || "connection failed");
     };
 
-    redisPublisher.on("error", onError);
     redisSubscriber.on("error", onError);
 
     redisSubscriber.on("message", (channel, message) => {
-      const { broadcastMessScanToManagers, broadcastGalaScanToManagers } = getLocalBroadcasts();
+      const { broadcastMessScanToManagers, broadcastGalaScanToManagers } =
+        getLocalBroadcasts();
       try {
         const payload = JSON.parse(message);
         if (channel === REDIS_CHANNEL_MESS) {
@@ -113,19 +120,27 @@ function initScanBroadcast() {
 
     redisSubscriber.once("ready", () => {
       if (redisDisabled || !redisSubscriber) return;
-      redisSubscriber.subscribe(REDIS_CHANNEL_MESS, REDIS_CHANNEL_GALA, (err, count) => {
-        if (redisDisabled) return;
-        if (err) {
-          disableRedis(err.message || "subscribe failed");
-          return;
-        }
-        subscriberReady = true;
-        console.log("[scanBroadcast] Subscribed to", REDIS_CHANNEL_MESS, REDIS_CHANNEL_GALA, "count:", count);
-      });
+      redisSubscriber.subscribe(
+        REDIS_CHANNEL_MESS,
+        REDIS_CHANNEL_GALA,
+        (err, count) => {
+          if (redisDisabled) return;
+          if (err) {
+            disableRedis(err.message || "subscribe failed");
+            return;
+          }
+          console.log(
+            "[scanBroadcast] Subscribed to",
+            REDIS_CHANNEL_MESS,
+            REDIS_CHANNEL_GALA,
+            "count:",
+            count,
+          );
+        },
+      );
     });
   } catch (e) {
-    console.error("[scanBroadcast] Redis init failed (is ioredis installed?):", e);
-    redisPublisher = null;
+    console.error("[scanBroadcast] Redis subscriber init failed:", e);
     redisSubscriber = null;
   }
 }

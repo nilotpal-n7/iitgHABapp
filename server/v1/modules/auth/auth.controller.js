@@ -18,6 +18,7 @@ const {
   sendNotificationToUser,
 } = require("../notification/notificationController.js");
 require("dotenv").config();
+const redisClient = require("../../utils/redisClient.js");
 
 const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
@@ -92,6 +93,7 @@ const mobileRedirectHandler = async (req, res, next) => {
     // currentSubscribedMess is optional - if not found, User model will default to hostel
 
     let existingUser = await findUserWithEmail(userFromToken.data.mail);
+    let isFirstLogin = false;
 
     if (!existingUser) {
       const userData = {
@@ -146,7 +148,13 @@ const mobileRedirectHandler = async (req, res, next) => {
 };
 
 // Logout
-const logoutHandler = (req, res) => {
+const logoutHandler = async (req, res) => {
+  const token =
+    req.cookies?.token ||
+    (req.headers.authorization && req.headers.authorization.split(" ")[1]);
+  if (token)
+    await redisClient.set(`bl_${token}`, "true", "EX", 24 * 24 * 60 * 60);
+  res.clearCookie("token");
   res.status(200).json({ message: "Logged out" });
 };
 
@@ -582,7 +590,10 @@ const managerLoginHandler = async (req, res, next) => {
       });
     }
 
-    const ok = await bcrypt.compare(String(password), hostel.managerPasswordHash);
+    const ok = await bcrypt.compare(
+      String(password),
+      hostel.managerPasswordHash,
+    );
     if (!ok) {
       return res.status(401).json({
         success: false,

@@ -15,8 +15,8 @@ const PORT = process.env.PORT || 3000; // The public port
 
 // Configuration: Where your actual apps are running
 const targets = {
-  v1: "http://localhost:3001",
-  v2: "http://localhost:3002",
+  v1: `http://localhost:${process.env.PORT_V1 || 3001}`,
+  v2: `http://localhost:${process.env.PORT_V2 || 3002}`,
 };
 
 // CORS middleware - must be before proxy
@@ -86,7 +86,7 @@ const apiProxy = createProxyMiddleware({
 // 4. Forward everything to the proxy (but don't parse body - proxy handles it)
 app.use("/", apiProxy);
 
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Gateway running on PORT ${PORT} (0.0.0.0)`);
   console.log(`   -> V1 (Legacy) upstream: ${targets.v1}`);
   console.log(`   -> V2 (New) upstream:    ${targets.v2}`);
