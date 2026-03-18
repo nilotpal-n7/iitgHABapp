@@ -15,6 +15,11 @@ class HqAppVersionEndpoints {
   static const String getAndroidVersion = '$baseUrl/hq-app-version/android';
 }
 
+class RcAppVersionEndpoints {
+  // HABit RC (room-cleaning manager app) Android version info
+  static const String getAndroidVersion = '$baseUrl/rc-app-version/android';
+}
+
 class RcEndpoints {
   static const String tomorrow = '$baseUrl/room-cleaning/rc/tomorrow';
   static const String tomorrowAssign =
