@@ -170,6 +170,8 @@ class RoomCleaningApi {
   Future<Map<String, dynamic>> bookSlot({
     required DateTime date,
     required String slot,
+    required String roomNumber,
+    required String phoneNumber,
   }) async {
     final token = await _getToken();
 
@@ -182,6 +184,8 @@ class RoomCleaningApi {
       body: json.encode({
         'date': date.toIso8601String().split('T').first,
         'slot': slot,
+        'roomNumber': roomNumber,
+        'phoneNumber': phoneNumber,
       }),
     );
 

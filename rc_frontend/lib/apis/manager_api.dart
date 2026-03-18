@@ -62,70 +62,12 @@ class ManagerApi {
     return response.data as Map<String, dynamic>;
   }
 
-  static Future<Map<String, dynamic>> fetchTodayMessSummary(
-    String token,
-  ) async {
-    final response = await _dio.get(
-      MessManagerEndpoints.todaySummary,
-      options: Options(headers: _authHeaders(token)),
-    );
-    return response.data as Map<String, dynamic>;
-  }
-
-  static Future<Map<String, dynamic>> fetchGalaSummary(String token) async {
-    final response = await _dio.get(
-      GalaManagerEndpoints.summary,
-      options: Options(headers: _authHeaders(token)),
-    );
-    return response.data as Map<String, dynamic>;
-  }
-
-  static Future<bool> hasTodayGala(String token) async {
-    final data = await fetchGalaSummary(token);
-    return data['galaDinner'] != null;
-  }
-
-  static Future<Map<String, dynamic>> fetchUserProfileForManager({
-    required String token,
-    required String userId,
-  }) async {
-    final response = await _dio.get(
-      MessManagerEndpoints.userProfile(userId),
-      options: Options(headers: _authHeaders(token)),
-    );
-    return response.data as Map<String, dynamic>;
-  }
-
-  static Future<Uint8List?> fetchUserProfilePictureForManager({
-    required String token,
-    required String userId,
-  }) async {
-    final response = await _dio.get<List<int>>(
-      MessManagerEndpoints.userProfilePicture(userId),
-      options: Options(
-        headers: _authHeaders(token),
-        responseType: ResponseType.bytes,
-        validateStatus: (code) => code != null && code < 500,
-      ),
-    );
-
-    if (response.statusCode == 200) {
-      // If server returned JSON instead of bytes, skip.
-      final contentType = response.headers.value('content-type') ?? '';
-      if (contentType.contains('application/json')) {
-        return null;
-      }
-      final data = response.data;
-      if (data == null) return null;
-      return Uint8List.fromList(data);
-    }
-
-    // 404 or 403 etc. → treat as no picture.
-    return null;
-  }
-
-  /// GET tomorrow's room-cleaning bookings for the manager's hostel.
-  /// Returns { bookings: [ { _id, roomNumber, slot, timeRange, assignedTo } ], totalCleaners }.
+  /// GET room-cleaning bookings for the manager's hostel for a given date.
+  /// Returns:
+  /// {
+  ///   bookings: [ { _id, roomNumber, phoneNumber, slot, timeRange, assignedTo, status, statusFinalizedAt } ],
+  ///   cleaners: [ { _id, name, slots } ]
+  /// }
   static Future<Map<String, dynamic>> fetchRcTomorrow(
     String token, [
     String? date,

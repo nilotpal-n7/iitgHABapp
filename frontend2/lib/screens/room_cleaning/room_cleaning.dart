@@ -635,17 +635,16 @@ class _SlotTile extends StatelessWidget {
       },
     );
 
-    if (shouldBook == true) {
-      // Persist the latest values so profile and future bookings see them.
-      await prefs.setString('roomNumber', roomController.text.trim());
-      await prefs.setString('phoneNumber', phoneController.text.trim());
-    }
-
     if (shouldBook != true) return;
+
+    final room = roomController.text.trim();
+    final phone = phoneController.text.trim();
 
     final result = await provider.bookSlot(
       date: day.date,
       slot: slot.slot,
+      roomNumber: room,
+      phoneNumber: phone,
     );
 
     if (!context.mounted) return;

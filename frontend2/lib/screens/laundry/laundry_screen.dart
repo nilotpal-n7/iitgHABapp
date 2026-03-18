@@ -58,14 +58,26 @@ class _LaundryScreenState extends State<LaundryScreen> {
     }
   }
 
+  /// Calendar-day difference in local time (IST-friendly).
+  /// Example: 15 Mar 23:30 → on 16 Mar 00:05 this returns 1 (\"yesterday\"),
+  /// even though less than 24 hours passed.
   int? _daysSince(DateTime? date) {
     if (date == null) return null;
-    return DateTime.now().difference(date).inDays;
+    final now = DateTime.now().toLocal();
+    final d = date.toLocal();
+    final today = DateTime(now.year, now.month, now.day);
+    final thatDay = DateTime(d.year, d.month, d.day);
+    return today.difference(thatDay).inDays;
   }
 
+  /// Calendar-day difference until target date in local time.
   int? _daysUntil(DateTime? date) {
     if (date == null) return null;
-    return date.difference(DateTime.now()).inDays;
+    final now = DateTime.now().toLocal();
+    final d = date.toLocal();
+    final today = DateTime(now.year, now.month, now.day);
+    final targetDay = DateTime(d.year, d.month, d.day);
+    return targetDay.difference(today).inDays;
   }
 
   String _daysAgoText(int? days) {
