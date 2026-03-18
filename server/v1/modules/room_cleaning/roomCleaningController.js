@@ -998,6 +998,7 @@ const getRcTomorrow = async (req, res) => {
         timeRange: slotMap[b.slot] || "",
         assignedTo: b.assignedTo ?? null,
         status: b.status ?? null,
+        reason: b.reason ?? null,
         statusFinalizedAt: b.statusFinalizedAt ?? null,
       };
     });
