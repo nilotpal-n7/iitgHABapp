@@ -66,7 +66,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void _runPhase3Background() {
-    // registerFcmToken();
+    registerFcmToken();
     FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
     HostelsNotifier.init();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -114,7 +114,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       final today = DateTime(now.year, now.month, now.day);
       final daysUntil = galaDay.difference(today).inDays;
       // Non-SMC: show only when 0 <= daysUntil <= 2 (i.e. within 3 days: today, tomorrow, day after)
-      final show = isSMC ? (daysUntil >= 0) : (daysUntil >= 0 && daysUntil <= 2);
+      final show =
+          isSMC ? (daysUntil >= 0) : (daysUntil >= 0 && daysUntil <= 2);
       if (mounted) {
         setState(() {
           _showGalaTab = show;
@@ -178,11 +179,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screens = [
-      HomeScreen(onNavigateToTab: _handleNavTap),
-      const MessScreen(),
-      const GalaDinnerScreen(),
-    ];
     return Stack(
       children: [
         ValueListenableBuilder(
