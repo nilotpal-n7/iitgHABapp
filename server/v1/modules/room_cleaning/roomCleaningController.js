@@ -956,7 +956,7 @@ const getRcTomorrow = async (req, res) => {
     })
       .sort({ slot: 1, createdAt: 1 })
       .select(
-        "_id userId slot assignedTo status statusFinalizedAt roomNumber phoneNumber",
+        "_id userId slot assignedTo status reason statusFinalizedAt roomNumber phoneNumber",
       )
       .lean();
 
