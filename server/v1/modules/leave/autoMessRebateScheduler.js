@@ -20,6 +20,32 @@ const initializeMessRebateAutoScheduler = async () => {
         console.log("Not Rejected Nor Resolved Applications");
         console.log(NotRejectedNorResolvedApplications);
 
+        // FOR GIVING BACK SCANNER PERMISSION AT THE END
+        {
+            // This filters the existing array in memory
+            const to_check = NotRejectedNorResolvedApplications.filter(app => {
+                // const appDate = new Date(app.startDate);
+                return yesterday <= app.endDate && app.endDate < today;
+            });
+
+            const user_ids = to_check.map((application) => {return application.user});
+
+            const users_with_restricted_scanner = await User.find({
+                _id: {
+                    $in: user_ids
+                }
+            });
+
+            console.log("PERMITTED USERS");
+            console.log(users_with_restricted_scanner);
+
+            users_with_restricted_scanner.forEach((user) => {
+                user.set({
+                    scannerPermission: true
+                })
+            })
+
+        }
 
         // FOR TAKING AWAY SCANNER PERMISSION AT THE START
         {
@@ -41,42 +67,11 @@ const initializeMessRebateAutoScheduler = async () => {
                 })
             })
 
-        }
+            console.log("RESTRICTED USERS");
 
-
-        // FOR GIVING BACK SCANNER PERMISSION AT THE END
-        {
-            // This filters the existing array in memory
-            const to_check = NotRejectedNorResolvedApplications.filter(app => {
-                // const appDate = new Date(app.startDate);
-                return yesterday <= app.endDate && app.endDate < today;
-            });
-
-            console.log("CHECKING");
-            console.log(to_check);
-
-            const user_ids = to_check.map((application) => {return application.user});
-
-            console.log("USER ID");
-            console.log(user_ids);
-
-            const users_with_restricted_scanner = await User.find({
-                _id: {
-                    $in: user_ids
-                }
-            });
-
-            console.log("USERS");
             console.log(users_with_restricted_scanner);
 
-            users_with_restricted_scanner.forEach((user) => {
-                user.set({
-                    scannerPermission: true
-                })
-            })
-
         }
-
 
     // })
 }
