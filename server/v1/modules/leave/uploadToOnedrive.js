@@ -95,7 +95,12 @@ async function createOrganizationViewLink(token, itemId) {
 
 async function uploadToOnedrive(req, res, next) {
   try {
-    const file = req.file;
+    if(req.body.leaveType=="Medical" && !req.body.proofDocument){
+      console.log("Not uploading proof document");
+      return next();
+    }
+      const file = req.file;
+      // console.log("Trying to upload proof document");
     //console.log("File received by Onedrive Uploader");
     if (!file) return res.status(400).json({ message: "No file uploaded" });
     if (!LEAVE_FOLDER_ID) {

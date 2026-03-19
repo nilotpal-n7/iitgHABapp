@@ -10,6 +10,7 @@ const { uploadToOnedrive } = require('./uploadToOnedrive.js')
 const {
   uploadMiddleware,
   applyForLeave,
+  conditionalUpload,
   getApplications,
   getApplicationByID,
   getApplicationProof,
@@ -25,7 +26,7 @@ const leaveRouter = express.Router();
 
 //User/Student Endpoint
 
-leaveRouter.post('/apply', authenticateJWT, uploadMiddleware, validateApply, uploadToOnedrive, applyForLeave);
+leaveRouter.post('/apply', authenticateJWT, conditionalUpload,validateApply, uploadToOnedrive, applyForLeave);
 
 leaveRouter.get('/my-applications', authenticateJWT, getApplications);
 
