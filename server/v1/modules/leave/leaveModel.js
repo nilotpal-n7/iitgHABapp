@@ -9,7 +9,7 @@ const leaveSchema = new mongoose.Schema({
     },
     leaveType: {
         type: String,
-        enum: ["Academic", "Medical"],
+        enum: ["Academic", "Medical", "Casual"],
         required: true,
     },
     startDate: {
@@ -36,11 +36,11 @@ const leaveSchema = new mongoose.Schema({
     },
     proofDocumentUrl: {
         type: String,
-        required: true,
+        required: false,
     },
     proofDocumentFilename: {
         type: String,
-        required: true,
+        required: false,
     },
     appliedAt: {
         type: Date,
