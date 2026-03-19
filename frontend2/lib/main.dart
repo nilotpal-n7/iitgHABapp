@@ -164,8 +164,8 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
 
-      home:// widget.updateRequired
-          //? const UpdateRequiredScreen() :
+      home: widget.updateRequired
+          ? const UpdateRequiredScreen() :
       (widget.isLoggedIn
           ?
       const MainNavigationScreen()
