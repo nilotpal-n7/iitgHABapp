@@ -68,7 +68,7 @@ async function getRebateDaysForMonth(messHostelId, month, year) {
     status: "approved",
     isEligibleForRebate: true,
     $or: [{ startDate: { $lte: endOfMonth }, endDate: { $gte: startOfMonth } }],
-  }).populate("user", "name rollNumber -_id");
+  }).populate("user", "name rollNumber -_id").lean();
 
   query.totalRebateDays = leaves.reduce(
     (sum, leave) => sum + leave.eligibleDays,
@@ -233,7 +233,7 @@ const getApplications = async (req, res) => {
     user: req.user,
   }).sort({
     appliedAt: -1,
-  });
+  }).lean();
 
   //For empty applications array
   if (myApplications.length === 0) {
@@ -260,7 +260,7 @@ const getApplicationByID = async (req, res) => {
     return;
   } else {
     try {
-      let application = await Leave.findById(id);
+      let application = await Leave.findById(id).lean();
 
       if (!application.user.equals(req.user._id)) {
         application = null;
@@ -299,7 +299,7 @@ const getApplicationProof = async (req, res) => {
       const application = await Leave.findOne({
         _id: id,
         user: req.user,
-      });
+      }).lean();
       if (application == null) {
         res.status(404).json({
           message: "There are no such leave applications",
