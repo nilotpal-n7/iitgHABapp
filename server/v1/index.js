@@ -60,6 +60,9 @@ const {
   initializeGuestCleanupScheduler,
 } = require("./modules/auth/autoGuestCleanupScheduler.js");
 const {
+  initializeMessRebateAutoScheduler,
+} = require("./modules/leave/autoMessRebateScheduler.js");
+const {
   initializeAnonymizedUser,
 } = require("./modules/user/anonymizedUserInit.js");
 const messChangeRouter = require("./modules/mess_change/messchangeRoute.js");
@@ -156,6 +159,7 @@ mongoose
     initializeFeedbackAutoScheduler();
     initializeMessChangeAutoScheduler();
     initializeGuestCleanupScheduler();
+    initializeMessRebateAutoScheduler();
 
     // Initialize anonymized user for soft-deleted account references
     initializeAnonymizedUser();

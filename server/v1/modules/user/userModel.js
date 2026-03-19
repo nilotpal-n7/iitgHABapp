@@ -208,6 +208,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  scannerPermission: {
+    type: Boolean,
+    default: true
+  },
   hasMicrosoftLinked: {
     type: Boolean,
     default: false,
