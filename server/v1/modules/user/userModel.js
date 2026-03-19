@@ -49,10 +49,6 @@ const JWT_SECRET_KEY = process.env.JWT_SECRET;
  *           type: string
  *           description: Currently subscribed mess (hostel reference)
  *           example: "64a1b2c3d4e5f6789012346"
- *         next_mess:
- *           type: string
- *           description: Next mess subscription (hostel reference)
- *           example: "64a1b2c3d4e5f6789012346"
  *         applied_hostel_string:
  *           type: string
  *           description: Applied hostel information

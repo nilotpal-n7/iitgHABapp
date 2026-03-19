@@ -150,13 +150,6 @@ mongoose
     ) {
       console.log("Primary instance detected. Starting schedulers...");
 
-      const {
-        wednesdayScheduler,
-        sundayScheduler,
-      } = require("./modules/hostel/hostelScheduler.js");
-      wednesdayScheduler();
-      sundayScheduler();
-
       // Initialize automatic schedulers for feedback, mess change, and guest cleanup
       const {
         initializeFeedbackAutoScheduler,
