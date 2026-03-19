@@ -460,8 +460,8 @@ const rejectApplication = async (req, res) => {
 
       const updatedDoc = await Leave.findByIdAndUpdate(id, query, {new: true}).populate("user", "name rollNumber email -_id");
 
-      if (updatedDoc.startDate() <= new Date() && new Date() <= updatedDoc.endDate()) {
-        const updatedUser = await User.findByIdAndUpdate(updatedDoc.user, { scannerPermission: true });
+      if (updatedDoc.startDate <= new Date() && new Date() <= updatedDoc.endDate) {
+        const updatedUser = await User.findOneAndUpdate({_id: updatedDoc.user}, { scannerPermission: true });
         console.log(updatedUser);
       }
 
