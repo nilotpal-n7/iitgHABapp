@@ -59,7 +59,7 @@ class HqVersionChecker {
       }
 
       final dio = Dio();
-      final response = await dio.get(HqAppVersionEndpoints.getAndroidVersion);
+      final response = await dio.get(RcAppVersionEndpoints.getAndroidVersion);
 
       if (response.statusCode == 200 && response.data['success'] == true) {
         final data = response.data['data'];

@@ -107,9 +107,16 @@ class RoomCleaningProvider extends ChangeNotifier {
   Future<RoomCleaningActionResult> bookSlot({
     required DateTime date,
     required String slot,
+    required String roomNumber,
+    required String phoneNumber,
   }) async {
     try {
-      final response = await _api.bookSlot(date: date, slot: slot);
+      final response = await _api.bookSlot(
+        date: date,
+        slot: slot,
+        roomNumber: roomNumber,
+        phoneNumber: phoneNumber,
+      );
       // Refresh availability and bookings after a successful booking.
       await Future.wait([
         loadAvailability(),

@@ -196,29 +196,55 @@ class _BookSlotTabState extends State<_BookSlotTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // CHANGED: replaced plain text row with a semantic warning banner
                 if (!availability.canBook)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Expanded(
-                          child: Text(
-                            'You already have a booking in the last 2 weeks.',
-                            style: TextStyle(
-                              fontFamily: 'OpenSans_regular',
-                              fontWeight: FontWeight.w600,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFBEB),
+                        border: Border.all(color: const Color(0xFFF59E0B)),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.info_outline_rounded,
+                            size: 18,
+                            color: Color(0xFFB45309),
+                          ),
+                          const SizedBox(width: 10),
+                          const Expanded(
+                            child: Text(
+                              'You have an active booking this period.',
+                              style: TextStyle(
+                                fontFamily: 'OpenSans_regular',
+                                fontSize: 13,
+                                color: Color(0xFF92400E),
+                              ),
                             ),
                           ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            final controller = DefaultTabController.of(context);
-                            controller.animateTo(1);
-                          },
-                          child: const Text('View Bookings →'),
-                        ),
-                      ],
+                          GestureDetector(
+                            onTap: () {
+                              final controller =
+                                  DefaultTabController.of(context);
+                              controller.animateTo(1);
+                            },
+                            child: const Text(
+                              'View →',
+                              style: TextStyle(
+                                fontFamily: 'OpenSans_regular',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                                color: Color(0xFF92400E),
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 // Custom accordion-style dropdowns that match app cards.
@@ -416,11 +442,12 @@ class _SlotTile extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // CHANGED: uses design-system secondary background, CSS dots
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF9FAFB),
-                        borderRadius: BorderRadius.circular(12),
+                        color: const Color(0xFFF3F4F6),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: const Color(0xFFE5E7EB),
                         ),
@@ -430,19 +457,16 @@ class _SlotTile extends StatelessWidget {
                         children: const [
                           _InstructionBullet(
                             text:
-                                'Please verify your room number and phone number before confirming this booking.',
+                                'Verify your room and phone number before confirming.',
                           ),
                           _InstructionBullet(
-                            text:
-                                'You can place at most one room cleaning request in any 2‑week period (roughly twice a month).',
+                            text: 'One booking per 2‑week period only.',
                           ),
                           _InstructionBullet(
-                            text:
-                                'If you choose a buffer slot, the request may or may not be fulfilled depending on staff availability.',
+                            text: 'Buffer slots depend on staff availability.',
                           ),
                           _InstructionBullet(
-                            text:
-                                'Make sure you are present in your room during the selected time slot.',
+                            text: 'Be present in your room during the slot.',
                           ),
                         ],
                       ),
@@ -611,17 +635,16 @@ class _SlotTile extends StatelessWidget {
       },
     );
 
-    if (shouldBook == true) {
-      // Persist the latest values so profile and future bookings see them.
-      await prefs.setString('roomNumber', roomController.text.trim());
-      await prefs.setString('phoneNumber', phoneController.text.trim());
-    }
-
     if (shouldBook != true) return;
+
+    final room = roomController.text.trim();
+    final phone = phoneController.text.trim();
 
     final result = await provider.bookSlot(
       date: day.date,
       slot: slot.slot,
+      roomNumber: room,
+      phoneNumber: phone,
     );
 
     if (!context.mounted) return;
@@ -642,66 +665,123 @@ class _SlotTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasPrimary = slot.slotsLeft > 0;
-    final hasBuffer = slot.bufferSlotsLeft > 0;
+    final hasExtra = slot.extraSlotsLeft > 0;
+    final isFull = !hasPrimary && !hasExtra;
+    final isBookable = canBook && !isFull;
 
-    final isBookable = canBook && (hasPrimary || hasBuffer);
+    // CHANGED: slot tile now has an icon, secondary availability text, and
+    // dims fully-booked rows instead of just coloring the pill.
+    Color iconBg;
+    Color iconColor;
+    String availText;
+    String pillLabel;
+    Color pillBg;
+    Color pillText;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: ListTile(
-        onTap: isBookable ? () => _handleBook(context) : null,
-        title: Text(
-          slot.timeRange,
-          style: const TextStyle(
-            fontFamily: 'OpenSans_regular',
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-            color: Colors.black,
+    if (hasPrimary) {
+      iconBg = const Color(0xFFEFF6FF);
+      iconColor = const Color(0xFF3B82F6);
+      availText =
+          '${slot.slotsLeft} slot${slot.slotsLeft == 1 ? '' : 's'} available';
+      pillLabel = 'Open';
+      pillBg = const Color(0xFFDCFCE7);
+      pillText = const Color(0xFF15803D);
+    } else if (hasExtra) {
+      iconBg = const Color(0xFFFFF7ED);
+      iconColor = const Color(0xFFEA580C);
+      availText =
+          '${slot.extraSlotsLeft} waitlist slot${slot.extraSlotsLeft == 1 ? '' : 's'}';
+      pillLabel = 'Buffer';
+      pillBg = const Color(0xFFFFF7ED);
+      pillText = const Color(0xFFEA580C);
+    } else {
+      iconBg = const Color(0xFFF3F4F6);
+      iconColor = const Color(0xFF9CA3AF);
+      availText = 'No slots remaining';
+      pillLabel = 'Full';
+      pillBg = const Color(0xFFFEE2E2);
+      pillText = const Color(0xFFDC2626);
+    }
+
+    return Opacity(
+      opacity: isFull ? 0.55 : 1.0,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: isBookable ? () => _handleBook(context) : null,
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+            child: Row(
+              children: [
+                // Clock icon badge
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: iconBg,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.schedule_rounded,
+                    size: 18,
+                    color: iconColor,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Time + availability text
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        slot.timeRange,
+                        style: const TextStyle(
+                          fontFamily: 'OpenSans_regular',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        availText,
+                        style: const TextStyle(
+                          fontFamily: 'OpenSans_regular',
+                          fontSize: 12,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Status pill
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: pillBg,
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                  child: Text(
+                    pillLabel,
+                    style: TextStyle(
+                      fontFamily: 'OpenSans_regular',
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: pillText,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (hasPrimary)
-              _pill(
-                label: '${slot.slotsLeft} Left',
-                color: Colors.green.shade600,
-              )
-            else if (hasBuffer)
-              _pill(
-                label: '${slot.bufferSlotsLeft} Buffer Left',
-                color: Colors.orange.shade600,
-              )
-            else
-              _pill(
-                label: 'Full',
-                color: Colors.red.shade600,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _pill({required String label, required Color color}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -720,12 +800,16 @@ class _InstructionBullet extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '• ',
-            style: TextStyle(
-              fontSize: 13,
-              color: const Color(0xFF6B7280),
-              height: 1.4,
+          // CHANGED: CSS-style dot instead of "• " text character
+          Padding(
+            padding: const EdgeInsets.only(top: 6.0, right: 8.0),
+            child: Container(
+              width: 5,
+              height: 5,
+              decoration: const BoxDecoration(
+                color: Color(0xFF9CA3AF),
+                shape: BoxShape.circle,
+              ),
             ),
           ),
           Expanded(
@@ -734,7 +818,7 @@ class _InstructionBullet extends StatelessWidget {
               style: const TextStyle(
                 fontFamily: 'OpenSans_regular',
                 fontSize: 13,
-                height: 1.4,
+                height: 1.5,
                 color: Color(0xFF374151),
               ),
             ),
@@ -783,15 +867,38 @@ class _MyBookingsTab extends StatelessWidget {
               final hasFeedback =
                   booking.feedbackId != null && booking.feedbackId!.isNotEmpty;
 
-              final statusColor = switch (status) {
-                'Cleaned' => Colors.green,
-                'Booked' || 'Buffered' => Colors.blue,
-                'Cancelled' => Colors.grey,
-                'CouldNotBeCleaned' => Colors.red,
-                _ => Colors.black,
+              // CHANGED: status chip uses semantic colors; no accent bar.
+              Color chipBg;
+              Color chipText;
+
+              switch (status) {
+                case 'Cleaned':
+                  chipBg = const Color(0xFFDCFCE7);
+                  chipText = const Color(0xFF15803D);
+                  break;
+                case 'Booked':
+                case 'Waitlisted':
+                  chipBg = const Color(0xFFEFF6FF);
+                  chipText = const Color(0xFF1D4ED8);
+                  break;
+                case 'Cancelled':
+                  chipBg = const Color(0xFFF3F4F6);
+                  chipText = const Color(0xFF6B7280);
+                  break;
+                case 'CouldNotBeCleaned':
+                  chipBg = const Color(0xFFFEE2E2);
+                  chipText = const Color(0xFFDC2626);
+                  break;
+                default:
+                  chipBg = const Color(0xFFF3F4F6);
+                  chipText = Colors.black;
+              }
+
+              final statusLabel = switch (status) {
+                'CouldNotBeCleaned' => 'Not Cleaned',
+                'Buffered' => 'Waitlisted',
+                _ => status,
               };
-              final statusLabel =
-                  status == 'CouldNotBeCleaned' ? 'Not Cleaned' : status;
 
               final canCancel = booking.canCancel;
 
@@ -805,20 +912,21 @@ class _MyBookingsTab extends StatelessWidget {
                 switch (reason) {
                   case 'Student Did Not Respond':
                     subtitle =
-                        'The room cleaner couldn’t reach you during this slot (room was locked or you didn’t respond).';
+                        'The room cleaner couldn\'t reach you during this slot (room was locked or you didn\'t respond).';
                     break;
                   case 'Student Asked To Cancel':
                     subtitle = 'You asked to cancel this room cleaning.';
                     break;
                   case 'Room Cleaners Not Available':
                     subtitle =
-                        'Room cleaners weren’t available during this slot.';
+                        'Room cleaners weren\'t available during this slot.';
                     break;
                   default:
                     subtitle = 'This room cleaning could not be completed.';
                 }
               }
 
+              // CHANGED: removed left accent bar; card is a clean flat card.
               return Container(
                 margin: const EdgeInsets.only(bottom: 14),
                 decoration: BoxDecoration(
@@ -833,237 +941,184 @@ class _MyBookingsTab extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: IntrinsicHeight(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // Status accent bar
-                        Container(
-                          width: 4,
-                          decoration: BoxDecoration(
-                            color: statusColor,
-                            borderRadius: const BorderRadius.horizontal(
-                              left: Radius.circular(16),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header: date + status chip
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          // Top row: date + status chip
-                                          Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.calendar_today_rounded,
-                                                size: 16,
-                                                color: const Color(0xFF6B7280),
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                dateLabel,
-                                                style: const TextStyle(
-                                                  fontFamily:
-                                                      'OpenSans_regular',
-                                                  fontWeight: FontWeight.w700,
-                                                  fontSize: 15,
-                                                  color: Color(0xFF111827),
-                                                ),
-                                              ),
-                                              const Spacer(),
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                  horizontal: 10,
-                                                  vertical: 5,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: statusColor
-                                                      .withOpacity(0.14),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          999),
-                                                ),
-                                                child: Text(
-                                                  statusLabel,
-                                                  style: TextStyle(
-                                                    fontFamily:
-                                                        'OpenSans_regular',
-                                                    color: statusColor,
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.schedule_rounded,
-                                                size: 16,
-                                                color: const Color(0xFF6B7280),
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                _slotTimeRange[booking.slot] ??
-                                                    'Slot ${booking.slot}',
-                                                style: const TextStyle(
-                                                  fontFamily:
-                                                      'OpenSans_regular',
-                                                  fontSize: 13,
-                                                  color: Color(0xFF6B7280),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    if ((status == 'Cleaned' && !hasFeedback) ||
-                                        canCancel) ...[
-                                      const SizedBox(width: 12),
-                                      Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          if (status == 'Cleaned' &&
-                                              !hasFeedback)
-                                            OutlinedButton.icon(
-                                              onPressed: () async {
-                                                await _showFeedbackDialog(
-                                                    context, booking.id);
-                                              },
-                                              icon: const Icon(
-                                                Icons.rate_review_outlined,
-                                                size: 16,
-                                              ),
-                                              label: const Text(
-                                                'Feedback',
-                                                style: TextStyle(
-                                                  fontFamily:
-                                                      'OpenSans_regular',
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                              style: OutlinedButton.styleFrom(
-                                                foregroundColor:
-                                                    const Color(0xFF4C4EDB),
-                                                side: const BorderSide(
-                                                  color: Color(0xFF4C4EDB),
-                                                ),
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                  horizontal: 12,
-                                                  vertical: 8,
-                                                ),
-                                                minimumSize: Size.zero,
-                                                tapTargetSize:
-                                                    MaterialTapTargetSize
-                                                        .shrinkWrap,
-                                              ),
-                                            ),
-                                          if (canCancel)
-                                            OutlinedButton.icon(
-                                              onPressed: () async {
-                                                final result = await Provider
-                                                        .of<RoomCleaningProvider>(
-                                                            context,
-                                                            listen: false)
-                                                    .cancelBooking(booking.id);
-                                                if (!context.mounted) return;
-                                                _showRoomCleaningSnackBar(
-                                                  context,
-                                                  result.message,
-                                                  isError: !result.success,
-                                                );
-                                              },
-                                              icon: const Icon(
-                                                Icons.close_rounded,
-                                                size: 16,
-                                              ),
-                                              label: const Text(
-                                                'Cancel',
-                                                style: TextStyle(
-                                                  fontFamily:
-                                                      'OpenSans_regular',
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                              style: OutlinedButton.styleFrom(
-                                                foregroundColor:
-                                                    const Color(0xFF6B7280),
-                                                side: const BorderSide(
-                                                  color: Color(0xFF9CA3AF),
-                                                ),
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                  horizontal: 12,
-                                                  vertical: 8,
-                                                ),
-                                                minimumSize: Size.zero,
-                                                tapTargetSize:
-                                                    MaterialTapTargetSize
-                                                        .shrinkWrap,
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ],
-                                  ],
+                                Text(
+                                  dateLabel,
+                                  style: const TextStyle(
+                                    fontFamily: 'OpenSans_regular',
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 15,
+                                    color: Color(0xFF111827),
+                                  ),
                                 ),
-                                if (subtitle != null) ...[
-                                  const SizedBox(height: 10),
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 10,
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.schedule_rounded,
+                                      size: 14,
+                                      color: Color(0xFF6B7280),
                                     ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF9FAFB),
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        color: const Color(0xFFF3F4F6),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      subtitle,
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      _slotTimeRange[booking.slot] ??
+                                          'Slot ${booking.slot}',
                                       style: const TextStyle(
                                         fontFamily: 'OpenSans_regular',
-                                        fontSize: 12,
-                                        height: 1.4,
+                                        fontSize: 13,
                                         color: Color(0xFF6B7280),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ],
+                            ),
+                          ),
+                          // Status chip
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: chipBg,
+                              borderRadius: BorderRadius.circular(99),
+                            ),
+                            child: Text(
+                              statusLabel,
+                              style: TextStyle(
+                                fontFamily: 'OpenSans_regular',
+                                color: chipText,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Action buttons row
+                      if ((status == 'Cleaned' && !hasFeedback) || canCancel)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              if (status == 'Cleaned' && !hasFeedback)
+                                OutlinedButton.icon(
+                                  onPressed: () async {
+                                    await _showFeedbackDialog(
+                                        context, booking.id);
+                                  },
+                                  icon: const Icon(
+                                    Icons.rate_review_outlined,
+                                    size: 16,
+                                  ),
+                                  label: const Text(
+                                    'Feedback',
+                                    style: TextStyle(
+                                      fontFamily: 'OpenSans_regular',
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: const Color(0xFF4C4EDB),
+                                    side: const BorderSide(
+                                      color: Color(0xFF4C4EDB),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                ),
+                              if (canCancel)
+                                OutlinedButton.icon(
+                                  onPressed: () async {
+                                    final result =
+                                        await Provider.of<RoomCleaningProvider>(
+                                                context,
+                                                listen: false)
+                                            .cancelBooking(booking.id);
+                                    if (!context.mounted) return;
+                                    _showRoomCleaningSnackBar(
+                                      context,
+                                      result.message,
+                                      isError: !result.success,
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.close_rounded,
+                                    size: 16,
+                                  ),
+                                  label: const Text(
+                                    'Cancel booking',
+                                    style: TextStyle(
+                                      fontFamily: 'OpenSans_regular',
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: const Color(0xFF6B7280),
+                                    side: const BorderSide(
+                                      color: Color(0xFF9CA3AF),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      // Subtitle / reason note
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF9FAFB),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: const Color(0xFFF3F4F6),
+                            ),
+                          ),
+                          child: Text(
+                            subtitle,
+                            style: const TextStyle(
+                              fontFamily: 'OpenSans_regular',
+                              fontSize: 12,
+                              height: 1.4,
+                              color: Color(0xFF6B7280),
                             ),
                           ),
                         ),
                       ],
-                    ),
+                    ],
                   ),
                 ),
               );
@@ -1126,7 +1181,7 @@ Future<void> _showFeedbackDialog(
 ) async {
   String reachedInSlot = 'Yes';
   String staffPoliteness = 'Yes';
-  int satisfaction = 5;
+  int satisfaction = 3;
   final remarksController = TextEditingController();
 
   final result = await showDialog<bool>(
@@ -1211,41 +1266,22 @@ Future<void> _showFeedbackDialog(
                     ),
                   ),
                   const SizedBox(height: 10),
+                  // CHANGED: star icons instead of numbered circles
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: List.generate(5, (index) {
                       final value = index + 1;
-                      final selected = satisfaction == value;
+                      final isLit = value <= satisfaction;
                       return GestureDetector(
                         onTap: () => setState(() => satisfaction = value),
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: selected
-                                ? const Color(0xFF4C4EDB)
-                                : const Color(0xFFF3F4F6),
-                            border: Border.all(
-                              color: selected
-                                  ? const Color(0xFF4C4EDB)
-                                  : const Color(0xFFE5E7EB),
-                              width: selected ? 0 : 1,
-                            ),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            '$value',
-                            style: TextStyle(
-                              fontFamily: 'OpenSans_regular',
-                              fontSize: 14,
-                              fontWeight:
-                                  selected ? FontWeight.w600 : FontWeight.w500,
-                              color: selected
-                                  ? Colors.white
-                                  : const Color(0xFF6B7280),
-                            ),
-                          ),
+                        child: Icon(
+                          isLit
+                              ? Icons.star_rounded
+                              : Icons.star_outline_rounded,
+                          size: 36,
+                          color: isLit
+                              ? const Color(0xFFF59E0B)
+                              : const Color(0xFFD1D5DB),
                         ),
                       );
                     }),
@@ -1373,9 +1409,8 @@ void _showRoomCleaningSnackBar(
   bool isError = false,
 }) {
   final theme = Theme.of(context);
-  final backgroundColor = isError
-      ? const Color(0xFFFFF1F2)
-      : const Color(0xFFECFEF3); // soft red / soft green
+  final backgroundColor =
+      isError ? const Color(0xFFFFF1F2) : const Color(0xFFECFEF3);
   final borderColor =
       isError ? const Color(0xFFDC2626) : const Color(0xFF16A34A);
   final icon = isError ? Icons.error_outline : Icons.check_circle_outline;

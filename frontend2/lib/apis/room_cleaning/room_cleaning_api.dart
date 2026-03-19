@@ -9,17 +9,17 @@ class RoomCleaningSlotAvailability {
   final String slot;
   final String timeRange;
   final int primaryCapacity;
-  final int bufferCapacity;
+  final int extraCapacity;
   final int slotsLeft;
-  final int bufferSlotsLeft;
+  final int extraSlotsLeft;
 
   RoomCleaningSlotAvailability({
     required this.slot,
     required this.timeRange,
     required this.primaryCapacity,
-    required this.bufferCapacity,
+    required this.extraCapacity,
     required this.slotsLeft,
-    required this.bufferSlotsLeft,
+    required this.extraSlotsLeft,
   });
 
   factory RoomCleaningSlotAvailability.fromJson(Map<String, dynamic> json) {
@@ -27,9 +27,9 @@ class RoomCleaningSlotAvailability {
       slot: json['slot']?.toString() ?? '',
       timeRange: json['timeRange']?.toString() ?? '',
       primaryCapacity: (json['primaryCapacity'] as num?)?.toInt() ?? 0,
-      bufferCapacity: (json['bufferCapacity'] as num?)?.toInt() ?? 0,
+      extraCapacity: (json['bufferCapacity'] as num?)?.toInt() ?? 0,
       slotsLeft: (json['slotsLeft'] as num?)?.toInt() ?? 0,
-      bufferSlotsLeft: (json['bufferSlotsLeft'] as num?)?.toInt() ?? 0,
+      extraSlotsLeft: (json['bufferSlotsLeft'] as num?)?.toInt() ?? 0,
     );
   }
 }
@@ -108,7 +108,7 @@ class RoomCleaningBooking {
   final String status;
   final String? feedbackId;
   final String? reason;
-  /// True when cancel is allowed (Booked/Buffered, future date, window open).
+  /// True when cancel is allowed (Booked/Waitlisted, future date, window open).
   final bool canCancel;
 
   RoomCleaningBooking({
@@ -170,6 +170,8 @@ class RoomCleaningApi {
   Future<Map<String, dynamic>> bookSlot({
     required DateTime date,
     required String slot,
+    required String roomNumber,
+    required String phoneNumber,
   }) async {
     final token = await _getToken();
 
@@ -182,6 +184,8 @@ class RoomCleaningApi {
       body: json.encode({
         'date': date.toIso8601String().split('T').first,
         'slot': slot,
+        'roomNumber': roomNumber,
+        'phoneNumber': phoneNumber,
       }),
     );
 

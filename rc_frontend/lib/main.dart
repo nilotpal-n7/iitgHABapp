@@ -8,18 +8,12 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'apis/manager_api.dart';
 import 'constants/themes.dart';
+import 'constants/rc_constants.dart';
 import 'utilities/hq_version_checker.dart';
-
-/// Slot letter to time range for display (replaces "Slot A" etc. with timing).
-const Map<String, String> _rcSlotTimeRange = {
-  'A': '12:00–14:00',
-  'B': '14:00–16:00',
-  'C': '16:00–18:00',
-  'D': '18:00–20:00',
-};
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -61,10 +55,7 @@ class RcUpdateRequiredScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF0B1220),
-              Color(0xFF0F172A),
-            ],
+            colors: [Color(0xFF0B1220), Color(0xFF0F172A)],
           ),
         ),
         child: Center(
@@ -148,8 +139,9 @@ class RcLoginScreen extends StatefulWidget {
 
 class _RcLoginScreenState extends State<RcLoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
-  final ValueNotifier<List<String>> _hostels =
-      ValueNotifier<List<String>>(<String>[]);
+  final ValueNotifier<List<String>> _hostels = ValueNotifier<List<String>>(
+    <String>[],
+  );
   String? _selectedHostel;
   bool _loadingHostels = true;
   bool _loggingIn = false;
@@ -243,10 +235,8 @@ class _RcLoginScreenState extends State<RcLoginScreen> {
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => RcHomeScreen(
-            hostelName: _selectedHostel!,
-            authToken: token,
-          ),
+          builder: (_) =>
+              RcHomeScreen(hostelName: _selectedHostel!, authToken: token),
         ),
       );
     } catch (e) {
@@ -280,10 +270,7 @@ class _RcLoginScreenState extends State<RcLoginScreen> {
               const SizedBox(height: 8),
               const Text(
                 'Select your hostel and enter the manager password to access room-cleaning dashboard.',
-                style: TextStyle(
-                  color: Color(0xFF4B5563),
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Color(0xFF4B5563), fontSize: 14),
               ),
               SizedBox(height: size.height * 0.04),
               Container(
@@ -327,8 +314,9 @@ class _RcLoginScreenState extends State<RcLoginScreen> {
                         valueListenable: _hostels,
                         builder: (context, hostels, _) {
                           return Theme(
-                            data: Theme.of(context)
-                                .copyWith(canvasColor: Colors.white),
+                            data: Theme.of(
+                              context,
+                            ).copyWith(canvasColor: Colors.white),
                             child: DropdownButtonFormField<String>(
                               initialValue: _selectedHostel,
                               decoration: InputDecoration(
@@ -477,10 +465,7 @@ class RcHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _RcHomeScaffold(
-      hostelName: hostelName,
-      authToken: authToken,
-    );
+    return _RcHomeScaffold(hostelName: hostelName, authToken: authToken);
   }
 }
 
@@ -488,10 +473,7 @@ class _RcHomeScaffold extends StatefulWidget {
   final String hostelName;
   final String authToken;
 
-  const _RcHomeScaffold({
-    required this.hostelName,
-    required this.authToken,
-  });
+  const _RcHomeScaffold({required this.hostelName, required this.authToken});
 
   @override
   State<_RcHomeScaffold> createState() => _RcHomeScaffoldState();
@@ -565,13 +547,13 @@ class _RcYesterdayTab extends StatefulWidget {
 }
 
 class _RcYesterdayTabState extends State<_RcYesterdayTab> {
-  int _totalCleaners = 0;
   List<Map<String, dynamic>> _bookings = [];
+  List<Map<String, dynamic>> _cleaners = [];
   bool _loading = true;
   String? _loadError;
 
-  /// null = Unassigned, else 1..N
-  int? _selectedCleaner;
+  /// null = Unassigned, else cleanerId (RcCleaner._id)
+  String? _selectedCleanerId;
 
   /// bookingId -> status choice (default "Select")
   final Map<String, String> _statusByBookingId = {};
@@ -600,11 +582,16 @@ class _RcYesterdayTabState extends State<_RcYesterdayTab> {
         widget.authToken,
         _yesterdayDateParam,
       );
-      final list = (data['bookings'] as List<dynamic>?)
+      final list =
+          (data['bookings'] as List<dynamic>?)
               ?.map((e) => Map<String, dynamic>.from(e as Map))
               .toList() ??
           [];
-      final n = (data['totalCleaners'] as num?)?.toInt() ?? 0;
+      final cleaners =
+          (data['cleaners'] as List<dynamic>?)
+              ?.map((e) => Map<String, dynamic>.from(e as Map))
+              .toList() ??
+          [];
 
       // Ensure every booking has a default "Select" choice.
       for (final b in list) {
@@ -615,12 +602,9 @@ class _RcYesterdayTabState extends State<_RcYesterdayTab> {
 
       setState(() {
         _bookings = list;
-        _totalCleaners = n;
+        _cleaners = cleaners;
         _loading = false;
         _loadError = null;
-        if (_selectedCleaner == null && _totalCleaners > 0) {
-          _selectedCleaner = 1;
-        }
       });
     } catch (e) {
       setState(() {
@@ -679,10 +663,7 @@ class _RcYesterdayTabState extends State<_RcYesterdayTab> {
       final uiValue = _statusByBookingId[id] ?? 'Select';
       final mapped = _mapUiStatusToBackend(uiValue);
       if (mapped == null) continue;
-      updates.add({
-        'bookingId': id,
-        ...mapped,
-      });
+      updates.add({'bookingId': id, ...mapped});
     }
 
     try {
@@ -695,7 +676,9 @@ class _RcYesterdayTabState extends State<_RcYesterdayTab> {
       final updated = (data['updated'] as num?)?.toInt() ?? 0;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Finalized ${updates.length} bookings (updated: $updated)'),
+          content: Text(
+            'Finalized ${updates.length} bookings (updated: $updated)',
+          ),
           backgroundColor: const Color(0xFF4C4EDB),
         ),
       );
@@ -713,10 +696,9 @@ class _RcYesterdayTabState extends State<_RcYesterdayTab> {
 
   List<Map<String, dynamic>> get _filteredBookings {
     return _bookings.where((b) {
-      final a = b['assignedTo'];
-      final assigned = (a is int) ? a : (a is num ? a.toInt() : null);
-      if (_selectedCleaner == null) return assigned == null;
-      return assigned == _selectedCleaner;
+      final assignedId = b['assignedTo']?.toString();
+      if (_selectedCleanerId == null) return assignedId == null;
+      return assignedId == _selectedCleanerId;
     }).toList();
   }
 
@@ -749,10 +731,7 @@ class _RcYesterdayTabState extends State<_RcYesterdayTab> {
                 ),
               ),
               const SizedBox(height: 12),
-              TextButton(
-                onPressed: _loadYesterday,
-                child: const Text('Retry'),
-              ),
+              TextButton(onPressed: _loadYesterday, child: const Text('Retry')),
             ],
           ),
         ),
@@ -786,10 +765,10 @@ class _RcYesterdayTabState extends State<_RcYesterdayTab> {
                   border: Border.all(color: const Color(0xFFE5E7EB)),
                 ),
                 child: DropdownButtonHideUnderline(
-                  child: DropdownButton<int?>(
-                    value: _selectedCleaner,
+                  child: DropdownButton<String?>(
+                    value: _selectedCleanerId,
                     items: [
-                      const DropdownMenuItem<int?>(
+                      const DropdownMenuItem<String?>(
                         value: null,
                         child: Text(
                           'Unassigned',
@@ -801,12 +780,18 @@ class _RcYesterdayTabState extends State<_RcYesterdayTab> {
                           ),
                         ),
                       ),
-                      ...List.generate(_totalCleaners, (i) {
-                        final n = i + 1;
-                        return DropdownMenuItem<int?>(
-                          value: n,
+                      ..._cleaners.map((c) {
+                        final id = c['_id']?.toString();
+                        if (id == null)
+                          return const DropdownMenuItem<String?>(
+                            value: null,
+                            child: SizedBox.shrink(),
+                          );
+                        final name = c['name']?.toString() ?? 'Cleaner';
+                        return DropdownMenuItem<String?>(
+                          value: id,
                           child: Text(
-                            'Cleaner $n',
+                            name,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontFamily: 'OpenSans_regular',
@@ -817,7 +802,8 @@ class _RcYesterdayTabState extends State<_RcYesterdayTab> {
                         );
                       }),
                     ],
-                    onChanged: (value) => setState(() => _selectedCleaner = value),
+                    onChanged: (value) =>
+                        setState(() => _selectedCleanerId = value),
                     icon: const Icon(
                       Icons.keyboard_arrow_down_rounded,
                       size: 18,
@@ -853,12 +839,22 @@ class _RcYesterdayTabState extends State<_RcYesterdayTab> {
                     final room = b['roomNumber']?.toString() ?? '—';
                     final slot = b['slot']?.toString() ?? '';
                     final timeRange = b['timeRange']?.toString();
-                    final slotLabel = (timeRange != null && timeRange.isNotEmpty)
-                        ? timeRange
-                        : 'Slot $slot';
-                    final value = _statusByBookingId[id] ?? 'Select';
-                    final finalized =
-                        b['statusFinalizedAt'] != null;
+                    final slotLabel =
+                        (timeRange != null && timeRange.isNotEmpty)
+                            ? timeRange
+                            : 'Slot $slot';
+                    final finalized = b['statusFinalizedAt'] != null;
+                    final status = b['status']?.toString();
+                    final reason = b['reason']?.toString();
+                    final value = finalized
+                        ? (status == 'Cleaned'
+                            ? 'Cleaned'
+                            : (status == 'CouldNotBeCleaned' &&
+                                    reason != null &&
+                                    reason.isNotEmpty
+                                ? reason
+                                : 'Select'))
+                        : (_statusByBookingId[id] ?? 'Select');
 
                     return _RcYesterdayRow(
                       room: room.startsWith('Room ') ? room : 'Room $room',
@@ -972,83 +968,83 @@ class _RcYesterdayRow extends StatelessWidget {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(minWidth: 160, maxWidth: 240),
                 child: DropdownButtonFormField<String>(
-                value: value,
-                disabledHint: Text(
-                  value,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontFamily: 'OpenSans_regular',
-                    fontSize: 13,
+                  value: value,
+                  disabledHint: Text(
+                    value,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontFamily: 'OpenSans_regular',
+                      fontSize: 13,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  items: options
+                      .map(
+                        (opt) => DropdownMenuItem<String>(
+                          value: opt,
+                          child: Text(
+                            opt,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: 'OpenSans_regular',
+                              fontSize: 13,
+                              color: opt == 'Select'
+                                  ? const Color(0xFF6B7280)
+                                  : const Color(0xFF111827),
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  selectedItemBuilder: (context) => options
+                      .map(
+                        (opt) => Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            opt,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: 'OpenSans_regular',
+                              fontSize: 13,
+                              color: opt == 'Select'
+                                  ? const Color(0xFF6B7280)
+                                  : const Color(0xFF111827),
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: finalized
+                      ? null
+                      : (v) {
+                          if (v == null) return;
+                          onChanged(v);
+                        },
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
+                    filled: true,
+                    fillColor: finalized
+                        ? const Color(0xFFF3F4F6)
+                        : (isSelect ? const Color(0xFFF9FAFB) : Colors.white),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                    ),
+                  ),
+                  dropdownColor: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 18,
                     color: Color(0xFF6B7280),
                   ),
+                  isExpanded: true,
                 ),
-                items: options
-                    .map(
-                      (opt) => DropdownMenuItem<String>(
-                        value: opt,
-                        child: Text(
-                          opt,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: 'OpenSans_regular',
-                            fontSize: 13,
-                            color: opt == 'Select'
-                                ? const Color(0xFF6B7280)
-                                : const Color(0xFF111827),
-                          ),
-                        ),
-                      ),
-                    )
-                    .toList(),
-                selectedItemBuilder: (context) => options
-                    .map(
-                      (opt) => Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          opt,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: 'OpenSans_regular',
-                            fontSize: 13,
-                            color: opt == 'Select'
-                                ? const Color(0xFF6B7280)
-                                : const Color(0xFF111827),
-                          ),
-                        ),
-                      ),
-                    )
-                    .toList(),
-                onChanged: finalized
-                    ? null
-                    : (v) {
-                  if (v == null) return;
-                  onChanged(v);
-                },
-                decoration: InputDecoration(
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
-                  filled: true,
-                  fillColor: finalized
-                      ? const Color(0xFFF3F4F6)
-                      : (isSelect ? const Color(0xFFF9FAFB) : Colors.white),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-                  ),
-                ),
-                dropdownColor: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                icon: const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  size: 18,
-                  color: Color(0xFF6B7280),
-                ),
-                isExpanded: true,
-              ),
               ),
             ),
           ],
@@ -1068,13 +1064,13 @@ class _RcTodayTab extends StatefulWidget {
 }
 
 class _RcTodayTabState extends State<_RcTodayTab> {
-  int _totalCleaners = 0;
   List<Map<String, dynamic>> _bookings = [];
+  List<Map<String, dynamic>> _cleaners = [];
   bool _loading = true;
   String? _loadError;
 
-  /// null = Unassigned, else 1..N
-  int? _selectedCleaner;
+  /// null = Unassigned, else cleanerId (RcCleaner._id)
+  String? _selectedCleanerId;
 
   String get _todayDateParam {
     final t = DateTime.now();
@@ -1091,14 +1087,19 @@ class _RcTodayTabState extends State<_RcTodayTab> {
         widget.authToken,
         _todayDateParam,
       );
-      final list = (data['bookings'] as List<dynamic>?)
+      final list =
+          (data['bookings'] as List<dynamic>?)
               ?.map((e) => Map<String, dynamic>.from(e as Map))
               .toList() ??
           [];
-      final n = (data['totalCleaners'] as num?)?.toInt() ?? 0;
+      final cleaners =
+          (data['cleaners'] as List<dynamic>?)
+              ?.map((e) => Map<String, dynamic>.from(e as Map))
+              .toList() ??
+          [];
       setState(() {
         _bookings = list;
-        _totalCleaners = n;
+        _cleaners = cleaners;
         _loading = false;
         _loadError = null;
       });
@@ -1139,10 +1140,7 @@ class _RcTodayTabState extends State<_RcTodayTab> {
                 ),
               ),
               const SizedBox(height: 12),
-              TextButton(
-                onPressed: _loadToday,
-                child: const Text('Retry'),
-              ),
+              TextButton(onPressed: _loadToday, child: const Text('Retry')),
             ],
           ),
         ),
@@ -1150,10 +1148,9 @@ class _RcTodayTabState extends State<_RcTodayTab> {
     }
 
     final filtered = _bookings.where((b) {
-      final a = b['assignedTo'];
-      final assigned = (a is int) ? a : (a is num ? a.toInt() : null);
-      if (_selectedCleaner == null) return assigned == null;
-      return assigned == _selectedCleaner;
+      final assignedId = b['assignedTo']?.toString();
+      if (_selectedCleanerId == null) return assignedId == null;
+      return assignedId == _selectedCleanerId;
     }).toList();
 
     return Column(
@@ -1181,10 +1178,10 @@ class _RcTodayTabState extends State<_RcTodayTab> {
                   border: Border.all(color: const Color(0xFFE5E7EB)),
                 ),
                 child: DropdownButtonHideUnderline(
-                  child: DropdownButton<int?>(
-                    value: _selectedCleaner,
+                  child: DropdownButton<String?>(
+                    value: _selectedCleanerId,
                     items: [
-                      const DropdownMenuItem<int?>(
+                      const DropdownMenuItem<String?>(
                         value: null,
                         child: Text(
                           'Unassigned',
@@ -1196,12 +1193,19 @@ class _RcTodayTabState extends State<_RcTodayTab> {
                           ),
                         ),
                       ),
-                      ...List.generate(_totalCleaners, (i) {
-                        final n = i + 1;
-                        return DropdownMenuItem<int?>(
-                          value: n,
+                      ..._cleaners.map((c) {
+                        final id = c['_id']?.toString();
+                        if (id == null) {
+                          return const DropdownMenuItem<String?>(
+                            value: null,
+                            child: SizedBox.shrink(),
+                          );
+                        }
+                        final name = c['name']?.toString() ?? 'Cleaner';
+                        return DropdownMenuItem<String?>(
+                          value: id,
                           child: Text(
-                            'Cleaner $n',
+                            name,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontFamily: 'OpenSans_regular',
@@ -1212,7 +1216,8 @@ class _RcTodayTabState extends State<_RcTodayTab> {
                         );
                       }),
                     ],
-                    onChanged: (value) => setState(() => _selectedCleaner = value),
+                    onChanged: (value) =>
+                        setState(() => _selectedCleanerId = value),
                     icon: const Icon(
                       Icons.keyboard_arrow_down_rounded,
                       size: 18,
@@ -1247,7 +1252,8 @@ class _RcTodayTabState extends State<_RcTodayTab> {
                     final room = b['roomNumber']?.toString() ?? '—';
                     final slot = b['slot']?.toString() ?? '';
                     final timeRange = b['timeRange']?.toString();
-                    final slotLabel = (timeRange != null && timeRange.isNotEmpty)
+                    final slotLabel =
+                        (timeRange != null && timeRange.isNotEmpty)
                         ? timeRange
                         : 'Slot $slot';
                     return _RcScheduleRow(
@@ -1266,10 +1272,7 @@ class _RcScheduleRow extends StatelessWidget {
   final String title;
   final String subtitle;
 
-  const _RcScheduleRow({
-    required this.title,
-    required this.subtitle,
-  });
+  const _RcScheduleRow({required this.title, required this.subtitle});
 
   @override
   Widget build(BuildContext context) {
@@ -1321,10 +1324,7 @@ class _RcBookingRow extends StatefulWidget {
   final String title;
   final String subtitle;
 
-  const _RcBookingRow({
-    required this.title,
-    required this.subtitle,
-  });
+  const _RcBookingRow({required this.title, required this.subtitle});
 
   @override
   State<_RcBookingRow> createState() => _RcBookingRowState();
@@ -1375,7 +1375,7 @@ class _RcBookingRowState extends State<_RcBookingRow> {
                     ),
                   ),
                   const SizedBox(height: 4),
-            Text(
+                  Text(
                     widget.subtitle,
                     style: const TextStyle(
                       fontFamily: 'OpenSans_regular',
@@ -1421,9 +1421,7 @@ class _RcBookingRowState extends State<_RcBookingRow> {
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFE5E7EB),
-                    ),
+                    borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
                   ),
                 ),
                 dropdownColor: Colors.white,
@@ -1452,18 +1450,19 @@ class _RcAssignTab extends StatefulWidget {
 }
 
 class _RcAssignTabState extends State<_RcAssignTab> {
-  int _totalCleaners = 0;
   List<Map<String, dynamic>> _bookings = [];
-  List<int?> _assignments = [];
+  List<Map<String, dynamic>> _cleaners = [];
+  List<String?> _assignments = [];
+
   /// Last saved/loaded state; when _assignments != _savedAssignments, show Save instead of Share.
-  List<int?> _savedAssignments = [];
+  List<String?> _savedAssignments = [];
   bool _loading = true;
   String? _loadError;
   bool _saving = false;
   bool _sharingPdf = false;
-  bool _summaryExpanded = false;
   bool _confirmedSlotsExpanded = true;
   bool _bufferSlotsExpanded = true;
+  String _selectedSlot = 'A';
 
   bool get _hasAllocationChange {
     if (_assignments.length != _savedAssignments.length) return true;
@@ -1496,11 +1495,14 @@ class _RcAssignTabState extends State<_RcAssignTab> {
       final pdf = pw.Document();
       int pagesAdded = 0;
 
-      for (int cleanerNo = 1; cleanerNo <= _totalCleaners; cleanerNo++) {
+      for (final cleaner in _cleaners) {
+        final cleanerId = cleaner['_id']?.toString();
+        if (cleanerId == null) continue;
+        final cleanerName = cleaner['name']?.toString() ?? 'Room Cleaner';
         final rows = <List<String>>[];
         int slNo = 0;
         for (var i = 0; i < _bookings.length; i++) {
-          if (_assignments[i] != cleanerNo) continue;
+          if (_assignments[i] != cleanerId) continue;
           slNo++;
           final b = _bookings[i];
           final slotTime = b['timeRange']?.toString() ?? '';
@@ -1534,7 +1536,7 @@ class _RcAssignTabState extends State<_RcAssignTab> {
                   ),
                   pw.SizedBox(height: 8),
                   pw.Text(
-                    'Room Cleaner $cleanerNo',
+                    cleanerName,
                     style: pw.TextStyle(
                       fontSize: 16,
                       fontWeight: pw.FontWeight.bold,
@@ -1630,23 +1632,26 @@ class _RcAssignTabState extends State<_RcAssignTab> {
     });
     try {
       final data = await ManagerApi.fetchRcTomorrow(widget.authToken);
-      final list = (data['bookings'] as List<dynamic>?)
+      final list =
+          (data['bookings'] as List<dynamic>?)
               ?.map((e) => Map<String, dynamic>.from(e as Map))
               .toList() ??
           [];
-      final n = (data['totalCleaners'] as num?)?.toInt() ?? 0;
+      final cleaners =
+          (data['cleaners'] as List<dynamic>?)
+              ?.map((e) => Map<String, dynamic>.from(e as Map))
+              .toList() ??
+          [];
       final assignments = list.map((b) {
         final a = b['assignedTo'];
         if (a == null) return null;
-        if (a is int) return a;
-        if (a is num) return a.toInt();
-        return null;
+        return a.toString();
       }).toList();
       setState(() {
         _bookings = list;
-        _totalCleaners = n;
+        _cleaners = cleaners;
         _assignments = assignments;
-        _savedAssignments = List<int?>.from(assignments);
+        _savedAssignments = List<String?>.from(assignments);
         _loading = false;
         _loadError = null;
       });
@@ -1664,14 +1669,14 @@ class _RcAssignTabState extends State<_RcAssignTab> {
     _loadTomorrow();
   }
 
-  Map<int, Map<String, int>> _buildCleanerSummary() {
-    final Map<int, Map<String, int>> summary = {};
+  Map<String, int> _buildCleanerSummary(String slotFilter) {
+    final Map<String, int> summary = {};
     for (var i = 0; i < _bookings.length; i++) {
-      final cleaner = _assignments[i];
-      if (cleaner == null) continue;
+      final cleanerId = _assignments[i];
+      if (cleanerId == null) continue;
       final slot = _bookings[i]['slot']?.toString() ?? '';
-      summary.putIfAbsent(cleaner, () => {});
-      summary[cleaner]!.update(slot, (value) => value + 1, ifAbsent: () => 1);
+      if (slotFilter.isNotEmpty && slot != slotFilter) continue;
+      summary.update(cleanerId, (value) => value + 1, ifAbsent: () => 1);
     }
     return summary;
   }
@@ -1684,17 +1689,14 @@ class _RcAssignTabState extends State<_RcAssignTab> {
       for (var i = 0; i < _bookings.length; i++) {
         final id = _bookings[i]['_id'];
         if (id == null) continue;
-        assignments.add({
-          'bookingId': id,
-          'assignedTo': _assignments[i],
-        });
+        assignments.add({'bookingId': id, 'assignedTo': _assignments[i]});
       }
       await ManagerApi.postRcTomorrowAssign(
         widget.authToken,
         assignments: assignments,
       );
       if (mounted) {
-        setState(() => _savedAssignments = List<int?>.from(_assignments));
+        setState(() => _savedAssignments = List<String?>.from(_assignments));
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Assignments finalized'),
@@ -1739,21 +1741,21 @@ class _RcAssignTabState extends State<_RcAssignTab> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              TextButton(
-                onPressed: _loadTomorrow,
-                child: const Text('Retry'),
-              ),
+              TextButton(onPressed: _loadTomorrow, child: const Text('Retry')),
             ],
           ),
         ),
       );
     }
 
-    final cleanerSummary = _buildCleanerSummary();
+    final cleanerSummary = _buildCleanerSummary(_selectedSlot);
     final confirmedIndices = <int>[];
     final bufferIndices = <int>[];
     for (var i = 0; i < _bookings.length; i++) {
-      final status = _bookings[i]['status']?.toString();
+      final b = _bookings[i];
+      final status = b['status']?.toString();
+      final slot = b['slot']?.toString() ?? '';
+      if (slot != _selectedSlot) continue;
       if (status == 'Buffered') {
         bufferIndices.add(i);
       } else {
@@ -1764,34 +1766,99 @@ class _RcAssignTabState extends State<_RcAssignTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header row: "Tomorrow" + Share or Save on the right
+        // Header row: "Tomorrow" + slot dropdown + Share/Save on the right
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Text(
-                'Tomorrow',
-                style: TextStyle(
-                  fontFamily: 'OpenSans_regular',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  color: Color(0xFF111827),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Tomorrow',
+                      style: TextStyle(
+                        fontFamily: 'OpenSans_regular',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          // Prevent RenderFlex overflow on small screens.
+                          maxWidth: 170,
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFE5E7EB)),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: _selectedSlot,
+                              isExpanded: true,
+                              items: ['A', 'B', 'C', 'D']
+                                  .map(
+                                    (s) => DropdownMenuItem<String>(
+                                      value: s,
+                                      child: Text(
+                                        '${rcSlotTimeRange[s] ?? 'Slot $s'}',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontFamily: 'OpenSans_regular',
+                                          fontSize: 13,
+                                          color: Color(0xFF111827),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (v) {
+                                if (v == null) return;
+                                setState(() {
+                                  _selectedSlot = v;
+                                });
+                              },
+                              icon: const Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                size: 18,
+                                color: Color(0xFF6B7280),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              const SizedBox(width: 12),
               if (_hasAllocationChange || !_allConfirmedAssigned)
                 TextButton(
-                  onPressed: (!_hasAllocationChange || !_allConfirmedAssigned || _saving)
+                  onPressed:
+                      (!_hasAllocationChange ||
+                          !_allConfirmedAssigned ||
+                          _saving)
                       ? null
                       : _saveAssignments,
                   child: Text(
-                    'Finalize',
+                    'Save',
                     style: TextStyle(
                       fontFamily: 'OpenSans_regular',
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
-                      color: (!_hasAllocationChange || !_allConfirmedAssigned || _saving)
+                      color:
+                          (!_hasAllocationChange ||
+                              !_allConfirmedAssigned ||
+                              _saving)
                           ? const Color(0xFF9CA3AF)
                           : const Color(0xFF4C4EDB),
                     ),
@@ -1818,146 +1885,71 @@ class _RcAssignTabState extends State<_RcAssignTab> {
             ],
           ),
         ),
-        const SizedBox(height: 8),
-        // Summary as dropdown
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Material(
-            color: const Color(0xFFF9FAFB),
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
-              ),
-              child: ExpansionTile(
-                initiallyExpanded: _summaryExpanded,
-                onExpansionChanged: (v) => setState(() => _summaryExpanded = v),
-                tilePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                title: const Text(
-                  'Summary',
-                  style: TextStyle(
-                    fontFamily: 'OpenSans_regular',
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                    color: Color(0xFF111827),
-                  ),
-                ),
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: List.generate(_totalCleaners, (index) {
-                      final cleanerNo = index + 1;
-                      final bySlot = cleanerSummary[cleanerNo] ?? {};
-                      final total = bySlot.values.fold<int>(0, (a, b) => a + b);
+        // Cleaner summary slider: show all cleaners horizontally with
+        // "Cleaner Name (Slots)     Count in this slot".
+        SizedBox(
+          height: 72,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Row(
+              children: _cleaners.map((c) {
+                final cleanerId = c['_id']?.toString();
+                if (cleanerId == null) {
+                  return const SizedBox.shrink();
+                }
 
-                      final chips = ['A', 'B', 'C', 'D']
-                          .map((slot) {
-                            final c = bySlot[slot] ?? 0;
-                            final label = _rcSlotTimeRange[slot] ?? slot;
-                            return {'label': label, 'count': c};
-                          })
-                          .where((m) => (m['count'] as int) > 0)
-                          .toList();
+                final cleanerName = c['name']?.toString() ?? 'Room Cleaner';
+                final slotsList =
+                    (c['slots'] as List?)?.map((e) => e.toString()).toList() ??
+                    const <String>[];
+                final slotsLabel = slotsList.isEmpty
+                    ? '-'
+                    : slotsList.join(', ');
+                final countInSlot = cleanerSummary[cleanerId] ?? 0;
 
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              width: 86,
-                              child: Text(
-                                'Cleaner $cleanerNo',
-                                style: const TextStyle(
-                                  fontFamily: 'OpenSans_regular',
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF111827),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: total > 0
-                                          ? const Color(0xFFEEF2FF)
-                                          : const Color(0xFFF9FAFB),
-                                      borderRadius: BorderRadius.circular(999),
-                                      border: Border.all(
-                                        color: total > 0
-                                            ? const Color(0xFFC7D2FE)
-                                            : const Color(0xFFE5E7EB),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      'Total · $total',
-                                      style: TextStyle(
-                                        fontFamily: 'OpenSans_regular',
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w700,
-                                        color: total > 0
-                                            ? const Color(0xFF4C4EDB)
-                                            : const Color(0xFF6B7280),
-                                      ),
-                                    ),
-                                  ),
-                                  ...chips.map((m) {
-                                    final label = m['label'] as String;
-                                    final c = m['count'] as int;
-                                    return Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFF9FAFB),
-                                        borderRadius:
-                                            BorderRadius.circular(999),
-                                        border: Border.all(
-                                          color: const Color(0xFFE5E7EB),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        '$label · $c',
-                                        style: const TextStyle(
-                                          fontFamily: 'OpenSans_regular',
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: Color(0xFF6B7280),
-                                        ),
-                                      ),
-                                    );
-                                  }),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
+                return Container(
+                  width: 220,
+                  margin: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
                   ),
-                ],
-              ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '$cleanerName ($slotsLabel)',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontFamily: 'OpenSans_regular',
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF111827),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '$countInSlot',
+                        style: const TextStyle(
+                          fontFamily: 'OpenSans_regular',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF4C4EDB),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
             ),
           ),
         ),
@@ -1971,8 +1963,15 @@ class _RcAssignTabState extends State<_RcAssignTab> {
                 initiallyExpanded: _confirmedSlotsExpanded,
                 onExpansionChanged: (v) =>
                     setState(() => _confirmedSlotsExpanded = v),
-                tilePadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                childrenPadding: const EdgeInsets.only(left: 4, right: 4, bottom: 8),
+                tilePadding: const EdgeInsets.symmetric(
+                  horizontal: 4,
+                  vertical: 0,
+                ),
+                childrenPadding: const EdgeInsets.only(
+                  left: 4,
+                  right: 4,
+                  bottom: 8,
+                ),
                 title: Text(
                   'Confirmed Slots (${confirmedIndices.length})',
                   style: const TextStyle(
@@ -2001,13 +2000,16 @@ class _RcAssignTabState extends State<_RcAssignTab> {
                         final room = booking['roomNumber']?.toString() ?? '—';
                         final slot = booking['slot']?.toString() ?? '';
                         final timeRange = booking['timeRange']?.toString();
-                        final slotLabel = (timeRange != null && timeRange.isNotEmpty)
+                        final slotLabel =
+                            (timeRange != null && timeRange.isNotEmpty)
                             ? timeRange
                             : 'Slot $slot';
+                        final phone = booking['phoneNumber']?.toString();
                         return _RcAssignRow(
                           room: room.startsWith('Room ') ? room : 'Room $room',
                           slotLabel: slotLabel,
-                          totalCleaners: _totalCleaners,
+                          phoneNumber: phone,
+                          cleaners: _cleaners,
                           value: _assignments[index],
                           onChanged: (value) {
                             setState(() => _assignments[index] = value);
@@ -2019,8 +2021,15 @@ class _RcAssignTabState extends State<_RcAssignTab> {
                 initiallyExpanded: _bufferSlotsExpanded,
                 onExpansionChanged: (v) =>
                     setState(() => _bufferSlotsExpanded = v),
-                tilePadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                childrenPadding: const EdgeInsets.only(left: 4, right: 4, bottom: 8),
+                tilePadding: const EdgeInsets.symmetric(
+                  horizontal: 4,
+                  vertical: 0,
+                ),
+                childrenPadding: const EdgeInsets.only(
+                  left: 4,
+                  right: 4,
+                  bottom: 8,
+                ),
                 title: Text(
                   'Buffer Slots (${bufferIndices.length})',
                   style: const TextStyle(
@@ -2049,13 +2058,16 @@ class _RcAssignTabState extends State<_RcAssignTab> {
                         final room = booking['roomNumber']?.toString() ?? '—';
                         final slot = booking['slot']?.toString() ?? '';
                         final timeRange = booking['timeRange']?.toString();
-                        final slotLabel = (timeRange != null && timeRange.isNotEmpty)
+                        final slotLabel =
+                            (timeRange != null && timeRange.isNotEmpty)
                             ? timeRange
                             : 'Slot $slot';
+                        final phone = booking['phoneNumber']?.toString();
                         return _RcAssignRow(
                           room: room.startsWith('Room ') ? room : 'Room $room',
                           slotLabel: slotLabel,
-                          totalCleaners: _totalCleaners,
+                          phoneNumber: phone,
+                          cleaners: _cleaners,
                           value: _assignments[index],
                           onChanged: (value) {
                             setState(() => _assignments[index] = value);
@@ -2074,17 +2086,26 @@ class _RcAssignTabState extends State<_RcAssignTab> {
 class _RcAssignRow extends StatelessWidget {
   final String room;
   final String slotLabel;
-  final int totalCleaners;
-  final int? value;
-  final ValueChanged<int?> onChanged;
+  final String? phoneNumber;
+  final List<Map<String, dynamic>> cleaners;
+  final String? value;
+  final ValueChanged<String?> onChanged;
 
   const _RcAssignRow({
     required this.room,
     required this.slotLabel,
-    required this.totalCleaners,
+    required this.phoneNumber,
+    required this.cleaners,
     required this.value,
     required this.onChanged,
   });
+
+  Future<void> _launchDialer() async {
+    final phone = phoneNumber?.trim();
+    if (phone == null || phone.isEmpty || phone == '—') return;
+    final uri = Uri(scheme: 'tel', path: phone);
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2104,94 +2125,124 @@ class _RcAssignRow extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    room,
-                    style: const TextStyle(
-                      fontFamily: 'OpenSans_regular',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      color: Colors.black,
-                    ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Prevent small-screen overflows by making the dropdown responsive.
+            // Slightly reduce width to make room for phone icon.
+            final dropdownWidth = (constraints.maxWidth * 0.42)
+                .clamp(140.0, 180.0)
+                .toDouble();
+
+            return Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        room,
+                        style: const TextStyle(
+                          fontFamily: 'OpenSans_regular',
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: Colors.black,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        slotLabel,
+                        style: const TextStyle(
+                          fontFamily: 'OpenSans_regular',
+                          fontSize: 12,
+                          color: Color(0xFF6B7280),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    slotLabel,
-                    style: const TextStyle(
-                      fontFamily: 'OpenSans_regular',
-                      fontSize: 12,
+                ),
+                const SizedBox(width: 8),
+                if (phoneNumber != null && phoneNumber!.trim().isNotEmpty)
+                  IconButton(
+                    icon: const Icon(
+                      Icons.phone_rounded,
+                      size: 20,
+                      color: Color(0xFF10B981),
+                    ),
+                    tooltip: 'Call',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: _launchDialer,
+                  ),
+                const SizedBox(width: 4),
+                SizedBox(
+                  width: dropdownWidth,
+                  child: DropdownButtonFormField<String?>(
+                    value: value,
+                    items: [
+                      const DropdownMenuItem<String?>(
+                        value: null,
+                        child: Text(
+                          'Unassigned',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: 'OpenSans_regular',
+                            fontSize: 13,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                      ),
+                      ...cleaners.map((c) {
+                        final id = c['_id']?.toString();
+                        if (id == null) {
+                          return const DropdownMenuItem<String?>(
+                            value: null,
+                            child: SizedBox.shrink(),
+                          );
+                        }
+                        final name = c['name']?.toString() ?? 'Room Cleaner';
+                        return DropdownMenuItem<String?>(
+                          value: id,
+                          child: Text(
+                            name,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontFamily: 'OpenSans_regular',
+                              fontSize: 13,
+                              color: Color(0xFF111827),
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
+                    onChanged: onChanged,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                      ),
+                    ),
+                    dropdownColor: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 18,
                       color: Color(0xFF6B7280),
                     ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            SizedBox(
-              width: 190,
-              child: DropdownButtonFormField<int?>(
-                value: value,
-                items: [
-                  const DropdownMenuItem<int?>(
-                    value: null,
-                    child: Text(
-                      'Unassigned',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: 'OpenSans_regular',
-                        fontSize: 13,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                  ),
-                  ...List.generate(totalCleaners, (index) {
-                    final cleanerNo = index + 1;
-                    return DropdownMenuItem<int?>(
-                      value: cleanerNo,
-                      child: Text(
-                        'Room Cleaner $cleanerNo',
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontFamily: 'OpenSans_regular',
-                          fontSize: 13,
-                          color: Color(0xFF111827),
-                        ),
-                      ),
-                    );
-                  }),
-                ],
-                onChanged: onChanged,
-                decoration: InputDecoration(
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFE5E7EB),
-                    ),
-                  ),
                 ),
-                dropdownColor: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                icon: const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  size: 18,
-                  color: Color(0xFF6B7280),
-                ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );
   }
 }
-
