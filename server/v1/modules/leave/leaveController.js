@@ -343,6 +343,89 @@ const getApplicationProof = async (req, res) => {
   }
 };
 
+const validateUploadDoc = async (req,res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+        return res.status(400).json({
+          message: "Please provide application ID",
+        })
+      }
+
+      const targetApplication = Leave.findById(id).populate("user", "name rollNumber email -_id").lean();
+      //tentative startdate
+      const appliedAt = targetApplication.startDate;
+  
+      const [appliedYear, appliedMonth, appliedDay] = appliedAt.split("-").map(Number);
+      const start = new Date(appliedYear, appliedMonth - 1, appliedDay);
+  
+      const time = new Date.now();
+  
+      const diffBtwDates = Math.abs(start - time);
+      const numberOfDays = Math.floor(diffBtwDates / (1000 * 60 * 60 * 24));
+  
+      if(numberOfDays>7) {
+        return res.status(400).json({
+          message: "The time limit of uploading medical certificate has exceeded",
+        })
+      }
+  }
+  catch(err) {
+    return res.status(400).json({
+      message: "Error in validating request",
+      error: err.message,
+    })
+  }
+  
+}
+
+const uploadDocForMedicalLeave = async (req,res) => {
+  try {
+    const { id } = req.params;
+    const query = {proofDocumentUrl: req.file.leaveUrl};
+    query.proofDocumentFilename = req.file.originalname;
+
+    const updatedDoc = Leave.findByIdAndUpdate(id, query, {new: true}).populate("user", "name rollNumber email -_id");
+
+    return res.status(201).json({
+      message: `Medical certificate successfully updated for Application ${id}`,
+      application: updatedDoc,
+    })
+
+  }
+  catch(err) {
+    return res.status(500).json({
+      message: "File could not be uploaded",
+      error: err.message,
+    })
+  }
+
+}
+
+const cancelApplication = async (req,res) => {
+  try {
+    const { id } = req.params;
+    if(!id) {
+      return res.status(400).json({
+        message: "Application ID not provided",
+      })
+    }
+
+    const updatedDoc = Leave.findByIdAndUpdate(id, {status: "cancelled"}, {new: true}).populate("user", "name rollNumber email -_id");
+
+    return res.status(201).json({
+      message: `Application with ID ${id} successfully cancelled`,
+      application: updatedDoc,
+    })
+  }
+  catch(err) {
+    return res.status(500).json({
+      message: "Error in cancelling application",
+      error: err.message,
+    })
+  }
+}
+
 const getAllPendingApplications = async (req, res) => {
   const pendingApplications = await Leave.find({
     messHostel: req.hostel,
@@ -540,6 +623,9 @@ module.exports = {
   getApplications,
   getApplicationByID,
   getApplicationProof,
+  validateUploadDoc,
+  uploadDocForMedicalLeave,
+  cancelApplication,
   getAllPendingApplications,
   filterApplications,
   approveApplication,

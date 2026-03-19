@@ -14,6 +14,9 @@ const {
   getApplications,
   getApplicationByID,
   getApplicationProof,
+  validateUploadDoc,
+  uploadDocForMedicalLeave,
+  cancelApplication,
   getAllPendingApplications,
   filterApplications,
   approveApplication,
@@ -33,6 +36,10 @@ leaveRouter.get('/my-applications', authenticateJWT, getApplications);
 leaveRouter.get('/:id', authenticateJWT, getApplicationByID);
 
 leaveRouter.get('/:id/proof', authenticateJWT, getApplicationProof);
+
+leaveRouter.post('/:id/upload-late-medical-document', authenticateJWT, validateUploadDoc , uploadMiddleware, uploadDocForMedicalLeave )
+
+leaveRouter.get('/:id/cancel-application', authenticateJWT, cancelApplication)
 
 //Hostel Office Endpoints
 leaveRouter.get('/hostel/pending', authenticateAdminJWT, getAllPendingApplications);
