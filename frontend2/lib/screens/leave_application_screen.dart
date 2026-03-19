@@ -50,12 +50,12 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
     }
   }
 
-  Future<void> _sendRequest({required int reason, 
+  Future<bool> _sendRequest({required int reason, 
   required DateTimeRange range, 
   required PlatformFile file,
   }) async {
 
-    if (file.path == null) { return; }
+    if (file.path == null) { return false; }
 
     final accessToken = await getAccessToken();
 
@@ -86,24 +86,17 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
           },
         ),
       );
-      if(response.statusCode==200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Application Request Successful!")),
-        );
-      }
+      return response.statusCode == 200 || response.statusCode == 201;
 
     } catch (e) {
-      print(e); // IMPORTANT for debugging
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error")),
-      );
+      return false;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEDEDED),
+      backgroundColor:Colors.white,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -125,7 +118,7 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -134,12 +127,14 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
               child: Column(
                 children: [
                   RadioListTile<int>(
+                    contentPadding: EdgeInsets.zero,
                     title: const Text("Academic Leave"),
                     value: 1,
                     groupValue: _selectedValue,
                     onChanged: (val) => setState(() => _selectedValue = val),
                   ),
                   RadioListTile<int>(
+                    contentPadding: EdgeInsets.zero,
                     title: const Text("Medical Leave"),
                     value: 2,
                     groupValue: _selectedValue,
@@ -148,39 +143,47 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
 
 
             _buildSection(
               title: "Leave Duration",
               child: ListTile(
+                contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.calendar_month),
                 title: Text(_selectedDateRange == null
                     ? "Select Date Range"
-                    : "${DateFormat('dd MMM').format(_selectedDateRange!.start)} - ${DateFormat('dd MMM').format(_selectedDateRange!.end)}"),
-                trailing: const Icon(Icons.edit),
+                    : "${DateFormat('dd MMM').format(_selectedDateRange!.start)} - ${DateFormat('dd MMM').format(_selectedDateRange!.end)}",
+                    style: const TextStyle(fontSize: 15),
+                    ),
+                trailing: const Icon(Icons.edit, size: 20),
                 onTap: _selectDateRange,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
 
 
             _buildSection(
               title: "Supporting Documents",
               child: ListTile(
+                contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.upload_file),
-                title: Text(_pickedFile == null ? "Upload File (PDF/IMG) (Max. Size - 5MB)" : _pickedFile!.name),
-                subtitle: _pickedFile != null ? Text("${(_pickedFile!.size / 1024).toStringAsFixed(2)} KB") : null,
+                title: Text(_pickedFile == null ? "Upload File (PDF/IMG) (Max. Size - 5MB)" : _pickedFile!.name,
+                style: const TextStyle(fontSize: 15),
+                ),
+                subtitle: _pickedFile != null ? Text("${(_pickedFile!.size / 1024).toStringAsFixed(2)} KB",style: TextStyle(fontSize: 12),) : null,
                 trailing: const Icon(Icons.attach_file),
                 onTap: _pickFile,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
 
             _buildSection(
               title: "Bank Details",
               child: Column(
                 children: [
+
+                  const SizedBox(height: 8),
 
                   TextField(
                     controller: _accountNumberController,
@@ -191,7 +194,7 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
 
                   TextField(
                     controller: _ifscController,
@@ -201,7 +204,7 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
 
                   TextField(
                     controller: _bankNameController,
@@ -211,7 +214,7 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
 
                   TextField(
                     controller: _accountHolderController,
@@ -225,50 +228,75 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
               ),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 40),
 
 
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 18),
                 backgroundColor: Colors.blueAccent,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                elevation:2,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              onPressed: () {
+              onPressed: () async{
 
-                if (_selectedValue != null && _selectedDateRange != null && _pickedFile!=null&&_accountNumberController.text!=""&&_ifscController.text!=""&&_bankNameController.text!=""&&_accountHolderController.text!="") {
+                if (_selectedValue != null && _selectedDateRange != null &&
+                _pickedFile!=null&&
+                _accountNumberController.text.trim().isNotEmpty&&
+                _ifscController.text.trim().isNotEmpty &&
+                _bankNameController.text.trim().isNotEmpty &&
+                _accountHolderController.text.trim().isNotEmpty) {
                   if ((_pickedFile!.size)/(1024*1024)>=5) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("File size limit - 5MB")),
+                    _showStatusDialog(
+                      isSuccess: false,
+                      title: "Failure",
+                      message: "File size exceeds 5 MB.",
                     );
                   }else if ((_selectedDateRange!.end.difference(_selectedDateRange!.start).inDays + 1)<5){
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Number of leave days must be >=5")),
+                    _showStatusDialog(
+                      isSuccess: false,
+                      title: "Failure",
+                      message: "Leave must atleast be of 5 days.",
                     );
                   }else {
-                    _sendRequest(reason: _selectedValue!,
+                    bool flag = await _sendRequest(reason: _selectedValue!,
                         range: _selectedDateRange!,
                         file: _pickedFile!);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Success!")),
-                    );
+                    if (flag) {
+                      _showStatusDialog(
+                        isSuccess: true,
+                        title: "Success",
+                        message: "Application sent successfully!",
+                      );
+                    } else {
+                      _showStatusDialog(
+                        isSuccess: false,
+                        title: "Failure",
+                        message: "Something went wrong. Please check your connection and try again.",
+                      );
+                    }
                   }
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Please fill all fields")),
-                  );
+                  _showStatusDialog(
+                      isSuccess: false,
+                      title: "Failure",
+                      message: "Please fill all fields.",
+                    );
                 }
               },
               child: const Text("Submit Application", style: TextStyle(color: Colors.white, fontSize: 16)),
             ),
 
-            const Divider(),
+            const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Divider(),
+          ),
 
-          ElevatedButton(
-              style: ElevatedButton.styleFrom(
+          OutlinedButton(
+              style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: const Color(0xFFE3F2FD),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                side: const BorderSide(color: Colors.blueAccent),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               onPressed: () {
                 Navigator.push(
@@ -281,7 +309,7 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
               child: const Text("View history", style: TextStyle(color: Colors.blueAccent, fontSize: 14)),
           ),
 
-           const SizedBox(height: 32),
+           const SizedBox(height: 40),
           ],
         ),
       ),
@@ -294,8 +322,8 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
-      ),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10,spreadRadius: 1,offset: Offset(0, 4),)
+        ],),
       padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -307,4 +335,81 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
       ),
     );
   }
+
+  void _showStatusDialog({
+  required bool isSuccess,
+  required String title,
+  required String message,
+}) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon Container
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isSuccess ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isSuccess ? Icons.check_circle_rounded : Icons.error_outline_rounded,
+                  color: isSuccess ? Colors.green : Colors.red,
+                  size: 60,
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              // Title
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              // Message
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 32),
+              
+              // Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isSuccess ? Colors.green : Colors.red,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    isSuccess ? "Awesome!" : "Try Again",
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
 }

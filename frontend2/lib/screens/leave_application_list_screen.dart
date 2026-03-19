@@ -55,7 +55,7 @@ class _LeaveApplicationListScreenState extends State<LeaveApplicationListScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEDEDED),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -135,7 +135,7 @@ class _LeaveApplicationListScreenState extends State<LeaveApplicationListScreen>
 
           return Card(
             margin: const EdgeInsets.only(bottom: 12),
-            elevation: 3,
+            elevation: 5,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
