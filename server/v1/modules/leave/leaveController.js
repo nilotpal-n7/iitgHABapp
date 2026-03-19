@@ -3,6 +3,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const mongoose = require("mongoose");
+const { User } = require("../user/userModel.js");
 
 const uploadDir = path.join(__dirname, ".", "uploads");
 
@@ -458,6 +459,12 @@ const rejectApplication = async (req, res) => {
       }
 
       const updatedDoc = await Leave.findByIdAndUpdate(id, query, {new: true}).populate("user", "name rollNumber email -_id");
+
+      if (updatedDoc.startDate() <= new Date() && new Date() <= updatedDoc.endDate()) {
+        const updatedUser = await User.findByIdAndUpdate(updatedDoc.user, { scannerPermission: true });
+        console.log(updatedUser);
+      }
+
 
       res.status(201).json({
         message: `Rejected application with ID ${id}`,
