@@ -4,6 +4,7 @@ const { User } = require("../user/userModel.js");
 
 
 const initializeMessRebateAutoScheduler = async () => {
+    console.log("🚀 Initializing mess rebate scheduler...");
     schedule.scheduleJob("0 1 * * *", async () => {
         const today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 0, 0, 0, 0);
         const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1, 0, 0, 0, 0);
@@ -119,6 +120,9 @@ const initializeMessRebateAutoScheduler = async () => {
         }
 
     })
+
+    console.log("✅ Automatic mess rebate canceller initialized");
+    console.log("📅 Rebate cancelling scheduled: Everyday at 1:00 AM IST");
 }
 
 module.exports = {

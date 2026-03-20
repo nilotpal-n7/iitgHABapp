@@ -37,7 +37,7 @@ leaveRouter.get('/:id', authenticateJWT, getApplicationByID);
 
 leaveRouter.get('/:id/proof', authenticateJWT, getApplicationProof);
 
-leaveRouter.post('/:id/upload-late-medical-document', authenticateJWT, validateUploadDoc , uploadMiddleware, uploadDocForMedicalLeave )
+leaveRouter.post('/:id/upload-late-medical-document', authenticateJWT, validateUploadDoc , uploadMiddleware, uploadToOnedrive, uploadDocForMedicalLeave )
 
 leaveRouter.get('/:id/cancel-application', authenticateJWT, cancelApplication)
 

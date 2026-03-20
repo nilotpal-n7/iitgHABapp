@@ -3,7 +3,6 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const mongoose = require("mongoose");
-const { application } = require("express");
 const { uploadToOnedrive } = require("./uploadToOnedrive.js");
 const { User } = require("../user/userModel.js");
 
@@ -343,7 +342,7 @@ const getApplicationProof = async (req, res) => {
   }
 };
 
-const validateUploadDoc = async (req,res) => {
+const validateUploadDoc = async (req,res,next) => {
   try {
     const { id } = req.params;
     if (!id) {
@@ -351,15 +350,15 @@ const validateUploadDoc = async (req,res) => {
           message: "Please provide application ID",
         })
       }
-
-      const targetApplication = Leave.findById(id).populate("user", "name rollNumber email -_id").lean();
+      console.log("Application ID", id);
+      const targetApplication = await Leave.findById(id).populate("user", "name rollNumber email -_id").lean();
       //tentative startdate
-      const appliedAt = targetApplication.startDate;
+      const appliedAt = targetApplication.startDate.toISOString();
   
       const [appliedYear, appliedMonth, appliedDay] = appliedAt.split("-").map(Number);
       const start = new Date(appliedYear, appliedMonth - 1, appliedDay);
   
-      const time = new Date.now();
+      const time = Date.now();
   
       const diffBtwDates = Math.abs(start - time);
       const numberOfDays = Math.floor(diffBtwDates / (1000 * 60 * 60 * 24));
@@ -369,8 +368,11 @@ const validateUploadDoc = async (req,res) => {
           message: "The time limit of uploading medical certificate has exceeded",
         })
       }
+
+      next();
   }
   catch(err) {
+    console.error(err);
     return res.status(400).json({
       message: "Error in validating request",
       error: err.message,
@@ -385,7 +387,7 @@ const uploadDocForMedicalLeave = async (req,res) => {
     const query = {proofDocumentUrl: req.file.leaveUrl};
     query.proofDocumentFilename = req.file.originalname;
 
-    const updatedDoc = Leave.findByIdAndUpdate(id, query, {new: true}).populate("user", "name rollNumber email -_id");
+    const updatedDoc = await Leave.findByIdAndUpdate(id, query, {new: true}).populate("user", "name rollNumber email -_id");
 
     return res.status(201).json({
       message: `Medical certificate successfully updated for Application ${id}`,
@@ -411,7 +413,7 @@ const cancelApplication = async (req,res) => {
       })
     }
 
-    const updatedDoc = Leave.findByIdAndUpdate(id, {status: "cancelled"}, {new: true}).populate("user", "name rollNumber email -_id");
+    const updatedDoc = await Leave.findByIdAndUpdate(id, {status: "cancelled"}, {new: true}).populate("user", "name rollNumber email -_id");
 
     return res.status(201).json({
       message: `Application with ID ${id} successfully cancelled`,
@@ -519,13 +521,20 @@ const approveApplication = async (req, res) => {
       application = null;
     }
 
+    if(!(application.status==="pending")) {
+      return res.status(400).json({
+        message: "This operation is not permitted",
+        cause: ((application.status==="cancelled")?"Application already cancelled by user":`Application already ${application.status}`),
+      })
+    }
+
     if (application !== null) {
       const query = { status: "approved" };
       if (req.body.feedback) {
         query.feedback = req.body.feedback;
       }
 
-      if (application.eligibleDays >= 5) {
+      if (application.eligibleDays >= 4) {
         console.log("Marking eligible for rebate = true");
         query.isEligibleForRebate = true;
       }
@@ -556,6 +565,13 @@ const rejectApplication = async (req, res) => {
     let application = await Leave.findById(id);
     if (!application.messHostel.equals(req.hostel._id)) {
       application = null;
+    }
+
+    if(!(application.status==="pending")) {
+      return res.status(400).json({
+        message: "This operation is not permitted",
+        cause: ((application.status==="cancelled")?"Application already cancelled by user":`Application already ${application.status}`),
+      })
     }
 
     if (application !== null) {
