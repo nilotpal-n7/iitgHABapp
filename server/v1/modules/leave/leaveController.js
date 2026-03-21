@@ -154,6 +154,17 @@ const applyForLeave = async (req, res) => {
     const [endYear, endMonth, endDay] = endDate.split("-").map(Number);
     const start = new Date(startYear, startMonth - 1, startDay);
     const end = new Date(endYear, endMonth - 1, endDay);
+    
+    //Generate tomorrow Date object
+    const tomorrow = new Date();
+    tomorrow.setHours(0,0,0,0);
+    tomorrow.setDate(tomorrow.getDate()+1);
+    
+    if(start<tomorrow) {
+      return res.status(400).json({
+        message: "Application must be submitted at least before 1 day",
+      })
+    }
 
     //Get difference between two dates
     const diffBtwDates = Math.abs(end - start);
@@ -161,9 +172,9 @@ const applyForLeave = async (req, res) => {
 
     //numberofdays business logic
 
-    if (numberOfDays < 5) {
+    if (numberOfDays < 4) {
       res.status(400).json({
-        message: "Number of days must be greater than 5",
+        message: "Number of days must be greater than 4",
       });
       return;
     }
@@ -177,7 +188,7 @@ const applyForLeave = async (req, res) => {
     //Validation Rules / Business logic
     if (!(leaveType == "Academic" || leaveType == "Medical" || leaveType == "Casual")) {
       res.status(400).json({
-        message: "Leave type is invalid",
+        message: "Leave type is invalid",        
       });
       return;
     }
