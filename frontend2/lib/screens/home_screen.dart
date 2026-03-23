@@ -20,7 +20,7 @@ import '../widgets/alerts_card.dart';
 import '../widgets/microsoft_required_dialog.dart';
 import 'mess_preference.dart';
 import 'room_cleaning/room_cleaning.dart';
-
+import 'leave_application_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final void Function(int)? onNavigateToTab;
@@ -176,6 +176,32 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
       ),
+      _wrapQuickCard(
+        iconPath: 'assets/icon/messicon.svg',
+        label: 'Mess Rebate',
+        iconData: null,
+        onTap: () async {
+          final prefs = await SharedPreferences.getInstance();
+          final hasMicrosoftLinked =
+              prefs.getBool('hasMicrosoftLinked') ?? false;
+          if (!mounted) return;
+          if (!hasMicrosoftLinked) {
+            showDialog(
+              context: context,
+              builder: (context) => const MicrosoftRequiredDialog(
+                featureName: 'Mess Rebate',
+              ),
+            );
+            return;
+          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LeaveApplicationScreen(),
+            ),
+          );
+        },
+      ),
     ];
     if (hasLaundry) {
       cards.add(
@@ -229,7 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget buildQuickActions() {
     final cards = _buildQuickActionCards();
-    final useSlider = cards.length == 4;
+    final useSlider = cards.length >= 4;
 
     if (!useSlider) {
       _quickNavTimer?.cancel();

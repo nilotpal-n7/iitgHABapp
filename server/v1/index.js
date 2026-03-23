@@ -14,6 +14,7 @@ const feedbackRoute = require("./modules/feedback/feedbackRoute.js");
 const hostelRoute = require("./modules/hostel/hostelRoute.js");
 const notificationRoute = require("./modules/notification/notificationRoute.js");
 const messRoute = require("./modules/mess/messRoute.js");
+const leaveRoute = require("./modules/leave/leaveRoute.js");
 const logsRoute = require("./modules/mess/ScanLogsRoute.js");
 const bugReportRoute = require("./modules/bug_report/bugReportRoute.js");
 const roomCleaningRoute = require("./modules/room_cleaning/roomCleaningRoute.js");
@@ -50,6 +51,26 @@ function buildAuthorizeUrl() {
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 
+const {
+  wednesdayScheduler,
+  sundayScheduler,
+} = require("./modules/hostel/hostelScheduler.js");
+const {
+  initializeFeedbackAutoScheduler,
+} = require("./modules/feedback/autoFeedbackScheduler.js");
+
+const {
+  initializeMessChangeAutoScheduler,
+} = require("./modules/mess_change/autoMessChangeScheduler.js");
+const {
+  initializeGuestCleanupScheduler,
+} = require("./modules/auth/autoGuestCleanupScheduler.js");
+const {
+  initializeMessRebateAutoScheduler,
+} = require("./modules/leave/autoMessRebateScheduler.js");
+const {
+  initializeAnonymizedUser,
+} = require("./modules/user/anonymizedUserInit.js");
 const messChangeRouter = require("./modules/mess_change/messchangeRoute.js");
 const galaRoute = require("./modules/gala/galaRoute.js");
 require("dotenv").config();
@@ -149,21 +170,10 @@ mongoose
       typeof process.env.NODE_APP_INSTANCE === "undefined"
     ) {
       console.log("Primary instance detected. Starting schedulers...");
-
-      // Initialize automatic schedulers for feedback, mess change, and guest cleanup
-      const {
-        initializeFeedbackAutoScheduler,
-      } = require("./modules/feedback/autoFeedbackScheduler.js");
-      const {
-        initializeMessChangeAutoScheduler,
-      } = require("./modules/mess_change/autoMessChangeScheduler.js");
-      const {
-        initializeGuestCleanupScheduler,
-      } = require("./modules/auth/autoGuestCleanupScheduler.js");
-
       initializeFeedbackAutoScheduler();
       initializeMessChangeAutoScheduler();
       initializeGuestCleanupScheduler();
+      initializeMessRebateAutoScheduler();
     } else {
       console.log(
         `Worker instance ${process.env.NODE_APP_INSTANCE} started. Schedulers disabled here.`,
@@ -171,9 +181,6 @@ mongoose
     }
 
     // Initialize anonymized user for soft-deleted account references
-    const {
-      initializeAnonymizedUser,
-    } = require("./modules/user/anonymizedUserInit.js");
     initializeAnonymizedUser();
   })
   .catch((err) => console.log(err));
@@ -228,6 +235,8 @@ app.use("/api/mess", messRoute);
 
 // Gala Dinner route
 app.use("/api/gala", galaRoute);
+// Mess rebate route
+app.use("/api/leave", leaveRoute);
 
 //mess change route
 app.use("/api/mess-change", messChangeRouter);
