@@ -52,10 +52,6 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 
 const {
-  wednesdayScheduler,
-  sundayScheduler,
-} = require("./modules/hostel/hostelScheduler.js");
-const {
   initializeFeedbackAutoScheduler,
 } = require("./modules/feedback/autoFeedbackScheduler.js");
 
