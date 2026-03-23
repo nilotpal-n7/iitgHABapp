@@ -29,7 +29,7 @@ const leaveRouter = express.Router();
 
 //User/Student Endpoint
 
-leaveRouter.post('/apply', authenticateJWT, conditionalUpload, validateApply, uploadToOnedrive, applyForLeave);
+leaveRouter.post('/apply', authenticateJWT, conditionalUpload, validateApply, applyForLeave);
 
 leaveRouter.get('/my-applications', authenticateJWT, getApplications);
 
