@@ -73,8 +73,8 @@ class _MyAppState extends State<MyApp> {
 
     // Use `.map()` to transform the stream into a stream of ConnectivityResult
     _connectivityStream = _connectivity.onConnectivityChanged.map(
-            (List<ConnectivityResult> results) =>
-        results.isNotEmpty ? results[0] : ConnectivityResult.none);
+        (List<ConnectivityResult> results) =>
+            results.isNotEmpty ? results[0] : ConnectivityResult.none);
 
     _connectivityStream.listen((ConnectivityResult result) {
       _handleConnectivityChange(result);
@@ -135,7 +135,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
-    // Dispose of the connectivity stream if necessary
+        // Dispose of the connectivity stream if necessary
     super.dispose();
   }
 }

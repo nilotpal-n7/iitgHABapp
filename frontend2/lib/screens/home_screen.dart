@@ -4,7 +4,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-// removed unused imports: feedback_provider, complaints_screen, mess_feedback_page
 import 'package:frontend2/providers/hostels.dart';
 import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/screens/laundry/laundry_screen.dart';
@@ -36,8 +35,6 @@ class _HomeScreenState extends State<HomeScreen> {
   String currSubscribedMess = '';
   String? token;
   String? userHostelId;
-  Timer? _quickNavTimer;
-  final PageController _quickNavPageController = PageController(viewportFraction: 1 / 3);
 
   @override
   void initState() {
@@ -49,8 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    _quickNavTimer?.cancel();
-    _quickNavPageController.dispose();
     homeScreenRefreshNotifier.removeListener(_onRefreshRequested);
     super.dispose();
   }
@@ -59,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (homeScreenRefreshNotifier.value) {
       fetchUserData();
       fetchMessIdAndToken();
-      homeScreenRefreshNotifier.value = false; // Reset
+      homeScreenRefreshNotifier.value = false;
     }
   }
 
@@ -93,7 +88,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // Add the missing getTodayDay method
   String getTodayDay() {
     final now = DateTime.now();
     const days = [
@@ -109,9 +103,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<Widget> _buildQuickActionCards() {
-    // Use only the user's hostel schema (isLaundryAvailable from /hostel/all).
-    // Do not call laundry getStatus here; that runs only on the Laundry page.
-    final hasLaundry = HostelsNotifier.isLaundryAvailableForHostel(userHostelId);
+    final hasLaundry =
+        HostelsNotifier.isLaundryAvailableForHostel(userHostelId);
     final cards = <Widget>[
       _wrapQuickCard(
         iconPath: 'assets/icon/qrscan.svg',
@@ -253,6 +246,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Quick action slider state
+  final PageController _quickNavPageController = PageController();
+  Timer? _quickNavTimer;
+
   Widget buildQuickActions() {
     final cards = _buildQuickActionCards();
     final useSlider = cards.length >= 4;
@@ -260,18 +257,11 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!useSlider) {
       _quickNavTimer?.cancel();
       _quickNavTimer = null;
-
-      // 3 cards: static Row (no sliding) with even spacing
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 18.0),
         child: Row(
-          children: [
-            Expanded(child: cards[0]),
-            const SizedBox(width: 16),
-            Expanded(child: cards[1]),
-            const SizedBox(width: 16),
-            Expanded(child: cards[2]),
-          ],
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: cards,
         ),
       );
     }
@@ -283,17 +273,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-
-      // Jump to a clean starting point without animation
       if (_quickNavPageController.hasClients) {
         _quickNavPageController.jumpToPage(startPage);
       }
-
-      // Cancel any existing timer before creating a new one
       _quickNavTimer?.cancel();
       _quickNavTimer = Timer.periodic(const Duration(seconds: 3), (_) {
         if (!mounted || !_quickNavPageController.hasClients) return;
-        final nextPage = (_quickNavPageController.page ?? startPage).round() + 1;
+        final nextPage =
+            (_quickNavPageController.page ?? startPage).round() + 1;
         _quickNavPageController.animateToPage(
           nextPage,
           duration: const Duration(milliseconds: 450),
@@ -323,44 +310,36 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  static const TextStyle _quickActionLabelStyle = TextStyle(
+  static const TextStyle _labelStyle = TextStyle(
     color: Colors.black,
     fontWeight: FontWeight.w600,
-    fontSize: 14,
+    fontSize: 12,
   );
 
-  Widget _buildQuickActionLabel(String label) {
+  Widget _buildLabel(String label) {
     final parts = label.split(' ');
-    if (parts.length == 2) {
+    if (parts.length >= 2) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            parts[0],
-            textAlign: TextAlign.center,
-            style: _quickActionLabelStyle,
-          ),
-          Text(
-            parts[1],
-            textAlign: TextAlign.center,
-            style: _quickActionLabelStyle,
-          ),
+          Text(parts[0], textAlign: TextAlign.center, style: _labelStyle),
+          Text(parts.sublist(1).join(' '),
+              textAlign: TextAlign.center, style: _labelStyle),
         ],
       );
     }
-    return Text(
-      label,
-      textAlign: TextAlign.center,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: _quickActionLabelStyle,
-    );
+    return Text(label,
+        textAlign: TextAlign.center,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: _labelStyle);
   }
 
-  Widget _quickActionCard({
-    required String iconPath,
+  Widget _quickCard({
     required String label,
+    String iconPath = '',
     IconData? iconData,
+    required VoidCallback onTap,
   }) {
     return Container(
       height: 100,
@@ -398,13 +377,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
             ),
           ),
-          _buildQuickActionLabel(label),
+          const SizedBox(height: 8),
+          _buildLabel(label),
         ],
       ),
     );
   }
-
-
 
   Widget buildMessTodayCard() {
     return Column(
@@ -418,10 +396,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               const Text(
                 "In Mess Today",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               GestureDetector(
                 onTap: () => widget.onNavigateToTab?.call(1),
@@ -440,7 +415,6 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 8),
         Consumer<MessInfoProvider>(
           builder: (context, messProvider, child) {
-            // Fixed null safety issues
             if (messProvider.isLoading) {
               return const Card(
                 color: Colors.white,
@@ -455,11 +429,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               );
             }
-
-            final messId = currSubscribedMess;
-
             return MenuFutureBuilder(
-              messId: messId,
+              messId: currSubscribedMess,
               day: getTodayDay(),
             );
           },
@@ -467,6 +438,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     );
   }
+
+  // ── Build ───────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -484,20 +457,16 @@ class _HomeScreenState extends State<HomeScreen> {
             hoverColor: Colors.transparent,
             splashColor: Colors.transparent,
             highlightColor: Colors.transparent,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ProfileScreen()),
-              );
-            },
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+            ),
             child: ValueListenableBuilder(
               valueListenable: ProfilePictureProvider.profilePictureString,
               builder: (context, value, child) {
                 final String b64 = value;
-
                 return CircleAvatar(
                   radius: 16,
-                  // prefer transparent bg so default asset is visible
                   backgroundColor: Colors.transparent,
                   backgroundImage: b64.isNotEmpty
                       ? MemoryImage(base64Decode(b64))
@@ -521,9 +490,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16.0,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -555,20 +522,14 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 8),
               const Text(
                 "No notifications need your attention",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.black87,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.black87),
               ),
               const SizedBox(height: 24),
-              AlertsCard(
-                feedbackform: feedbackform,
-              ),
+              AlertsCard(feedbackform: feedbackform),
               ValueListenableBuilder<List<String>>(
                 valueListenable: HostelsNotifier.hostelNotifier,
                 builder: (context, _, __) => buildQuickActions(),
               ),
-              // Only show "In Mess Today" if mess exists
               if (currSubscribedMess.isNotEmpty) buildMessTodayCard(),
               const SizedBox(height: 32),
             ],
