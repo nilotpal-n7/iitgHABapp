@@ -1,5 +1,10 @@
-const String baseUrl = "https://hab.codingclub.in/api";
-const String authUrl = "https://hab.codingclub.in/api";
+const String baseUrl = "http://localhost:3000/api";
+const String authUrl = "http://localhost:3000/api";
+
+class MessRebateEndpoints {
+  static const String sendApplication = '$baseUrl/leave/apply';
+  static const String getApplications = '$baseUrl/leave/my-applications';
+}
 
 class NotificationEndpoints {
   static const String registerToken = '$baseUrl/notification/register-token';
@@ -27,11 +32,11 @@ class HostelEndpoint {
 class AuthEndpoints {
   // For initial Microsoft login - redirects through backend
   static String get getAccess =>
-      'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize?client_id=2cdac4f3-1fda-4348-a057-9bb2e3d184a1&response_type=code&redirect_uri=$authUrl/auth/login/redirect/mobile&scope=offline_access%20User.Read&state=12345';
+      'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize?client_id=2cdac4f3-1fda-4348-a057-9bb2e3d184a1&response_type=code&redirect_uri=$authUrl/auth/login/redirect/mobile&scope=offline_access%20User.Read&state=12345&prompt=select_account';
 
   // For linking Microsoft account - uses same redirect URI as login but with state=link
   static String get linkMicrosoft =>
-      'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize?client_id=2cdac4f3-1fda-4348-a057-9bb2e3d184a1&response_type=code&redirect_uri=$authUrl/auth/login/redirect/mobile&scope=offline_access%20User.Read&state=link';
+      'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/authorize?client_id=2cdac4f3-1fda-4348-a057-9bb2e3d184a1&response_type=code&redirect_uri=$authUrl/auth/login/redirect/mobile&scope=offline_access%20User.Read&state=link&prompt=select_account';
 }
 
 class Userendpoints {

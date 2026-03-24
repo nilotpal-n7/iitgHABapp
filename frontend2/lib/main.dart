@@ -135,7 +135,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
-    // Dispose of the connectivity stream if necessary
+        // Dispose of the connectivity stream if necessary
     super.dispose();
   }
 }
