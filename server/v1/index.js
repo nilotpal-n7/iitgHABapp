@@ -67,6 +67,10 @@ const {
 const {
   initializeAnonymizedUser,
 } = require("./modules/user/anonymizedUserInit.js");
+
+const {
+  initializeRoomCleaningAutoResolveScheduler,
+} = require("./modules/room_cleaning/autoRoomCleaningResolveScheduler.js");
 const messChangeRouter = require("./modules/mess_change/messchangeRoute.js");
 const galaRoute = require("./modules/gala/galaRoute.js");
 require("dotenv").config();
@@ -170,6 +174,7 @@ mongoose
       initializeMessChangeAutoScheduler();
       initializeGuestCleanupScheduler();
       initializeMessRebateAutoScheduler();
+      initializeRoomCleaningAutoResolveScheduler();
     } else {
       console.log(
         `Worker instance ${process.env.NODE_APP_INSTANCE} started. Schedulers disabled here.`,
