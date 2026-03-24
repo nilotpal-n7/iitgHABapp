@@ -61,6 +61,8 @@ class DioClient {
             !error.requestOptions.path.contains('/auth/refresh')) {
           if (kDebugMode) {
             debugPrint("401 detected → trying refresh");
+            debugPrint(
+                "[DioClient] Attempting refresh for request: ${error.requestOptions.uri}");
           }
 
           final success = await refreshAccessToken();

@@ -235,14 +235,11 @@ class _HomeScreenState extends State<HomeScreen> {
     IconData? iconData,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(18),
+    return _quickCard(
+      iconPath: iconPath,
+      label: label,
+      iconData: iconData,
       onTap: onTap,
-      child: _quickActionCard(
-        iconPath: iconPath,
-        label: label,
-        iconData: iconData,
-      ),
     );
   }
 
@@ -271,17 +268,19 @@ class _HomeScreenState extends State<HomeScreen> {
     const int virtualCount = 100000;
     const int startPage = virtualCount ~/ 2;
 
+    // Show 3 cards at a time using viewportFraction
+    final PageController controller = PageController(
+      viewportFraction: 1 / 3,
+      initialPage: startPage,
+    );
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (_quickNavPageController.hasClients) {
-        _quickNavPageController.jumpToPage(startPage);
-      }
       _quickNavTimer?.cancel();
       _quickNavTimer = Timer.periodic(const Duration(seconds: 3), (_) {
-        if (!mounted || !_quickNavPageController.hasClients) return;
-        final nextPage =
-            (_quickNavPageController.page ?? startPage).round() + 1;
-        _quickNavPageController.animateToPage(
+        if (!mounted || !controller.hasClients) return;
+        final nextPage = (controller.page ?? startPage.toDouble()).round() + 1;
+        controller.animateToPage(
           nextPage,
           duration: const Duration(milliseconds: 450),
           curve: Curves.easeInOut,
@@ -294,15 +293,14 @@ class _HomeScreenState extends State<HomeScreen> {
       child: SizedBox(
         height: 106,
         child: PageView.builder(
-          controller: _quickNavPageController,
+          controller: controller,
           itemCount: virtualCount,
-          padEnds: false,
-          physics: const NeverScrollableScrollPhysics(),
           itemBuilder: (context, index) {
             final cardIndex = index % cards.length;
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: cards[cardIndex],
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              child: cards[
+                  cardIndex], // taps now work — no NeverScrollableScrollPhysics
             );
           },
         ),
@@ -341,45 +339,44 @@ class _HomeScreenState extends State<HomeScreen> {
     IconData? iconData,
     required VoidCallback onTap,
   }) {
-    return Container(
-      height: 100,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFFFF),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: const BoxDecoration(
-              color: Color(0xFF3754DB),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: iconData != null
-                  ? Icon(
-                      iconData,
-                      size: 22,
-                      color: Colors.white,
-                    )
-                  : SvgPicture.asset(
-                      iconPath,
-                      colorFilter: const ColorFilter.mode(
-                        Colors.white,
-                        BlendMode.srcIn,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 100,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFFFF),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                color: Color(0xFF3754DB),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: iconData != null
+                    ? Icon(iconData, size: 22, color: Colors.white)
+                    : SvgPicture.asset(
+                        iconPath,
+                        colorFilter: const ColorFilter.mode(
+                          Colors.white,
+                          BlendMode.srcIn,
+                        ),
+                        width: 22,
+                        height: 22,
                       ),
-                      width: 22,
-                      height: 22,
-                    ),
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          _buildLabel(label),
-        ],
+            const SizedBox(height: 8),
+            _buildLabel(label),
+          ],
+        ),
       ),
     );
   }

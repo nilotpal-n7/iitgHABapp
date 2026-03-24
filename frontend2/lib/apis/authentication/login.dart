@@ -95,10 +95,17 @@ Future<void> guestAuthenticate() async {
 
 Future<bool> refreshAccessToken() async {
   try {
+    debugPrint('[refreshAccessToken] Called');
     final prefs = await SharedPreferences.getInstance();
     final refreshToken = prefs.getString('refresh_token');
 
-    if (refreshToken == null) return false;
+    debugPrint('[refreshAccessToken] Refresh token: '
+        '${refreshToken != null ? refreshToken.substring(0, 8) + '...' : 'null'}');
+
+    if (refreshToken == null) {
+      debugPrint('[refreshAccessToken] No refresh token found');
+      return false;
+    }
 
     final dio = Dio();
 
@@ -109,14 +116,20 @@ Future<bool> refreshAccessToken() async {
       },
     );
 
+    debugPrint('[refreshAccessToken] Response: '
+        '${response.statusCode} ${response.data.toString()}');
+
     final newAccess = response.data['accessToken'];
     final newRefresh = response.data['refreshToken'];
 
     prefs.setString('access_token', newAccess);
     prefs.setString('refresh_token', newRefresh);
 
+    debugPrint('[refreshAccessToken] Tokens updated');
     return true;
-  } catch (e) {
+  } catch (e, stack) {
+    debugPrint('[refreshAccessToken] Error: $e');
+    debugPrint('[refreshAccessToken] Stack: $stack');
     return false;
   }
 }
