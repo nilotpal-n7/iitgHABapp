@@ -19,7 +19,7 @@ import '../widgets/alerts_card.dart';
 import '../widgets/microsoft_required_dialog.dart';
 import 'mess_preference.dart';
 import 'room_cleaning/room_cleaning.dart';
-import 'leave_application_screen.dart';
+// import 'leave_application_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final void Function(int)? onNavigateToTab;
@@ -169,32 +169,6 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
       ),
-      _wrapQuickCard(
-        iconPath: 'assets/icon/messicon.svg',
-        label: 'Mess Rebate',
-        iconData: null,
-        onTap: () async {
-          final prefs = await SharedPreferences.getInstance();
-          final hasMicrosoftLinked =
-              prefs.getBool('hasMicrosoftLinked') ?? false;
-          if (!mounted) return;
-          if (!hasMicrosoftLinked) {
-            showDialog(
-              context: context,
-              builder: (context) => const MicrosoftRequiredDialog(
-                featureName: 'Mess Rebate',
-              ),
-            );
-            return;
-          }
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const LeaveApplicationScreen(),
-            ),
-          );
-        },
-      ),
     ];
     if (hasLaundry) {
       cards.add(
@@ -291,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 18.0),
       child: SizedBox(
-        height: 106,
+        height: 110, // FIX: was 106, increased to prevent overflow
         child: PageView.builder(
           controller: controller,
           itemCount: virtualCount,
@@ -299,8 +273,7 @@ class _HomeScreenState extends State<HomeScreen> {
             final cardIndex = index % cards.length;
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 5),
-              child: cards[
-                  cardIndex], // taps now work — no NeverScrollableScrollPhysics
+              child: cards[cardIndex],
             );
           },
         ),
@@ -342,8 +315,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 100,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        height: 104, // FIX: was 100, increased by 4px to fix 2px overflow
+        padding: const EdgeInsets.symmetric(
+            horizontal: 8, vertical: 8), // FIX: was vertical: 10
         decoration: BoxDecoration(
           color: const Color(0xFFFFFFFF),
           borderRadius: BorderRadius.circular(18),
@@ -373,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6), // FIX: was 8
             _buildLabel(label),
           ],
         ),
