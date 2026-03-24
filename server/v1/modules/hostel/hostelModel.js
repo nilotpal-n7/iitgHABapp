@@ -83,7 +83,7 @@ hostelSchema.methods.generateJWT = function () {
   return token;
 };
 
-hostelSchema.statics.findByJWT = async function (token) {
+hostelSchema.statics.findByAccessToken = async function (token) {
   try {
     let hostel = this;
     var decoded = jwt.verify(token, adminjwtsecret);
