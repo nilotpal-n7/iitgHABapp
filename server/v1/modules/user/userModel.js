@@ -143,10 +143,12 @@ const userSchema = new mongoose.Schema({
   hostel: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Hostel",
+    index: true,
   },
   curr_subscribed_mess: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Hostel",
+    index: true,
     default: function () {
       return this.hostel;
     },
@@ -193,6 +195,7 @@ const userSchema = new mongoose.Schema({
   isSMC: {
     type: Boolean,
     default: false,
+    index: true,
   },
   isSetupDone: {
     type: Boolean,
@@ -208,6 +211,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  scannerPermission: {
+    type: Boolean,
+    default: true
+  },
   hasMicrosoftLinked: {
     type: Boolean,
     default: false,
@@ -216,6 +223,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ["apple", "microsoft", "both", "guest"],
     default: "microsoft", // Default for backward compatibility
+  },
+  lastLaundryUsed: {
+    type: Date,
+    default: null,
   },
 });
 

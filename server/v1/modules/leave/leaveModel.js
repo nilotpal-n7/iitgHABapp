@@ -9,7 +9,7 @@ const leaveSchema = new mongoose.Schema({
     },
     leaveType: {
         type: String,
-        enum: ["Academic", "Medical"],
+        enum: ["Academic", "Medical", "Casual"],
         required: true,
     },
     startDate: {
@@ -28,19 +28,23 @@ const leaveSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    resolved: {
+        type: Boolean,
+        default: false
+    },
     status: {
         type: String,
-        enum: ["pending", "approved", "rejected"],
+        enum: ["pending", "approved", "rejected","cancelled"],
         default: "pending",
         required: true,
     },
     proofDocumentUrl: {
         type: String,
-        required: true,
+        required: false,
     },
     proofDocumentFilename: {
         type: String,
-        required: true,
+        required: false,
     },
     appliedAt: {
         type: Date,
