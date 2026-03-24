@@ -4,7 +4,6 @@
 require("dotenv").config({ path: "../.env" });
 const { installProcessHandlers } = require("../processHandlers.js");
 installProcessHandlers();
-console.log("MONGODB_URI from env:", process.env.MONGODB_URI);
 const authRoutes = require("./modules/auth/auth.routes.js");
 const express = require("express");
 const mongoose = require("mongoose");
@@ -84,7 +83,6 @@ app.use(
   }),
 );
 
-const MONGOdb_uri = process.env.MONGODB_URI;
 const PORT = process.env.PORT || 3001;
 
 const swaggerOptions = {
@@ -160,7 +158,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // MongoDB connection
 mongoose
-  .connect(MONGOdb_uri)
+  .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("MongoDB connected");
 
