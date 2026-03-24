@@ -330,7 +330,12 @@ app.get("/api/_debug/graph/callback", async (req, res) => {
 // Global error handler (must be after all routes). Catches errors passed to next(err).
 app.use((err, req, res, next) => {
   console.error("[Express error]", err);
-  res.status(500).json({ message: "Internal server error" });
+
+  const statusCode = err.status || 500;
+
+  res.status(statusCode).json({
+    message: err.message || "Internal server error",
+  });
 });
 
 const { initMessManagerWs } = require("./modules/mess/messManagerWs.js");

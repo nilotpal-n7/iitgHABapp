@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-const JWT_SECRET_KEY = process.env.JWT_SECRET;
+const ACCESS_TOKEN_SECRET = process.env.JWT_SECRET;
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_SECRET;
 
 /**
  * @swagger
@@ -209,7 +210,7 @@ const userSchema = new mongoose.Schema({
   },
   scannerPermission: {
     type: Boolean,
-    default: true
+    default: true,
   },
   hasMicrosoftLinked: {
     type: Boolean,
@@ -226,24 +227,32 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-userSchema.methods.generateJWT = function () {
+userSchema.methods.generateAccessToken = function () {
   var user = this;
-  var token = jwt.sign({ user: user._id }, JWT_SECRET_KEY, {
-    expiresIn: "24d",
+  var token = jwt.sign({ user: user._id }, ACCESS_TOKEN_SECRET, {
+    expiresIn: "10s",
   });
   return token;
 };
 
-userSchema.statics.findByJWT = async function (token) {
+userSchema.methods.generateRefreshToken = function () {
+  var user = this;
+  var token = jwt.sign({ user: user._id }, REFRESH_TOKEN_SECRET, {
+    expiresIn: "1m",
+  });
+  return token;
+};
+
+userSchema.statics.findByAccessToken = async function (token) {
   try {
     var user = this;
-    var decoded = jwt.verify(token, JWT_SECRET_KEY);
+    var decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
     const id = decoded.user;
     const fetchedUser = await user.findOne({ _id: id });
     if (!fetchedUser) return false;
     return fetchedUser;
   } catch (error) {
-    return false;
+    throw error;
   }
 };
 
