@@ -93,7 +93,7 @@ hostelSchema.statics.findByAccessToken = async function (token) {
     return fetchedHostel;
   } catch (error) {
     console.error("Error verifying token:", error);
-    return false;
+    throw error;
   }
 };
 
