@@ -529,7 +529,7 @@ const createBooking = async (req, res) => {
   session.startTransaction();
 
   try {
-    const { slot } = req.body || {};
+    const { slot, roomNumber, phoneNumber } = req.body || {};
 
     if (!SLOTS.some((s) => s.id === slot)) {
       await session.abortTransaction();
@@ -616,6 +616,13 @@ const createBooking = async (req, res) => {
             bookingDate: targetDate,
             slot,
             status,
+            // store snapshots if provided (frontend popup)
+            ...(roomNumber != null && String(roomNumber).trim().length > 0
+                ? { roomNumber: String(roomNumber).trim() }
+                : {}),
+            ...(phoneNumber != null && String(phoneNumber).trim().length > 0
+                ? { phoneNumber: String(phoneNumber).trim() }
+                : {}),
           },
         ],
         { session },
@@ -948,7 +955,9 @@ const getRcTomorrow = async (req, res) => {
       status: { $ne: "Cancelled" },
     })
       .sort({ slot: 1, createdAt: 1 })
-      .select("_id userId slot assignedTo status statusFinalizedAt")
+      .select(
+        "_id userId slot assignedTo status reason statusFinalizedAt roomNumber phoneNumber",
+      )
       .lean();
 
     const userIds = [...new Set(bookings.map((b) => b.userId).filter(Boolean))];
@@ -972,14 +981,24 @@ const getRcTomorrow = async (req, res) => {
     const slotMap = Object.fromEntries(SLOTS.map((s) => [s.id, s.timeRange]));
     const list = bookings.map((b) => {
       const u = userMap[b.userId?.toString()];
+      const roomFromBooking =
+        b.roomNumber != null && String(b.roomNumber).trim().length > 0
+          ? String(b.roomNumber).trim()
+          : null;
+      const phoneFromBooking =
+        b.phoneNumber != null && String(b.phoneNumber).trim().length > 0
+          ? String(b.phoneNumber).trim()
+          : null;
+
       return {
         _id: b._id,
-        roomNumber: u?.roomNumber ?? "—",
-        phoneNumber: u?.phoneNumber ?? "—",
+        roomNumber: roomFromBooking ?? u?.roomNumber ?? "—",
+        phoneNumber: phoneFromBooking ?? u?.phoneNumber ?? "—",
         slot: b.slot,
         timeRange: slotMap[b.slot] || "",
         assignedTo: b.assignedTo ?? null,
         status: b.status ?? null,
+        reason: b.reason ?? null,
         statusFinalizedAt: b.statusFinalizedAt ?? null,
       };
     });

@@ -4,7 +4,6 @@
 require("dotenv").config({ path: "../.env" });
 const { installProcessHandlers } = require("../processHandlers.js");
 installProcessHandlers();
-console.log("MONGODB_URI from env:", process.env.MONGODB_URI);
 const authRoutes = require("./modules/auth/auth.routes.js");
 const express = require("express");
 const mongoose = require("mongoose");
@@ -14,9 +13,11 @@ const feedbackRoute = require("./modules/feedback/feedbackRoute.js");
 const hostelRoute = require("./modules/hostel/hostelRoute.js");
 const notificationRoute = require("./modules/notification/notificationRoute.js");
 const messRoute = require("./modules/mess/messRoute.js");
+const leaveRoute = require("./modules/leave/leaveRoute.js");
 const logsRoute = require("./modules/mess/ScanLogsRoute.js");
 const bugReportRoute = require("./modules/bug_report/bugReportRoute.js");
 const roomCleaningRoute = require("./modules/room_cleaning/roomCleaningRoute.js");
+const laundryRoute = require("./modules/laundry/laundryRoute.js");
 
 const compression = require("compression");
 
@@ -57,6 +58,26 @@ function buildAuthorizeUrl() {
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 
+const {
+  initializeFeedbackAutoScheduler,
+} = require("./modules/feedback/autoFeedbackScheduler.js");
+
+const {
+  initializeMessChangeAutoScheduler,
+} = require("./modules/mess_change/autoMessChangeScheduler.js");
+const {
+  initializeGuestCleanupScheduler,
+} = require("./modules/auth/autoGuestCleanupScheduler.js");
+const {
+  initializeMessRebateAutoScheduler,
+} = require("./modules/leave/autoMessRebateScheduler.js");
+const {
+  initializeAnonymizedUser,
+} = require("./modules/user/anonymizedUserInit.js");
+
+const {
+  initializeRoomCleaningAutoResolveScheduler,
+} = require("./modules/room_cleaning/autoRoomCleaningResolveScheduler.js");
 const messChangeRouter = require("./modules/mess_change/messchangeRoute.js");
 const galaRoute = require("./modules/gala/galaRoute.js");
 require("dotenv").config();
@@ -71,7 +92,7 @@ app.use(
 );
 
 const MONGOdb_uri = process.env.MONGODB_URI;
-const PORT = process.env.PORT_V1 || 3001;
+const PORT = process.env.PORT || 3001;
 
 const swaggerOptions = {
   definition: {
@@ -217,7 +238,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // MongoDB connection
 mongoose
-  .connect(MONGOdb_uri)
+  .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("MongoDB connected");
 
@@ -227,28 +248,11 @@ mongoose
       typeof process.env.NODE_APP_INSTANCE === "undefined"
     ) {
       console.log("Primary instance detected. Starting schedulers...");
-
-      const {
-        wednesdayScheduler,
-        sundayScheduler,
-      } = require("./modules/hostel/hostelScheduler.js");
-      wednesdayScheduler();
-      sundayScheduler();
-
-      // Initialize automatic schedulers for feedback, mess change, and guest cleanup
-      const {
-        initializeFeedbackAutoScheduler,
-      } = require("./modules/feedback/autoFeedbackScheduler.js");
-      const {
-        initializeMessChangeAutoScheduler,
-      } = require("./modules/mess_change/autoMessChangeScheduler.js");
-      const {
-        initializeGuestCleanupScheduler,
-      } = require("./modules/auth/autoGuestCleanupScheduler.js");
-
       initializeFeedbackAutoScheduler();
       initializeMessChangeAutoScheduler();
       initializeGuestCleanupScheduler();
+      initializeMessRebateAutoScheduler();
+      initializeRoomCleaningAutoResolveScheduler();
     } else {
       console.log(
         `Worker instance ${process.env.NODE_APP_INSTANCE} started. Schedulers disabled here.`,
@@ -256,9 +260,6 @@ mongoose
     }
 
     // Initialize anonymized user for soft-deleted account references
-    const {
-      initializeAnonymizedUser,
-    } = require("./modules/user/anonymizedUserInit.js");
     initializeAnonymizedUser();
   })
   .catch((err) => console.log(err));
@@ -313,6 +314,8 @@ app.use("/api/mess", messRoute);
 
 // Gala Dinner route
 app.use("/api/gala", galaRoute);
+// Mess rebate route
+app.use("/api/leave", leaveRoute);
 
 //mess change route
 app.use("/api/mess-change", messChangeRouter);
@@ -329,6 +332,9 @@ app.use("/api/bug-report", bugReportRoute);
 
 // Room cleaning availability route
 app.use("/api/room-cleaning", roomCleaningRoute);
+
+// Laundry service route
+app.use("/api/laundry", laundryRoute);
 
 // Debug route: accept delegated tokens and save to disk for server use
 // WARNING: Protect this route in production (e.g., require admin auth, restrict IPs)
@@ -407,7 +413,12 @@ app.get("/api/_debug/graph/callback", async (req, res) => {
 // Global error handler (must be after all routes). Catches errors passed to next(err).
 app.use((err, req, res, next) => {
   console.error("[Express error]", err);
-  res.status(500).json({ message: "Internal server error" });
+
+  const statusCode = err.status || 500;
+
+  res.status(statusCode).json({
+    message: err.message || "Internal server error",
+  });
 });
 
 const { initMessManagerWs } = require("./modules/mess/messManagerWs.js");
