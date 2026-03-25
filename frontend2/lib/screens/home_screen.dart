@@ -228,23 +228,21 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!useSlider) {
       _quickNavTimer?.cancel();
       _quickNavTimer = null;
+
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 18.0),
+        padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 8),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: cards,
         ),
       );
     }
 
-    // Infinite loop: use a huge itemCount with modulo indexing.
-    // Start in the middle to allow scrolling in both directions.
     const int virtualCount = 100000;
     const int startPage = virtualCount ~/ 2;
 
-    // Show 3 cards at a time using viewportFraction
     final PageController controller = PageController(
-      viewportFraction: 1 / 3,
+      viewportFraction: 0.32, // 👈 better centering (instead of 1/3)
       initialPage: startPage,
     );
 
@@ -263,16 +261,16 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 18.0),
+      padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 8),
       child: SizedBox(
-        height: 110, // FIX: was 106, increased to prevent overflow
+        height: 110,
         child: PageView.builder(
           controller: controller,
           itemCount: virtualCount,
           itemBuilder: (context, index) {
             final cardIndex = index % cards.length;
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               child: cards[cardIndex],
             );
           },
@@ -314,42 +312,44 @@ class _HomeScreenState extends State<HomeScreen> {
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        height: 104, // FIX: was 100, increased by 4px to fix 2px overflow
-        padding: const EdgeInsets.symmetric(
-            horizontal: 8, vertical: 8), // FIX: was vertical: 10
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFFFFF),
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                color: Color(0xFF3754DB),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: iconData != null
-                    ? Icon(iconData, size: 22, color: Colors.white)
-                    : SvgPicture.asset(
-                        iconPath,
-                        colorFilter: const ColorFilter.mode(
-                          Colors.white,
-                          BlendMode.srcIn,
+      child: SizedBox(
+        width: 100, // 👈 ensures consistent spacing in slider
+        child: Container(
+          height: 104, // FIX: was 100, increased by 4px to fix 2px overflow
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFFFFF),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF3754DB),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: iconData != null
+                      ? Icon(iconData, size: 22, color: Colors.white)
+                      : SvgPicture.asset(
+                          iconPath,
+                          colorFilter: const ColorFilter.mode(
+                            Colors.white,
+                            BlendMode.srcIn,
+                          ),
+                          width: 22,
+                          height: 22,
                         ),
-                        width: 22,
-                        height: 22,
-                      ),
+                ),
               ),
-            ),
-            const SizedBox(height: 6), // FIX: was 8
-            _buildLabel(label),
-          ],
+              const SizedBox(height: 6), // FIX: was 8
+              _buildLabel(label),
+            ],
+          ),
         ),
       ),
     );
