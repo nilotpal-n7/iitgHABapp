@@ -24,11 +24,5 @@ module.exports = {
       env: { PORT: 3002 },
       max_memory_restart: "512M",
     },
-    {
-      name: "logger-worker",
-      script: "./workers/loggerWorker.js", 
-      cwd: "./v1", // Run it from inside the v1 folder
-      max_memory_restart: "256M", // Restarts if it uses too much memory
-    }
   ],
 };
