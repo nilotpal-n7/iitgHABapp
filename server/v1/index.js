@@ -131,10 +131,9 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
-
 // Middleware to assign a unique request ID for better log correlation
 app.use((req, res, next) => {
-  req.headers['x-request-id'] = req.headers['x-request-id'] || uuidv4();
+  req.headers["x-request-id"] = req.headers["x-request-id"] || uuidv4();
   next();
 });
 
@@ -142,7 +141,7 @@ app.use((req, res, next) => {
 class CustomTransport extends winston.Transport {
   log(info, callback) {
     setImmediate(() => {
-      this.emit('logged', info);
+      this.emit("logged", info);
     });
 
     // Send full log object somewhere
@@ -152,48 +151,49 @@ class CustomTransport extends winston.Transport {
   }
 }
 
-
 // Example function to handle log data
-app.use(expressWinston.logger({
-  transports: [
-    new CustomTransport()
-  ],
+app.use(
+  expressWinston.logger({
+    transports: [new CustomTransport()],
 
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
+    format: winston.format.combine(
+      winston.format.timestamp(),
+      winston.format.json(),
+    ),
 
-  meta: true,
-  msg: "[{{req.headers['x-request-id']}}] HTTP {{req.method}} {{req.url}} {{res.statusCode}}",
-  expressFormat: true,
-  colorize: false,
+    meta: true,
+    msg: "[{{req.headers['x-request-id']}}] HTTP {{req.method}} {{req.url}} {{res.statusCode}}",
+    expressFormat: true,
+    colorize: false,
 
-  // Use status code to determine log level (500=error, 400=warn, etc.)
-  statusLevels: true,
+    // Use status code to determine log level (500=error, 400=warn, etc.)
+    statusLevels: true,
 
-  // IMPORTANT: By default, headers and body are NOT logged.
-  // You must whitelist them here:
-  requestWhitelist: ['url', 'method', 'query', 'body'],
-  responseWhitelist: ['statusCode', 'body'],
+    // IMPORTANT: By default, headers and body are NOT logged.
+    // You must whitelist them here:
+    requestWhitelist: ["url", "method", "query", "body"],
+    responseWhitelist: ["statusCode", "body"],
 
-  // ADDED: Crucial metadata for debugging at scale
-  dynamicMeta: (req, res) => {
-    return {
-      correlationId: req.headers['x-request-id'],
-      user: req.body?.username || 'anonymous',
-      ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
-      userAgent: req.get('User-Agent') || 'unknown',
-      env: process.env.NODE_ENV || 'development'
-    };
-  },
-  // This replaces the value of 'password' with '*****' in the logs
-  bodyBlacklist: ['password', 'secret', 'token'],
-}));
+    // ADDED: Crucial metadata for debugging at scale
+    dynamicMeta: (req, res) => {
+      return {
+        correlationId: req.headers["x-request-id"],
+        user: req.body?.username || "anonymous",
+        ip: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+        userAgent: req.get("User-Agent") || "unknown",
+        env: process.env.NODE_ENV || "development",
+      };
+    },
+    // This replaces the value of 'password' with '*****' in the logs
+    bodyBlacklist: ["password", "secret", "token"],
+  }),
+);
 
 function startWorker() {
-  const worker = new Worker(path.resolve(__dirname, "./workers/loggerWorker.js"));
-  
+  const worker = new Worker(
+    path.resolve(__dirname, "./workers/loggerWorker.js"),
+  );
+
   worker.on("error", (err) => console.error("Worker Error:", err));
   worker.on("exit", (code) => {
     if (code !== 0) console.error(`Worker stopped with exit code ${code}`);
@@ -247,6 +247,7 @@ mongoose
       process.env.NODE_APP_INSTANCE === "0" ||
       typeof process.env.NODE_APP_INSTANCE === "undefined"
     ) {
+      console.log(`[CHECK] Current Time: ${new Date().toLocaleString()}`);
       console.log("Primary instance detected. Starting schedulers...");
       initializeFeedbackAutoScheduler();
       initializeMessChangeAutoScheduler();

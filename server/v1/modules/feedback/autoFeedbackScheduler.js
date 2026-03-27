@@ -75,9 +75,12 @@ const scheduleFeedbackReminders = async () => {
         console.log("📢 Sent 12h feedback reminder");
       });
       console.log(
-        `📅 Scheduled 12h reminder for ${reminder12h.toLocaleString("en-IN", {
-          timeZone: "Asia/Kolkata",
-        })}`,
+        `📅 [FEEDBACK] Scheduled 12h reminder for ${reminder12h.toLocaleString(
+          "en-IN",
+          {
+            timeZone: "Asia/Kolkata",
+          },
+        )}`,
       );
     }
 
@@ -92,14 +95,17 @@ const scheduleFeedbackReminders = async () => {
           "All_Hostels",
           { redirectType: "mess_screen", isAlert: "true" },
         ).catch((err) =>
-          console.error("📢 2h feedback reminder send failed:", err),
+          console.error("📢 [FEEDBACK] 2h feedback reminder send failed:", err),
         );
-        console.log("📢 Sent 2h feedback reminder");
+        console.log("📢 [FEEDBACK] Sent 2h feedback reminder");
       });
       console.log(
-        `📅 Scheduled 2h reminder for ${reminder2h.toLocaleString("en-IN", {
-          timeZone: "Asia/Kolkata",
-        })}`,
+        `📅 [FEEDBACK] Scheduled 2h reminder for ${reminder2h.toLocaleString(
+          "en-IN",
+          {
+            timeZone: "Asia/Kolkata",
+          },
+        )}`,
       );
     }
   } catch (error) {

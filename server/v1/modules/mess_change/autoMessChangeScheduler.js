@@ -72,14 +72,20 @@ const scheduleMessChangeReminders = async () => {
           "All_Hostels",
           { redirectType: "mess_change", isAlert: "true" },
         ).catch((err) =>
-          console.error("📢 12h mess change reminder send failed:", err),
+          console.error(
+            "📢 [MESS CHANGE] 12h mess change reminder send failed:",
+            err,
+          ),
         );
-        console.log("📢 Sent 12h mess change reminder");
+        console.log("📢 [MESS CHANGE] Sent 12h mess change reminder");
       });
       console.log(
-        `📅 Scheduled 12h reminder for ${reminder12h.toLocaleString("en-IN", {
-          timeZone: "Asia/Kolkata",
-        })}`,
+        `📅 [MESS CHANGE] Scheduled 12h reminder for ${reminder12h.toLocaleString(
+          "en-IN",
+          {
+            timeZone: "Asia/Kolkata",
+          },
+        )}`,
       );
     }
 
@@ -94,14 +100,20 @@ const scheduleMessChangeReminders = async () => {
           "All_Hostels",
           { redirectType: "mess_change", isAlert: "true" },
         ).catch((err) =>
-          console.error("📢 2h mess change reminder send failed:", err),
+          console.error(
+            "📢 [MESS CHANGE] 2h mess change reminder send failed:",
+            err,
+          ),
         );
-        console.log("📢 Sent 2h mess change reminder");
+        console.log("📢 [MESS CHANGE] Sent 2h mess change reminder");
       });
       console.log(
-        `📅 Scheduled 2h reminder for ${reminder2h.toLocaleString("en-IN", {
-          timeZone: "Asia/Kolkata",
-        })}`,
+        `📅 [MESS CHANGE] Scheduled 2h reminder for ${reminder2h.toLocaleString(
+          "en-IN",
+          {
+            timeZone: "Asia/Kolkata",
+          },
+        )}`,
       );
     }
   } catch (error) {
