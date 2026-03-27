@@ -393,10 +393,9 @@ const submitFeedback = async (req, res) => {
       return res.status(403).send("Mess feedback is currently closed by HAB.");
     }
 
-    // Auto close after 2 days
-    if (settings.enabledAt) {
-      const enabledAt = new Date(settings.enabledAt);
-      const expiresAt = new Date(enabledAt.getTime() + 2 * 24 * 60 * 60 * 1000);
+    // Enforce feedback window closing time
+    if (settings.currentWindowClosingTime) {
+      const expiresAt = new Date(settings.currentWindowClosingTime);
       const now = new Date();
       if (now > expiresAt) {
         settings.isEnabled = false;
@@ -677,10 +676,8 @@ const getFeedbackSettings = async (req, res) => {
     if (cachedSettings) return res.status(200).json(JSON.parse(cachedSettings));
 
     let s = await FeedbackSettings.findOne();
-    if (s?.isEnabled && s.enabledAt) {
-      const expiresAt = new Date(
-        new Date(s.enabledAt).getTime() + 2 * 24 * 60 * 60 * 1000,
-      );
+    if (s?.isEnabled && s.currentWindowClosingTime) {
+      const expiresAt = new Date(s.currentWindowClosingTime);
       if (new Date() > expiresAt) {
         s.isEnabled = false;
         s.disabledAt = new Date();
@@ -714,10 +711,8 @@ const getFeedbackSettingsPublic = async (req, res) => {
     if (cachedSettings) return res.status(200).json(JSON.parse(cachedSettings));
 
     let s = await FeedbackSettings.findOne();
-    if (s?.isEnabled && s.enabledAt) {
-      const expiresAt = new Date(
-        new Date(s.enabledAt).getTime() + 2 * 24 * 60 * 60 * 1000,
-      );
+    if (s?.isEnabled && s.currentWindowClosingTime) {
+      const expiresAt = new Date(s.currentWindowClosingTime);
       if (new Date() > expiresAt) {
         s.isEnabled = false;
         s.disabledAt = new Date();
