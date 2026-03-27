@@ -116,10 +116,6 @@ const authenticateHabJWT = async (req, res, next) => {
     req.hab = decoded;
     return next();
   } catch (err) {
-    if (err.name === "TokenExpiredError") {
-      return next(new AppError(401, "Access token expired"));
-    }
-
     console.error("Error verifying HAB token:", err);
     return next(new AppError(403, "Not Authenticated"));
   }
@@ -150,10 +146,6 @@ const authenticateMessManagerJWT = async (req, res, next) => {
     req.managerHostel = hostel;
     return next();
   } catch (err) {
-    if (err.name === "TokenExpiredError") {
-      return next(new AppError(401, "Access token expired"));
-    }
-
     console.error("Error verifying Mess Manager token:", err);
     return next(new AppError(500, "Server error during authentication"));
   }
