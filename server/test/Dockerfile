@@ -21,6 +21,7 @@ EXPOSE 3000
 
 # Run start script
 COPY test/start.sh .
-RUN chmod +x start.sh
+RUN sed -i -e 's/\r$//' start.sh && \
+    chmod +x start.sh
 
 CMD ["./start.sh"]
