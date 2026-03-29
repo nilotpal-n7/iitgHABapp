@@ -10,6 +10,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend2/models/notification_model.dart';
+import 'alerts_manager.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 // ✅ Create a global instance of FlutterLocalNotificationsPlugin
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -203,19 +205,49 @@ List<NotificationModel> getActiveAlerts() {
 }
 
 // ✅ Background message handler (must be top-level function)
+@pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Ensure Firebase is initialized for the background isolate
+  await Firebase.initializeApp();
+
   if (kDebugMode) {
     debugPrint('💤 Handling background message: ${message.messageId}');
-    debugPrint('💤 Message data: ${message.data}');
   }
+
+  // --- SCENARIO 1: New Data-Only Alert System ---
+  if (message.data.containsKey('alert') && message.data['alert'] == 'true') {
+    // Save to SharedPreferences for the AlertsBanner
+    await AlertsManager.addAlertFromFCM(message.data);
+
+    // Trigger local system notification so the user actually sees it
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'hab_alerts_channel', 
+      'Important Alerts',
+      importance: Importance.max,
+      priority: Priority.high,
+      color: Color(0xFFB71C1C), 
+      icon: '@mipmap/ic_launcher',
+    );
+
+    flutterLocalNotificationsPlugin.show(
+      DateTime.now().millisecond, 
+      message.data['title'] ?? 'New Alert',
+      message.data['body'] ?? '',
+      const NotificationDetails(android: androidDetails),
+    );
+    
+    return; // Exit early so it doesn't get double-saved in normal history
+  }
+
+  // --- SCENARIO 2: Standard FCM Notifications (Your old logic) ---
   if (message.notification != null) {
     if (kDebugMode) {
-      debugPrint(
-          '💤 Message also contained a notification: ${message.notification}');
+      debugPrint('💤 Standard notification received in background');
     }
+    
     final redirectType = message.data['redirectType'];
-    final isAlert =
-        message.data['isAlert'] == 'true' || message.data['isAlert'] == true;
+    final isAlert = message.data['isAlert'] == 'true' || message.data['isAlert'] == true;
+    
     await _saveNotificationToHistory(
       message.notification!.title ?? 'No Title',
       message.notification!.body ?? 'No Body',
@@ -244,8 +276,8 @@ Future<void> initializeFcm() async {
     onDidReceiveNotificationResponse: _onNotificationTap,
   );
 
-  // Register background message handler
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  // Register background message handler(done in main)
+  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // Initialize SharedPreferences for notification history
   _sharedPrefs = await SharedPreferences.getInstance();
@@ -255,7 +287,12 @@ Future<void> initializeFcm() async {
   notificationHistoryNotifier.value = notifications;
 
   // ✅ Foreground message handler
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+    if (message.data.containsKey('alert') && message.data['alert'] == 'true') {
+       await AlertsManager.addAlertFromFCM(message.data);
+       // Optional: Show local pop-up notification here via FlutterLocalNotificationsPlugin
+       return; 
+    }
     if (kDebugMode) {
       debugPrint('📩 Foreground message received: ${message.messageId}');
     }

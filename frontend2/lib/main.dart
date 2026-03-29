@@ -20,10 +20,12 @@ import 'package:frontend2/utilities/notifications.dart';
 import 'package:frontend2/utilities/startupitem.dart';
 import 'package:frontend2/utilities/version_checker.dart';
 import 'package:provider/provider.dart';
+import 'package:frontend2/utilities/alerts_manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // Phase 1: run while native splash is visible (single logo screen)
   await VersionChecker.init();
@@ -59,7 +61,7 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late Connectivity _connectivity;
   late Stream<ConnectivityResult> _connectivityStream;
   bool _isDialogShowing = false;
@@ -67,6 +69,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     listenNotifications();
     setNavigatorKey(navigatorKey); // Set global navigator key for notifications
     _connectivity = Connectivity();
@@ -79,6 +82,10 @@ class _MyAppState extends State<MyApp> {
     _connectivityStream.listen((ConnectivityResult result) {
       _handleConnectivityChange(result);
     });
+
+    if (widget.isLoggedIn) {
+      AlertsManager.syncAlerts();
+    }
   }
 
   void _handleConnectivityChange(ConnectivityResult result) {
@@ -135,8 +142,17 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
-        // Dispose of the connectivity stream if necessary
+    // Dispose of the connectivity stream if necessary
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // The Filter Loop: Run on every foreground resume
+      AlertsManager.filterAndLoadLocalAlerts();
+    }
   }
 }
 

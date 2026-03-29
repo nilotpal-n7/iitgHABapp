@@ -21,6 +21,7 @@ const {
   setDelegatedTokens,
   tokenFilePath,
 } = require("./utils/delegatedGraphAuth.js");
+const alertRoutes = require("./modules/alert/alertRoute.js");
 
 // New: build delegated auth URLs for starting consent
 const onedrive = require("./config/onedrive.js");
@@ -202,6 +203,9 @@ app.use("/api/mess", messRoute);
 
 //mess change route
 app.use("/api/mess-change", messChangeRouter);
+
+// alert route
+app.use("/api/alerts", alertRoutes);
 
 // profile route
 const profileRouter = require("./modules/profile/profileRoute.js");
