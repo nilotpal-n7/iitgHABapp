@@ -150,6 +150,11 @@ const userSchema = new mongoose.Schema({
       return this.hostel;
     },
   },
+  next_mess: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Hostel",
+    index: true,
+  },
   next_mess1: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Hostel",

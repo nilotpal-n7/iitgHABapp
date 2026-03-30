@@ -164,17 +164,17 @@ const resetAllUsersToHostel = async () => {
   const allocations = await UserAllocHostel.find({}).lean();
   if (!allocations.length) return;
 
-  const bulkAllocOps = allocations.map(alloc => ({
+  const bulkAllocOps = allocations.map((alloc) => ({
     updateOne: {
       filter: { _id: alloc._id },
-      update: { $set: { current_subscribed_mess: alloc.hostel } }
-    }
+      update: { $set: { current_subscribed_mess: alloc.hostel } },
+    },
   }));
   if (bulkAllocOps.length > 0) {
     await UserAllocHostel.bulkWrite(bulkAllocOps);
   }
 
-  const bulkUserOps = allocations.map(alloc => ({
+  const bulkUserOps = allocations.map((alloc) => ({
     updateOne: {
       filter: { rollNumber: alloc.rollno },
       update: {
@@ -198,19 +198,22 @@ const updateAcceptedUsers = async (acceptedUsers) => {
     const user = await User.findById(a.id);
     if (!user) continue;
 
+    // UserAllocHostel update will now happen on the 1st of the month via allotmentScheduler
+    /*
     if (user.rollNumber) {
       await UserAllocHostel.updateOne(
         { rollno: user.rollNumber },
         { $set: { current_subscribed_mess: a.toHostelId } },
       );
     }
+    */
 
     const [fromHostel, toHostel] = await Promise.all([
       Hostel.findById(a.fromHostelId),
       Hostel.findById(a.toHostelId),
     ]);
 
-    user.curr_subscribed_mess = a.toHostelId;
+    user.next_mess = a.toHostelId; // Staged for the 1st of next month
     user.applied_for_mess_changed = false;
     user.got_mess_changed = true;
     user.applied_hostel_string = "";
@@ -236,7 +239,7 @@ const updateAcceptedUsers = async (acceptedUsers) => {
       await sendNotificationToUser(
         user._id,
         "Mess Change Accepted",
-        `Your mess change has been approved to ${toHostel?.hostel_name}.`,
+        `Mess changed to ${toHostel?.hostel_name}. Applicable from next month.`,
       );
     } catch {}
   }
@@ -260,6 +263,7 @@ const updateRejectedUsers = async (rejectedUsers) => {
     user.curr_subscribed_mess = user.hostel;
     user.applied_for_mess_changed = false;
     user.applied_hostel_string = "";
+    user.next_mess = null;
     user.next_mess1 = null;
     user.next_mess2 = null;
     user.next_mess3 = null;
@@ -320,7 +324,9 @@ const processAllMessChangeRequests = async (req, res) => {
       "Mess Change is Disabled",
       "All_Hostels",
       { redirectType: "mess_change", isAlert: "true" },
-    ).catch((err) => console.error("Mess change disabled notification failed:", err));
+    ).catch((err) =>
+      console.error("Mess change disabled notification failed:", err),
+    );
 
     res.status(200).json({
       message: `${acceptedUsers.length} accepted, ${rejectedUsers.length} rejected`,
@@ -345,6 +351,7 @@ const rejectAllMessChangeRequests = async (req, res) => {
     for (const user of users) {
       user.applied_for_mess_changed = false;
       user.applied_hostel_string = "";
+      user.next_mess = null;
       user.next_mess1 = null;
       user.next_mess2 = null;
       user.next_mess3 = null;
@@ -359,7 +366,9 @@ const rejectAllMessChangeRequests = async (req, res) => {
       "Mess Change is Disabled",
       "All_Hostels",
       { redirectType: "mess_change", isAlert: "true" },
-    ).catch((err) => console.error("Mess change disabled notification failed:", err));
+    ).catch((err) =>
+      console.error("Mess change disabled notification failed:", err),
+    );
 
     res.status(200).json({
       message: `Rejected ${users.length} pending requests. Mess change has been automatically disabled.`,
