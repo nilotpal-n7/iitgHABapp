@@ -164,17 +164,17 @@ const resetAllUsersToHostel = async () => {
   const allocations = await UserAllocHostel.find({}).lean();
   if (!allocations.length) return;
 
-  const bulkAllocOps = allocations.map(alloc => ({
+  const bulkAllocOps = allocations.map((alloc) => ({
     updateOne: {
       filter: { _id: alloc._id },
-      update: { $set: { current_subscribed_mess: alloc.hostel } }
-    }
+      update: { $set: { current_subscribed_mess: alloc.hostel } },
+    },
   }));
   if (bulkAllocOps.length > 0) {
     await UserAllocHostel.bulkWrite(bulkAllocOps);
   }
 
-  const bulkUserOps = allocations.map(alloc => ({
+  const bulkUserOps = allocations.map((alloc) => ({
     updateOne: {
       filter: { rollNumber: alloc.rollno },
       update: {
@@ -236,7 +236,7 @@ const updateAcceptedUsers = async (acceptedUsers) => {
       await sendNotificationToUser(
         user._id,
         "Mess Change Accepted",
-        `Your mess change has been approved to ${toHostel?.hostel_name}.`,
+        `Mess changed to ${toHostel?.hostel_name}. Applicable from next month.`,
       );
     } catch {}
   }
@@ -320,7 +320,9 @@ const processAllMessChangeRequests = async (req, res) => {
       "Mess Change is Disabled",
       "All_Hostels",
       { redirectType: "mess_change", isAlert: "true" },
-    ).catch((err) => console.error("Mess change disabled notification failed:", err));
+    ).catch((err) =>
+      console.error("Mess change disabled notification failed:", err),
+    );
 
     res.status(200).json({
       message: `${acceptedUsers.length} accepted, ${rejectedUsers.length} rejected`,
@@ -359,7 +361,9 @@ const rejectAllMessChangeRequests = async (req, res) => {
       "Mess Change is Disabled",
       "All_Hostels",
       { redirectType: "mess_change", isAlert: "true" },
-    ).catch((err) => console.error("Mess change disabled notification failed:", err));
+    ).catch((err) =>
+      console.error("Mess change disabled notification failed:", err),
+    );
 
     res.status(200).json({
       message: `Rejected ${users.length} pending requests. Mess change has been automatically disabled.`,
