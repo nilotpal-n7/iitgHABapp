@@ -144,34 +144,24 @@ const initializeMessChangeAutoScheduler = () => {
       console.log(
         `📅 Mess change start date detected: ${day}/${month + 1}/${year}`,
       );
-      await enableMessChangeAutomatic();
+      const { endDate } = getMessChangeWindowDates(month, year);
+      await enableMessChangeAutomatic(endDate);
       await scheduleMessChangeReminders();
     }
   });
 
-  // Schedule to disable at EOD - runs daily at 11:59 PM IST
-  schedule.scheduleJob("59 23 * * *", async () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const day = now.getDate();
-
-    let endDay;
-    if (month === 1) {
-      endDay = 28; // February
-    } else {
-      endDay = 30; // Other months
-    }
-
-    // Check if today is the end date
-    if (day === endDay) {
-      console.log(
-        `📅 Mess change end date detected: ${day}/${month + 1}/${year}`,
-      );
+  // Schedule to disable - runs daily at 12:01 AM IST
+  schedule.scheduleJob("1 0 * * *", async () => {
+    try {
       const settings = await MessChangeSettings.findOne();
-      if (settings?.isEnabled) {
-        await disableMessChangeAutomatic();
+      if (settings?.isEnabled && settings.currentWindowClosingTime) {
+        if (new Date() > new Date(settings.currentWindowClosingTime)) {
+          console.log(`📅 Mess change closing time reached, disabling now.`);
+          await disableMessChangeAutomatic();
+        }
       }
+    } catch (e) {
+      console.error("❌ Error in automatic mess change closing job:", e);
     }
   });
 

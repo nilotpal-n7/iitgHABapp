@@ -72,6 +72,9 @@ const {
   initializeMessRebateAutoScheduler,
 } = require("./modules/leave/autoMessRebateScheduler.js");
 const {
+  initializeMessAllotmentScheduler,
+} = require("./modules/mess_change/allotmentScheduler.js");
+const {
   initializeAnonymizedUser,
 } = require("./modules/user/anonymizedUserInit.js");
 
@@ -254,6 +257,7 @@ mongoose
       initializeGuestCleanupScheduler();
       initializeMessRebateAutoScheduler();
       initializeRoomCleaningAutoResolveScheduler();
+      initializeMessAllotmentScheduler();
     } else {
       console.log(
         `Worker instance ${process.env.NODE_APP_INSTANCE} started. Schedulers disabled here.`,
