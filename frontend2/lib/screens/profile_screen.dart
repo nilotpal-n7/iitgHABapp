@@ -42,7 +42,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _phoneController = TextEditingController();
   bool _uploading = false;
   bool _saving = false;
-  bool started_loading = false;
+  bool startedLoading = false;
 
   @override
   void initState() {
@@ -50,8 +50,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   bool __isloading() {
-    if (!started_loading) {
-      started_loading = true;
+    if (!startedLoading) {
+      startedLoading = true;
       _initializeData();
       _fetchProfileSettings();
     }

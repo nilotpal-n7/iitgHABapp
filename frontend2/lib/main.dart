@@ -1,31 +1,27 @@
-import 'dart:io';
+// main.dart
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:frontend2/apis/authentication/login.dart' as auth;
-import 'package:frontend2/apis/mess/user_mess_info.dart';
-import 'package:frontend2/apis/users/user.dart';
 import 'package:frontend2/providers/feedback_provider.dart';
-import 'package:frontend2/providers/hostels.dart';
 import 'package:frontend2/providers/room_cleaning_provider.dart';
 import 'package:frontend2/screens/initial_setup_screen.dart';
 import 'package:frontend2/screens/main_navigation_screen.dart';
 import 'package:frontend2/screens/login_screen.dart';
 import 'package:frontend2/screens/mess_screen.dart';
+import 'package:frontend2/utilities/alert_manager.dart';
 import 'package:frontend2/utilities/notifications.dart';
 import 'package:frontend2/utilities/startupitem.dart';
 import 'package:frontend2/utilities/version_checker.dart';
 import 'package:provider/provider.dart';
-import 'package:frontend2/utilities/alerts_manager.dart';
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   // Phase 1: run while native splash is visible (single logo screen)
   await VersionChecker.init();

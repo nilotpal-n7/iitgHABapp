@@ -25,7 +25,7 @@ class _GalaDinnerScreenState extends State<GalaDinnerScreen> {
   Map<String, dynamic>? _scanStatusData;
   String? _error;
   String? _hostelDisplayName;
-  bool started_loading = false;
+  bool startedLoading = false;
 
   @override
   void initState() {
@@ -33,9 +33,9 @@ class _GalaDinnerScreenState extends State<GalaDinnerScreen> {
   }
 
   bool __isloading() {
-    if (widget.active && !started_loading) {
-      print("Loading Gala Screen Data!");
-      started_loading = true;
+    if (widget.active && !startedLoading) {
+      debugPrint("Loading Gala Screen Data!");
+      startedLoading = true;
       _fetchAll();
     }
     return _loading;

@@ -1,3 +1,5 @@
+// alert_model.dart
+
 class AlertModel {
   final String id;
   final String title;

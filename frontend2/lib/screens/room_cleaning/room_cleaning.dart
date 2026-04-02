@@ -452,9 +452,9 @@ class _SlotTile extends StatelessWidget {
                           color: const Color(0xFFE5E7EB),
                         ),
                       ),
-                      child: Column(
+                      child: const Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           _InstructionBullet(
                             text:
                                 'Verify your room and phone number before confirming.',

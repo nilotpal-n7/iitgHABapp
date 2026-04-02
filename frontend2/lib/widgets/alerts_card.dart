@@ -15,6 +15,16 @@ class AlertsCard extends StatelessWidget {
           return const SizedBox.shrink(); // Hide entirely if no active alerts
         }
 
+        // We filter out alerts locally if the user has already completed the action
+        final validAlerts = activeAlerts.where((alert) {
+             // If you want to check local state (like hasAppliedForMessChange), you can do it here
+             // bool hasApplied = Provider.of<UserProvider>(context).user.hasAppliedForMessChange;
+             // if (alert.targetType == 'mess' && hasApplied) return false;
+             return true; 
+        }).toList();
+
+        if (validAlerts.isEmpty) return const SizedBox.shrink();
+
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           padding: const EdgeInsets.all(16),
@@ -41,7 +51,7 @@ class AlertsCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              ...activeAlerts.map((alert) => _buildAlertItem(alert)),
+              ...validAlerts.map((alert) => _buildAlertItem(alert)),
             ],
           ),
         );

@@ -103,7 +103,7 @@ Future<bool> refreshAccessToken() async {
     final refreshToken = prefs.getString('refresh_token');
 
     debugPrint('[refreshAccessToken] Refresh token: '
-        '${refreshToken != null ? refreshToken.substring(0, 8) + '...' : 'null'}');
+        '${refreshToken != null ? '${refreshToken.substring(0, 8)}...' : 'null'}');
 
     if (refreshToken == null) {
       debugPrint('[refreshAccessToken] No refresh token found');

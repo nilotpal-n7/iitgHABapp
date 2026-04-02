@@ -782,11 +782,12 @@ class _RcYesterdayTabState extends State<_RcYesterdayTab> {
                       ),
                       ..._cleaners.map((c) {
                         final id = c['_id']?.toString();
-                        if (id == null)
+                        if (id == null) {
                           return const DropdownMenuItem<String?>(
                             value: null,
                             child: SizedBox.shrink(),
                           );
+                        }
                         final name = c['name']?.toString() ?? 'Cleaner';
                         return DropdownMenuItem<String?>(
                           value: id,

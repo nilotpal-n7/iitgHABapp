@@ -1,7 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter_launcher_icons/constants.dart';
 import 'package:frontend2/apis/dio_client.dart';
 import 'package:frontend2/apis/protected.dart';
 import 'package:frontend2/constants/endpoint.dart';
@@ -159,7 +157,7 @@ class _LeaveApplicationListScreenState extends State<LeaveApplicationListScreen>
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 6),
                       child: Text(
-                        "$startDate  →  $endDate"+((status.toLowerCase() == 'rejected')?"\nFeedback: $fb":""),
+                        "$startDate  →  $endDate${(status.toLowerCase() == 'rejected')?"\nFeedback: $fb":""}",
                         style: TextStyle(
                           color: Colors.grey[700],
                         ),

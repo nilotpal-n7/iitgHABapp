@@ -1,3 +1,5 @@
+// alert/alertModel.js
+
 const mongoose = require("mongoose");
 
 const alertSchema = new mongoose.Schema(

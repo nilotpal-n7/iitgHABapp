@@ -1,3 +1,5 @@
+// alert_manager.dart
+
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,7 +14,8 @@ class AlertsManager {
   /// 1. App Open / Login Sync (Solves Reinstall Issue)
   static Future<void> syncAlerts() async {
     try {
-      final response = await dio.get('${Endpoints.baseUrl}/api/v2/alerts');
+      final dio = DioClient().dio;
+      final response = await dio.get('$baseUrl/api/v2/alerts');
       if (response.statusCode == 200 && response.data['alerts'] != null) {
         final List<dynamic> alertsJson = response.data['alerts'];
         await _updateAndFilterAlerts(alertsJson.map((e) => AlertModel.fromJson(e)).toList());

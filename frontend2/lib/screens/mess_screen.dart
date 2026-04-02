@@ -36,7 +36,7 @@ String currSubscribedMess = '';
 
 class _MessScreenState extends State<MessScreen> {
   bool _isLoading = true;
-  bool started_loading = false;
+  bool startedLoading = false;
   String caterername = '';
   int? rating;
   int? rank;
@@ -48,9 +48,9 @@ class _MessScreenState extends State<MessScreen> {
   }
 
   bool __isloading() {
-    if (widget.active && !started_loading) {
-      print("Loading Mess Screen Data!");
-      started_loading = true;
+    if (widget.active && !startedLoading) {
+      debugPrint("Loading Mess Screen Data!");
+      startedLoading = true;
       _loadData();
     }
     return _isLoading;

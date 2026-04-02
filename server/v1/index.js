@@ -27,7 +27,7 @@ const bodyParser = require("body-parser");
 const winston = require("winston");
 const expressWinston = require("express-winston");
 const storeLogs = require("./middleware/logger.js");
-const { v4: uuidv4 } = require("uuid");
+const { randomUUID } = require("crypto");
 const { Worker } = require("worker_threads");
 const path = require("path");
 const {
@@ -72,6 +72,9 @@ const {
 const {
   initializeMessRebateAutoScheduler,
 } = require("./modules/leave/autoMessRebateScheduler.js");
+const {
+  initializeMessAllotmentScheduler,
+} = require("./modules/mess_change/allotmentScheduler.js");
 const {
   initializeAnonymizedUser,
 } = require("./modules/user/anonymizedUserInit.js");
@@ -134,7 +137,7 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 // Middleware to assign a unique request ID for better log correlation
 app.use((req, res, next) => {
-  req.headers["x-request-id"] = req.headers["x-request-id"] || uuidv4();
+  req.headers["x-request-id"] = req.headers["x-request-id"] || randomUUID();
   next();
 });
 
@@ -193,6 +196,7 @@ app.use(
 function startWorker() {
   const worker = new Worker(
     path.resolve(__dirname, "./workers/loggerWorker.js"),
+    { execArgv: process.execArgv },
   );
 
   worker.on("error", (err) => console.error("Worker Error:", err));
@@ -255,6 +259,7 @@ mongoose
       initializeGuestCleanupScheduler();
       initializeMessRebateAutoScheduler();
       initializeRoomCleaningAutoResolveScheduler();
+      initializeMessAllotmentScheduler();
     } else {
       console.log(
         `Worker instance ${process.env.NODE_APP_INSTANCE} started. Schedulers disabled here.`,

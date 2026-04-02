@@ -301,7 +301,7 @@ class _MessChangePreferenceScreenState
                       padding: const EdgeInsets.all(12),
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
-                        color: Color(0xFFE8F0FE),
+                        color: const Color(0xFFE8F0FE),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Column(

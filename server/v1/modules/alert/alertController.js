@@ -1,3 +1,5 @@
+//alert/alertcontroller.js
+
 const Alert = require("./alertModel");
 const { Hostel } = require("../hostel/hostelModel");
 const admin = require("../notification/firebase");
@@ -67,18 +69,34 @@ const createAlert = async (req, res) => {
         }
       }
 
+      // 4. Send Mixed Payload (Notification + Data)
+      // Resolving the correct Android Native Channel ID
+      let nativeChannelId = "hab_general_alerts";
+      if (targetType === "mess") nativeChannelId = "hab_mess_updates";
+      if (targetType === "feedback") nativeChannelId = "hab_feedback_reminders";
+
       // Send Data-Only Message (Architecture PDF Requirement 7)
       await admin.messaging().send({
+        notification: {
+          title: title,
+          body: body
+        },
         data: {
           id: newAlert._id.toString(),
           title,
           body,
           expiresAt: expiresAtMs.toString(),
           hasCountdown: hasCountdown ? "true" : "false",
-          alert: "true"
+          alert: "true",
+          targetType
         },
         topic: fcmTopic,
-        android: { ttl: ttlSeconds * 1000 }, // Firebase retries until TTL expires
+        android: {
+          ttl: ttlSeconds * 1000,
+          notification: {
+            channelId: nativeChannelId // This links to the Android OS settings!
+          }
+        },
       });
     }
 

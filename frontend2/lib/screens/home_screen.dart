@@ -19,7 +19,7 @@ import '../widgets/alerts_card.dart';
 import '../widgets/microsoft_required_dialog.dart';
 import 'mess_preference.dart';
 import 'room_cleaning/room_cleaning.dart';
-// import 'leave_application_screen.dart';
+import '../widgets/notification_button_card.dart';
 
 class HomeScreen extends StatefulWidget {
   final void Function(int)? onNavigateToTab;
@@ -496,7 +496,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(fontSize: 14, color: Colors.black87),
               ),
               const SizedBox(height: 24),
-              AlertsCard(feedbackform: feedbackform),
+              
+              // 1. First, show any active TTL Alerts (Red Banners)
+              const AlertsCard(), 
+              
+              // 2. Next, show the generic Notification History Button
+              const NotificationButtonCard(),
+
               ValueListenableBuilder<List<String>>(
                 valueListenable: HostelsNotifier.hostelNotifier,
                 builder: (context, _, __) => buildQuickActions(),

@@ -1,13 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter_launcher_icons/constants.dart';
 import 'package:frontend2/apis/dio_client.dart';
 import 'package:frontend2/apis/protected.dart';
 import 'package:frontend2/constants/endpoint.dart';
 import 'package:frontend2/screens/leave_application_list_screen.dart';
 import 'package:intl/intl.dart';
-import 'package:frontend2/screens/home_screen.dart';
 
 class LeaveApplicationScreen extends StatefulWidget {
   const LeaveApplicationScreen({super.key});
@@ -29,7 +27,7 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
   Future<void> _selectDateRange() async {
     final DateTimeRange? picked = await showDateRangePicker(
       context: context,
-      firstDate: (_selectedValue==3)?(DateTime.now().add(Duration(days: 1))):(DateTime.now()),
+      firstDate: (_selectedValue==3)?(DateTime.now().add(const Duration(days: 1))):(DateTime.now()),
       lastDate: DateTime(2027),
       builder: (context, child) {
         return Theme(data: ThemeData.light(), child: child!);
@@ -164,7 +162,7 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
             ):Text(
               (_selectedValue==1)?"Academic Leave":((_selectedValue==2)?"Medical Leave":"Casual Leave"),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: Colors.black54,
@@ -200,7 +198,7 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
                     title: Text(_pickedFile == null ?((_selectedValue==2)?"Upload File (PDF/IMG) (Max. Size - 5MB) *Optional for now":"Upload File (PDF/IMG) (Max. Size - 5MB)") : _pickedFile!.name,
                     style: const TextStyle(fontSize: 15),
                     ),
-                    subtitle: _pickedFile != null ? Text("${(_pickedFile!.size / 1024).toStringAsFixed(2)} KB",style: TextStyle(fontSize: 12),) : null,
+                    subtitle: _pickedFile != null ? Text("${(_pickedFile!.size / 1024).toStringAsFixed(2)} KB",style: const TextStyle(fontSize: 12),) : null,
                     trailing: const Icon(Icons.attach_file),
                     onTap: _pickFile,
                   ),
@@ -363,7 +361,7 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10,spreadRadius: 1,offset: Offset(0, 4),)
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10,spreadRadius: 1,offset: const Offset(0, 4),)
         ],),
       padding: const EdgeInsets.all(12),
       child: Column(

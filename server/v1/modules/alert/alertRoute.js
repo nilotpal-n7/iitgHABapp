@@ -1,3 +1,5 @@
+// alert/alertRoute.js
+
 const express = require("express");
 const router = express.Router();
 const { authenticateJWT, authenticateAdminJWT } = require("../../middleware/authenticateJWT");
