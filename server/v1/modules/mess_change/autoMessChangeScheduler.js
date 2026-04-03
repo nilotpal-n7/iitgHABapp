@@ -12,7 +12,7 @@ const {
 
 const admin = require("../notification/firebase");
 const { FCMToken } = require("../notification/FCMToken");
-const { User } = require("../../user/userModel");
+const { User } = require("../user/userModel");
 
 /**
  * Sends a targeted reminder only to students who haven't applied for a mess change.

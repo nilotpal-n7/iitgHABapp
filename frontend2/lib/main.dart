@@ -18,6 +18,7 @@ import 'package:frontend2/utilities/notifications.dart';
 import 'package:frontend2/utilities/startupitem.dart';
 import 'package:frontend2/utilities/version_checker.dart';
 import 'package:provider/provider.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();

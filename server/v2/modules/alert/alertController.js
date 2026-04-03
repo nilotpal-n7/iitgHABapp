@@ -50,10 +50,10 @@ const createAlert = async (req, res) => {
     for (const targetId of targets) {
       // Add to Redis ZSET. Score = expiresAt, Member = alert JSON string
       const redisKey = getRedisKey(targetType, targetType === "global" ? null : targetId);
-      await redisClient.zAdd(redisKey, [{ score: expiresAtMs, value: alertData }]);
+      await redisClient.zadd(redisKey, expiresAtMs, alertData);
       
       // Cleanup old expired alerts from this specific ZSET asynchronously
-      redisClient.zRemRangeByScore(redisKey, 0, Date.now()).catch(console.error);
+      redisClient.zremrangebyscore(redisKey, 0, Date.now()).catch(console.error);
 
       // 3. Resolve FCM Topic mapping based on existing system standards
       let fcmTopic = "All_Hostels";
@@ -110,7 +110,7 @@ const getAlerts = async (req, res) => {
     // Fetch from Redis
     for (const key of targetKeys) {
       // O(log N) fetch of non-expired alerts
-      const cachedAlerts = await redisClient.zRangeByScore(key, now, "+inf");
+      const cachedAlerts = await redisClient.zrangebyscore(key, now, "+inf");
       
       if (cachedAlerts && cachedAlerts.length > 0) {
         allAlerts.push(...cachedAlerts.map(a => JSON.parse(a)));
@@ -138,7 +138,7 @@ const getAlerts = async (req, res) => {
 
           // Re-hydrate cache
           for (const parsed of parsedAlerts) {
-             await redisClient.zAdd(key, [{ score: Number(parsed.expiresAt), value: JSON.stringify(parsed) }]);
+             await redisClient.zadd(key, Number(parsed.expiresAt), JSON.stringify(parsed));
           }
         }
       }

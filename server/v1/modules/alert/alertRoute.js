@@ -5,7 +5,7 @@ const router = express.Router();
 const { authenticateJWT, authenticateAdminJWT } = require("../../middleware/authenticateJWT");
 const { createAlert, getAlerts } = require("./alertController");
 
-router.post("/create", authenticateAdminJWT, createAlert);
+router.post("/create", authenticateJWT, createAlert);
 router.get("/", authenticateJWT, getAlerts);
 
 module.exports = router;
