@@ -33,7 +33,7 @@ const createAlert = async (req, res) => {
       expiresAt,
       targetType,
       targetIds: targetType === "global" ? [] : targetIds,
-      createdBy: req.user._id,
+      createdBy: req.user ? req.user._id : null,
     });
     await newAlert.save();
 
